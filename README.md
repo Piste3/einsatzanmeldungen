@@ -75,7 +75,7 @@ Alles läuft über Umgebungsvariablen. `npm start` liest zusätzlich eine `.env`
 | `SESSION_IDLE_MINUTES` | `120` | Abmeldung nach Inaktivität |
 | `AUTH_PROVIDERS` | `local` | `local`, `microsoft` oder `local,microsoft` |
 | `MS_TENANT_ID`, `MS_CLIENT_ID`, `MS_CLIENT_SECRET` | | Für Microsoft-Login |
-| `FORM_FRAME_ANCESTORS` | `https://*.clubdesk.com https://web.kkb.ch http://web.kkb.ch` | Webseiten, die das Formular einbetten dürfen (mit Leerzeichen getrennt) |
+| `FORM_FRAME_ANCESTORS` | `https://*.clubdesk.com https://web.kkb.ch https://*.web.kkb.ch http://web.kkb.ch http://*.web.kkb.ch` | Webseiten, die das Formular einbetten dürfen (mit Leerzeichen getrennt) |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | | E-Mail-Versand der Anmeldebestätigungen |
 | `BACKUP_DIR` | `DATA_DIR/backups` | Ziel der täglichen Sicherung |
 | `BACKUP_KEEP_DAYS` | `30` | Wie lange Sicherungen behalten werden |
