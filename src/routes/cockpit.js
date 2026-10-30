@@ -3,10 +3,20 @@ const express = require('express');
 const db = require('../db');
 const cockpit = require('../services/cockpit');
 
+const config = require('../config');
+const auth = require('../auth');
 const router = express.Router();
 
+// Erinnerung an den ablaufenden Microsoft-Schlüssel (nur für Admins, ab 30 Tage vorher)
+function msSecretDays(user) {
+  const exp = config.microsoft.secretExpires;
+  if (!exp || !auth.isAdmin(user) || !auth.provider('microsoft')) return null;
+  const days = Math.ceil((Date.parse(`${exp}T00:00:00Z`) - Date.now()) / 86400000);
+  return days <= 30 ? days : null;
+}
+
 router.get('/', (req, res) => {
-  res.render('pages/cockpit', { title: 'Cockpit', ...cockpit.data(), liveTopics: ['cockpit', 'events', 'forms', 'clarifications'] });
+  res.render('pages/cockpit', { title: 'Cockpit', ...cockpit.data(), msSecretDays: msSecretDays(req.user), liveTopics: ['cockpit', 'events', 'forms', 'clarifications'] });
 });
 
 // Globale Suche: Personen, Einsätze und Anmeldungen nach Name

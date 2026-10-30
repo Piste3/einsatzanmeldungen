@@ -33,6 +33,8 @@ module.exports = {
     clientId: env.MS_CLIENT_ID || '',
     clientSecret: env.MS_CLIENT_SECRET || '',
     // Optional: nur Konten aus diesen Mandanten (Tenant-IDs, kommagetrennt). Leer = jeder Mandant.
+    // Ablaufdatum des geheimen Clientschlüssels (JJJJ-MM-TT): Admins sehen 30 Tage vorher eine Erinnerung
+    secretExpires: /^\d{4}-\d{2}-\d{2}$/.test(env.MS_SECRET_EXPIRES || '') ? env.MS_SECRET_EXPIRES : '',
     allowedTenants: (env.MS_ALLOWED_TENANTS || '').split(/[\s,]+/).map((s) => s.trim().toLowerCase()).filter(Boolean),
   },
   // Wer das Anmeldeformular einbetten darf (CSP frame-ancestors)

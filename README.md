@@ -76,6 +76,7 @@ Alles läuft über Umgebungsvariablen. `npm start` liest zusätzlich eine `.env`
 | `AUTH_PROVIDERS` | `local` | `local`, `microsoft` oder `local,microsoft` |
 | `MS_TENANT_ID`, `MS_CLIENT_ID`, `MS_CLIENT_SECRET` | | Für Microsoft-Login (`MS_TENANT_ID`: Tenant-ID oder `organizations`) |
 | `MS_ALLOWED_TENANTS` | | Optional: nur Konten aus diesen Tenants (kommagetrennt) |
+| `MS_SECRET_EXPIRES` | | Ablaufdatum des Microsoft-Schlüssels (JJJJ-MM-TT); Admins sehen 30 Tage vorher eine Erinnerung im Cockpit |
 | `FORM_FRAME_ANCESTORS` | `https://*.clubdesk.com https://web.kkb.ch https://*.web.kkb.ch http://web.kkb.ch http://*.web.kkb.ch` | Webseiten, die das Formular einbetten dürfen (mit Leerzeichen getrennt) |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | | E-Mail-Versand der Anmeldebestätigungen |
 | `BACKUP_DIR` | `DATA_DIR/backups` | Ziel der täglichen Sicherung |

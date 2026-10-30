@@ -397,7 +397,7 @@ Konten anlegen, Rolle wählen (Admin oder Aufgebotsstelle) und mit einer Person 
   - **Pflicht für dieses Konto:** Die Person muss die 2FA beim nächsten Login einrichten. Vorher kommt sie nirgends hin.
   - **Code verlangen:** bei jedem Login, oder einmal pro Tag, Woche, Monat bzw. 3 Monate pro Gerät. Gilt für alle, die 2FA eingerichtet haben – auch freiwillig.
   - **2FA zurücksetzen,** z. B. wenn jemand sein Handy verloren hat. Danach richtet die Person sie neu ein.
-- **Microsoft-Anmeldung** (nur sichtbar, wenn sie auf dem Server eingerichtet ist): E-Mail-Adresse des Microsoft-Kontos eintragen und «Mit dem Microsoft-Konto dieser E-Mail-Adresse anmelden erlaubt» ankreuzen. Beim ersten Login wird das Konto fest mit diesem Microsoft-Konto verknüpft. Häkchen entfernen oder E-Mail ändern löst die Verknüpfung.
+- **Microsoft-Anmeldung** (nur sichtbar, wenn sie auf dem Server eingerichtet ist, mehr in Kapitel 16): E-Mail-Adresse des Microsoft-Kontos eintragen und «Mit dem Microsoft-Konto dieser E-Mail-Adresse anmelden erlaubt» ankreuzen. Beim ersten Login wird das Konto fest mit diesem Microsoft-Konto verknüpft. Häkchen entfernen oder E-Mail ändern löst die Verknüpfung.
   - **Mit Benutzername und Passwort anmelden erlaubt:** Ausschalten heisst, dass die Person nur noch mit Microsoft hineinkommt. Mindestens eine Anmeldeart muss erlaubt bleiben. Das eigene Passwort-Login lässt sich erst abschalten, wenn man sich einmal erfolgreich mit Microsoft angemeldet hat.
   - **Notausgang:** Wird die Microsoft-Anmeldung auf dem Server ausgeschaltet (`AUTH_PROVIDERS=local` in der `.env`), gilt das Passwort wieder für alle.
 - **Konto aktiv** ausschalten sperrt den Zugang, ohne Daten zu löschen.
@@ -467,7 +467,80 @@ Mit der Zwei-Faktor-Anmeldung reicht das Passwort allein nicht mehr. Zusätzlich
 
 Weitere Schutzmassnahmen: Passwörter mit mindestens 10 Zeichen, sicher verschlüsselt gespeichert; Sperre nach 5 Fehlversuchen für 15 Minuten; automatische Abmeldung nach Inaktivität; jede Änderung ist vor fremden Seiten geschützt.
 
-## 16 · Häufige Fragen
+## 16 · Microsoft-Anmeldung
+
+Statt mit Benutzername und Passwort können sich Benutzer auch mit ihrem Microsoft-Konto anmelden, z. B. dem KKB-Konto von Microsoft 365. Wer hineindarf und mit welcher Rolle, bestimmt weiterhin der Einsatzplaner: Ein Microsoft-Konto allein öffnet nichts.
+
+### Einmal einrichten
+
+**1. App bei Microsoft registrieren**
+
+1. Mit dem Microsoft-Konto auf **entra.microsoft.com** anmelden.
+2. **Anwendungen › App-Registrierungen › Neue Registrierung**.
+   - Name: `KKB-Einsatzplaner`
+   - Unterstützte Kontotypen: **Nur Konten in diesem Organisationsverzeichnis**. Wird die App in einem eigenen Microsoft-Konto statt im Vereins-Konto registriert: **Konten in einem beliebigen Organisationsverzeichnis**.
+   - Umleitungs-URI: Plattform **Web**, `https://einsatz.holmium.ch/auth/microsoft/callback`
+3. **Registrieren**. Auf der Übersicht die **Anwendungs-ID (Client)** und die **Verzeichnis-ID (Mandant)** notieren.
+4. **Zertifikate & Geheimnisse › Neuer geheimer Clientschlüssel**, Ablauf **24 Monate**. Sofort den **Wert** kopieren (nicht die «Geheimnis-ID»). Er wird nur einmal angezeigt. Das **Ablaufdatum** notieren.
+
+**2. Server einstellen**
+
+In der Datei `.env` auf dem Server ergänzen und den Einsatzplaner neu starten:
+
+```
+AUTH_PROVIDERS=local,microsoft
+MS_TENANT_ID=<Verzeichnis-ID>   (bei «beliebiges Organisationsverzeichnis»: organizations)
+MS_CLIENT_ID=<Anwendungs-ID>
+MS_CLIENT_SECRET=<Wert des geheimen Schlüssels>
+MS_SECRET_EXPIRES=<Ablaufdatum, z. B. 2028-10-30>
+```
+
+Auf der Login-Seite erscheint jetzt **Mit Microsoft anmelden**.
+
+**3. Benutzer freigeben**
+
+Unter **Einstellungen › Benutzer › Bearbeiten**, Abschnitt «Anmeldung»:
+
+1. Bei **E-Mail** die Adresse eintragen, mit der sich die Person bei Microsoft anmeldet.
+2. **Mit dem Microsoft-Konto dieser E-Mail-Adresse anmelden erlaubt** ankreuzen und speichern.
+
+Beim ersten Microsoft-Login wird das Benutzerkonto fest mit diesem Microsoft-Konto verknüpft. In der Benutzerliste steht dann «Passwort + Microsoft». Häkchen entfernen oder E-Mail ändern löst die Verknüpfung wieder.
+
+### Nur noch Microsoft
+
+- **Pro Person:** Häkchen **Mit Benutzername und Passwort anmelden erlaubt** entfernen. Die Person kommt dann nur noch mit Microsoft hinein. Das eigene Konto lässt sich erst umstellen, wenn man sich einmal erfolgreich mit Microsoft angemeldet hat.
+- **Für alle:** in der `.env` `AUTH_PROVIDERS=microsoft` setzen und neu starten. Die Login-Seite zeigt dann nur noch den Microsoft-Knopf.
+
+Die Zwei-Faktor-Abfrage des Einsatzplaners gilt nur für das Passwort-Login. Bei Microsoft gilt die Anmeldesicherheit von Microsoft.
+
+### Alle 24 Monate: Schlüssel erneuern
+
+Der geheime Clientschlüssel bei Microsoft gilt höchstens 24 Monate. Läuft er ab, funktioniert **Mit Microsoft anmelden** nicht mehr. Ist `MS_SECRET_EXPIRES` gesetzt, zeigt das Cockpit allen Admins 30 Tage vorher eine Erinnerung.
+
+So wird der Schlüssel erneuert, am besten ein paar Tage vor dem Ablauf:
+
+1. Auf **entra.microsoft.com** anmelden, **Anwendungen › App-Registrierungen › KKB-Einsatzplaner** öffnen.
+2. **Zertifikate & Geheimnisse › Neuer geheimer Clientschlüssel**, Ablauf **24 Monate**, **Hinzufügen**.
+3. Sofort den **Wert** kopieren.
+4. In der `.env` auf dem Server `MS_CLIENT_SECRET` durch den neuen Wert ersetzen und `MS_SECRET_EXPIRES` auf das neue Ablaufdatum setzen.
+5. Den Einsatzplaner neu starten und einmal mit Microsoft anmelden, um es zu prüfen.
+6. Bei Microsoft den alten Schlüssel löschen (Papierkorb-Symbol in der Zeile).
+
+Die Freigaben und Verknüpfungen der Benutzer bleiben dabei erhalten.
+
+### Zurück zum Passwort-Login (Notausgang)
+
+In der `.env` `AUTH_PROVIDERS=local` setzen und neu starten. Der Microsoft-Knopf verschwindet, und das Passwort gilt wieder für alle, auch für Konten mit «nur Microsoft». Das hilft auch, wenn Microsoft einmal nicht erreichbar ist oder der Schlüssel abgelaufen ist.
+
+**Fehlermeldungen bei der Microsoft-Anmeldung:**
+
+| Meldung | Bedeutung |
+|---|---|
+| «Kein Zugang freigegeben» | Für diese E-Mail ist beim Benutzerkonto keine Microsoft-Anmeldung freigegeben, oder die E-Mail stimmt nicht genau. |
+| «Genehmigung erforderlich» (von Microsoft) | Die Organisation erlaubt die App nur mit Zustimmung eines Microsoft-Admins des Vereins. |
+| «Microsoft-Anmeldung fehlgeschlagen» | Meist ist der Schlüssel abgelaufen oder falsch eingetragen. Siehe «Schlüssel erneuern». |
+
+## 17 · Häufige Fragen
 
 **Brauchen die Mitglieder ein Konto oder eine App?**
 Nein. Sie öffnen das Formular auf der ClubDesk-Seite, geben Vor- und Nachnamen ein und wählen ihre Einsätze – auf jedem Handy und Computer.
