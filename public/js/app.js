@@ -18,7 +18,7 @@
       return;
     }
     const auto = t.closest('form[data-autosubmit]');
-    if (auto && (t.tagName === 'SELECT' || ['checkbox', 'date', 'radio'].includes(t.type))) auto.requestSubmit();
+    if (auto && (t.tagName === 'SELECT' || ['checkbox', 'date', 'radio'].includes(t.type))) liveFilter(auto, 0);
     if (t.matches('[data-select-all]')) {
       const name = t.getAttribute('data-select-all');
       const form = t.form;
@@ -57,6 +57,52 @@
       const res = t.form.querySelector('select[name=result]');
       if (res && ['nicht_erreicht', 'whatsapp'].includes(res.value)) res.value = t.value === 'whatsapp' ? 'whatsapp' : 'nicht_erreicht';
     }
+  });
+
+  // ---------- Suchen und Filtern ohne Enter ----------
+  // Suchfelder und Filter in GET-Formularen laden die Liste beim Tippen nach, ohne die Seite neu zu laden.
+  const isFilterForm = (form) => form && form.closest('#content') && !form.closest('.topbar') && (form.getAttribute('method') || 'get').toLowerCase() === 'get';
+  let filterTimer = null;
+  let filterSeq = 0;
+  function liveFilter(form, delay) {
+    clearTimeout(filterTimer);
+    filterTimer = setTimeout(() => loadFiltered(form), delay);
+  }
+  async function loadFiltered(form) {
+    const url = new URL(form.getAttribute('action') || location.pathname, location.href);
+    url.search = new URLSearchParams(new FormData(form)).toString();
+    const seq = ++filterSeq;
+    try {
+      const res = await fetch(url, { headers: { 'X-Live-Refresh': '1' }, credentials: 'same-origin' });
+      if (seq !== filterSeq) return;
+      if (!res.ok || res.redirected || new URL(res.url).pathname !== location.pathname) { location.href = url; return; }
+      const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
+      const next = doc.getElementById('content');
+      const cur = document.getElementById('content');
+      if (!next || !cur) { location.href = url; return; }
+      // Fokus und Eingabe im Suchfeld erhalten (es kann während des Ladens weitergetippt worden sein)
+      const active = document.activeElement;
+      const keep = active && active.name && cur.contains(active) ? { name: active.name, value: active.value, start: active.selectionStart, end: active.selectionEnd } : null;
+      $$('.flash', next).forEach((f) => f.remove());
+      cur.innerHTML = next.innerHTML;
+      history.replaceState(null, '', url.pathname + url.search);
+      if (keep) {
+        const el = $$('[name]', cur).find((e) => e.name === keep.name && e.closest('form') && isFilterForm(e.closest('form')));
+        if (el) {
+          if ('value' in el && el.type !== 'checkbox' && el.tagName !== 'SELECT') el.value = keep.value;
+          el.focus();
+          try { if (keep.start != null) el.setSelectionRange(keep.start, keep.end); } catch { /* nicht jedes Feld kann das */ }
+        }
+      }
+    } catch { location.href = url; }
+  }
+  document.addEventListener('input', (ev) => {
+    const t = ev.target;
+    if (t.tagName !== 'INPUT' || !['search', 'text'].includes(t.type)) return;
+    if (isFilterForm(t.form)) liveFilter(t.form, 300);
+  });
+  document.addEventListener('submit', (ev) => {
+    if (isFilterForm(ev.target) && !ev.defaultPrevented) { ev.preventDefault(); liveFilter(ev.target, 0); }
   });
 
   function updateSelected(form) {
