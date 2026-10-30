@@ -10,7 +10,7 @@ const persons = require('../services/persons');
 const { sendTable, wantsExport, contentDisposition } = require('../lib/export');
 const { flash } = require('../lib/view-helpers');
 const h = require('../lib/view-helpers');
-const { REG_STATUS, SOURCE, INQUIRY_STATUS, MATCH_TYPE, DIET } = require('../lib/labels');
+const { REG_STATUS, SOURCE, INQUIRY_STATUS, INQUIRY_ROW, MATCH_TYPE, DIET } = require('../lib/labels');
 const { ValidationError, ConflictError } = require('../services/errors');
 
 const router = express.Router();
@@ -33,7 +33,8 @@ function loadEvent(req, res, next) {
   res.locals.liveTopics = [`event:${e.id}`, 'events'];
   res.locals.tabCounts = {
     registrations: db.one("SELECT COUNT(*) AS n FROM registrations WHERE event_id = ? AND status <> 'ungueltig'", e.id).n,
-    inquiries: db.one('SELECT COUNT(*) AS n FROM inquiries WHERE event_id = ?', e.id).n,
+    // offene Nachfass-Fälle: nicht erreicht oder Antwort auf WhatsApp ausstehend
+    inquiries: events.stats(e).inquiryOpen,
   };
   next();
 }
@@ -193,7 +194,7 @@ router.get('/einsaetze/:id/anfragen', loadEvent, (req, res) => {
       { label: 'Nachname', value: (r) => r.last_name },
       { label: 'Mannschaft', value: (r) => r.teams || '' },
       { label: 'Mobil', value: (r) => r.mobile || '' },
-      { label: 'Anfrage', value: (r) => INQUIRY_STATUS[r.inquiry_status].label },
+      { label: 'Anfrage', value: (r) => (INQUIRY_ROW[r.state] || INQUIRY_STATUS[r.inquiry_status]).label },
       { label: 'Kontaktversuche', value: (r) => r.attempts.map((a) => `${inquiries.attemptLabel(a)} ${a.sent_by_name}${a.note ? ` (${a.note})` : ''}`).join('\n') },
     ], list);
   }
@@ -202,8 +203,12 @@ router.get('/einsaetze/:id/anfragen', loadEvent, (req, res) => {
 });
 
 router.post('/einsaetze/:id/anfragen/versuch', loadEvent, (req, res) => {
-  const r = inquiries.addAttempt(req.event.id, Number(req.body.person_id), req.body, req.user);
-  flash(res, 'success', r.registrationId && req.body.result === 'zugesagt' ? 'Kontaktversuch erfasst – Anmeldung erstellt.' : 'Kontaktversuch erfasst.');
+  // einzeln (person_id) oder für mehrere Ausgewählte auf einmal (person_ids)
+  const ids = [...new Set([].concat(req.body.person_ids || req.body.person_id || []).map(Number).filter(Boolean))];
+  if (!ids.length) throw new ValidationError(['Bitte zuerst Personen auswählen.']);
+  db.tx(() => { for (const pid of ids) inquiries.addAttempt(req.event.id, pid, req.body, req.user); });
+  const who = ids.length === 1 ? '' : ` für ${ids.length} Personen`;
+  flash(res, 'success', req.body.result === 'zugesagt' ? `Kontaktversuch${who} erfasst – Anmeldung erstellt.` : `Kontaktversuch${who} erfasst.`);
   res.redirect(/^\/(?!\/)/.test(String(req.body.back || '')) ? req.body.back : `/einsaetze/${req.event.id}/anfragen`);
 });
 
@@ -220,6 +225,12 @@ router.post('/anfragen/versuch', (req, res) => {
 router.post('/einsaetze/:id/anfragen/status', loadEvent, (req, res) => {
   inquiries.setStatus(req.event.id, Number(req.body.person_id), req.body.status, req.user);
   flash(res, 'success', 'Anfrage aktualisiert.');
+  res.redirect(`/einsaetze/${req.event.id}/anfragen`);
+});
+
+router.post('/einsaetze/:id/anfragen/versuch/:aid/loeschen', loadEvent, (req, res) => {
+  const r = inquiries.removeAttempt(req.event.id, Number(req.params.aid), req.user);
+  flash(res, 'success', r.regRemoved ? 'Kontaktversuch zurückgenommen – die daraus erstellte Anmeldung wurde gelöscht.' : 'Kontaktversuch zurückgenommen.');
   res.redirect(`/einsaetze/${req.event.id}/anfragen`);
 });
 

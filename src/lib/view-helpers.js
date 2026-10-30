@@ -19,8 +19,18 @@ function eventBadge(status) {
   return badge(s.label, s.tone);
 }
 
+// Link für WhatsApp (wa.me) aus einer Schweizer Mobilnummer, z. B. 079 123 45 67 -> 41791234567
+function waLink(mobile) {
+  let d = String(mobile || '').replace(/[^\d+]/g, '');
+  if (!d) return null;
+  if (d.startsWith('+')) d = d.slice(1);
+  else if (d.startsWith('00')) d = d.slice(2);
+  else if (d.startsWith('0')) d = `41${d.slice(1)}`;
+  return /^\d{8,15}$/.test(d) ? `https://wa.me/${d}` : null;
+}
+
 function inquiryBadge(status) {
-  const s = labels.INQUIRY_STATUS[status] || { label: status, tone: 'gray' };
+  const s = labels.INQUIRY_ROW[status] || labels.INQUIRY_STATUS[status] || { label: status, tone: 'gray' };
   return badge(s.label, s.tone);
 }
 
@@ -97,6 +107,6 @@ function navMiddleware(req, res, next) {
 }
 
 module.exports = {
-  ...dates, labels, escapeHtml, badge, regBadge, eventBadge, inquiryBadge, feedbackBadge, rank, initials, personName, withQuery, pct, nl2br,
+  ...dates, labels, escapeHtml, badge, regBadge, eventBadge, inquiryBadge, waLink, feedbackBadge, rank, initials, personName, withQuery, pct, nl2br,
   plural, flash, flashMiddleware, localsMiddleware, navMiddleware, icon: require('./icons').icon,
 };

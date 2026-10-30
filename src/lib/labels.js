@@ -41,6 +41,12 @@ const INQUIRY_STATUS = {
   whatsapp: { label: 'Per WhatsApp angefragt', tone: 'blue' },
 };
 
+// Zusätzliche Anzeige-Status im Reiter «Anfragen»
+const INQUIRY_ROW = {
+  vorgesehen: { label: 'Vorgesehen', tone: 'gray' },
+  angemeldet: { label: 'Selbst gemeldet', tone: 'green' },
+};
+
 // Ergebnis eines Kontaktversuchs -> Anfragestatus
 const ATTEMPT_RESULT = {
   nicht_erreicht: 'Nicht erreicht',
@@ -83,6 +89,6 @@ const SUBMISSION_STATUS = {
 };
 
 module.exports = {
-  EVENT_STATUS, REG_STATUS, REG_STATUS_MANUAL, REG_COUNTING, REG_ACTIVE, SOURCE, MATCH_TYPE, INQUIRY_STATUS,
+  EVENT_STATUS, REG_STATUS, REG_STATUS_MANUAL, REG_COUNTING, REG_ACTIVE, SOURCE, MATCH_TYPE, INQUIRY_STATUS, INQUIRY_ROW,
   ATTEMPT_RESULT, CHANNEL, FEEDBACK, PERSON_STATUS, DIET, ROLES, SUBMISSION_STATUS,
 };

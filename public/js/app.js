@@ -232,13 +232,34 @@
     set('event_id', btn.dataset.event);
     const who = dlg.querySelector('[data-who]');
     if (who) who.textContent = btn.dataset.who || '';
+    // Für mehrere Ausgewählte auf einmal erfassen
+    $$('input[data-bulk-id]', form).forEach((i) => i.remove());
+    if (btn.dataset.bulkDialog) {
+      const ids = $$(`input[type=checkbox][form="${btn.dataset.bulkDialog}"]:checked`).map((c) => c.value).filter((v) => v && v !== 'on');
+      if (!ids.length) { alert('Bitte zuerst Personen ankreuzen.'); return; }
+      set('person_id', '');
+      for (const id of ids) {
+        const i = document.createElement('input');
+        i.type = 'hidden'; i.name = 'person_ids'; i.value = id; i.dataset.bulkId = '1';
+        form.appendChild(i);
+      }
+      if (who) who.textContent = `${ids.length} Person${ids.length === 1 ? '' : 'en'}`;
+    }
+    // Datum und Uhrzeit auf jetzt setzen (die Seite kann schon länger offen sein)
+    const now = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    const d = form.querySelector('input[name=date]');
+    const tm = form.querySelector('input[name=time]');
+    if (d && tm) { d.value = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`; tm.value = `${pad(now.getHours())}:${pad(now.getMinutes())}`; }
+    const note = form.querySelector('input[name=note]');
+    if (note && form.matches('[data-attempt-form]')) note.value = '';
     if (btn.dataset.channel) {
       const radio = form.querySelector(`input[name=channel][value="${btn.dataset.channel}"]`);
       if (radio) { radio.checked = true; radio.dispatchEvent(new Event('change', { bubbles: true })); }
     }
     $$('details.menu[open]').forEach((d) => d.removeAttribute('open'));
     dlg.showModal();
-    const first = dlg.querySelector('select, textarea, input[type=text]');
+    const first = dlg.querySelector('select[name=result]') || dlg.querySelector('select, textarea, input[type=text]');
     if (first) first.focus();
   }
 

@@ -19,6 +19,15 @@ function attemptsFor(inquiryIds) {
   return map;
 }
 
+// Anzeige-Status einer Zeile im Reiter «Anfragen»:
+// «angemeldet» = hat sich inzwischen selbst gemeldet (Formular oder anders), «vorgesehen» = zur Anfrage vorgemerkt, noch kein Kontakt
+function rowState(r) {
+  if (r.reg_id && r.inquiry_status !== 'zugesagt') return 'angemeldet';
+  if (r.inquiry_status === 'offen' && r.inquiry_id && !r.attempts.length) return 'vorgesehen';
+  return r.inquiry_status;
+}
+const ROW_ORDER = { nicht_erreicht: 0, whatsapp: 0, vorgesehen: 1, offen: 2, zugesagt: 3, angemeldet: 4, abgesagt: 5 };
+
 /**
  * Reiter «Anfragen»: alle aktiven Personen ohne Anmeldung zu diesem Einsatz
  * plus alle Personen, die bereits angefragt wurden.
@@ -28,21 +37,31 @@ function listForEvent(eventId, { status = '', team = '', q = '' } = {}) {
     OR i.id IS NOT NULL`;
   const rows = db.all(`SELECT p.id AS person_id, p.first_name, p.last_name, p.mobile, p.email, r.short AS rank_short,
       (SELECT group_concat(t.name, ', ') FROM person_teams pt JOIN teams t ON t.id = pt.team_id WHERE pt.person_id = p.id) AS teams,
-      i.id AS inquiry_id, coalesce(i.status, 'offen') AS inquiry_status, i.registration_id, i.version AS inquiry_version
+      i.id AS inquiry_id, coalesce(i.status, 'offen') AS inquiry_status, i.registration_id, i.version AS inquiry_version,
+      g.id AS reg_id, g.status AS reg_status, g.source AS reg_source
     FROM persons p LEFT JOIN ranks r ON r.id = p.rank_id
     LEFT JOIN inquiries i ON i.person_id = p.id AND i.event_id = ?
+    LEFT JOIN registrations g ON g.id = (SELECT id FROM registrations WHERE event_id = ? AND person_id = p.id AND status <> 'ungueltig' ORDER BY id DESC LIMIT 1)
     WHERE ${where}
-    ORDER BY p.last_name COLLATE NOCASE, p.first_name COLLATE NOCASE`, eventId, eventId);
+    ORDER BY p.last_name COLLATE NOCASE, p.first_name COLLATE NOCASE`, eventId, eventId, eventId);
   let out = rows;
-  if (status) out = out.filter((r) => r.inquiry_status === status);
-  if (team) out = out.filter((r) => db.one('SELECT 1 FROM person_teams WHERE person_id = ? AND team_id = ?', r.person_id, Number(team)));
+  if (team) {
+    const inTeam = new Set(db.all('SELECT person_id FROM person_teams WHERE team_id = ?', Number(team)).map((x) => x.person_id));
+    out = out.filter((r) => inTeam.has(r.person_id));
+  }
   if (q) out = out.filter((r) => `${r.first_name} ${r.last_name}`.toLowerCase().includes(q.toLowerCase()));
   const attempts = attemptsFor(out.map((r) => r.inquiry_id).filter(Boolean));
-  for (const r of out) r.attempts = attempts.get(r.inquiry_id) || [];
-  // Abgesagte werden nicht mehr vorgeschlagen -> ans Ende
-  const order = { offen: 1, nicht_erreicht: 0, whatsapp: 0, zugesagt: 2, abgesagt: 3 };
-  out.sort((a, b) => (order[a.inquiry_status] ?? 1) - (order[b.inquiry_status] ?? 1));
-  return out;
+  for (const r of out) {
+    r.attempts = attempts.get(r.inquiry_id) || [];
+    r.state = rowState(r);
+  }
+  // Zähler für die Status-Chips (vor dem Statusfilter)
+  const counts = {};
+  for (const r of out) counts[r.state] = (counts[r.state] || 0) + 1;
+  const total = out.length;
+  if (status) out = out.filter((r) => r.state === status || (status === 'offen' && r.state === 'vorgesehen'));
+  out.sort((a, b) => (ROW_ORDER[a.state] ?? 2) - (ROW_ORDER[b.state] ?? 2));
+  return Object.assign(out, { counts, total });
 }
 
 function forPerson(personId) {
@@ -129,8 +148,41 @@ function setStatus(eventId, personId, status, user) {
   return { inquiryId: inq.id };
 }
 
+// Den letzten Kontaktversuch zurücknehmen (z. B. bei der falschen Person erfasst).
+// Hat er eine Anmeldung erzeugt, wird diese mitgelöscht.
+function removeAttempt(eventId, attemptId, user) {
+  const a = db.one(`SELECT a.*, i.event_id, i.person_id, i.registration_id FROM contact_attempts a JOIN inquiries i ON i.id = a.inquiry_id WHERE a.id = ?`, attemptId);
+  if (!a || a.event_id !== eventId) throw new ValidationError(['Kontaktversuch nicht gefunden.']);
+  const event = db.one('SELECT * FROM events WHERE id = ?', eventId);
+  if (event.status === 'abgeschlossen' && user.role !== 'admin') throw new ValidationError(['Der Einsatz ist abgeschlossen.']);
+  const last = db.one('SELECT id FROM contact_attempts WHERE inquiry_id = ? ORDER BY contacted_at DESC, id DESC LIMIT 1', a.inquiry_id);
+  if (last.id !== a.id) throw new ValidationError(['Nur der letzte Kontaktversuch lässt sich zurücknehmen.']);
+  const person = db.one('SELECT * FROM persons WHERE id = ?', a.person_id);
+  let regRemoved = false;
+  db.tx(() => {
+    if (a.result === 'zugesagt' && a.registration_id) {
+      const reg = db.one('SELECT * FROM registrations WHERE id = ?', a.registration_id);
+      if (reg && reg.source !== 'formular') { registrations.remove(reg.id, user); regRemoved = true; }
+    }
+    db.run('DELETE FROM contact_attempts WHERE id = ?', a.id);
+    const prev = db.one('SELECT * FROM contact_attempts WHERE inquiry_id = ? ORDER BY contacted_at DESC, id DESC LIMIT 1', a.inquiry_id);
+    let status = prev ? prev.result : 'offen';
+    if (status === 'whatsapp' && prev.channel === 'telefon') status = 'nicht_erreicht';
+    const inq = db.one('SELECT * FROM inquiries WHERE id = ?', a.inquiry_id);
+    db.run('UPDATE inquiries SET status = ?, registration_id = ?, version = version + 1, updated_at = ?, updated_by = ? WHERE id = ?',
+      status, status === 'zugesagt' ? inq.registration_id : (regRemoved ? null : inq.registration_id), nowIso(), user.id, a.inquiry_id);
+    audit.log({
+      entity: 'inquiry', entityId: a.inquiry_id, eventId, personId: a.person_id, action: 'attempt_delete',
+      summary: `${user.display_name} hat einen Kontaktversuch bei ${person.first_name} ${person.last_name} zurückgenommen (${CHANNEL[a.channel].label}, ${fmtLocal(a.contacted_at)})${regRemoved ? ' – Anmeldung gelöscht' : ''} · ${event.name}`,
+      details: { kanal: a.channel, ergebnis: a.result, notiz: a.note }, user,
+    });
+  });
+  live.notify(`event:${eventId}`, 'feedback', `person:${a.person_id}`);
+  return { regRemoved };
+}
+
 function attemptLabel(a) {
   return `${CHANNEL[a.channel].short} ${fmtLocal(a.contacted_at).slice(0, 6)} ${a.contacted_at.slice(11, 16)}`;
 }
 
-module.exports = { listForEvent, forPerson, plan, addAttempt, setStatus, attemptLabel };
+module.exports = { listForEvent, forPerson, plan, addAttempt, setStatus, removeAttempt, attemptLabel };

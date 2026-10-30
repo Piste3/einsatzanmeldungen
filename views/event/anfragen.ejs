@@ -1,43 +1,71 @@
-<% const base = `/einsaetze/${event.id}/anfragen`; const nowL = h.localNow(); %>
-<form class="filters" method="get" action="<%= base %>" data-autosubmit>
-  <select name="status"><option value="">Alle Anfragestatus</option><% for (const [k, v] of Object.entries(h.labels.INQUIRY_STATUS)) { %><option value="<%= k %>" <%= filters.status === k ? 'selected' : '' %>><%= v.label %></option><% } %></select>
-  <select name="team"><option value="">Alle Mannschaften</option><% for (const t of teams) { %><option value="<%= t.id %>" <%= Number(filters.team) === t.id ? 'selected' : '' %>><%= t.name %></option><% } %></select>
-  <input type="search" name="q" value="<%= filters.q %>" placeholder="Name filtern …">
-</form>
+<%
+  const base = `/einsaetze/${event.id}/anfragen`;
+  const locked = (event.status === 'abgeschlossen' && user.role !== 'admin') || event.status === 'abgesagt';
+  const chipOrder = ['nicht_erreicht', 'whatsapp', 'vorgesehen', 'offen', 'zugesagt', 'angemeldet', 'abgesagt'];
+  const label = (st) => h.labels.INQUIRY_ROW[st] || h.labels.INQUIRY_STATUS[st];
+  const resultText = { nicht_erreicht: 'nicht erreicht', whatsapp: 'gesendet', zugesagt: 'zugesagt', abgesagt: 'abgesagt' };
+%>
+<div class="row-between mb">
+  <div class="chips">
+    <a class="chip badge-gray <%= !filters.status ? 'active' : '' %>" href="<%= h.withQuery(base, { team: filters.team, q: filters.q }) %>">Alle · <%= list.total %></a>
+    <% for (const st of chipOrder) { if (!list.counts[st]) continue; const l = label(st); %>
+      <a class="chip badge-<%= l.tone %> <%= filters.status === st ? 'active' : '' %>" href="<%= h.withQuery(base, { status: st, team: filters.team, q: filters.q }) %>"><%= l.label %> · <%= list.counts[st] %></a>
+    <% } %>
+  </div>
+  <form class="filters" method="get" action="<%= base %>" data-autosubmit style="margin:0">
+    <input type="hidden" name="status" value="<%= filters.status %>">
+    <select name="team"><option value="">Alle Mannschaften</option><% for (const t of teams) { %><option value="<%= t.id %>" <%= Number(filters.team) === t.id ? 'selected' : '' %>><%= t.name %></option><% } %></select>
+    <input type="search" name="q" value="<%= filters.q %>" placeholder="Name filtern …">
+  </form>
+</div>
+<% if (locked) { %><div class="flash flash-info">Der Einsatz ist <%= h.labels.EVENT_STATUS[event.status].label.toLowerCase() %>. Anfragen lassen sich nur noch ansehen.</div><% } %>
 <div class="card">
-  <div class="card-head"><h2>Personen ohne Anmeldung <span class="hint">aktive Mitglieder, die sich noch nicht gemeldet haben, und alle bereits Angefragten</span></h2></div>
+  <div class="card-head"><h2>Nachfassen <span class="hint">aktive Mitglieder ohne Rückmeldung und alle bereits Angefragten. Wer sich inzwischen selbst gemeldet hat, steht als «Selbst gemeldet» am Schluss.</span></h2></div>
+  <% if (!locked) { %>
   <form method="post" action="<%= base %>/vorsehen" id="plan" class="bulkbar" data-bulk>
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <label class="check"><input type="checkbox" data-select-all="person_ids"> <span class="count" data-selected-count>0 ausgewählt</span></label>
-    <button class="btn btn-sm" type="submit">Zur Anfrage vorsehen</button>
+    <button class="btn btn-sm" type="button" data-open-dialog="attempt" data-bulk-dialog="plan" data-channel="whatsapp">Kontakt für Ausgewählte erfassen</button>
+    <button class="btn btn-sm btn-ghost" type="submit" title="Merkt die Personen vor, ohne einen Kontakt zu erfassen">Zur Anfrage vormerken</button>
   </form>
+  <% } %>
   <div class="table-wrap">
     <table>
-      <thead><tr><th class="check-col"></th><th>Person</th><th>Mobil</th><th>Anfrage</th><th>Kontaktversuche</th><th class="actions-col"></th></tr></thead>
+      <thead><tr><th class="check-col"></th><th>Person</th><th>Mobil</th><th>Status</th><th>Kontaktversuche</th><th class="actions-col"></th></tr></thead>
       <tbody>
-      <% if (!list.length) { %><tr><td colspan="6" class="empty">Alle aktiven Mitglieder haben sich gemeldet.</td></tr><% } %>
-      <% for (const r of list) { %>
-        <tr data-row-id="i<%= r.person_id %>-<%= r.attempts.length %>" class="<%= r.inquiry_status === 'whatsapp' ? 'highlight' : '' %>">
-          <td class="check-col"><input type="checkbox" name="person_ids" value="<%= r.person_id %>" form="plan" aria-label="Auswählen"></td>
+      <% if (!list.length) { %><tr><td colspan="6" class="empty"><%= list.total ? 'Keine Treffer für diesen Filter.' : 'Alle aktiven Mitglieder haben sich gemeldet.' %></td></tr><% } %>
+      <% for (const r of list) { const done = ['zugesagt', 'angemeldet'].includes(r.state); const wa = h.waLink(r.mobile); %>
+        <tr data-row-id="i<%= r.person_id %>-<%= r.attempts.length %>-<%= r.state %>" class="<%= r.state === 'whatsapp' ? 'highlight' : '' %> <%= done || r.state === 'abgesagt' ? 'row-muted' : '' %>">
+          <td class="check-col"><% if (!locked && !done) { %><input type="checkbox" name="person_ids" value="<%= r.person_id %>" form="plan" aria-label="Auswählen"><% } %></td>
           <td><%- h.rank(r.rank_short) %><a href="/personen/<%= r.person_id %>"><strong><%= r.first_name %> <%= r.last_name %></strong></a><% if (r.teams) { %><span class="sub"><%= r.teams %></span><% } %></td>
-          <td class="nowrap"><% if (r.mobile) { %><a class="link" href="tel:<%= r.mobile.replace(/\s/g, '') %>"><%= r.mobile %></a><% } else { %><span class="muted">–</span><% } %></td>
-          <td><%- h.inquiryBadge(r.inquiry_status) %></td>
+          <td class="nowrap">
+            <% if (r.mobile) { %>
+              <a class="link" href="tel:<%= r.mobile.replace(/\s/g, '') %>" title="Anrufen"><%= r.mobile %></a>
+              <% if (wa) { %><a class="icon-link" href="<%= wa %>" target="_blank" rel="noopener" title="WhatsApp-Chat öffnen"><%- h.icon('chat') %></a><% } %>
+            <% } else { %><span class="muted">–</span><% } %>
+          </td>
           <td>
-            <% if (!r.attempts.length) { %><span class="muted small">noch nicht kontaktiert</span><% } %>
+            <%- h.inquiryBadge(r.state) %>
+            <% if (r.state === 'angemeldet') { %><a class="cell-sub link" href="/einsaetze/<%= event.id %>/anmeldungen?q=<%= encodeURIComponent(r.last_name) %>"><%= h.labels.REG_STATUS[r.reg_status].short %> · <%= h.labels.SOURCE[r.reg_source] %></a><% } %>
+            <% if (r.state === 'zugesagt' && r.registration_id) { %><a class="cell-sub link" href="/einsaetze/<%= event.id %>/anmeldungen?q=<%= encodeURIComponent(r.last_name) %>">→ Anmeldung erstellt</a><% } %>
+          </td>
+          <td>
+            <% if (!r.attempts.length) { %><span class="muted small"><%= r.state === 'vorgesehen' ? 'vorgemerkt, noch nicht kontaktiert' : 'noch nicht kontaktiert' %></span><% } %>
             <div class="attempts">
-              <% for (const a of r.attempts) { %>
-                <div class="attempt"><span class="ch <%= a.channel === 'whatsapp' ? 'wa' : '' %>"><%= h.labels.CHANNEL[a.channel].short %></span><%= h.fmtDateShort(a.contacted_at.slice(0, 10)) %> <%= a.contacted_at.slice(11, 16) %> · <%= a.sent_by_name %> · <%= { nicht_erreicht: 'nicht erreicht', whatsapp: 'gesendet', zugesagt: 'zugesagt', abgesagt: 'abgesagt' }[a.result] %><%= a.note ? ` · «${a.note}»` : '' %></div>
-              <% } %>
-              <% if (r.inquiry_status === 'zugesagt' && r.registration_id) { %><span class="cell-sub">→ Anmeldung erstellt</span><% } %>
+              <% r.attempts.forEach((a, idx) => { const isLast = idx === r.attempts.length - 1; %>
+                <div class="attempt"><span class="ch <%= a.channel === 'whatsapp' ? 'wa' : '' %>"><%= h.labels.CHANNEL[a.channel].short %></span><%= h.fmtDateShort(a.contacted_at.slice(0, 10)) %> <%= a.contacted_at.slice(11, 16) %> · <%= a.sent_by_name %> · <%= resultText[a.result] %><%= a.note ? ` · «${a.note}»` : '' %>
+                  <% if (isLast && !locked) { %><form method="post" action="<%= base %>/versuch/<%= a.id %>/loeschen" class="inline" data-confirm="<%= a.result === 'zugesagt' && r.registration_id ? 'Diesen Kontaktversuch zurücknehmen? Die daraus erstellte Anmeldung wird ebenfalls gelöscht.' : 'Diesen Kontaktversuch zurücknehmen?' %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="icon-btn" type="submit" title="Zurücknehmen (falsch erfasst)"><%- h.icon('undo') %></button></form><% } %>
+                </div>
+              <% }) %>
             </div>
           </td>
           <td class="actions-col right nowrap">
-            <% if (r.inquiry_status === 'whatsapp') { %>
-              <form method="post" action="<%= base %>/status" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="person_id" value="<%= r.person_id %>"><input type="hidden" name="status" value="zugesagt"><button class="btn btn-xs" type="submit">Zugesagt</button></form>
-              <form method="post" action="<%= base %>/status" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="person_id" value="<%= r.person_id %>"><input type="hidden" name="status" value="abgesagt"><button class="btn btn-xs" type="submit">Abgesagt</button></form>
-            <% } %>
-            <% if (r.inquiry_status !== 'zugesagt') { %>
-              <button class="btn btn-sm" type="button" data-open-dialog="attempt" data-person="<%= r.person_id %>" data-who="<%= `${r.rank_short ? r.rank_short + ' ' : ''}${r.first_name} ${r.last_name}` %>" data-channel="<%= r.inquiry_status === 'nicht_erreicht' ? 'whatsapp' : 'telefon' %>">Erfassen</button>
+            <% if (!locked && !done) { %>
+              <% if (['whatsapp', 'nicht_erreicht'].includes(r.state)) { %>
+                <form method="post" action="<%= base %>/status" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="person_id" value="<%= r.person_id %>"><input type="hidden" name="status" value="zugesagt"><button class="btn btn-xs" type="submit" title="Antwort ist gekommen: kommt">Zugesagt</button></form>
+                <form method="post" action="<%= base %>/status" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="person_id" value="<%= r.person_id %>"><input type="hidden" name="status" value="abgesagt"><button class="btn btn-xs" type="submit" title="Antwort ist gekommen: kommt nicht">Abgesagt</button></form>
+              <% } %>
+              <button class="btn btn-sm" type="button" data-open-dialog="attempt" data-person="<%= r.person_id %>" data-who="<%= `${r.rank_short ? r.rank_short + ' ' : ''}${r.first_name} ${r.last_name}` %>" data-channel="<%= ['nicht_erreicht', 'whatsapp'].includes(r.state) ? 'whatsapp' : 'telefon' %>">Erfassen</button>
             <% } %>
           </td>
         </tr>
@@ -46,4 +74,4 @@
     </table>
   </div>
 </div>
-<%- include('../partials/attempt-dialog', { action: `${base}/versuch`, back: base }) %>
+<%- include('../partials/attempt-dialog', { action: `${base}/versuch`, back: h.withQuery(base, query, {}) }) %>

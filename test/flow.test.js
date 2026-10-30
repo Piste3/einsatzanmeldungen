@@ -126,3 +126,28 @@ test('Anmeldung löschen setzt zurück, als wäre nichts eingegangen', () => {
   // Eine neue Anmeldung derselben Person ist wieder möglich
   assert.ok(registrations.create({ eventId: offen, personId: anna, matchType: 'auto', source: 'manuell', wishes: [], user: system }));
 });
+
+test('Anfragen: Selbst gemeldet, Sammelerfassung und Zurücknehmen', () => {
+  const { anna, offen } = setup();
+  const inquiries = require('../src/services/inquiries');
+  const user = db.one('SELECT * FROM users WHERE id = ?', system.id) || system;
+  inquiries.addAttempt(offen, anna, { channel: 'telefon', result: 'nicht_erreicht' }, user);
+  assert.equal(events.stats(events.get(offen)).inquiryOpen, 1);
+  // meldet sich danach selbst über das Formular
+  registrations.create({ eventId: offen, personId: anna, enteredFirst: 'Anna', enteredLast: 'Roth', matchType: 'auto', source: 'formular', answer: 'ja', user });
+  const row = inquiries.listForEvent(offen).find((r) => r.person_id === anna);
+  assert.equal(row.state, 'angemeldet');
+  assert.equal(events.stats(events.get(offen)).inquiryOpen, 0);
+
+  // Zusage per Telefon erstellt Anmeldung, Zurücknehmen löscht sie wieder
+  const chris = db.one("SELECT id FROM persons WHERE first_name = 'Christian'").id;
+  inquiries.addAttempt(offen, chris, { channel: 'whatsapp', result: 'whatsapp' }, user);
+  const r = inquiries.addAttempt(offen, chris, { channel: 'whatsapp', result: 'zugesagt' }, user);
+  assert.ok(r.registrationId);
+  const last = db.one('SELECT id FROM contact_attempts ORDER BY id DESC LIMIT 1').id;
+  const first = db.one('SELECT a.id FROM contact_attempts a JOIN inquiries i ON i.id = a.inquiry_id WHERE i.person_id = ? ORDER BY a.id LIMIT 1', chris).id;
+  assert.throws(() => inquiries.removeAttempt(offen, first, user), /letzte/);
+  assert.equal(inquiries.removeAttempt(offen, last, user).regRemoved, true);
+  assert.equal(db.one('SELECT COUNT(*) AS n FROM registrations WHERE id = ?', r.registrationId).n, 0);
+  assert.equal(db.one('SELECT status FROM inquiries WHERE event_id = ? AND person_id = ?', offen, chris).status, 'whatsapp');
+});
