@@ -1,0 +1,18 @@
+<%- include('../partials/head') %>
+<%- include('../partials/topbar', {
+  crumbs: [['Handbuch']], heading: 'Handbuch',
+  actions: '<button class="btn" type="button" data-print>Drucken / als PDF</button>', showSearch: false,
+}) %>
+<div class="subline mb">Stand <%= h.fmtDate(doc.date.toISOString().slice(0, 10)) %><%= doc.commit ? ` · Version ${doc.commit}` : '' %> · wird mit jedem Update automatisch aktualisiert</div>
+<div class="handbook">
+  <% if (doc.toc.length > 2) { %>
+  <nav class="card handbook-toc no-print">
+    <div class="card-head"><h2>Inhalt</h2></div>
+    <div class="card-body">
+      <% for (const t of doc.toc.filter((x) => x.depth === 2)) { %><a href="#<%= t.id %>"><%= t.text %></a><% } %>
+    </div>
+  </nav>
+  <% } %>
+  <article class="card handbook-body"><div class="card-body prose"><%- doc.html %></div></article>
+</div>
+<%- include('../partials/foot') %>

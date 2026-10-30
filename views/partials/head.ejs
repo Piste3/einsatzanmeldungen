@@ -36,6 +36,7 @@
       <% } else { %>
         <a href="/forms/anmeldung?vorschau=1" target="_blank" rel="noopener"><%- h.icon('eye', 'nav-icon') %>Formular-Vorschau</a>
       <% } %>
+      <a href="/handbuch" class="<%= path.startsWith('/handbuch') ? 'active' : '' %>"><%- h.icon('book', 'nav-icon') %>Handbuch</a>
     </nav>
     <div class="sidebar-user">
       <a href="/konto/passwort" class="row" title="Konto: Passwort und Zwei-Faktor">

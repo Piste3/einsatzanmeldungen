@@ -70,6 +70,7 @@ function createApp() {
   app.use(require('./routes/feedback'));
   app.use(require('./routes/persons'));
   app.use(require('./routes/forms'));
+  app.use(require('./routes/handbook'));
   app.use(require('./routes/admin'));
 
   app.use((req, res) => res.status(404).render('pages/error', { title: 'Nicht gefunden', message: 'Diese Seite gibt es nicht.' }));

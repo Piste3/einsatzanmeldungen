@@ -510,3 +510,25 @@ tr.changed td:first-child { box-shadow: inset 3px 0 0 var(--orange, #e8742a); }
 .theme-toggle { background: none; border: 0; color: var(--navy-text); cursor: pointer; padding: 4px; border-radius: 6px; display: inline-flex; text-decoration: none !important; }
 .theme-toggle:hover { color: #fff; background: var(--navy-2); }
 .theme-toggle svg { width: 16px; height: 16px; }
+
+/* Handbuch */
+.handbook { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 16px; align-items: start; }
+.handbook-toc { position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow: auto; }
+.handbook-toc a { display: block; padding: 5px 0; font-size: 13px; color: var(--text-2); }
+.handbook-toc a:hover { color: var(--orange); }
+.prose { font-size: 14.5px; line-height: 1.6; max-width: 860px; }
+.prose h1 { font-size: 24px; margin: 0 0 12px; }
+.prose h2 { font-size: 19px; margin: 32px 0 10px; padding-top: 14px; border-top: 1px solid var(--border); scroll-margin-top: 16px; }
+.prose h3 { font-size: 15.5px; margin: 22px 0 8px; scroll-margin-top: 16px; }
+.prose p, .prose ul, .prose ol { margin: 0 0 12px; }
+.prose li { margin: 3px 0; }
+.prose a { color: var(--blue); text-decoration: underline; }
+.prose code { background: var(--gray-bg); padding: 1px 5px; border-radius: 4px; font-size: 12.5px; }
+.prose blockquote { margin: 14px 0; padding: 10px 14px; border-left: 3px solid var(--orange); background: var(--orange-soft); border-radius: 0 8px 8px 0; }
+.prose blockquote p:last-child { margin: 0; }
+.prose table { margin: 10px 0 16px; border: 1px solid var(--border); border-radius: 8px; }
+.prose figure { margin: 14px 0 18px; }
+.prose img { max-width: 100%; border: 1px solid var(--border); border-radius: 8px; display: block; }
+.prose figcaption { font-size: 12px; color: var(--muted); margin-top: 6px; }
+@media (max-width: 900px) { .handbook { grid-template-columns: 1fr; } .handbook-toc { position: static; } }
+@media print { .handbook { display: block; } .prose img { break-inside: avoid; } }
