@@ -148,6 +148,17 @@ function exportIcs(eventId, { scope = 'event', shiftId = null } = {}, user) {
 }
 
 // Anmeldebestätigung nach dem Bestätigen (sofern E-Mail hinterlegt)
+// Betreff und Text der Anmeldebestätigung für eine Person und ihre zugeteilten Schichten
+function renderConfirmation(event, assigned, person, user, conf = settings.get('confirmation')) {
+  const shift = assigned.length === 1 ? assigned[0] : null;
+  const { values } = context(event, shift, user, {
+    'person.vorname': person.first_name,
+    'person.nachname': person.last_name,
+  });
+  if (assigned.length > 1) values['schicht.name'] = assigned.map((s) => s.name).join(', ');
+  return { subject: cleanTitle(render(conf.subject, values)), body: render(conf.body, values, { omitEmptyLines: true }) };
+}
+
 async function sendConfirmation(registrationId, user) {
   const conf = settings.get('confirmation');
   if (!conf.enabled) return { skipped: 'deaktiviert' };
@@ -155,17 +166,10 @@ async function sendConfirmation(registrationId, user) {
   if (!reg || !reg.email) return { skipped: 'keine E-Mail' };
   const event = events.get(reg.event_id);
   const assigned = db.all('SELECT s.* FROM shift_assignments a JOIN shifts s ON s.id = a.shift_id WHERE a.registration_id = ? ORDER BY s.sort, s.starts_at', registrationId);
-  const shift = assigned.length === 1 ? assigned[0] : null;
-  const { values } = context(event, shift, user, {
-    'person.vorname': reg.first_name,
-    'person.nachname': reg.last_name,
-  });
-  if (assigned.length > 1) values['schicht.name'] = assigned.map((s) => s.name).join(', ');
-  const subject = cleanTitle(render(conf.subject, values));
-  const body = render(conf.body, values, { omitEmptyLines: true });
+  const { subject, body } = renderConfirmation(event, assigned, reg, user, conf);
   const result = await mailer.send({ to: reg.email, subject, body, registrationId });
   db.run('UPDATE registrations SET confirmation_sent_at = ? WHERE id = ?', nowIso(), registrationId);
   return result;
 }
 
-module.exports = { blockGroups, context, renderEntry, exportIcs, sendConfirmation, participants, cleanTitle };
+module.exports = { blockGroups, context, renderEntry, exportIcs, sendConfirmation, renderConfirmation, participants, cleanTitle };

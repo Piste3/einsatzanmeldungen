@@ -24,14 +24,8 @@
       </div>
     </div>
     <div class="card">
-      <div class="card-head"><h2>Automatische Anmeldebestätigung</h2>
-        <label class="check"><input type="checkbox" name="confirmation_enabled" value="1" <%= s.confirmation.enabled ? 'checked' : '' %>> nach dem Bestätigen per E-Mail senden</label></div>
-      <div class="card-body">
-        <% if (!smtp) { %><div class="callout warn mb">Es ist kein Mailserver (SMTP) konfiguriert. Bestätigungen werden im Postausgang unter «Formulare» abgelegt, aber nicht versendet. Siehe README (SMTP_HOST usw.).</div><% } %>
-        <div class="field"><label for="confirmation_subject">Betreff</label><input id="confirmation_subject" type="text" name="confirmation_subject" value="<%= s.confirmation.subject %>"></div>
-        <div class="field"><label for="confirmation_body">Text</label><textarea id="confirmation_body" name="confirmation_body" rows="14"><%= s.confirmation.body %></textarea>
-          <div class="field-hint">Bausteine wie beim Kalendertermin, zusätzlich {{person.vorname}} und {{person.nachname}}.</div></div>
-      </div>
+      <div class="card-head"><h2>Automatische Anmeldebestätigung</h2></div>
+      <div class="card-body small">Betreff, Text und Versand der Bestätigungsmail bearbeitest du unter <a href="/verwaltung/bestaetigungsmail">Bestätigungsmail</a>.</div>
     </div>
     <div><button class="btn btn-primary" type="submit">Einstellungen speichern</button></div>
   </div>

@@ -176,7 +176,6 @@ router.post('/verwaltung/einstellungen', (req, res) => {
   settings.set('aufgebot_email', email);
   settings.set('email_domain', String(b.email_domain || '').trim());
   settings.set('form', { title: String(b.form_title || '').trim() || 'Einsatzanmeldung', intro: String(b.form_intro || '').trim(), min_seconds: Math.max(0, Number(b.form_min_seconds) || 0) });
-  settings.set('confirmation', { enabled: b.confirmation_enabled === '1', subject: String(b.confirmation_subject || ''), body: String(b.confirmation_body || '') });
   audit.log({ entity: 'settings', action: 'settings', summary: `${req.user.display_name} hat die Einstellungen geändert`, user: req.user });
   flash(res, 'success', 'Einstellungen gespeichert.');
   res.redirect('/verwaltung/einstellungen');
@@ -225,6 +224,55 @@ router.post('/verwaltung/kalendertermin', (req, res) => {
   audit.log({ entity: 'settings', action: 'calendar', summary: `${req.user.display_name} hat die Vorlage für den Kalendertermin geändert`, user: req.user });
   flash(res, 'success', 'Vorlage gespeichert.');
   res.redirect(`/verwaltung/kalendertermin${b.einsatz ? `?einsatz=${Number(b.einsatz)}` : ''}`);
+});
+
+// ---- Bestätigungsmail ----
+function confirmationPage(req, res, conf, extra = {}) {
+  const e = previewEvent(req.body?.einsatz || req.query.einsatz);
+  let preview = null;
+  if (e) {
+    // Vorschau mit einer echten bestätigten Anmeldung, sonst mit Beispielnamen
+    const reg = db.one(`SELECT g.id, p.first_name, p.last_name, p.email FROM registrations g JOIN persons p ON p.id = g.person_id
+      WHERE g.event_id = ? AND g.status = 'bestaetigt' ORDER BY p.last_name LIMIT 1`, e.id);
+    const person = reg || { first_name: 'Vorname', last_name: 'Nachname' };
+    const assigned = reg
+      ? db.all('SELECT s.* FROM shift_assignments a JOIN shifts s ON s.id = a.shift_id WHERE a.registration_id = ? ORDER BY s.sort, s.starts_at', reg.id)
+      : e.shifts.slice(0, 1);
+    preview = { ...calendar.renderConfirmation(e, assigned, person, req.user, conf), to: reg?.email || null, person };
+  }
+  const groups = [...calendar.blockGroups()];
+  groups.splice(1, 0, { name: 'Person', items: [['person.vorname', 'Vorname'], ['person.nachname', 'Nachname']] });
+  res.render('admin/confirmation', {
+    title: 'Bestätigungsmail', conf, groups, preview, previewEvent: e, smtp: mailer.isConfigured(),
+    testTo: req.body?.test_to || req.user.email || '',
+    eventOptions: db.all('SELECT id, name, date FROM events ORDER BY date DESC LIMIT 50'), ...extra,
+  });
+}
+
+router.get('/verwaltung/bestaetigungsmail', (req, res) => confirmationPage(req, res, settings.get('confirmation')));
+
+router.post('/verwaltung/bestaetigungsmail', async (req, res, next) => {
+  try {
+    const b = req.body;
+    const conf = { enabled: b.enabled === '1', subject: String(b.subject || ''), body: String(b.body || '') };
+    if (b.action === 'preview' || b.preview === '1') return confirmationPage(req, res, conf, { unsaved: true });
+    if (b.action === 'test') {
+      const to = String(b.test_to || '').trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) throw new ValidationError(['Bitte eine gültige E-Mail-Adresse für die Testmail angeben.']);
+      const e = previewEvent(b.einsatz);
+      if (!e) throw new ValidationError(['Für die Testmail braucht es mindestens einen Einsatz.']);
+      const { subject, body } = calendar.renderConfirmation(e, e.shifts.slice(0, 1), { first_name: 'Vorname', last_name: 'Nachname' }, req.user, conf);
+      const r = await mailer.send({ to, subject: `[Test] ${subject}`, body });
+      const msg = r.sent ? `Testmail an ${to} verschickt.`
+        : r.error ? `Testmail konnte nicht verschickt werden: ${r.error}`
+          : 'Es ist kein Mailserver (SMTP) eingerichtet – die Testmail liegt nur im Postausgang.';
+      return confirmationPage(req, res, conf, { unsaved: true, testResult: { ok: !!r.sent, msg } });
+    }
+    settings.set('confirmation', conf);
+    audit.log({ entity: 'settings', action: 'confirmation', summary: `${req.user.display_name} hat die Bestätigungsmail geändert`, user: req.user });
+    flash(res, 'success', 'Bestätigungsmail gespeichert.');
+    res.redirect(`/verwaltung/bestaetigungsmail${b.einsatz ? `?einsatz=${Number(b.einsatz)}` : ''}`);
+  } catch (err) { next(err); }
 });
 
 // Kleine Vorschau-API für Textfelder (Bestätigungsmail)

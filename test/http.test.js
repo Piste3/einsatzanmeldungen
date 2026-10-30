@@ -92,3 +92,21 @@ test('Blockier-Meldungen des Browsers werden angenommen', async () => {
   assert.equal(r.status, 204);
   assert.match((await get('/forms/anmeldung')).headers.get('content-security-policy'), /report-uri \/forms\/csp-bericht/);
 });
+
+test('Bestätigungsmail: Seite, Vorschau und Speichern (nur Admin)', async () => {
+  const settings = require('../src/services/settings');
+  const admin = await login('admin', 'Chef-Passwort-2026');
+  const page = await get('/verwaltung/bestaetigungsmail', admin.cookie);
+  assert.equal(page.status, 200);
+  const csrf = (await page.text()).match(/name="_csrf" value="([^"]+)"/)[1];
+  const post = (action) => fetch(`${base}/verwaltung/bestaetigungsmail`, {
+    method: 'POST', redirect: 'manual', headers: { cookie: admin.cookie, 'content-type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ _csrf: csrf, enabled: '1', subject: 'Bestätigt: {{einsatz.name}}', body: 'Hallo {{person.vorname}}', action }),
+  });
+  assert.equal((await post('preview')).status, 200);
+  assert.notEqual(settings.get('confirmation').subject, 'Bestätigt: {{einsatz.name}}');
+  assert.equal((await post('save')).status, 302);
+  assert.equal(settings.get('confirmation').subject, 'Bestätigt: {{einsatz.name}}');
+  const lena = await login('lena', 'Aufgebot-2026-x');
+  assert.notEqual((await get('/verwaltung/bestaetigungsmail', lena.cookie)).status, 200);
+});
