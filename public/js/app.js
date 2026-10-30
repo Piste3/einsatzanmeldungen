@@ -102,6 +102,37 @@
     $$('details.menu[open]').forEach((d) => { if (!d.contains(t)) d.removeAttribute('open'); });
   });
 
+  // Menüs als Overlay platzieren, damit Tabellen mit Scrollbereich sie nicht abschneiden.
+  // Reicht der Platz unten nicht, öffnet sich das Menü nach oben.
+  function placeMenu(d) {
+    const list = d.querySelector('.menu-list');
+    if (!list) return;
+    const r = d.querySelector('summary').getBoundingClientRect();
+    list.style.position = 'fixed';
+    list.style.right = 'auto';
+    list.style.bottom = 'auto';
+    list.style.maxHeight = '';
+    const h = list.offsetHeight;
+    const w = list.offsetWidth;
+    const below = window.innerHeight - r.bottom - 8;
+    const above = r.top - 8;
+    let top = r.bottom + 4;
+    if (h > below && above > below) top = Math.max(8, r.top - 4 - h);
+    const room = top >= r.bottom ? below : above;
+    if (h > room) list.style.maxHeight = `${room}px`;
+    list.style.top = `${top}px`;
+    list.style.left = `${Math.max(8, Math.min(r.right - w, window.innerWidth - w - 8))}px`;
+  }
+  document.addEventListener('toggle', (ev) => {
+    const d = ev.target;
+    if (d.matches && d.matches('details.menu') && d.open) placeMenu(d);
+  }, true);
+  const closeMenus = () => $$('details.menu[open]').forEach((d) => d.removeAttribute('open'));
+  window.addEventListener('resize', closeMenus);
+  document.addEventListener('scroll', (ev) => {
+    if (!ev.target.closest || !ev.target.closest('.menu-list')) closeMenus();
+  }, true);
+
   document.addEventListener('focusin', (ev) => {
     if (ev.target.matches('[data-token-target]')) lastTokenTarget = ev.target;
     if (ev.target.matches('[data-select-on-focus]')) ev.target.select();
