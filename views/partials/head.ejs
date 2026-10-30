@@ -17,23 +17,23 @@
     </a>
     <%
       const navItems = [
-        ['/', 'Cockpit', p => p === '/'],
-        ['/einsaetze', 'Einsätze', p => p.startsWith('/einsaetze')],
-        ['/rueckmeldungen', 'Rückmeldungen', p => p.startsWith('/rueckmeldungen')],
-        ['/klaerungen', 'Klärungen', p => p.startsWith('/klaerungen'), nav.klaerungen],
-        ['/personen', 'Personen', p => p.startsWith('/personen')],
+        ['/', 'Cockpit', p => p === '/', 0, 'cockpit'],
+        ['/einsaetze', 'Einsätze', p => p.startsWith('/einsaetze'), 0, 'calendar'],
+        ['/rueckmeldungen', 'Rückmeldungen', p => p.startsWith('/rueckmeldungen'), 0, 'inbox'],
+        ['/klaerungen', 'Klärungen', p => p.startsWith('/klaerungen'), nav.klaerungen, 'help'],
+        ['/personen', 'Personen', p => p.startsWith('/personen'), 0, 'users'],
       ];
     %>
     <nav class="nav">
-      <% for (const [href, label, active, count] of navItems) { %>
-        <a href="<%= href %>" class="<%= active(path) ? 'active' : '' %>"><span class="nav-icon"></span><%= label %><% if (count) { %><span class="count" data-nav-count="klaerungen"><%= count %></span><% } %></a>
+      <% for (const [href, label, active, count, ico] of navItems) { %>
+        <a href="<%= href %>" class="<%= active(path) ? 'active' : '' %>"><%- h.icon(ico, 'nav-icon') %><%= label %><% if (count) { %><span class="count" data-nav-count="klaerungen"><%= count %></span><% } %></a>
       <% } %>
       <div class="nav-sep"></div>
       <% if (isAdmin) { %>
-        <a href="/formulare" class="<%= path.startsWith('/formulare') ? 'active' : '' %>"><span class="nav-icon"></span>Formulare<% if (nav.formErrors) { %><span class="count red"><%= nav.formErrors %></span><% } %></a>
-        <a href="/verwaltung" class="<%= path.startsWith('/verwaltung') ? 'active' : '' %>"><span class="nav-icon"></span>Einstellungen</a>
+        <a href="/formulare" class="<%= path.startsWith('/formulare') ? 'active' : '' %>"><%- h.icon('forms', 'nav-icon') %>Formulare<% if (nav.formErrors) { %><span class="count red"><%= nav.formErrors %></span><% } %></a>
+        <a href="/verwaltung" class="<%= path.startsWith('/verwaltung') ? 'active' : '' %>"><%- h.icon('settings', 'nav-icon') %>Einstellungen</a>
       <% } else { %>
-        <a href="/forms/anmeldung?vorschau=1" target="_blank" rel="noopener"><span class="nav-icon"></span>Formular-Vorschau</a>
+        <a href="/forms/anmeldung?vorschau=1" target="_blank" rel="noopener"><%- h.icon('eye', 'nav-icon') %>Formular-Vorschau</a>
       <% } %>
     </nav>
     <div class="sidebar-user">

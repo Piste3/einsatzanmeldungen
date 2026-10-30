@@ -64,7 +64,8 @@ small, .small { font-size: 12px; }
 .nav a { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; color: var(--navy-text); font-size: 13.5px; }
 .nav a:hover { background: var(--navy-2); color: #fff; }
 .nav a.active { background: var(--navy-3); color: #fff; font-weight: 600; }
-.nav-icon { width: 15px; height: 15px; border: 1.6px solid currentColor; border-radius: 4px; opacity: 0.85; flex-shrink: 0; }
+.nav-icon { width: 17px; height: 17px; opacity: 0.85; flex-shrink: 0; }
+.nav a.active .nav-icon { opacity: 1; }
 .nav .count { margin-left: auto; background: var(--orange); color: #fff; font-size: 11px; font-weight: 700; border-radius: 9px; min-width: 18px; height: 18px; display: grid; place-items: center; padding: 0 5px; }
 .nav .count.red { background: var(--red); }
 .nav-sep { height: 1px; background: var(--navy-3); margin: 10px 8px; }

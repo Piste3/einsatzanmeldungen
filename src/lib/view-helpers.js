@@ -98,5 +98,5 @@ function navMiddleware(req, res, next) {
 
 module.exports = {
   ...dates, labels, escapeHtml, badge, regBadge, eventBadge, inquiryBadge, feedbackBadge, rank, initials, personName, withQuery, pct, nl2br,
-  plural, flash, flashMiddleware, localsMiddleware, navMiddleware,
+  plural, flash, flashMiddleware, localsMiddleware, navMiddleware, icon: require('./icons').icon,
 };

@@ -7,7 +7,7 @@
   // Leerer Abtretensort = gleich wie Antreten
   const endPlace = e.end_place || e.start_place;
   const abtreten = (e.end_time || endPlace) ? join('Abtreten', e.end_time, endPlace) : '';
-  const meta = [antreten, abtreten, e.tenue ? `Tenue ${e.tenue.split('\n')[0]}` : ''].filter(Boolean);
+  const meta = [['antreten', antreten], ['abtreten', abtreten], ['tenue', e.tenue ? `Tenue ${e.tenue.split('\n')[0]}` : '']].filter(([, t]) => t);
 %>
 <fieldset class="ev-block<%= (ans || chosen.length) ? ' answered' : '' %>" data-event-block>
   <input type="hidden" name="event_ids" value="<%= e.id %>" <%= disabled ? 'disabled' : '' %>>
@@ -15,7 +15,7 @@
     <legend class="ev-name"><%= e.name %></legend>
     <span class="date-pill"><%= h.weekdayShort(e.date) %> <%= h.fmtDateShort(e.date) %></span>
   </div>
-  <% for (const line of meta) { %><div class="ev-meta"><%= line %></div><% } %>
+  <% for (const [ico, line] of meta) { %><div class="ev-meta"><%- h.icon(ico, 'ev-icon') %><span><%= line %></span></div><% } %>
   <% if (e.description) { %><div class="ev-desc"><%= e.description %></div><% } %>
   <div class="ev-question"><%= questionFor(e) %></div>
   <% if (e.help_text) { %><div class="ev-help"><%= e.help_text %></div><% } %>
