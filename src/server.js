@@ -28,7 +28,7 @@ if (users.count() === 0) {
 
 server.listen(config.port, config.host, () => {
   console.log(`KKB-Einsatzplaner läuft auf ${config.baseUrl} (Port ${config.port})`);
-  console.log(`Anmeldeformular: ${config.baseUrl}/forms/anmeldung`);
+  console.log(`Anmeldeformular: ${config.baseUrl}/forms/anmeldung (einbettbar auf: ${config.formFrameAncestors})`);
 });
 jobs.start();
 

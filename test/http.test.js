@@ -79,6 +79,7 @@ test('Konto wird nach 5 Fehlversuchen gesperrt', async () => {
 test('Formular darf nur in erlaubte Seiten eingebettet werden', async () => {
   const r = await get('/forms/anmeldung');
   assert.match(r.headers.get('content-security-policy'), /frame-ancestors 'self' https:\/\/\*\.clubdesk\.com/);
+  assert.equal(r.headers.get('x-frame-options'), null);
   const app = await get('/login');
   assert.match(app.headers.get('content-security-policy') || app.headers.get('x-frame-options') || '', /frame-ancestors 'none'|DENY/i);
 });

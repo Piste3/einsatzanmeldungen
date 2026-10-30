@@ -5,6 +5,15 @@ const path = require('node:path');
 const env = process.env;
 const isProd = env.NODE_ENV === 'production';
 
+// Liste der erlaubten Einbettungs-Seiten (Leerzeichen oder Komma getrennt).
+// «self» wird immer ergänzt; auch ohne Anführungszeichen geschrieben.
+function frameAncestors(value) {
+  const list = String(value).split(/[\s,]+/).map((t) => t.replace(/^['"]|['"]$/g, '')).filter(Boolean)
+    .map((t) => (t === 'self' ? "'self'" : t.replace(/\/+$/, '')));
+  if (!list.includes("'self'")) list.unshift("'self'");
+  return list.join(' ');
+}
+
 module.exports = {
   isProd,
   port: Number(env.PORT || 3000),
@@ -25,7 +34,7 @@ module.exports = {
     clientSecret: env.MS_CLIENT_SECRET || '',
   },
   // Wer das Anmeldeformular einbetten darf (CSP frame-ancestors)
-  formFrameAncestors: env.FORM_FRAME_ANCESTORS || "'self' https://*.clubdesk.com",
+  formFrameAncestors: frameAncestors(env.FORM_FRAME_ANCESTORS || "'self' https://*.clubdesk.com"),
   smtp: {
     host: env.SMTP_HOST || '',
     port: Number(env.SMTP_PORT || 587),
