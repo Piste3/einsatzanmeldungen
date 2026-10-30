@@ -3,39 +3,114 @@
   crumbs: [['Rückmeldungen']], heading: 'Wer hat sich wofür gemeldet?',
   actions: `<button class="btn" type="button" data-print>Drucken</button><a class="btn" href="${h.escapeHtml(h.withQuery('/rueckmeldungen', query, { format: 'xlsx' }))}">Excel</a><a class="btn" href="${h.escapeHtml(h.withQuery('/rueckmeldungen', query, { format: 'csv' }))}">CSV</a>`,
 }) %>
-<div class="row-between">
-  <form class="filters" method="get" data-autosubmit>
-    <select name="team"><option value="">Mannschaft: alle</option><% for (const t of teams) { %><option value="<%= t.id %>" <%= Number(filters.team) === t.id ? 'selected' : '' %>><%= t.name %></option><% } %></select>
-    <select name="period"><% for (const [k, p] of Object.entries(periods)) { %><option value="<%= k %>" <%= filters.period === k ? 'selected' : '' %>>Zeitraum: <%= p.label %></option><% } %></select>
-    <select name="sort"><option value="name" <%= filters.sort === 'name' ? 'selected' : '' %>>Sortieren: nach Name</option><option value="offen" <%= filters.sort === 'offen' ? 'selected' : '' %>>Sortieren: offene Einsätze</option></select>
-    <label class="check"><input type="checkbox" name="drafts" value="1" <%= filters.drafts === '1' ? 'checked' : '' %>> Entwürfe zeigen</label>
-  </form>
-  <div class="legend mb"><%- h.feedbackBadge('an') %><%- h.feedbackBadge('ab') %><%- h.feedbackBadge('unsicher') %><%- h.feedbackBadge('offen') %></div>
+<%
+  const SYM = { an: '✓', ab: '✕', unsicher: '?', offen: '' };
+  const cellTitle = (c, e, p) => `${p.first_name} ${p.last_name} · ${e.name}: ${h.labels.FEEDBACK[c.state].label}${c.reg ? '' : ' – klicken, um eine Anfrage zu erfassen'}`;
+  const fill = (e) => (e.soll ? Math.min(100, Math.round((totals[e.id].an / e.soll) * 100)) : null);
+  const tone = (e) => { const f = fill(e); return f === null ? 'gray' : f >= 100 ? 'green' : f >= 60 ? 'yellow' : 'red'; };
+%>
+<form class="filters fb-filters" method="get" data-autosubmit>
+  <input type="hidden" name="view" value="<%= filters.view %>">
+  <input type="search" name="q" value="<%= filters.q %>" placeholder="Name suchen …">
+  <select name="period"><% for (const [k, p] of Object.entries(periods)) { %><option value="<%= k %>" <%= filters.period === k ? 'selected' : '' %>><%= p.label %></option><% } %></select>
+  <select name="team"><option value="">Alle Mannschaften</option><% for (const t of teams) { %><option value="<%= t.id %>" <%= Number(filters.team) === t.id ? 'selected' : '' %>><%= t.name %></option><% } %></select>
+  <select name="only">
+    <option value="" <%= !filters.only ? 'selected' : '' %>>Alle Mitglieder</option>
+    <option value="offen" <%= filters.only === 'offen' ? 'selected' : '' %>>Nur mit offenen Einsätzen</option>
+    <option value="unsicher" <%= filters.only === 'unsicher' ? 'selected' : '' %>>Nur mit Unsicheren</option>
+  </select>
+  <% if (filters.view === 'tabelle') { %>
+  <select name="sort"><option value="name" <%= filters.sort === 'name' ? 'selected' : '' %>>nach Name</option><option value="offen" <%= filters.sort === 'offen' ? 'selected' : '' %>>meiste offen zuerst</option></select>
+  <% } %>
+  <label class="check"><input type="checkbox" name="drafts" value="1" <%= filters.drafts === '1' ? 'checked' : '' %>> Entwürfe</label>
+</form>
+<div class="row-between mb">
+  <div class="segmented-links">
+    <a class="<%= filters.view === 'tabelle' ? 'active' : '' %>" href="<%= h.withQuery('/rueckmeldungen', query, { view: 'tabelle' }) %>">Tabelle</a>
+    <a class="<%= filters.view === 'einsatz' ? 'active' : '' %>" href="<%= h.withQuery('/rueckmeldungen', query, { view: 'einsatz' }) %>">Pro Einsatz</a>
+  </div>
+  <div class="legend small">
+    <span class="fb fb-an">✓</span> An <span class="fb fb-ab">✕</span> Ab <span class="fb fb-unsicher">?</span> Unsicher <span class="fb fb-offen"></span> Offen
+    <span class="muted"> · <%= events.length %> Einsätze · <%= rows.length %><%= rows.length !== allCount ? ` von ${allCount}` : '' %> Mitglieder</span>
+  </div>
 </div>
+
+<% if (!events.length) { %>
+  <div class="card"><div class="empty">Keine veröffentlichten Einsätze im gewählten Zeitraum.</div></div>
+<% } else if (filters.view === 'tabelle') { %>
 <div class="card">
-  <div class="table-wrap">
-    <table class="matrix">
-      <thead><tr><th>Mitglied</th><th>Mannschaft</th><% for (const e of events) { %><th><a href="/einsaetze/<%= e.id %>"><span class="ev"><%= e.name %></span></a><span class="dt"><%= h.weekdayShort(e.date) %> <%= h.fmtDateShort(e.date) %></span></th><% } %></tr></thead>
-      <tbody>
-      <% if (!events.length) { %><tr><td colspan="2" class="empty">Keine veröffentlichten Einsätze im gewählten Zeitraum.</td></tr><% } %>
-      <% for (const row of rows) { %>
-        <tr data-row-id="p<%= row.person.id %>-<%= row.cells.map((c) => c.state[0]).join('') %>">
-          <td class="nowrap"><%- h.rank(row.person.rank_short) %><a href="/personen/<%= row.person.id %>"><strong><%= row.person.first_name %> <%= row.person.last_name %></strong></a></td>
-          <td class="muted small"><%= row.person.teams || '–' %></td>
-          <% for (const c of row.cells) { %>
-            <td>
-              <% if (c.reg) { %><a class="cell" href="/einsaetze/<%= c.eventId %>/anmeldungen?q=<%= encodeURIComponent(row.person.last_name) %>" title="Anmeldung öffnen"><%- h.feedbackBadge(c.state) %></a>
-              <% } else { %><button type="button" class="btn-link cell" data-open-dialog="attempt" data-person="<%= row.person.id %>" data-event="<%= c.eventId %>" data-who="<%= `${row.person.first_name} ${row.person.last_name}` %>" title="Anfrage erfassen"><%- h.feedbackBadge(c.state) %></button><% } %>
-            </td>
+  <div class="table-wrap fb-wrap">
+    <table class="matrix fb-matrix">
+      <thead>
+        <tr>
+          <th class="fb-name">Mitglied</th>
+          <% for (const e of events) { const t = totals[e.id]; %>
+            <th class="fb-ev" title="<%= e.name %> · <%= h.weekdayShort(e.date) %> <%= h.fmtDateShort(e.date) %>">
+              <a href="/einsaetze/<%= e.id %>">
+                <span class="dt"><%= h.weekdayShort(e.date) %> <%= h.fmtDateShort(e.date) %></span>
+                <span class="ev"><%= e.name %></span>
+                <span class="fill fill-<%= tone(e) %>"><span style="width:<%= fill(e) ?? 0 %>%"></span></span>
+                <span class="num"><%= t.an %><%= e.soll ? ` / ${e.soll}` : ' An' %></span>
+              </a>
+            </th>
           <% } %>
+        </tr>
+      </thead>
+      <tbody>
+      <% if (!rows.length) { %><tr><td colspan="<%= events.length + 1 %>" class="empty">Keine Mitglieder für diesen Filter.</td></tr><% } %>
+      <% for (const row of rows) { const p = row.person; %>
+        <tr data-row-id="p<%= p.id %>-<%= row.cells.map((c) => c.state[0]).join('') %>">
+          <td class="fb-name"><%- h.rank(p.rank_short) %><a href="/personen/<%= p.id %>"><strong><%= p.first_name %> <%= p.last_name %></strong></a><% if (p.teams) { %><span class="sub"><%= p.teams %></span><% } %></td>
+          <% row.cells.forEach((c, i) => { const e = events[i]; %>
+            <td class="fb-cell">
+              <% if (c.reg) { %><a class="fb fb-<%= c.state %>" href="/einsaetze/<%= c.eventId %>/anmeldungen?q=<%= encodeURIComponent(p.last_name) %>" title="<%= cellTitle(c, e, p) %>"><%= SYM[c.state] %></a>
+              <% } else { %><button type="button" class="fb fb-<%= c.state %>" data-open-dialog="attempt" data-person="<%= p.id %>" data-event="<%= c.eventId %>" data-who="<%= `${p.first_name} ${p.last_name} · ${e.name}` %>" title="<%= cellTitle(c, e, p) %>"><%= SYM[c.state] %></button><% } %>
+            </td>
+          <% }) %>
         </tr>
       <% } %>
       </tbody>
-      <% if (events.length) { %>
-      <tfoot><tr><td>Total</td><td><%= rows.length %> Mitglieder</td><% for (const e of events) { const t = totals[e.id]; %><td class="small"><%= t.an %> An · <%= t.ab %> Ab · <%= t.unsicher %> Unsicher · <%= t.offen %> Offen</td><% } %></tr></tfoot>
-      <% } %>
+      <tfoot>
+        <tr>
+          <td class="fb-name">Total (<%= allCount %> Mitglieder)</td>
+          <% for (const e of events) { const t = totals[e.id]; %>
+            <td class="fb-tot" title="<%= t.an %> An · <%= t.ab %> Ab · <%= t.unsicher %> Unsicher · <%= t.offen %> Offen"><span class="g"><%= t.an %></span> <span class="r"><%= t.ab %></span> <span class="y"><%= t.unsicher %></span> <span class="m"><%= t.offen %></span></td>
+          <% } %>
+        </tr>
+      </tfoot>
     </table>
   </div>
 </div>
+<% } else { %>
+<div class="fb-cards">
+  <% events.forEach((e, i) => {
+    const groups = { an: [], unsicher: [], ab: [], offen: [] };
+    for (const row of rows) groups[row.cells[i].state].push(row.person);
+    const t = totals[e.id];
+  %>
+  <div class="card fb-card">
+    <div class="card-head">
+      <h2><a href="/einsaetze/<%= e.id %>"><%= e.name %></a> <span class="hint"><%= h.weekdayShort(e.date) %> <%= h.fmtDateShort(e.date) %><%= e.status === 'entwurf' ? ' · Entwurf' : '' %></span></h2>
+      <span class="num"><strong><%= t.an %></strong><%= e.soll ? ` / ${e.soll}` : '' %> An</span>
+    </div>
+    <div class="card-body">
+      <span class="fill fill-<%= tone(e) %> fill-wide"><span style="width:<%= fill(e) ?? 0 %>%"></span></span>
+      <% for (const [st, list] of Object.entries(groups)) { if (!list.length) continue; const many = st === 'offen' && list.length > 8; %>
+        <details class="fb-group" <%= many ? '' : 'open' %>>
+          <summary><span class="fb fb-<%= st %>"><%= SYM[st] %></span> <%= h.labels.FEEDBACK[st].label %> <span class="muted">· <%= list.length %></span></summary>
+          <div class="fb-names">
+            <% for (const p of list) { %>
+              <% if (st === 'offen') { %><button type="button" class="pill" data-open-dialog="attempt" data-person="<%= p.id %>" data-event="<%= e.id %>" data-who="<%= `${p.first_name} ${p.last_name} · ${e.name}` %>" title="Anfrage erfassen"><%= p.first_name %> <%= p.last_name %></button>
+              <% } else { %><a class="pill" href="/personen/<%= p.id %>"><%= p.first_name %> <%= p.last_name %></a><% } %>
+            <% } %>
+          </div>
+        </details>
+      <% } %>
+      <% if (!rows.length) { %><div class="muted small">Keine Mitglieder für diesen Filter.</div><% } %>
+    </div>
+  </div>
+  <% }) %>
+</div>
+<% } %>
 <%- include('../partials/attempt-dialog', { action: '/anfragen/versuch', back: h.withQuery('/rueckmeldungen', query), eventChoice: true }) %>
 <%- include('../partials/foot') %>

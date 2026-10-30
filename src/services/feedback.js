@@ -4,6 +4,7 @@ const db = require('../db');
 const { today, addDays } = require('../lib/dates');
 
 const PERIODS = {
+  '2w': { label: 'nächste 2 Wochen', days: 14 },
   '1m': { label: 'nächster Monat', days: 31 },
   '3m': { label: 'nächste 3 Monate', days: 92 },
   '6m': { label: 'nächste 6 Monate', days: 183 },
@@ -31,7 +32,7 @@ function upcomingEvents(period = '3m') {
     today(), addDays(today(), days));
 }
 
-function matrix({ team = '', period = '3m', sort = 'name', includeDrafts = false } = {}) {
+function matrix({ team = '', period = '3m', sort = 'name', includeDrafts = false, q = '', only = '' } = {}) {
   let evts = upcomingEvents(period);
   if (!includeDrafts) evts = evts.filter((e) => e.status === 'veroeffentlicht');
   const params = [];
@@ -47,9 +48,12 @@ function matrix({ team = '', period = '3m', sort = 'name', includeDrafts = false
     const ph = ids.map(() => '?').join(',');
     for (const r of db.all(`SELECT * FROM registrations WHERE event_id IN (${ph}) AND person_id IS NOT NULL`, ...ids)) regs.set(`${r.person_id}:${r.event_id}`, r);
     for (const i of db.all(`SELECT * FROM inquiries WHERE event_id IN (${ph})`, ...ids)) inqs.set(`${i.person_id}:${i.event_id}`, i);
+    // Soll = Summe der Soll-Werte aller Schichten
+    const soll = new Map(db.all(`SELECT event_id, SUM(target_count) AS n FROM shifts WHERE event_id IN (${ph}) GROUP BY event_id`, ...ids).map((r) => [r.event_id, r.n]));
+    for (const e of evts) e.soll = soll.get(e.id) || null;
   }
   const totals = Object.fromEntries(evts.map((e) => [e.id, { an: 0, ab: 0, unsicher: 0, offen: 0 }]));
-  const rows = people.map((p) => {
+  let rows = people.map((p) => {
     const cells = evts.map((e) => {
       const c = cellState(regs.get(`${p.id}:${e.id}`), inqs.get(`${p.id}:${e.id}`));
       totals[e.id][c.state]++;
@@ -57,8 +61,16 @@ function matrix({ team = '', period = '3m', sort = 'name', includeDrafts = false
     });
     return { person: p, cells, openCount: cells.filter((c) => c.state === 'offen').length };
   });
+  // Suche und «nur mit offenen» wirken auf die Zeilen, die Summen zählen weiterhin alle Mitglieder
+  const allCount = rows.length;
+  if (q) {
+    const needle = q.toLowerCase();
+    rows = rows.filter((r) => `${r.person.first_name} ${r.person.last_name} ${r.person.last_name} ${r.person.first_name}`.toLowerCase().includes(needle));
+  }
+  if (only === 'offen') rows = rows.filter((r) => r.openCount > 0);
+  if (only === 'unsicher') rows = rows.filter((r) => r.cells.some((c) => c.state === 'unsicher'));
   if (sort === 'offen') rows.sort((a, b) => b.openCount - a.openCount || a.person.last_name.localeCompare(b.person.last_name, 'de'));
-  return { events: evts, rows, totals };
+  return { events: evts, rows, totals, allCount };
 }
 
 module.exports = { matrix, cellState, upcomingEvents, PERIODS };
