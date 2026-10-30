@@ -21,7 +21,7 @@ function cellState(reg, inq) {
   if (inq) {
     if (inq.status === 'abgesagt') return { state: 'ab', reg, inq };
     if (inq.status === 'zugesagt') return { state: 'an', reg, inq };
-    if (['nicht_erreicht', 'whatsapp'].includes(inq.status)) return { state: 'unsicher', reg, inq };
+    if (['nicht_erreicht', 'whatsapp', 'unsicher'].includes(inq.status)) return { state: 'unsicher', reg, inq };
   }
   return { state: 'offen', reg, inq };
 }

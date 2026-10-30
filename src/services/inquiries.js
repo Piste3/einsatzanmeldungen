@@ -26,7 +26,7 @@ function rowState(r) {
   if (r.inquiry_status === 'offen' && r.inquiry_id && !r.attempts.length) return 'vorgesehen';
   return r.inquiry_status;
 }
-const ROW_ORDER = { nicht_erreicht: 0, whatsapp: 0, vorgesehen: 1, offen: 2, zugesagt: 3, angemeldet: 4, abgesagt: 5 };
+const ROW_ORDER = { nicht_erreicht: 0, whatsapp: 0, unsicher: 0, vorgesehen: 1, offen: 2, zugesagt: 3, angemeldet: 4, abgesagt: 5 };
 
 /**
  * Reiter «Anfragen»: alle aktiven Personen ohne Anmeldung zu diesem Einsatz
@@ -123,7 +123,7 @@ function addAttempt(eventId, personId, input, user) {
     }
     db.run('UPDATE inquiries SET status = ?, registration_id = ?, version = version + 1, updated_at = ?, updated_by = ? WHERE id = ?',
       status, registrationId || null, nowIso(), user.id, inq.id);
-    const resultText = { nicht_erreicht: 'nicht erreicht', whatsapp: 'per WhatsApp angeschrieben', zugesagt: 'Zusage', abgesagt: 'Absage' }[result];
+    const resultText = { nicht_erreicht: 'nicht erreicht', whatsapp: 'per WhatsApp angeschrieben', zugesagt: 'Zusage', unsicher: 'noch unsicher', abgesagt: 'Absage' }[result];
     audit.log({
       entity: 'inquiry', entityId: inq.id, eventId, personId, action: 'attempt',
       summary: `${sentByName} hat ${person.first_name} ${person.last_name} per ${CHANNEL[channel].label} angefragt (${resultText}) · ${event.name}`,

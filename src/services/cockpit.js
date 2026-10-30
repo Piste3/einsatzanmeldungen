@@ -14,7 +14,7 @@ function data() {
     neuSeit: db.one("SELECT COUNT(*) AS n FROM registrations WHERE registered_at > ? AND status <> 'ungueltig'", since).n,
     klaeren: db.one("SELECT COUNT(*) AS n FROM registrations WHERE person_id IS NULL AND status = 'unsicher'").n,
     nichtErreicht: db.one(`SELECT COUNT(*) AS n FROM inquiries i JOIN events e ON e.id = i.event_id
-      WHERE i.status IN ('nicht_erreicht','whatsapp') AND e.date >= ? AND e.status = 'veroeffentlicht'
+      WHERE i.status IN ('nicht_erreicht','whatsapp','unsicher') AND e.date >= ? AND e.status = 'veroeffentlicht'
       AND NOT EXISTS (SELECT 1 FROM registrations g WHERE g.event_id = i.event_id AND g.person_id = i.person_id AND g.status <> 'ungueltig')`, today()).n,
     next: rows.find((e) => e.status === 'veroeffentlicht') || rows[0] || null,
   };

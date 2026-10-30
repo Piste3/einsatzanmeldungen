@@ -39,6 +39,7 @@ const INQUIRY_STATUS = {
   abgesagt: { label: 'Abgesagt', tone: 'red' },
   nicht_erreicht: { label: 'Nicht erreicht', tone: 'yellow' },
   whatsapp: { label: 'Per WhatsApp angefragt', tone: 'blue' },
+  unsicher: { label: 'Unsicher', tone: 'yellow' },
 };
 
 // Zusätzliche Anzeige-Status im Reiter «Anfragen»
@@ -52,6 +53,7 @@ const ATTEMPT_RESULT = {
   nicht_erreicht: 'Nicht erreicht',
   whatsapp: 'Nachricht gesendet, Antwort offen',
   zugesagt: 'Zugesagt',
+  unsicher: 'Unsicher – weiss es noch nicht',
   abgesagt: 'Abgesagt',
 };
 

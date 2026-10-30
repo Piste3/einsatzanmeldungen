@@ -30,6 +30,21 @@ function migrate(d) {
     if (!existing.length) continue; // Tabelle gibt es noch nicht – entsteht gleich vollständig aus schema.sql
     for (const [name, def] of cols) if (!existing.includes(name)) d.exec(`ALTER TABLE ${table} ADD COLUMN ${name} ${def}`);
   }
+  // Anfragestatus «unsicher» (meldet sich noch) erlauben: SQLite kann CHECK nicht ändern -> Tabelle neu aufbauen
+  const inq = d.prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'inquiries'").get();
+  if (inq && !inq.sql.includes("'unsicher'")) {
+    d.exec('PRAGMA foreign_keys = OFF');
+    try {
+      d.exec('BEGIN');
+      d.exec(`CREATE TABLE inquiries_neu ${inq.sql.slice(inq.sql.indexOf('(')).replace("'nicht_erreicht','whatsapp')", "'nicht_erreicht','whatsapp','unsicher')")}`);
+      d.exec('INSERT INTO inquiries_neu SELECT * FROM inquiries; DROP TABLE inquiries; ALTER TABLE inquiries_neu RENAME TO inquiries; COMMIT');
+    } catch (err) {
+      d.exec('ROLLBACK');
+      throw err;
+    } finally {
+      d.exec('PRAGMA foreign_keys = ON');
+    }
+  }
 }
 
 function get() {

@@ -304,7 +304,7 @@ function stats(e) {
       WHERE a.shift_id = ? AND r.status IN (${ph})`, s.id, ...REG_COUNTING).n;
     return { ...s, ist, soll: s.target_count, tone: occupancyTone(ist, s.target_count), missing: s.target_count ? Math.max(0, s.target_count - ist) : null };
   });
-  const inquiryOpen = db.one(`SELECT COUNT(*) AS n FROM inquiries i WHERE i.event_id = ? AND i.status IN ('nicht_erreicht','whatsapp')
+  const inquiryOpen = db.one(`SELECT COUNT(*) AS n FROM inquiries i WHERE i.event_id = ? AND i.status IN ('nicht_erreicht','whatsapp','unsicher')
     AND NOT EXISTS (SELECT 1 FROM registrations g WHERE g.event_id = i.event_id AND g.person_id = i.person_id AND g.status <> 'ungueltig')`, e.id).n;
   const activePersons = db.one("SELECT COUNT(*) AS n FROM persons WHERE status = 'aktiv'").n;
   const responded = db.one(`SELECT COUNT(DISTINCT person_id) AS n FROM (

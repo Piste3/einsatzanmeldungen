@@ -1,9 +1,9 @@
 <%
   const base = `/einsaetze/${event.id}/anfragen`;
   const locked = (event.status === 'abgeschlossen' && user.role !== 'admin') || event.status === 'abgesagt';
-  const chipOrder = ['nicht_erreicht', 'whatsapp', 'vorgesehen', 'offen', 'zugesagt', 'angemeldet', 'abgesagt'];
+  const chipOrder = ['nicht_erreicht', 'whatsapp', 'unsicher', 'vorgesehen', 'offen', 'zugesagt', 'angemeldet', 'abgesagt'];
   const label = (st) => h.labels.INQUIRY_ROW[st] || h.labels.INQUIRY_STATUS[st];
-  const resultText = { nicht_erreicht: 'nicht erreicht', whatsapp: 'gesendet', zugesagt: 'zugesagt', abgesagt: 'abgesagt' };
+  const resultText = { nicht_erreicht: 'nicht erreicht', whatsapp: 'gesendet', zugesagt: 'zugesagt', unsicher: 'unsicher', abgesagt: 'abgesagt' };
 %>
 <div class="row-between mb">
   <div class="chips">
@@ -61,7 +61,7 @@
           </td>
           <td class="actions-col right nowrap">
             <% if (!locked && !done) { %>
-              <% if (['whatsapp', 'nicht_erreicht'].includes(r.state)) { %>
+              <% if (['whatsapp', 'nicht_erreicht', 'unsicher'].includes(r.state)) { %>
                 <form method="post" action="<%= base %>/status" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="person_id" value="<%= r.person_id %>"><input type="hidden" name="status" value="zugesagt"><button class="btn btn-xs" type="submit" title="Antwort ist gekommen: kommt">Zugesagt</button></form>
                 <form method="post" action="<%= base %>/status" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="person_id" value="<%= r.person_id %>"><input type="hidden" name="status" value="abgesagt"><button class="btn btn-xs" type="submit" title="Antwort ist gekommen: kommt nicht">Abgesagt</button></form>
               <% } %>

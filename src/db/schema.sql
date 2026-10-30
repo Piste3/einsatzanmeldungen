@@ -239,7 +239,7 @@ CREATE TABLE IF NOT EXISTS inquiries (
   id INTEGER PRIMARY KEY,
   event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
   person_id INTEGER NOT NULL REFERENCES persons(id),
-  status TEXT NOT NULL DEFAULT 'offen' CHECK (status IN ('offen','zugesagt','abgesagt','nicht_erreicht','whatsapp')),
+  status TEXT NOT NULL DEFAULT 'offen' CHECK (status IN ('offen','zugesagt','abgesagt','nicht_erreicht','whatsapp','unsicher')),
   registration_id INTEGER REFERENCES registrations(id),
   version INTEGER NOT NULL DEFAULT 1,
   created_at TEXT NOT NULL,
@@ -255,7 +255,7 @@ CREATE TABLE IF NOT EXISTS contact_attempts (
   contacted_at TEXT NOT NULL,  -- YYYY-MM-DDTHH:MM lokal
   sent_by_user_id INTEGER REFERENCES users(id),
   sent_by_name TEXT NOT NULL,
-  result TEXT NOT NULL,        -- zugesagt, abgesagt, nicht_erreicht, whatsapp
+  result TEXT NOT NULL,        -- zugesagt, abgesagt, unsicher, nicht_erreicht, whatsapp
   note TEXT,
   created_at TEXT NOT NULL,
   created_by INTEGER
