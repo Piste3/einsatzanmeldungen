@@ -76,6 +76,8 @@
                 <button type="button" data-open-dialog="note" data-action="/anmeldungen/<%= r.id %>/notiz" data-version="<%= r.version %>" data-note="<%= r.internal_note || '' %>" data-who="<%= r.person_name || r.entered_name %>">Interne Bemerkung …</button>
                 <button type="button" data-open-dialog="reassign" data-action="/anmeldungen/<%= r.id %>/zuordnen" data-who="<%= r.person_name || r.entered_name %>">Andere Person zuordnen …</button>
                 <form method="post" action="/anmeldungen/<%= r.id %>/status" data-confirm="Als ungültig markieren (z. B. doppelt oder Test)?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="status" value="ungueltig"><input type="hidden" name="back" value="<%= back %>"><button type="submit">Als ungültig markieren</button></form>
+                <div class="sep"></div>
+                <form method="post" action="/anmeldungen/<%= r.id %>/loeschen" data-confirm="<%= ['zurueckgezogen', 'abgesagt'].includes(r.status) ? 'Abmeldung' : 'Anmeldung' %> von <%= r.person_name || r.entered_name %> endgültig löschen?&#10;&#10;Die Person gilt danach wieder als «ohne Rückmeldung», als wäre nie etwas eingegangen. Das lässt sich nicht rückgängig machen."><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="back" value="<%= back %>"><button type="submit" class="btn-danger">Löschen (zurücksetzen)</button></form>
               </div>
             </details>
           </td>

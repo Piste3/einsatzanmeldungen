@@ -27,6 +27,14 @@ router.post('/anmeldungen/:rid/status', (req, res) => {
   res.redirect(back(req, reg));
 });
 
+// Ganz löschen (zurücksetzen, als wäre nie etwas eingegangen)
+router.post('/anmeldungen/:rid/loeschen', (req, res) => {
+  const reg = load(req);
+  registrations.remove(reg.id, req.user);
+  flash(res, 'success', `${['zurueckgezogen', 'abgesagt'].includes(reg.status) ? 'Abmeldung' : 'Anmeldung'} von ${registrations.personLabel(reg)} gelöscht.`);
+  res.redirect(back(req, reg));
+});
+
 // Sammelaktionen
 router.post('/einsaetze/:id/anmeldungen/sammel', (req, res) => {
   const ids = [].concat(req.body.ids || []).map(Number).filter(Boolean);

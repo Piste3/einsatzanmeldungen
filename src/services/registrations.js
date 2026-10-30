@@ -279,7 +279,31 @@ function findUnresolvedDuplicate(eventId, first, last) {
     .find((r) => nameKey(r.entered_first_name, r.entered_last_name) === key) || null;
 }
 
+/**
+ * Anmeldung/Abmeldung ganz entfernen, als wäre sie nie eingegangen.
+ * Schichtzuteilungen verschwinden mit; eine daraus entstandene Anfrage wird wieder «offen»
+ * (die Kontaktversuche bleiben stehen). Der rohe Formular-Eingang bleibt unter «Formulare» erhalten.
+ */
+function remove(id, user) {
+  const reg = get(id);
+  if (!reg) throw new ValidationError(['Anmeldung nicht gefunden.']);
+  if (reg.event_status === 'abgeschlossen' && user.role !== 'admin') throw new ValidationError(['Der Einsatz ist abgeschlossen.']);
+  db.tx(() => {
+    db.run("UPDATE inquiries SET registration_id = NULL, status = CASE WHEN status = 'zugesagt' THEN 'offen' ELSE status END, version = version + 1, updated_at = ?, updated_by = ? WHERE registration_id = ?",
+      nowIso(), user.id, id);
+    db.run('UPDATE mail_outbox SET registration_id = NULL WHERE registration_id = ?', id);
+    db.run('DELETE FROM registrations WHERE id = ?', id);
+    audit.log({
+      entity: 'registration', entityId: id, eventId: reg.event_id, personId: reg.person_id, action: 'delete',
+      summary: `${user.display_name} hat die ${['zurueckgezogen', 'abgesagt'].includes(reg.status) ? 'Abmeldung' : 'Anmeldung'} von ${personLabel(reg)} gelöscht · ${reg.event_name}`,
+      details: { status: reg.status }, user,
+    });
+  });
+  live.notify(`event:${reg.event_id}`, 'feedback', 'cockpit', 'clarifications', ...(reg.person_id ? [`person:${reg.person_id}`] : []));
+  return reg;
+}
+
 module.exports = {
-  get, listForEvent, listForPerson, unresolved, create, setStatus, bulkStatus, updateNote, assignPerson, setShifts, overlaps,
+  remove, get, listForEvent, listForPerson, unresolved, create, setStatus, bulkStatus, updateNote, assignPerson, setShifts, overlaps,
   applyWishes, personLabel, findUnresolvedDuplicate, hydrate,
 };

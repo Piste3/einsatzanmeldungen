@@ -111,3 +111,18 @@ test('Person löschen entfernt Anmeldungen und Anfragen, Einsätze bleiben', () 
   assert.equal(events.get(offen).leader_person_id, null);
   assert.ok(db.one("SELECT 1 FROM audit_log WHERE action = 'delete' AND summary LIKE '%Anna Roth gelöscht%'"));
 });
+
+test('Anmeldung löschen setzt zurück, als wäre nichts eingegangen', () => {
+  const { anna, offen } = setup();
+  const reg = registrations.create({ eventId: offen, personId: anna, matchType: 'auto', source: 'telefon', wishes: [], user: system });
+  registrations.setShifts(reg, [events.shiftsOf(offen)[0].id], system);
+  const inq = Number(db.run("INSERT INTO inquiries (event_id, person_id, status, registration_id, created_at, updated_at) VALUES (?, ?, 'zugesagt', ?, '', '')", offen, anna, reg).lastInsertRowid);
+  registrations.remove(reg, system);
+  assert.equal(registrations.get(reg), null);
+  assert.equal(db.one('SELECT COUNT(*) AS n FROM shift_assignments').n, 0);
+  const i = db.one('SELECT * FROM inquiries WHERE id = ?', inq);
+  assert.equal(i.status, 'offen');
+  assert.equal(i.registration_id, null);
+  // Eine neue Anmeldung derselben Person ist wieder möglich
+  assert.ok(registrations.create({ eventId: offen, personId: anna, matchType: 'auto', source: 'manuell', wishes: [], user: system }));
+});
