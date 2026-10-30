@@ -2,7 +2,11 @@
   const multi = e.openShifts.length > 1;
   const ans = values[`answer_${e.id}`];
   const chosen = [].concat(values[`shifts_${e.id}`] || []).map(Number);
-  const meta = [e.start_time ? `Antreten ${e.start_time}${e.start_place ? ' ' + e.start_place : ''}` : (e.start_place ? `Antreten ${e.start_place}` : ''), e.tenue ? `Tenue ${e.tenue.split('\n')[0]}` : ''].filter(Boolean).join(' · ');
+  const join = (...p) => p.filter(Boolean).join(' ');
+  const antreten = (e.start_time || e.start_place) ? join('Antreten', e.start_time, e.start_place) : '';
+  // Abtretensort nur nennen, wenn er vom Antretensort abweicht
+  const abtreten = (e.end_time || e.end_place) ? join('Abtreten', e.end_time, e.end_place && e.end_place !== e.start_place ? e.end_place : '') : '';
+  const meta = [antreten, abtreten, e.tenue ? `Tenue ${e.tenue.split('\n')[0]}` : ''].filter(Boolean);
 %>
 <fieldset class="ev-block<%= (ans || chosen.length) ? ' answered' : '' %>" data-event-block>
   <input type="hidden" name="event_ids" value="<%= e.id %>" <%= disabled ? 'disabled' : '' %>>
@@ -10,7 +14,7 @@
     <legend class="ev-name"><%= e.name %></legend>
     <span class="date-pill"><%= h.weekdayShort(e.date) %> <%= h.fmtDateShort(e.date) %></span>
   </div>
-  <% if (meta) { %><div class="ev-meta"><%= meta %></div><% } %>
+  <% for (const line of meta) { %><div class="ev-meta"><%= line %></div><% } %>
   <% if (e.description) { %><div class="ev-desc"><%= e.description %></div><% } %>
   <div class="ev-question"><%= questionFor(e) %></div>
   <% if (e.help_text) { %><div class="ev-help"><%= e.help_text %></div><% } %>
@@ -18,11 +22,9 @@
     <% for (const s of e.openShifts) { %>
       <label class="opt"><input type="checkbox" name="shifts_<%= e.id %>" value="<%= s.id %>" <%= chosen.includes(s.id) ? 'checked' : '' %> <%= disabled ? 'disabled' : '' %> data-shift-check> <span><%= s.name %></span> <span class="time"><%= h.fmtSpan(s.starts_at, s.ends_at) %><%= s.starts_at && s.starts_at.slice(0, 10) !== e.date ? ` (${h.fmtDateShort(s.starts_at.slice(0, 10))})` : '' %></span></label>
     <% } %>
-    <label class="opt opt-no"><input type="checkbox" name="answer_<%= e.id %>" value="nein" <%= ans === 'nein' ? 'checked' : '' %> <%= disabled ? 'disabled' : '' %> data-no-check> <span>Ich kann nicht</span></label>
   <% } else { %>
     <div class="yesno">
-      <input type="radio" id="y<%= e.id %>" name="answer_<%= e.id %>" value="ja" <%= ans === 'ja' ? 'checked' : '' %> <%= disabled ? 'disabled' : '' %>><label for="y<%= e.id %>">Ja</label>
-      <input type="radio" id="n<%= e.id %>" name="answer_<%= e.id %>" value="nein" <%= ans === 'nein' ? 'checked' : '' %> <%= disabled ? 'disabled' : '' %>><label for="n<%= e.id %>">Nein</label>
+      <input type="checkbox" id="y<%= e.id %>" name="answer_<%= e.id %>" value="ja" <%= ans === 'ja' ? 'checked' : '' %> <%= disabled ? 'disabled' : '' %>><label for="y<%= e.id %>">Ja, ich bin dabei</label>
     </div>
   <% } %>
   <input class="remark" type="text" name="remark_<%= e.id %>" value="<%= values[`remark_${e.id}`] || '' %>" placeholder="Bemerkung (optional)" maxlength="500" <%= disabled ? 'disabled' : '' %>>

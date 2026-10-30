@@ -29,7 +29,7 @@
     <% for (const e of form.events) { %>
       <%- include('_event-block', { e, values, disabled: preview }) %>
     <% } %>
-    <p class="f-hint">Einsätze ohne Antwort bleiben einfach leer. Du kannst dich in einem Durchgang für mehrere Einsätze anmelden.</p>
+    <p class="f-hint">Kreuze nur an, wo du dabei bist – alles andere bleibt einfach leer. Du kannst dich in einem Durchgang für mehrere Einsätze anmelden.</p>
     <button class="f-submit" type="submit" <%= preview ? 'disabled' : '' %>>Anmeldung absenden</button>
   </form>
   <% } %>

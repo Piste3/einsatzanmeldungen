@@ -6,10 +6,7 @@
   form.addEventListener('change', (ev) => {
     const block = ev.target.closest('[data-event-block]');
     if (!block) return;
-    // «Ich kann nicht» und Schichtauswahl schliessen sich aus
-    if (ev.target.matches('[data-no-check]') && ev.target.checked) block.querySelectorAll('[data-shift-check]').forEach((c) => { c.checked = false; });
-    if (ev.target.matches('[data-shift-check]') && ev.target.checked) { const no = block.querySelector('[data-no-check]'); if (no) no.checked = false; }
-    const answered = block.querySelector('input[type=radio]:checked, input[type=checkbox]:checked');
+    const answered = block.querySelector('input[type=checkbox]:checked');
     block.classList.toggle('answered', Boolean(answered));
   });
   form.addEventListener('click', (ev) => {

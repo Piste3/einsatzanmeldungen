@@ -70,7 +70,7 @@ function receive(body, { ip, userAgent }) {
   const errors = [];
   if (!firstName) errors.push('Bitte den Vornamen angeben.');
   if (!lastName) errors.push('Bitte den Nachnamen angeben.');
-  if (!answers.length) errors.push('Bitte bei mindestens einem Einsatz eine Antwort geben.');
+  if (!answers.length) errors.push('Bitte mindestens einen Einsatz ankreuzen.');
   if (errors.length) return { ok: false, errors };
 
   // Spam-Schutz: verstecktes Feld und Mindestzeit

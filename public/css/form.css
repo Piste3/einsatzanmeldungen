@@ -26,12 +26,10 @@ input[type=text]:focus { outline: none; border-color: var(--orange); box-shadow:
 .opt { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 14px; font-weight: 500; color: var(--text); }
 .opt input { width: 18px; height: 18px; accent-color: var(--orange); }
 .opt .time { color: var(--muted); font-size: 13px; }
-.opt-no { color: var(--muted); }
-.yesno { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.yesno { display: grid; grid-template-columns: 1fr; gap: 8px; }
 .yesno input { position: absolute; opacity: 0; pointer-events: none; }
 .yesno label { text-align: center; padding: 9px; border: 1px solid #cfd4dd; border-radius: 7px; font-size: 14px; cursor: pointer; color: var(--text); }
 .yesno input:checked + label { background: var(--green-bg); border-color: #8fd1aa; color: var(--green); }
-.yesno input[value=nein]:checked + label { background: #f1f2f5; border-color: #b9bfcb; color: #3b4356; }
 .yesno input:focus-visible + label { outline: 2px solid var(--orange); }
 .remark { margin-top: 10px !important; height: 38px !important; font-size: 14px !important; }
 .reset { background: none; border: 0; color: var(--muted); font: inherit; font-size: 12px; text-decoration: underline; cursor: pointer; padding: 6px 0 0; }
@@ -58,3 +56,4 @@ input[type=text]:focus { outline: none; border-color: var(--orange); box-shadow:
 .pill.gray { background: #eef0f4; color: #4b5366; }
 .f-back { display: block; margin-top: 16px; padding: 11px; border: 1px solid var(--border); background: #fff; border-radius: 8px; font-weight: 650; color: var(--text); text-decoration: none; }
 @media (max-width: 380px) { .two { grid-template-columns: 1fr; } }
+.ev-meta + .ev-meta { margin-top: -6px; }
