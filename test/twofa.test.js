@@ -102,3 +102,16 @@ test('Pflicht-2FA: ohne Einrichtung nur die Einrichtungsseite', async () => {
   assert.equal(page.status, 200);
   assert.match(await page.text(), /<svg/);
 });
+
+test('Benutzer löschen: nicht sich selbst, nicht den letzten Admin, Daten bleiben', async () => {
+  const admin = await users.create({ username: 'chef', display_name: 'Chef', role: 'admin', password: 'Geheim-Passwort-9', must_change_password: false }, null);
+  const other = await users.create({ username: 'ella', display_name: 'Ella', role: 'aufgebotsstelle', password: 'Geheim-Passwort-8', must_change_password: false }, null);
+  const actor = users.get(admin.id);
+  assert.throws(() => users.remove(admin.id, actor), /eigene/);
+  for (const u of db.all("SELECT id FROM users WHERE role = 'admin' AND id <> ?", admin.id)) db.run('UPDATE users SET active = 0 WHERE id = ?', u.id);
+  const second = await users.create({ username: 'zweit', display_name: 'Zweit', role: 'admin', password: 'Geheim-Passwort-7', must_change_password: false }, null);
+  db.run('UPDATE users SET active = 0 WHERE id = ?', second.id);
+  assert.throws(() => users.remove(admin.id, users.get(second.id)), /letzte/);
+  users.remove(other.id, actor);
+  assert.equal(users.get(other.id), undefined);
+});

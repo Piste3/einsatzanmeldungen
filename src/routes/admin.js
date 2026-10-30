@@ -76,6 +76,13 @@ router.post('/verwaltung/benutzer/:id/2fa-zuruecksetzen', (req, res) => {
   res.redirect(`/verwaltung/benutzer/${Number(req.params.id)}`);
 });
 
+router.post('/verwaltung/benutzer/:id/loeschen', (req, res) => {
+  const u = users.get(Number(req.params.id));
+  users.remove(Number(req.params.id), req.user);
+  flash(res, 'success', `Benutzerkonto «${u.username}» gelöscht.`);
+  res.redirect('/verwaltung/benutzer');
+});
+
 router.post('/verwaltung/benutzer/:id/entsperren', (req, res) => {
   users.unlock(Number(req.params.id), req.user);
   flash(res, 'success', 'Konto entsperrt.');

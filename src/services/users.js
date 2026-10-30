@@ -45,6 +45,22 @@ function resetTwofa(id, actor) {
   audit.log({ entity: 'user', entityId: id, action: '2fa', summary: `${actor.display_name} hat die Zwei-Faktor-Anmeldung von «${user.username}» zurückgesetzt`, user: actor });
 }
 
+// Benutzerkonto ganz löschen. Erfasste Daten (Anmeldungen, Kontaktversuche, Verlauf) bleiben mit dem Namen erhalten.
+function remove(id, actor) {
+  const user = get(id);
+  if (!user) throw new ValidationError(['Benutzer nicht gefunden.']);
+  if (actor && actor.id === id) throw new ValidationError(['Das eigene Konto kann man nicht löschen.']);
+  if (user.role === 'admin' && user.active && db.one("SELECT COUNT(*) AS n FROM users WHERE role = 'admin' AND active = 1").n <= 1) {
+    throw new ValidationError(['Das ist der letzte aktive Admin – zuerst einen anderen Admin anlegen.']);
+  }
+  db.tx(() => {
+    sessions.destroyAllForUser(id);
+    db.run('UPDATE contact_attempts SET sent_by_user_id = NULL WHERE sent_by_user_id = ?', id);
+    db.run('DELETE FROM users WHERE id = ?', id);
+    audit.log({ entity: 'user', entityId: id, action: 'delete', summary: `${actor.display_name} hat das Benutzerkonto «${user.username}» (${user.display_name}) gelöscht`, user: actor });
+  });
+}
+
 async function create(input, actor) {
   const data = validate(input, { isNew: true });
   if (db.one('SELECT 1 FROM users WHERE username = ?', data.username)) throw new ValidationError(['Dieser Benutzername ist bereits vergeben.']);
@@ -112,4 +128,4 @@ function count() {
   return db.one('SELECT COUNT(*) AS n FROM users').n;
 }
 
-module.exports = { list, get, create, update, resetTwofa, resetPassword, changePassword, unlock, count };
+module.exports = { list, get, create, update, remove, resetTwofa, resetPassword, changePassword, unlock, count };

@@ -2,7 +2,7 @@
   <div class="card">
     <div class="card-head"><h2>So sieht der Einsatz im Anmeldeformular aus</h2><a class="btn btn-sm" href="/forms/anmeldung?vorschau=1&einsatz=<%= event.id %>" target="_blank" rel="noopener">Vorschau öffnen</a></div>
     <div class="card-body">
-      <%- include('../form/_event-block', { e: preview, values: {}, disabled: true, questionFor: (x) => x.question_text || (x.openShifts.length > 1 ? 'Für welche Schichten kannst du?' : 'Kannst du teilnehmen?') }) %>
+      <iframe class="form-preview" src="/forms/anmeldung?vorschau=1&einsatz=<%= event.id %>" title="Vorschau des Anmeldeformulars" loading="lazy"></iframe>
     </div>
   </div>
   <div class="stack">

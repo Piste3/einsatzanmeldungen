@@ -531,4 +531,15 @@ tr.changed td:first-child { box-shadow: inset 3px 0 0 var(--orange, #e8742a); }
 .prose img { max-width: 100%; border: 1px solid var(--border); border-radius: 8px; display: block; }
 .prose figcaption { font-size: 12px; color: var(--muted); margin-top: 6px; }
 @media (max-width: 900px) { .handbook { grid-template-columns: 1fr; } .handbook-toc { position: static; } }
-@media print { .handbook { display: block; } .prose img { break-inside: avoid; } }
+.prose img { max-height: 620px; width: auto; margin: 0 auto; }
+@media print {
+  .handbook { display: block; }
+  .handbook-body { border: 0; box-shadow: none; }
+  .handbook-body .card-body { padding: 0; }
+  .prose { font-size: 11pt; max-width: none; }
+  .prose h2 { break-before: page; border-top: 0; padding-top: 0; }
+  .prose h2, .prose h3 { break-after: avoid; }
+  .prose figure, .prose table, .prose blockquote { break-inside: avoid; }
+  .prose img { max-height: 115mm; }
+}
+.form-preview { width: 100%; max-width: 480px; height: 560px; border: 1px solid var(--border); border-radius: 10px; display: block; margin: 0 auto; background: #f3f4f7; }

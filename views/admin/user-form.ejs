@@ -44,6 +44,12 @@
       <form method="post" action="/verwaltung/benutzer/<%= u.id %>/2fa-zuruecksetzen" data-confirm="Zwei-Faktor-Anmeldung von <%= u.display_name %> zurücksetzen?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-sm" type="submit">2FA zurücksetzen</button></form>
     <% } else { %><p class="small muted">Einrichten kann die Person selbst unter «Konto › Zwei-Faktor» (Klick auf den eigenen Namen unten links).</p><% } %>
   </div></div>
+  <% if (u.id !== user.id) { %>
+  <div class="card card-danger mt"><div class="card-head"><h2>Konto löschen</h2></div><div class="card-body">
+    <p class="small muted">Löscht das Benutzerkonto endgültig und meldet es ab. Was die Person erfasst hat (Anmeldungen, Kontaktversuche, Verlauf), bleibt mit ihrem Namen erhalten. Die verknüpfte Person in den Stammdaten bleibt bestehen. Nur sperren statt löschen: «Konto aktiv» ausschalten.</p>
+    <form method="post" action="/verwaltung/benutzer/<%= u.id %>/loeschen" data-confirm="Benutzerkonto «<%= u.username %>» (<%= u.display_name %>) endgültig löschen?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-sm btn-danger" type="submit">Benutzerkonto löschen</button></form>
+  </div></div>
+  <% } %>
   <% } %>
 </div>
 <%- include('../partials/foot') %>
