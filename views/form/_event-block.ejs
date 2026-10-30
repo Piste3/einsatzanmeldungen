@@ -4,8 +4,9 @@
   const chosen = [].concat(values[`shifts_${e.id}`] || []).map(Number);
   const join = (...p) => p.filter(Boolean).join(' ');
   const antreten = (e.start_time || e.start_place) ? join('Antreten', e.start_time, e.start_place) : '';
-  // Abtretensort nur nennen, wenn er vom Antretensort abweicht
-  const abtreten = (e.end_time || e.end_place) ? join('Abtreten', e.end_time, e.end_place && e.end_place !== e.start_place ? e.end_place : '') : '';
+  // Leerer Abtretensort = gleich wie Antreten
+  const endPlace = e.end_place || e.start_place;
+  const abtreten = (e.end_time || endPlace) ? join('Abtreten', e.end_time, endPlace) : '';
   const meta = [antreten, abtreten, e.tenue ? `Tenue ${e.tenue.split('\n')[0]}` : ''].filter(Boolean);
 %>
 <fieldset class="ev-block<%= (ans || chosen.length) ? ' answered' : '' %>" data-event-block>
