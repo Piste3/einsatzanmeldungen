@@ -7,7 +7,7 @@ const registrations = require('./registrations');
 const { nowIso, localNow, fmtLocal } = require('../lib/dates');
 const { INQUIRY_STATUS, ATTEMPT_RESULT, CHANNEL } = require('../lib/labels');
 const { ValidationError } = require('./errors');
-const { BY_RANK } = require('../lib/sorting');
+const { rankOrder } = require('../lib/sorting');
 
 function attemptsFor(inquiryIds) {
   if (!inquiryIds.length) return new Map();
@@ -33,7 +33,7 @@ const ROW_ORDER = { nicht_erreicht: 0, whatsapp: 0, unsicher: 0, vorgesehen: 1, 
  * Reiter «Anfragen»: alle aktiven Personen ohne Anmeldung zu diesem Einsatz
  * plus alle Personen, die bereits angefragt wurden.
  */
-function listForEvent(eventId, { status = '', team = '', q = '' } = {}) {
+function listForEvent(eventId, { status = '', team = '', q = '', sort = 'rang' } = {}) {
   const where = `(p.status = 'aktiv' AND NOT EXISTS (SELECT 1 FROM registrations g WHERE g.event_id = ? AND g.person_id = p.id AND g.status <> 'ungueltig'))
     OR i.id IS NOT NULL`;
   const rows = db.all(`SELECT p.id AS person_id, p.first_name, p.last_name, p.mobile, p.email, r.short AS rank_short,
@@ -44,7 +44,7 @@ function listForEvent(eventId, { status = '', team = '', q = '' } = {}) {
     LEFT JOIN inquiries i ON i.person_id = p.id AND i.event_id = ?
     LEFT JOIN registrations g ON g.id = (SELECT id FROM registrations WHERE event_id = ? AND person_id = p.id AND status <> 'ungueltig' ORDER BY id DESC LIMIT 1)
     WHERE ${where}
-    ORDER BY ${BY_RANK}`, eventId, eventId, eventId);
+    ORDER BY ${rankOrder(sort)}`, eventId, eventId, eventId);
   let out = rows;
   if (team) {
     const inTeam = new Set(db.all('SELECT person_id FROM person_teams WHERE team_id = ?', Number(team)).map((x) => x.person_id));

@@ -75,7 +75,7 @@ Links steht die Navigation, rechts der Inhalt.
 - **Live:** Die grüne Anzeige «Live» oben bedeutet, dass sich die Seite von selbst aktualisiert, wenn jemand anderes etwas ändert. Während man selbst etwas eingibt, wartet die Aktualisierung und zeigt stattdessen «Es gibt neue Daten».
 - **Suchen beim Tippen:** Alle Suchfelder filtern sofort, Enter ist nicht nötig. Auswahlfelder wie Mannschaft oder Status wirken ebenfalls sofort.
 - **Auswahlfelder mit Suche:** Wo man eine Person oder einen Einsatz auswählt, kann man einfach tippen, z. B. «meier chr». Gross-/Kleinschreibung, Umlaute und die Reihenfolge der Wörter spielen keine Rolle.
-- **Sortierung nach Rang:** Personenlisten sind standardmässig vom tiefsten zum höchsten Rang sortiert, bei gleichem Rang nach Name.
+- **Sortierung nach Rang:** Personenlisten sind standardmässig vom höchsten zum tiefsten Rang sortiert, bei gleichem Rang nach Name. Im Auswahlfeld «Sortierung» lässt sich auf «Rang: tief → hoch» umschalten.
 - **Die Stelle bleibt:** Nach dem Speichern kommt man an dieselbe Stelle der Seite zurück.
 - **Nichts geht verloren:** Hat ein anderer Teil der Seite noch ungespeicherte Eingaben, fragt der Einsatzplaner vor dem Speichern nach. Beim Verlassen einer Seite mit ungespeicherten Eingaben warnt der Browser.
 - **Gleichzeitig bearbeiten:** Bearbeitet jemand denselben Eintrag, steht oben ein Hinweis. Speichern zwei Personen gleichzeitig, zeigt der Einsatzplaner beide Stände an, statt still zu überschreiben.
@@ -183,7 +183,7 @@ Jede Anmeldung landet automatisch beim richtigen Einsatz – egal ob sie über d
 ![Einsatz › Anmeldungen](bilder/07-anmeldungen.jpg)
 
 - **Zähler pro Status** oben: ein Klick filtert die Liste.
-- **Sortierung:** «nach Rang» (Standard) oder «neueste zuerst». Daneben das Suchfeld.
+- **Sortierung:** «Rang: hoch → tief» (Standard), «Rang: tief → hoch» oder «neueste zuerst». Daneben das Suchfeld.
 - **Sammelaktionen:** mehrere Anmeldungen ankreuzen und gemeinsam bestätigen, den Status ändern oder exportieren.
 - **Bestätigen** direkt in der Zeile. Orange markierte Zeilen sind noch nicht bestätigt.
 - Bemerkungen der Mitglieder und Hinweise zur Verpflegung stehen in der Spalte «Bemerkung».
@@ -243,7 +243,7 @@ Der Reiter **Anfragen** zeigt alle aktiven Mitglieder, die sich für diesen Eins
 
 ![Einsatz › Anfragen](bilder/11-anfragen.jpg)
 
-- **Zähler pro Status** oben filtern die Liste mit einem Klick.
+- **Zähler pro Status** oben filtern die Liste mit einem Klick. Daneben Mannschaft, Sortierung nach Rang und Namenssuche.
 - Die **Mobilnummer** ist ein Anruf-Link; das Sprechblasen-Symbol daneben öffnet direkt den **WhatsApp-Chat**.
 - **Kontaktversuche** stehen mit Kanal (Tel / WA), Datum, Uhrzeit, wer es war, Ergebnis und Notiz.
 - **Erfassen** öffnet das Fenster für einen neuen Kontaktversuch.
@@ -305,7 +305,7 @@ Eine Karte pro Einsatz mit den Namen, gruppiert nach An, Unsicher, Ab und Offen.
 
 ### Filter
 
-Namenssuche, Zeitraum (nächste 2 Wochen bis nächstes Jahr), Mannschaft, «Nur mit offenen Einsätzen» oder «Nur mit Unsicheren», Sortierung (nach Rang, nach Name, meiste offen zuerst) und «Entwürfe» einblenden.
+Namenssuche, Zeitraum (nächste 2 Wochen bis nächstes Jahr), Mannschaft, «Nur mit offenen Einsätzen» oder «Nur mit Unsicheren», Sortierung (Rang hoch → tief oder tief → hoch, nach Name, meiste offen zuerst) und «Entwürfe» einblenden.
 
 | Anzeige | Bedeutung |
 |---|---|
@@ -365,7 +365,7 @@ Optionen: Zeilen mit leerem Baustein weglassen, Bestätigte als Teilnehmende ein
 
 Jede Person existiert genau einmal. Anmeldungen, Anfragen und Schichten verweisen nur auf sie.
 
-- **Suche** nach Name, E-Mail oder Mobilnummer (auch Namensvarianten), Filter nach Mannschaft, Rang und Status, Sortierung nach Rang oder Name.
+- **Suche** nach Name, E-Mail oder Mobilnummer (auch Namensvarianten), Filter nach Mannschaft, Rang und Status, Sortierung nach Rang (hoch → tief oder tief → hoch) oder Name.
 - **+ Neue Person** und **Bearbeiten** öffnen das Personenformular mit Rang, Mannschaften, Jahrgang, Mobil, E-Mail, Essenseinschränkungen und interner Bemerkung.
 - **Namensvarianten** wie «Chrigi» werden bei der Person gespeichert und bei Anmeldungen automatisch erkannt.
 - **Status setzen** für mehrere ausgewählte Personen (aktiv, inaktiv, ausgetreten). Inaktive erscheinen nirgends mehr als Vorschlag.
@@ -403,7 +403,7 @@ Konten anlegen, Rolle wählen (Admin oder Aufgebotsstelle) und mit einer Person 
 
 ![Einstellungen › Auswahllisten](bilder/24-auswahllisten.jpg)
 
-**Ränge** und **Mannschaften / Kader**. Die Reihenfolge der Ränge bestimmt die Sortierung: kleine Zahl = tiefer Rang.
+**Ränge** und **Mannschaften / Kader**. Die Reihenfolge der Ränge bestimmt die Sortierung: kleine Zahl = tiefer Rang, grosse Zahl = hoher Rang.
 
 ![Einstellungen › Vorlagen](bilder/25-vorlagen.jpg)
 

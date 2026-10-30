@@ -6,7 +6,7 @@ const live = require('../lib/live');
 const { nameKey } = require('../lib/normalize');
 const { nowIso, today } = require('../lib/dates');
 const { ConflictError, ValidationError } = require('./errors');
-const { BY_RANK } = require('../lib/sorting');
+const { rankOrder, NAME } = require('../lib/sorting');
 
 const FIELDS = ['first_name', 'last_name', 'status', 'rank_id', 'birth_date', 'birth_year', 'mobile', 'email', 'diet_category', 'diet_text', 'internal_note'];
 const FIELD_LABELS = {
@@ -40,7 +40,7 @@ function list({ q = '', team = '', rank = '', status = 'aktiv', sort = 'rang' } 
       OR EXISTS (SELECT 1 FROM person_aliases a WHERE a.person_id = p.id AND lower(a.first_name || ' ' || a.last_name) LIKE ?))`);
     params.push(like, like, like, `%${q.replace(/\s/g, '')}%`, like);
   }
-  const order = sort === 'name' ? 'p.last_name COLLATE NOCASE, p.first_name COLLATE NOCASE' : BY_RANK;
+  const order = sort === 'name' ? NAME : rankOrder(sort);
   return db.all(`${BASE_SELECT} ${where.length ? `WHERE ${where.join(' AND ')}` : ''} ORDER BY ${order}`, ...params);
 }
 

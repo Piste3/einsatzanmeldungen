@@ -2,7 +2,7 @@
 // Rückmeldungen: Mitglieder × anstehende Einsätze (An / Ab / Unsicher / Offen)
 const db = require('../db');
 const { today, addDays } = require('../lib/dates');
-const { BY_RANK } = require('../lib/sorting');
+const { rankOrder } = require('../lib/sorting');
 
 const PERIODS = {
   '2w': { label: 'nächste 2 Wochen', days: 14 },
@@ -41,7 +41,7 @@ function matrix({ team = '', period = '3m', sort = 'rang', includeDrafts = false
   if (team) { where += ' AND EXISTS (SELECT 1 FROM person_teams pt WHERE pt.person_id = p.id AND pt.team_id = ?)'; params.push(Number(team)); }
   const people = db.all(`SELECT p.*, r.short AS rank_short,
       (SELECT group_concat(t.name, ', ') FROM person_teams pt JOIN teams t ON t.id = pt.team_id WHERE pt.person_id = p.id) AS teams
-    FROM persons p LEFT JOIN ranks r ON r.id = p.rank_id WHERE ${where} ORDER BY ${BY_RANK}`, ...params);
+    FROM persons p LEFT JOIN ranks r ON r.id = p.rank_id WHERE ${where} ORDER BY ${rankOrder(sort)}`, ...params);
   const ids = evts.map((e) => e.id);
   const regs = new Map();
   const inqs = new Map();

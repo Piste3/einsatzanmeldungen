@@ -145,7 +145,7 @@ router.get('/einsaetze/:id', loadEvent, (req, res) => {
 // Reiter «Anmeldungen»
 router.get('/einsaetze/:id/anmeldungen', loadEvent, (req, res) => {
   const e = req.event;
-  const filters = { status: req.query.status || '', q: req.query.q || '', sort: req.query.sort === 'neu' ? 'neu' : 'rang' };
+  const filters = { status: req.query.status || '', q: req.query.q || '', sort: ['neu', 'rang_auf'].includes(req.query.sort) ? req.query.sort : 'rang' };
   const list = registrations.listForEvent(e.id, filters);
   const canSeeDiet = (r) => r.person_id && persons.canSeeDiet(req.user, r.person_id);
   const dietOf = (r) => {
@@ -185,7 +185,7 @@ router.get('/einsaetze/:id/anmeldungen', loadEvent, (req, res) => {
 // Reiter «Anfragen»
 router.get('/einsaetze/:id/anfragen', loadEvent, (req, res) => {
   const e = req.event;
-  const filters = { status: req.query.status || '', team: req.query.team || '', q: req.query.q || '' };
+  const filters = { status: req.query.status || '', team: req.query.team || '', q: req.query.q || '', sort: req.query.sort === 'rang_auf' ? 'rang_auf' : 'rang' };
   const list = inquiries.listForEvent(e.id, filters);
   const format = wantsExport(req);
   if (format) {
