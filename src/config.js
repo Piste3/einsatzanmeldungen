@@ -34,7 +34,7 @@ module.exports = {
     clientSecret: env.MS_CLIENT_SECRET || '',
   },
   // Wer das Anmeldeformular einbetten darf (CSP frame-ancestors)
-  formFrameAncestors: frameAncestors(env.FORM_FRAME_ANCESTORS || "'self' https://*.clubdesk.com"),
+  formFrameAncestors: frameAncestors(env.FORM_FRAME_ANCESTORS || "'self' https://*.clubdesk.com https://web.kkb.ch"),
   smtp: {
     host: env.SMTP_HOST || '',
     port: Number(env.SMTP_PORT || 587),
