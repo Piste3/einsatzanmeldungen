@@ -170,4 +170,39 @@ function displayName(p) {
   return `${p.rank_short ? `${p.rank_short} ` : ''}${p.first_name} ${p.last_name}`;
 }
 
-module.exports = { get, list, create, update, addAlias, removeAlias, canSeeDiet, displayName, setTeams, FIELD_LABELS, lastChange };
+// Was beim Löschen einer Person mit verschwindet (für die Rückfrage)
+function deletionImpact(id) {
+  const n = (sql) => db.one(sql, id).n;
+  return {
+    registrations: n('SELECT COUNT(*) AS n FROM registrations WHERE person_id = ?'),
+    inquiries: n('SELECT COUNT(*) AS n FROM inquiries WHERE person_id = ?'),
+    leaderOf: n('SELECT COUNT(*) AS n FROM events WHERE leader_person_id = ?'),
+    user: db.one('SELECT username FROM users WHERE person_id = ?', id)?.username || null,
+  };
+}
+
+/**
+ * Person endgültig löschen, inkl. ihrer Anmeldungen, Schichtzuteilungen und Anfragen.
+ * Einsatzleitung und Benutzerverknüpfung werden geleert; der Verlauf bleibt als Text erhalten.
+ */
+function remove(id, user) {
+  const p = get(id);
+  if (!p) throw new ValidationError(['Diese Person existiert nicht mehr.']);
+  const name = `${p.first_name} ${p.last_name}`;
+  const eventIds = db.all('SELECT DISTINCT event_id FROM registrations WHERE person_id = ? UNION SELECT event_id FROM inquiries WHERE person_id = ?', id, id).map((r) => r.event_id);
+  db.tx(() => {
+    db.run('DELETE FROM inquiries WHERE person_id = ?', id);
+    db.run('UPDATE inquiries SET registration_id = NULL WHERE registration_id IN (SELECT id FROM registrations WHERE person_id = ?)', id);
+    db.run('UPDATE mail_outbox SET registration_id = NULL WHERE registration_id IN (SELECT id FROM registrations WHERE person_id = ?)', id);
+    db.run('DELETE FROM registrations WHERE person_id = ?', id);
+    db.run('UPDATE events SET leader_person_id = NULL WHERE leader_person_id = ?', id);
+    db.run('UPDATE users SET person_id = NULL WHERE person_id = ?', id);
+    db.run('UPDATE audit_log SET person_id = NULL WHERE person_id = ?', id);
+    db.run('DELETE FROM persons WHERE id = ?', id);
+    audit.log({ entity: 'person', entityId: id, action: 'delete', summary: `${user.display_name} hat ${name} gelöscht`, user });
+  });
+  live.notify('persons', 'cockpit', 'feedback', 'clarifications', ...eventIds.map((e) => `event:${e}`));
+  return name;
+}
+
+module.exports = { get, list, create, update, remove, deletionImpact, addAlias, removeAlias, canSeeDiet, displayName, setTeams, FIELD_LABELS, lastChange };

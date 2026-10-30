@@ -91,3 +91,23 @@ test('Status: Bestätigen erzeugt Mail, Rückzug entfernt Schichten', () => {
   assert.equal(db.one('SELECT COUNT(*) AS n FROM shift_assignments WHERE registration_id = ?', id).n, 0);
   assert.throws(() => registrations.setStatus(id, 'bestaetigt', system, { expected: 'neu' }));
 });
+
+test('Person löschen entfernt Anmeldungen und Anfragen, Einsätze bleiben', () => {
+  const { anna, offen } = setup();
+  const reg = registrations.create({ eventId: offen, personId: anna, matchType: 'auto', source: 'telefon', wishes: [], user: system });
+  const shift = events.shiftsOf(offen)[0];
+  registrations.setShifts(reg, [shift.id], system);
+  db.run("INSERT INTO inquiries (event_id, person_id, status, registration_id, created_at, updated_at) VALUES (?, ?, 'zugesagt', ?, '', '')", offen, anna, reg);
+  db.run('UPDATE events SET leader_person_id = ? WHERE id = ?', anna, offen);
+
+  const impact = persons.deletionImpact(anna);
+  assert.deepEqual([impact.registrations, impact.inquiries, impact.leaderOf], [1, 1, 1]);
+  assert.equal(persons.remove(anna, system), 'Anna Roth');
+
+  assert.equal(persons.get(anna), null);
+  assert.equal(db.one('SELECT COUNT(*) AS n FROM registrations').n, 0);
+  assert.equal(db.one('SELECT COUNT(*) AS n FROM shift_assignments').n, 0);
+  assert.equal(db.one('SELECT COUNT(*) AS n FROM inquiries').n, 0);
+  assert.equal(events.get(offen).leader_person_id, null);
+  assert.ok(db.one("SELECT 1 FROM audit_log WHERE action = 'delete' AND summary LIKE '%Anna Roth gelöscht%'"));
+});

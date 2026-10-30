@@ -163,7 +163,7 @@ router.get('/personen/:id', (req, res) => {
 router.get('/personen/:id/bearbeiten', auth.requireAdmin, (req, res) => {
   const p = persons.get(Number(req.params.id));
   if (!p) return res.redirect('/personen');
-  res.render('pages/person-form', { title: `${p.first_name} ${p.last_name} bearbeiten`, p, isNew: false, errors: [], from: '', editKey: `person:${p.id}`, ...options() });
+  res.render('pages/person-form', { title: `${p.first_name} ${p.last_name} bearbeiten`, p, isNew: false, errors: [], from: '', editKey: `person:${p.id}`, impact: persons.deletionImpact(p.id), ...options() });
 });
 
 router.post('/personen/:id/bearbeiten', auth.requireAdmin, (req, res, next) => {
@@ -188,6 +188,12 @@ router.post('/personen/:id/bearbeiten', auth.requireAdmin, (req, res, next) => {
     }
     next(err);
   }
+});
+
+router.post('/personen/:id/loeschen', auth.requireAdmin, (req, res) => {
+  const name = persons.remove(Number(req.params.id), req.user);
+  flash(res, 'success', `${name} wurde gelöscht.`);
+  res.redirect('/personen');
 });
 
 router.post('/personen/:id/alias', auth.requireAdmin, (req, res) => {
