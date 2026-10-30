@@ -7,6 +7,7 @@ const registrations = require('./registrations');
 const { nowIso, localNow, fmtLocal } = require('../lib/dates');
 const { INQUIRY_STATUS, ATTEMPT_RESULT, CHANNEL } = require('../lib/labels');
 const { ValidationError } = require('./errors');
+const { BY_RANK } = require('../lib/sorting');
 
 function attemptsFor(inquiryIds) {
   if (!inquiryIds.length) return new Map();
@@ -43,7 +44,7 @@ function listForEvent(eventId, { status = '', team = '', q = '' } = {}) {
     LEFT JOIN inquiries i ON i.person_id = p.id AND i.event_id = ?
     LEFT JOIN registrations g ON g.id = (SELECT id FROM registrations WHERE event_id = ? AND person_id = p.id AND status <> 'ungueltig' ORDER BY id DESC LIMIT 1)
     WHERE ${where}
-    ORDER BY p.last_name COLLATE NOCASE, p.first_name COLLATE NOCASE`, eventId, eventId, eventId);
+    ORDER BY ${BY_RANK}`, eventId, eventId, eventId);
   let out = rows;
   if (team) {
     const inTeam = new Set(db.all('SELECT person_id FROM person_teams WHERE team_id = ?', Number(team)).map((x) => x.person_id));

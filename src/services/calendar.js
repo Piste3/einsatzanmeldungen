@@ -9,6 +9,7 @@ const mailer = require('../lib/mailer');
 const { render } = require('../lib/template');
 const { buildCalendar } = require('../lib/ics');
 const { nowIso, fmtDateLong, fmtDateShort, fmtDate } = require('../lib/dates');
+const { BY_RANK } = require('../lib/sorting');
 
 // Bausteine, gruppiert wie in den Einstellungen angezeigt
 function blockGroups() {
@@ -41,7 +42,7 @@ function participants(event, shift) {
        JOIN persons p ON p.id = g.person_id LEFT JOIN ranks r ON r.id = p.rank_id WHERE a.shift_id = ? AND g.status = 'bestaetigt'`
     : `SELECT p.*, r.short AS rank_short FROM registrations g JOIN persons p ON p.id = g.person_id LEFT JOIN ranks r ON r.id = p.rank_id
        WHERE g.event_id = ? AND g.status = 'bestaetigt'`;
-  return db.all(`${sql} ORDER BY coalesce(r.sort, 0) DESC, p.last_name, p.first_name`, shift ? shift.id : event.id);
+  return db.all(`${sql} ORDER BY ${BY_RANK}`, shift ? shift.id : event.id);
 }
 
 function timesOf(event, shift) {

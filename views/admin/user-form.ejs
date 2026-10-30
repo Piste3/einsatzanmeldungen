@@ -15,7 +15,7 @@
         <div class="field"><label for="email">E-Mail</label><input id="email" type="email" name="email" value="<%= u.email || '' %>"><div class="field-hint">für die spätere Verknüpfung mit Microsoft</div></div>
       </div>
       <div class="field"><label for="person_id">Verknüpfte Person (Stammdaten)</label>
-        <select id="person_id" name="person_id"><option value="">–</option><% for (const p of persons) { %><option value="<%= p.id %>" <%= Number(u.person_id) === p.id ? 'selected' : '' %>><%= p.last_name %> <%= p.first_name %><%= p.rank_short ? ` (${p.rank_short})` : '' %></option><% } %></select>
+        <select id="person_id" name="person_id" data-search><option value="">–</option><% for (const p of persons) { %><option value="<%= p.id %>" <%= Number(u.person_id) === p.id ? 'selected' : '' %>><%= p.last_name %> <%= p.first_name %><%= p.rank_short ? ` (${p.rank_short})` : '' %></option><% } %></select>
         <div class="field-hint">Daraus kommen Rang und Name als «Absender» im Aufgebot.</div></div>
       <fieldset class="fieldset mt">
         <legend>Zwei-Faktor-Anmeldung</legend>

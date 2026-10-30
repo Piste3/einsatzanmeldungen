@@ -2,6 +2,7 @@
 // Rückmeldungen: Mitglieder × anstehende Einsätze (An / Ab / Unsicher / Offen)
 const db = require('../db');
 const { today, addDays } = require('../lib/dates');
+const { BY_RANK } = require('../lib/sorting');
 
 const PERIODS = {
   '2w': { label: 'nächste 2 Wochen', days: 14 },
@@ -32,7 +33,7 @@ function upcomingEvents(period = '3m') {
     today(), addDays(today(), days));
 }
 
-function matrix({ team = '', period = '3m', sort = 'name', includeDrafts = false, q = '', only = '' } = {}) {
+function matrix({ team = '', period = '3m', sort = 'rang', includeDrafts = false, q = '', only = '' } = {}) {
   let evts = upcomingEvents(period);
   if (!includeDrafts) evts = evts.filter((e) => e.status === 'veroeffentlicht');
   const params = [];
@@ -40,7 +41,7 @@ function matrix({ team = '', period = '3m', sort = 'name', includeDrafts = false
   if (team) { where += ' AND EXISTS (SELECT 1 FROM person_teams pt WHERE pt.person_id = p.id AND pt.team_id = ?)'; params.push(Number(team)); }
   const people = db.all(`SELECT p.*, r.short AS rank_short,
       (SELECT group_concat(t.name, ', ') FROM person_teams pt JOIN teams t ON t.id = pt.team_id WHERE pt.person_id = p.id) AS teams
-    FROM persons p LEFT JOIN ranks r ON r.id = p.rank_id WHERE ${where} ORDER BY p.last_name COLLATE NOCASE, p.first_name COLLATE NOCASE`, ...params);
+    FROM persons p LEFT JOIN ranks r ON r.id = p.rank_id WHERE ${where} ORDER BY ${BY_RANK}`, ...params);
   const ids = evts.map((e) => e.id);
   const regs = new Map();
   const inqs = new Map();
@@ -69,7 +70,9 @@ function matrix({ team = '', period = '3m', sort = 'name', includeDrafts = false
   }
   if (only === 'offen') rows = rows.filter((r) => r.openCount > 0);
   if (only === 'unsicher') rows = rows.filter((r) => r.cells.some((c) => c.state === 'unsicher'));
-  if (sort === 'offen') rows.sort((a, b) => b.openCount - a.openCount || a.person.last_name.localeCompare(b.person.last_name, 'de'));
+  // Standard: nach Rang (aus der Abfrage); sort() ist stabil, gleiche Werte behalten die Rangfolge
+  if (sort === 'offen') rows.sort((a, b) => b.openCount - a.openCount);
+  if (sort === 'name') rows.sort((a, b) => a.person.last_name.localeCompare(b.person.last_name, 'de') || a.person.first_name.localeCompare(b.person.first_name, 'de'));
   return { events: evts, rows, totals, allCount };
 }
 

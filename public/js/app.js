@@ -17,7 +17,7 @@
       t.form.requestSubmit();
       return;
     }
-    const auto = t.closest('form[data-autosubmit]');
+    const auto = t.closest('form[data-autosubmit]') || (t.form && t.form.matches('[data-autosubmit]') ? t.form : null);
     if (auto && (t.tagName === 'SELECT' || ['checkbox', 'date', 'radio'].includes(t.type))) liveFilter(auto, 0);
     if (t.matches('[data-select-all]')) {
       const name = t.getAttribute('data-select-all');
@@ -44,6 +44,7 @@
     if (t.matches('[data-add-select]') && t.value) {
       const form = t.closest('form');
       form.action = `/anmeldungen/${t.value}/schichten`;
+      saveScroll();
       form.submit();
     }
     if (t.matches('[data-preview-event]')) {
@@ -84,7 +85,9 @@
       const active = document.activeElement;
       const keep = active && active.name && cur.contains(active) ? { name: active.name, value: active.value, start: active.selectionStart, end: active.selectionEnd } : null;
       $$('.flash', next).forEach((f) => f.remove());
+      const boxLeft = $$('.table-wrap, .fb-wrap', cur).map((b) => b.scrollLeft);
       cur.innerHTML = next.innerHTML;
+      $$('.table-wrap, .fb-wrap', cur).forEach((b, i) => { if (boxLeft[i]) b.scrollLeft = boxLeft[i]; });
       history.replaceState(null, '', url.pathname + url.search);
       if (keep) {
         const el = $$('[name]', cur).find((e) => e.name === keep.name && e.closest('form') && isFilterForm(e.closest('form')));
@@ -259,7 +262,7 @@
     }
     $$('details.menu[open]').forEach((d) => d.removeAttribute('open'));
     dlg.showModal();
-    const first = dlg.querySelector('select[name=result]') || dlg.querySelector('select, textarea, input[type=text]');
+    const first = dlg.querySelector('select[name=result]') || $$('select, textarea, input[type=text]', dlg).find((el) => !el.hidden && !el.disabled);
     if (first) first.focus();
   }
 
@@ -357,10 +360,12 @@
       if (!next || !cur || isBusy()) { showStaleHint(); return; }
       const before = new Set($$('[data-row-id]', cur).map((e) => e.dataset.rowId));
       const scroll = window.scrollY;
+      const boxPos = $$('.table-wrap, .fb-wrap', cur).map((b) => [b.scrollTop, b.scrollLeft]);
       // Meldungen nicht erneut anzeigen
       $$('.flash', next).forEach((f) => f.remove());
       deferred = false;
       cur.innerHTML = next.innerHTML;
+      $$('.table-wrap, .fb-wrap', cur).forEach((b, i) => { if (boxPos[i]) { b.scrollTop = boxPos[i][0]; b.scrollLeft = boxPos[i][1]; } });
       const nav = doc.querySelector('.nav');
       if (nav) $('.nav').innerHTML = nav.innerHTML;
       window.scrollTo(0, scroll);
@@ -380,4 +385,123 @@
   }
 
   connect();
+
+  // ---------- Scrollposition erhalten ----------
+  // Nach dem Absenden eines Formulars kommt man meist auf dieselbe Seite zurück: dann an die alte Stelle scrollen,
+  // auch in Tabellen mit eigenem Scrollbereich.
+  const SCROLL_KEY = 'kkb:scroll';
+  const scrollBoxes = () => $$('.table-wrap, .fb-wrap');
+  function saveScroll() {
+    try {
+      sessionStorage.setItem(SCROLL_KEY, JSON.stringify({
+        path: location.pathname, at: Date.now(), y: window.scrollY,
+        boxes: scrollBoxes().map((b) => [b.scrollTop, b.scrollLeft]),
+      }));
+    } catch { /* ohne Speicher eben nicht */ }
+  }
+  function restoreScroll() {
+    let st = null;
+    try { st = JSON.parse(sessionStorage.getItem(SCROLL_KEY) || 'null'); sessionStorage.removeItem(SCROLL_KEY); } catch { return; }
+    if (!st || st.path !== location.pathname || Date.now() - st.at > 30000) return;
+    const apply = () => {
+      const boxes = scrollBoxes();
+      (st.boxes || []).forEach(([top, left], i) => { if (boxes[i]) { boxes[i].scrollTop = top; boxes[i].scrollLeft = left; } });
+      window.scrollTo(0, st.y);
+    };
+    apply();
+    // nach dem Laden von Schriften und Bildern stimmt die Höhe erst ganz
+    if (document.readyState !== 'complete') window.addEventListener('load', apply, { once: true });
+    requestAnimationFrame(apply);
+  }
+  document.addEventListener('submit', (ev) => {
+    if (!ev.defaultPrevented && (ev.target.getAttribute('method') || 'get').toLowerCase() === 'post') saveScroll();
+  });
+  restoreScroll();
+  window.addEventListener('pageshow', (ev) => { if (ev.persisted) restoreScroll(); });
+
+  // ---------- Durchsuchbare Auswahlfelder ----------
+  // <select data-search> wird zu einem Eingabefeld mit Vorschlagsliste: tippen filtert die Einträge
+  // (Gross/klein, Umlaute und Reihenfolge der Wörter egal). Das echte <select> bleibt im Formular und wird gesetzt.
+  const fold = (s) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ä/g, 'a').replace(/ö/g, 'o').replace(/ü/g, 'u');
+  function enhanceSelect(sel) {
+    if (sel.dataset.enhanced) return;
+    sel.dataset.enhanced = '1';
+    const wrap = document.createElement('div');
+    wrap.className = 'combo';
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'combo-input';
+    input.autocomplete = 'off';
+    input.setAttribute('role', 'combobox');
+    input.setAttribute('aria-autocomplete', 'list');
+    if (sel.id) { input.id = sel.id; sel.removeAttribute('id'); }
+    if (sel.getAttribute('aria-label')) input.setAttribute('aria-label', sel.getAttribute('aria-label'));
+    if (sel.required) { input.required = true; sel.required = false; }
+    if (sel.style.width) wrap.style.width = sel.style.width;
+    const placeholderOpt = [...sel.options].find((o) => o.value === '');
+    input.placeholder = placeholderOpt && placeholderOpt.text.trim() !== '–' ? placeholderOpt.text : 'Tippen zum Suchen …';
+    const list = document.createElement('div');
+    list.className = 'combo-list';
+    list.setAttribute('role', 'listbox');
+    sel.parentNode.insertBefore(wrap, sel);
+    wrap.append(input, list, sel);
+    sel.hidden = true;
+    sel.tabIndex = -1;
+    const label = () => (sel.value ? sel.selectedOptions[0].text.trim() : '');
+    input.value = label();
+    input.defaultValue = input.value;
+    let items = [];
+    let active = -1;
+    function render() {
+      const words = fold(input.value === label() ? '' : input.value).split(/\s+/).filter(Boolean);
+      // Leeren Eintrag nur anbieten, wenn das Feld geleert werden darf (Platzhalter «–»)
+      items = [...sel.options].filter((o) => !o.disabled && (o.value !== '' || (!input.required && o.text.trim() === '–')))
+        .filter((o) => { const t = fold(o.text); return words.every((w) => t.includes(w)); }).slice(0, 200);
+      list.innerHTML = '';
+      if (!items.length) { list.innerHTML = '<div class="combo-empty">Keine Treffer</div>'; }
+      items.forEach((o, i) => {
+        const div = document.createElement('div');
+        div.className = `combo-opt${o.value === sel.value ? ' selected' : ''}${i === active ? ' active' : ''}`;
+        div.textContent = o.value === '' ? '– keine Auswahl –' : o.text.trim();
+        div.setAttribute('role', 'option');
+        div.addEventListener('mousedown', (ev) => { ev.preventDefault(); choose(o); });
+        list.appendChild(div);
+      });
+      const act = list.children[active];
+      if (act && act.scrollIntoView) act.scrollIntoView({ block: 'nearest' });
+    }
+    function open() { wrap.classList.add('open'); active = -1; render(); }
+    function close() { wrap.classList.remove('open'); }
+    function choose(o) {
+      const changed = sel.value !== o.value;
+      sel.value = o.value;
+      input.value = label();
+      close();
+      if (changed) sel.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    input.addEventListener('focus', () => { input.select(); open(); });
+    input.addEventListener('click', open);
+    input.addEventListener('input', () => { wrap.classList.add('open'); active = 0; render(); });
+    input.addEventListener('blur', () => { close(); if (input.value.trim() === '' && !input.required) { if (sel.value !== '' && placeholderOpt) choose(placeholderOpt); } input.value = label(); });
+    input.addEventListener('keydown', (ev) => {
+      if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') {
+        ev.preventDefault();
+        if (!wrap.classList.contains('open')) open();
+        active = Math.max(0, Math.min(items.length - 1, active + (ev.key === 'ArrowDown' ? 1 : -1)));
+        render();
+      } else if (ev.key === 'Enter') {
+        if (wrap.classList.contains('open') && items.length) { ev.preventDefault(); choose(items[Math.max(0, active)]); }
+      } else if (ev.key === 'Escape') {
+        if (wrap.classList.contains('open')) { ev.preventDefault(); ev.stopPropagation(); close(); input.value = label(); }
+      }
+    });
+    // Wird das <select> von aussen gesetzt (z. B. Dialog vorbelegt), Anzeige nachziehen
+    sel.addEventListener('change', () => { if (document.activeElement !== input) input.value = label(); });
+    new MutationObserver(() => { if (document.activeElement !== input) input.value = label(); }).observe(sel, { attributes: true, childList: true, subtree: true });
+  }
+  const enhanceAll = (root = document) => $$('select[data-search]', root).forEach(enhanceSelect);
+  enhanceAll();
+  new MutationObserver((muts) => {
+    for (const m of muts) for (const n of m.addedNodes) if (n.nodeType === 1) { if (n.matches('select[data-search]')) enhanceSelect(n); else enhanceAll(n); }
+  }).observe(document.body, { childList: true, subtree: true });
 })();

@@ -8,6 +8,7 @@ const { nowIso } = require('../lib/dates');
 const { REG_STATUS, REG_STATUS_MANUAL, SOURCE } = require('../lib/labels');
 const { ValidationError, ConflictError } = require('./errors');
 const { nameKey } = require('../lib/normalize');
+const { BY_RANK } = require('../lib/sorting');
 
 const SELECT = `
   SELECT g.*, p.first_name, p.last_name, p.email, p.mobile, p.birth_date, p.birth_year, r.short AS rank_short,
@@ -41,7 +42,7 @@ function get(id) {
   return hydrate([db.one(`${SELECT} WHERE g.id = ?`, id)].filter(Boolean))[0] || null;
 }
 
-function listForEvent(eventId, { status = '', q = '' } = {}) {
+function listForEvent(eventId, { status = '', q = '', sort = 'rang' } = {}) {
   const where = ['g.event_id = ?'];
   const params = [eventId];
   if (status === 'zu_pruefen') where.push("g.status IN ('unsicher','rueckfrage')");
@@ -50,7 +51,7 @@ function listForEvent(eventId, { status = '', q = '' } = {}) {
     where.push("(lower(coalesce(p.first_name,'') || ' ' || coalesce(p.last_name,'')) LIKE ? OR lower(coalesce(g.entered_first_name,'') || ' ' || coalesce(g.entered_last_name,'')) LIKE ?)");
     params.push(`%${q.toLowerCase()}%`, `%${q.toLowerCase()}%`);
   }
-  return hydrate(db.all(`${SELECT} WHERE ${where.join(' AND ')} ORDER BY g.registered_at DESC, g.id DESC`, ...params));
+  return hydrate(db.all(`${SELECT} WHERE ${where.join(' AND ')} ORDER BY ${sort === 'neu' ? 'g.registered_at DESC, g.id DESC' : `p.id IS NULL, ${BY_RANK}, g.id`}`, ...params));
 }
 
 function listForPerson(personId) {

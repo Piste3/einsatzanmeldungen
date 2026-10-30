@@ -10,7 +10,7 @@ const router = express.Router();
 
 router.get('/rueckmeldungen', (req, res) => {
   const filters = {
-    team: req.query.team || '', period: req.query.period || '3m', sort: req.query.sort || 'name', drafts: req.query.drafts || '',
+    team: req.query.team || '', period: req.query.period || '3m', sort: req.query.sort || 'rang', drafts: req.query.drafts || '',
     q: String(req.query.q || '').trim(), only: req.query.only || '', view: req.query.view === 'einsatz' ? 'einsatz' : 'tabelle',
   };
   const data = feedback.matrix({ ...filters, includeDrafts: filters.drafts === '1' });

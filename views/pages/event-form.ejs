@@ -32,7 +32,7 @@
         <div class="field"><label for="start_time">Beginn (Antreten)</label><input id="start_time" name="start_time" type="time" value="<%= e.start_time || '' %>"></div>
         <div class="field"><label for="end_time">Ende (Abtreten)</label><input id="end_time" name="end_time" type="time" value="<%= e.end_time || '' %>"></div>
         <div class="field"><label for="leader">Einsatzleitung</label>
-          <select id="leader" name="leader_person_id"><option value="">–</option>
+          <select id="leader" name="leader_person_id" data-search><option value="">–</option>
             <% for (const p of leaders) { %><option value="<%= p.id %>" <%= Number(e.leader_person_id) === p.id ? 'selected' : '' %>><%= p.rank_short ? p.rank_short + ' ' : '' %><%= p.first_name %> <%= p.last_name %></option><% } %>
           </select></div>
       </div>

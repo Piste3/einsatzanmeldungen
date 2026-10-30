@@ -24,7 +24,7 @@ router.get('/verwaltung', (req, res) => res.redirect('/verwaltung/benutzer'));
 
 function personOptions() {
   return db.all(`SELECT p.id, p.first_name, p.last_name, r.short AS rank_short FROM persons p LEFT JOIN ranks r ON r.id = p.rank_id
-    WHERE p.status = 'aktiv' ORDER BY p.last_name, p.first_name`);
+    WHERE p.status = 'aktiv' ORDER BY ${BY_RANK}`);
 }
 
 // ---- Benutzer ----
@@ -284,6 +284,7 @@ router.post('/verwaltung/bestaetigungsmail', async (req, res, next) => {
 
 // ---- System: Version, Update, Neustart ----
 const updater = require('../services/updater');
+const { BY_RANK } = require('../lib/sorting');
 
 router.get('/verwaltung/system', async (req, res, next) => {
   try {

@@ -26,7 +26,7 @@ function options() {
 }
 
 router.get('/personen', (req, res) => {
-  const filters = { q: req.query.q || '', team: req.query.team || '', rank: req.query.rank || '', status: req.query.status || 'aktiv', sort: req.query.sort || 'name' };
+  const filters = { q: req.query.q || '', team: req.query.team || '', rank: req.query.rank || '', status: req.query.status || 'aktiv', sort: req.query.sort || 'rang' };
   const list = persons.list(filters);
   const isAdmin = auth.isAdmin(req.user);
   const format = wantsExport(req);

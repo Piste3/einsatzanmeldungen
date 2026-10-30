@@ -26,7 +26,7 @@
     </div>
     <div class="card">
       <div class="card-head"><h2>Vorschau mit einem echten Einsatz</h2>
-        <select name="einsatz" style="width:auto" data-preview-event><% for (const e of eventOptions) { %><option value="<%= e.id %>" <%= previewEvent && previewEvent.id === e.id ? 'selected' : '' %>><%= e.name %> (<%= h.fmtDate(e.date) %>)</option><% } %></select></div>
+        <select name="einsatz" style="width:auto" data-preview-event data-search><% for (const e of eventOptions) { %><option value="<%= e.id %>" <%= previewEvent && previewEvent.id === e.id ? 'selected' : '' %>><%= e.name %> (<%= h.fmtDate(e.date) %>)</option><% } %></select></div>
       <div class="card-body ics-preview">
         <% if (!preview) { %><p class="muted">Noch kein Einsatz vorhanden.</p><% } else { %>
           <div class="title"><%= preview.summary %></div>

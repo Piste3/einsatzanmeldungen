@@ -20,7 +20,7 @@
     <option value="unsicher" <%= filters.only === 'unsicher' ? 'selected' : '' %>>Nur mit Unsicheren</option>
   </select>
   <% if (filters.view === 'tabelle') { %>
-  <select name="sort"><option value="name" <%= filters.sort === 'name' ? 'selected' : '' %>>nach Name</option><option value="offen" <%= filters.sort === 'offen' ? 'selected' : '' %>>meiste offen zuerst</option></select>
+  <select name="sort"><option value="rang" <%= filters.sort === 'rang' ? 'selected' : '' %>>nach Rang</option><option value="name" <%= filters.sort === 'name' ? 'selected' : '' %>>nach Name</option><option value="offen" <%= filters.sort === 'offen' ? 'selected' : '' %>>meiste offen zuerst</option></select>
   <% } %>
   <label class="check"><input type="checkbox" name="drafts" value="1" <%= filters.drafts === '1' ? 'checked' : '' %>> Entwürfe</label>
 </form>

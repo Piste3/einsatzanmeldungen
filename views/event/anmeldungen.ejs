@@ -6,13 +6,14 @@
 %>
 <div class="row-between mb">
   <div class="chips">
-    <a class="chip badge-gray <%= !filters.status ? 'active' : '' %>" href="<%= h.withQuery(base, { q: filters.q }) %>">Alle · <%= total %></a>
+    <a class="chip badge-gray <%= !filters.status ? 'active' : '' %>" href="<%= h.withQuery(base, { q: filters.q, sort: filters.sort === 'neu' ? 'neu' : undefined }) %>">Alle · <%= total %></a>
     <% for (const st of chipOrder) { if (!counts[st] && !['neu','bestaetigt'].includes(st)) continue; const l = h.labels.REG_STATUS[st]; %>
-      <a class="chip badge-<%= l.tone %> <%= filters.status === st ? 'active' : '' %>" href="<%= h.withQuery(base, { status: st, q: filters.q }) %>"><%= l.label %> · <%= counts[st] || 0 %></a>
+      <a class="chip badge-<%= l.tone %> <%= filters.status === st ? 'active' : '' %>" href="<%= h.withQuery(base, { status: st, q: filters.q, sort: filters.sort === 'neu' ? 'neu' : undefined }) %>"><%= l.label %> · <%= counts[st] || 0 %></a>
     <% } %>
   </div>
   <div class="row">
-    <form method="get" action="<%= base %>" class="search"><input type="hidden" name="status" value="<%= filters.status %>"><input type="search" name="q" value="<%= filters.q %>" placeholder="Filtern …"></form>
+    <select name="sort" form="anm-filter" aria-label="Sortierung" style="width:auto"><option value="rang" <%= filters.sort !== 'neu' ? 'selected' : '' %>>nach Rang</option><option value="neu" <%= filters.sort === 'neu' ? 'selected' : '' %>>neueste zuerst</option></select>
+    <form method="get" action="<%= base %>" class="search" id="anm-filter" data-autosubmit><input type="hidden" name="status" value="<%= filters.status %>"><input type="search" name="q" value="<%= filters.q %>" placeholder="Filtern …"></form>
     <button class="btn btn-sm" type="button" data-open-dialog="add-reg">+ Anmeldung erfassen</button>
   </div>
 </div>
@@ -93,7 +94,7 @@
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <div class="card-head"><h2>Anmeldung erfassen</h2></div>
     <div class="card-body">
-      <div class="field"><label>Person</label><select name="person_id" required><option value="">– wählen –</option><% for (const p of available) { %><option value="<%= p.id %>"><%= p.last_name %> <%= p.first_name %><%= p.rank_short ? ` (${p.rank_short})` : '' %></option><% } %></select></div>
+      <div class="field"><label>Person</label><select name="person_id" required data-search><option value="">– wählen –</option><% for (const p of available) { %><option value="<%= p.id %>"><%= p.last_name %> <%= p.first_name %><%= p.rank_short ? ` (${p.rank_short})` : '' %></option><% } %></select></div>
       <div class="field"><label>Quelle</label><select name="source"><option value="manuell">Manuell</option><option value="telefon">Telefon</option><option value="whatsapp">WhatsApp</option></select></div>
       <% if (event.shifts.length > 1) { %><div class="field"><label>Schichten</label><% for (const s of event.shifts) { %><label class="check"><input type="checkbox" name="shift_ids" value="<%= s.id %>"> <%= s.name %> <span class="muted"><%= h.fmtSpan(s.starts_at, s.ends_at) %></span></label><% } %></div><% } %>
       <div class="field"><label>Bemerkung</label><input type="text" name="remark"></div>
@@ -116,7 +117,7 @@
     <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="back" value="<%= back %>">
     <div class="card-head"><h2>Andere Person zuordnen <span class="hint" data-who></span></h2></div>
     <div class="card-body">
-      <div class="field"><label>Neue Person</label><select name="person_id" required><option value="">– wählen –</option><% for (const p of available) { %><option value="<%= p.id %>"><%= p.last_name %> <%= p.first_name %><%= p.rank_short ? ` (${p.rank_short})` : '' %></option><% } %></select></div>
+      <div class="field"><label>Neue Person</label><select name="person_id" required data-search><option value="">– wählen –</option><% for (const p of available) { %><option value="<%= p.id %>"><%= p.last_name %> <%= p.first_name %><%= p.rank_short ? ` (${p.rank_short})` : '' %></option><% } %></select></div>
       <label class="check"><input type="checkbox" name="keep_shifts" value="1" checked> Schichtzuteilungen mitnehmen</label>
       <input type="hidden" name="keep_shifts" value="0">
       <p class="small muted mt-s">Die Umhängung wird im Verlauf festgehalten (vorherige und neue Person, wer, wann).</p>

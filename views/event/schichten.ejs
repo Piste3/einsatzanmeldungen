@@ -43,7 +43,7 @@
       <% const addable = regs.filter((r) => !assignedIds.has(r.id)); if (multi && addable.length) { %>
         <form method="post" action="" class="card-body row" data-add-to-shift>
           <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="back" value="<%= back %>"><input type="hidden" name="add_shift" value="<%= col.id %>">
-          <select data-add-select aria-label="Person aus Anmeldungen hinzufügen"><option value="">+ Person aus Anmeldungen hinzufügen</option><% for (const r of addable) { %><option value="<%= r.id %>"><%= r.last_name %> <%= r.first_name %> (<%= h.labels.REG_STATUS[r.status].short %>)</option><% } %></select>
+          <select data-add-select data-search aria-label="Person aus Anmeldungen hinzufügen"><option value="">+ Person aus Anmeldungen hinzufügen</option><% for (const r of addable) { %><option value="<%= r.id %>"><%= r.last_name %> <%= r.first_name %> (<%= h.labels.REG_STATUS[r.status].short %>)</option><% } %></select>
         </form>
       <% } %>
     </div>

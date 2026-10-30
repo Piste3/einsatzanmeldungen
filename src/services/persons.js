@@ -6,6 +6,7 @@ const live = require('../lib/live');
 const { nameKey } = require('../lib/normalize');
 const { nowIso, today } = require('../lib/dates');
 const { ConflictError, ValidationError } = require('./errors');
+const { BY_RANK } = require('../lib/sorting');
 
 const FIELDS = ['first_name', 'last_name', 'status', 'rank_id', 'birth_date', 'birth_year', 'mobile', 'email', 'diet_category', 'diet_text', 'internal_note'];
 const FIELD_LABELS = {
@@ -27,7 +28,7 @@ function get(id) {
   return p;
 }
 
-function list({ q = '', team = '', rank = '', status = 'aktiv', sort = 'name' } = {}) {
+function list({ q = '', team = '', rank = '', status = 'aktiv', sort = 'rang' } = {}) {
   const where = [];
   const params = [];
   if (status && status !== 'alle') { where.push('p.status = ?'); params.push(status); }
@@ -39,7 +40,7 @@ function list({ q = '', team = '', rank = '', status = 'aktiv', sort = 'name' } 
       OR EXISTS (SELECT 1 FROM person_aliases a WHERE a.person_id = p.id AND lower(a.first_name || ' ' || a.last_name) LIKE ?))`);
     params.push(like, like, like, `%${q.replace(/\s/g, '')}%`, like);
   }
-  const order = sort === 'rang' ? 'coalesce(r.sort, 999) DESC, p.last_name, p.first_name' : 'p.last_name COLLATE NOCASE, p.first_name COLLATE NOCASE';
+  const order = sort === 'name' ? 'p.last_name COLLATE NOCASE, p.first_name COLLATE NOCASE' : BY_RANK;
   return db.all(`${BASE_SELECT} ${where.length ? `WHERE ${where.join(' AND ')}` : ''} ORDER BY ${order}`, ...params);
 }
 

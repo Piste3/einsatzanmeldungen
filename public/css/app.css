@@ -423,3 +423,13 @@ a.fb:hover, button.fb:hover { outline: 2px solid var(--border-strong); outline-o
 .pill { display: inline-block; padding: 2px 9px; border-radius: 999px; background: #f1f3f6; border: 1px solid var(--border); font-size: 12px; color: var(--text); text-decoration: none; cursor: pointer; font-family: inherit; }
 .pill:hover { background: #e7eaf0; }
 @media print { .fb-wrap { max-height: none; overflow: visible; } .fb-matrix thead th, .fb-matrix .fb-name, .fb-matrix tfoot td { position: static; } }
+
+/* Durchsuchbare Auswahlfelder */
+.combo { position: relative; width: 100%; }
+.combo-input { width: 100%; padding-right: 28px !important; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7385' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; }
+.combo-list { display: none; position: absolute; left: 0; right: 0; top: calc(100% + 3px); z-index: 50; max-height: 260px; overflow-y: auto; background: #fff; border: 1px solid var(--border-strong); border-radius: 8px; box-shadow: 0 8px 24px rgba(20, 28, 45, 0.14); padding: 4px; min-width: 220px; }
+.combo.open .combo-list { display: block; }
+.combo-opt { padding: 7px 10px; border-radius: 6px; cursor: pointer; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.combo-opt:hover, .combo-opt.active { background: #eef1f6; }
+.combo-opt.selected { font-weight: 650; color: var(--orange, #e8742a); }
+.combo-empty { padding: 8px 10px; color: var(--muted); font-size: 13px; }

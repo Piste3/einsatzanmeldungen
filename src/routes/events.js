@@ -12,6 +12,7 @@ const { flash } = require('../lib/view-helpers');
 const h = require('../lib/view-helpers');
 const { REG_STATUS, SOURCE, INQUIRY_STATUS, INQUIRY_ROW, MATCH_TYPE, DIET } = require('../lib/labels');
 const { ValidationError, ConflictError } = require('../services/errors');
+const { BY_RANK } = require('../lib/sorting');
 
 const router = express.Router();
 
@@ -144,7 +145,7 @@ router.get('/einsaetze/:id', loadEvent, (req, res) => {
 // Reiter «Anmeldungen»
 router.get('/einsaetze/:id/anmeldungen', loadEvent, (req, res) => {
   const e = req.event;
-  const filters = { status: req.query.status || '', q: req.query.q || '' };
+  const filters = { status: req.query.status || '', q: req.query.q || '', sort: req.query.sort === 'neu' ? 'neu' : 'rang' };
   const list = registrations.listForEvent(e.id, filters);
   const canSeeDiet = (r) => r.person_id && persons.canSeeDiet(req.user, r.person_id);
   const dietOf = (r) => {
@@ -177,7 +178,7 @@ router.get('/einsaetze/:id/anmeldungen', loadEvent, (req, res) => {
   const counts = {};
   for (const r of all) counts[r.status] = (counts[r.status] || 0) + 1;
   const available = db.all(`SELECT p.id, p.first_name, p.last_name, r.short AS rank_short FROM persons p LEFT JOIN ranks r ON r.id = p.rank_id
-    WHERE p.status = 'aktiv' AND NOT EXISTS (SELECT 1 FROM registrations g WHERE g.event_id = ? AND g.person_id = p.id) ORDER BY p.last_name, p.first_name`, e.id);
+    WHERE p.status = 'aktiv' AND NOT EXISTS (SELECT 1 FROM registrations g WHERE g.event_id = ? AND g.person_id = p.id) ORDER BY ${BY_RANK}`, e.id);
   res.render('pages/event', { title: `${e.name} · Anmeldungen`, tab: 'anmeldungen', list, counts, total: all.length, filters, available, dietOf });
 });
 

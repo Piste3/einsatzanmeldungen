@@ -9,7 +9,7 @@
   <select name="team"><option value="">Mannschaft: alle</option><% for (const t of teams) { %><option value="<%= t.id %>" <%= Number(filters.team) === t.id ? 'selected' : '' %>><%= t.name %></option><% } %></select>
   <select name="rank"><option value="">Rang: alle</option><% for (const r of ranks) { %><option value="<%= r.id %>" <%= Number(filters.rank) === r.id ? 'selected' : '' %>><%= r.name %></option><% } %></select>
   <select name="status"><option value="aktiv" <%= filters.status === 'aktiv' ? 'selected' : '' %>>aktiv</option><option value="inaktiv" <%= filters.status === 'inaktiv' ? 'selected' : '' %>>inaktiv</option><option value="ausgetreten" <%= filters.status === 'ausgetreten' ? 'selected' : '' %>>ausgetreten</option><option value="alle" <%= filters.status === 'alle' ? 'selected' : '' %>>alle</option></select>
-  <select name="sort"><option value="name" <%= filters.sort === 'name' ? 'selected' : '' %>>nach Name</option><option value="rang" <%= filters.sort === 'rang' ? 'selected' : '' %>>nach Rang</option></select>
+  <select name="sort"><option value="rang" <%= filters.sort === 'rang' ? 'selected' : '' %>>nach Rang</option><option value="name" <%= filters.sort === 'name' ? 'selected' : '' %>>nach Name</option></select>
 </form>
 <div class="card">
   <% if (isAdmin) { %>
