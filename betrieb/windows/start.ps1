@@ -3,6 +3,12 @@
 
 if (Get-Task) { Start-ScheduledTask -TaskName $TaskName; Write-Host 'Gestartet (Autostart-Aufgabe).'; exit 0 }
 if (Get-ServerProcess) { Write-Host "Der Server läuft bereits (PID $(Get-Content $PidFile))."; exit 0 }
+$other = Get-AppProcessIds
+if ($other) {
+  Write-Host "Port $Port ist schon belegt bzw. ein alter Server läuft noch (PID $($other -join ', ')). Er wird beendet ..."
+  Stop-AppProcesses | Out-Null
+  Start-Sleep -Seconds 1
+}
 if (-not (Test-Path (Join-Path $AppDir 'node_modules'))) { Write-Host 'Installiere Abhängigkeiten ...'; npm ci --omit=dev }
 
 $p = Start-Process -FilePath $NodeBin -ArgumentList $NodeArgs -WorkingDirectory $AppDir `

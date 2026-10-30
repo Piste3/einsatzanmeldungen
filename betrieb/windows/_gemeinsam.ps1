@@ -48,3 +48,26 @@ function Stop-TaskServer {
     Where-Object { ($_.CommandLine -like '*src/server.js*' -or $_.CommandLine -like '*src/launcher.js*') -and $_.CommandLine -like '*env-file-if-exists*' } |
     ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
 }
+
+# Alle Prozesse des Einsatzplaners finden: Prozess auf dem Port und node-Prozesse dieses Projekts
+# (auch wenn der Server ohne die Skripte gestartet wurde, z. B. mit «npm start»)
+function Get-AppProcessIds {
+  $ids = @()
+  # Wer den Port belegt – aber nur, wenn es ein node-Prozess ist (nie fremde Programme beenden)
+  try {
+    foreach ($c in Get-NetTCPConnection -LocalPort ([int]$Port) -State Listen -ErrorAction Stop) {
+      $p = Get-Process -Id $c.OwningProcess -ErrorAction SilentlyContinue
+      if ($p -and $p.ProcessName -eq 'node') { $ids += $p.Id }
+    }
+  } catch { }
+  $ids += Get-CimInstance Win32_Process -Filter "Name = 'node.exe'" |
+    Where-Object { $_.CommandLine -match 'src[\\/](server|launcher)\.js' -and $_.CommandLine -like '*env-file-if-exists*' } |
+    ForEach-Object { $_.ProcessId }
+  return $ids | Where-Object { $_ -and $_ -ne $PID } | Sort-Object -Unique
+}
+
+function Stop-AppProcesses {
+  $ids = Get-AppProcessIds
+  foreach ($id in $ids) { Stop-Process -Id $id -Force -ErrorAction SilentlyContinue }
+  return @($ids).Count
+}

@@ -26,6 +26,13 @@ if (users.count() === 0) {
   console.log('================================================================\n');
 }
 
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`\nPort ${config.port} ist bereits belegt – läuft der Einsatzplaner schon? Mit stop.cmd / stop.sh beenden oder in der .env einen anderen PORT wählen.\n`);
+    process.exit(1);
+  }
+  throw err;
+});
 server.listen(config.port, config.host, () => {
   console.log(`KKB-Einsatzplaner läuft auf ${config.baseUrl} (Port ${config.port})`);
   require('./services/updater').markStarted();

@@ -4,6 +4,7 @@
 $task = Get-Task
 if ($task) { Write-Host "Autostart-Aufgabe: $($task.State)" }
 elseif (Get-ServerProcess) { Write-Host "Läuft (PID $(Get-Content $PidFile))." }
+elseif ($ids = Get-AppProcessIds) { Write-Host "Läuft, aber nicht über start.cmd gestartet (PID $($ids -join ', ')). stop.cmd beendet ihn trotzdem." }
 else { Write-Host 'Läuft nicht.' }
 
 try {
