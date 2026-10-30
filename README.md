@@ -119,6 +119,8 @@ Das Formular braucht kein Cookie. Jeder Aufruf bekommt eine einmalige Absende-ID
 
 ## Betrieb
 
+Für Start, Stopp, Autostart, Sicherung und Update gibt es fertige Skripte für Linux, macOS und Windows im Ordner [`betrieb`](betrieb/README.md).
+
 ### Hinter einem Reverse-Proxy (Beispiel Caddy)
 
 ```

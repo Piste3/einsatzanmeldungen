@@ -1,0 +1,35 @@
+# Betrieb: Server starten, stoppen, aktualisieren
+
+Skripte für den Alltag. Es gibt je eine Variante für **Linux/macOS** (`betrieb/linux`) und für **Windows** (`betrieb/windows`). Alle Skripte lesen `PORT` und `DATA_DIR` aus der `.env` im Projektordner.
+
+| Aufgabe | Linux / macOS | Windows |
+|---|---|---|
+| Server starten | `betrieb/linux/start.sh` | `start.cmd` doppelklicken |
+| Server stoppen | `betrieb/linux/stop.sh` | `stop.cmd` |
+| Neu starten | `betrieb/linux/neustart.sh` | `neustart.cmd` |
+| Läuft er? | `betrieb/linux/status.sh` | `status.cmd` |
+| Protokoll ansehen | `betrieb/linux/protokoll.sh` | `protokoll.cmd` |
+| Sicherung jetzt | `betrieb/linux/sicherung.sh` | `sicherung.cmd` |
+| Neueste Version holen | `betrieb/linux/update.sh` | `update.cmd` |
+| Autostart einschalten | `betrieb/linux/autostart-ein.sh` | `autostart-ein.cmd` (als Administrator) |
+| Autostart ausschalten | `betrieb/linux/autostart-aus.sh` | `autostart-aus.cmd` (als Administrator) |
+
+Unter Windows sind die `.cmd`-Dateien nur Doppelklick-Starter für die gleichnamigen PowerShell-Skripte (`.ps1`).
+
+## Was die Skripte tun
+
+- **start** startet den Server im Hintergrund und merkt sich die Prozessnummer in `DATA_DIR/server.pid`. Die Ausgabe landet in `DATA_DIR/server.log`. Fehlen die Abhängigkeiten, werden sie zuerst installiert.
+- **stop** beendet den Server.
+- **update** bricht ab, wenn jemand am Code etwas lokal geändert hat. Sonst sichert es zuerst die Datenbank, holt mit `git pull` die neueste Version von `main`, installiert die Abhängigkeiten und startet den Server neu.
+- **sicherung** legt sofort eine Kopie der Datenbank in `DATA_DIR/backups` ab (zusätzlich zur täglichen automatischen Sicherung). Das geht auch, während der Server läuft.
+- **autostart-ein** richtet den Server als Dienst ein, der beim Hochfahren startet und nach einem Absturz neu startet:
+  - Linux: systemd-Dienst `kkb-einsatzplaner` (fragt nach dem sudo-Passwort). Das Protokoll gibt es dann mit `protokoll.sh` bzw. `journalctl -u kkb-einsatzplaner`.
+  - macOS: launchd-Agent, startet bei der Anmeldung des Benutzers.
+  - Windows: geplante Aufgabe `KKB-Einsatzplaner`, die beim Systemstart läuft.
+
+Ist der Autostart eingerichtet, steuern start, stop und neustart automatisch den Dienst. Unter Windows brauchen stop und neustart dann ebenfalls Administratorrechte.
+
+## Voraussetzungen
+
+- Node.js 22.13 oder neuer
+- Git, und der Projektordner wurde mit `git clone` angelegt (für update)
