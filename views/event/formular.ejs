@@ -1,0 +1,20 @@
+<div class="grid grid-main">
+  <div class="card">
+    <div class="card-head"><h2>So sieht der Einsatz im Anmeldeformular aus</h2><a class="btn btn-sm" href="/forms/anmeldung?vorschau=1&einsatz=<%= event.id %>" target="_blank" rel="noopener">Vorschau öffnen</a></div>
+    <div class="card-body">
+      <%- include('../form/_event-block', { e: preview, values: {}, disabled: true, questionFor: (x) => x.question_text || (x.openShifts.length > 1 ? 'Für welche Schichten kannst du?' : 'Kannst du teilnehmen?') }) %>
+    </div>
+  </div>
+  <div class="stack">
+    <div class="card"><div class="card-body">
+      <dl class="kv left">
+        <dt>Im Formular</dt><dd><%- inForm ? h.badge('ja', 'green') : h.badge('nein', 'gray') %></dd>
+        <dt>Anmeldefrage</dt><dd><%= event.question_text || '(Standard)' %></dd>
+        <dt>Schichtauswahl</dt><dd><%= event.shifts.length > 1 ? 'ja, automatisch aus den Schichten' : 'nein (eine Schicht)' %></dd>
+        <dt>Verschwindet</dt><dd>spätestens <%= h.fmtLocal(lastEnd) %></dd>
+      </dl>
+      <a class="btn btn-sm mt" href="/einsaetze/<%= event.id %>/bearbeiten">Frage und Hilfetext ändern</a>
+    </div></div>
+    <div class="callout"><strong class="cap">Gut zu wissen</strong>Wie viele sich schon angemeldet haben, sehen die Mitglieder nicht. Vergangene Schichten werden nicht mehr angeboten.</div>
+  </div>
+</div>

@@ -1,0 +1,94 @@
+<%- include('../partials/head') %>
+<%
+  const hour = Number(h.localNow().slice(11, 13));
+  const greet = hour < 11 ? 'Guten Morgen' : hour < 17 ? 'Guten Tag' : 'Guten Abend';
+  const firstName = user.display_name.split(' ')[0];
+%>
+<%- include('../partials/topbar', {
+  crumbs: [[h.fmtDateLong(h.today())]], heading: `${greet}, ${firstName}`,
+  actions: '<a class="btn btn-primary" href="/einsaetze/neu">+ Neuer Einsatz</a>',
+}) %>
+
+<div class="grid grid-4 mb" data-live-region="kpis">
+  <div class="card kpi">
+    <div class="label">Neue Anmeldungen</div>
+    <div class="value"><%= kpis.neu %></div>
+    <div class="sub green"><%= kpis.neuSeit %> in den letzten 24 Stunden</div>
+  </div>
+  <a class="card kpi" href="/klaerungen">
+    <div class="label">Zu klären</div>
+    <div class="value orange"><%= kpis.klaeren %></div>
+    <div class="sub">Name nicht sicher erkannt</div>
+  </a>
+  <div class="card kpi">
+    <div class="label">Noch nicht erreicht</div>
+    <div class="value"><%= kpis.nichtErreicht %></div>
+    <div class="sub">Telefon / WhatsApp offen</div>
+  </div>
+  <div class="card kpi">
+    <div class="label">Nächster Einsatz</div>
+    <% if (kpis.next) { %>
+      <div class="value"><%= h.fmtDaysUntil(kpis.next.date) %></div>
+      <div class="sub"><a href="/einsaetze/<%= kpis.next.id %>"><%= kpis.next.name %></a></div>
+    <% } else { %>
+      <div class="value">–</div><div class="sub">kein Einsatz geplant</div>
+    <% } %>
+  </div>
+</div>
+
+<div class="grid grid-main">
+  <div class="card">
+    <div class="card-head">
+      <h2>Anstehende Einsätze <span class="hint">nächste 3 Monate</span></h2>
+      <a class="small" href="/einsaetze">Alle Einsätze →</a>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Einsatz</th><th>Besetzung (Ist / Soll)</th><th class="center">Neu</th><th class="center">Unsicher</th><th class="center">Offen</th></tr></thead>
+        <tbody>
+        <% if (!rows.length) { %><tr><td colspan="5" class="empty">Keine anstehenden Einsätze. <a class="link" href="/einsaetze/neu">Neuen Einsatz anlegen</a></td></tr><% } %>
+        <% for (const e of rows) { %>
+          <tr data-row-id="ev<%= e.id %>">
+            <td>
+              <a href="/einsaetze/<%= e.id %>"><strong><%= e.name %></strong></a>
+              <span class="sub"><%= h.fmtDateWd(e.date) %> · <%= h.plural(e.shifts.length, 'Schicht', 'Schichten') %></span>
+              <div class="mt-s"><% if (e.status === 'entwurf') { %><%- h.badge('Entwurf', 'gray') %><% } else if (e.inForm) { %><%- h.badge('im Formular', 'green') %><% } else { %><%- h.badge('nicht im Formular', 'gray') %><% } %></div>
+            </td>
+            <td>
+              <% if (e.status === 'entwurf') { %><span class="muted small">noch nicht veröffentlicht</span><% } else { %>
+                <% for (const s of e.stats.shifts) { %>
+                  <div class="occ">
+                    <div class="occ-head"><span><%= s.name %></span><strong><%= s.ist %> / <%= s.soll ?? '–' %></strong></div>
+                    <div class="bar <%= s.tone %>"><span style="width:<%= h.pct(s.ist, s.soll) %>%"></span></div>
+                  </div>
+                <% } %>
+              <% } %>
+            </td>
+            <td class="center"><%= e.status === 'entwurf' ? '–' : e.stats.neu %></td>
+            <td class="center"><% if (e.stats.zuPruefen) { %><%- h.badge(e.stats.zuPruefen, 'yellow') %><% } else { %>–<% } %></td>
+            <td class="center"><%= e.status === 'entwurf' ? '–' : e.stats.offen %></td>
+          </tr>
+        <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="stack">
+    <div class="card">
+      <div class="card-head"><h2>Zu tun</h2></div>
+      <% if (!todos.length) { %><div class="empty">Alles erledigt.</div><% } %>
+      <% for (const t of todos.slice(0, 12)) { %>
+        <a class="todo" href="<%= t.href %>"><span class="tag tag-<%= t.tone %>"><%= t.tag %></span><span><%= t.text %></span></a>
+      <% } %>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>Letzte Aktivität</h2></div>
+      <% if (!activity.length) { %><div class="empty">Noch keine Aktivität.</div><% } %>
+      <% for (const a of activity) { %>
+        <div class="activity" data-row-id="a<%= a.id %>"><time><%= h.fmtRelative(a.created_at) %></time> <%= a.summary %></div>
+      <% } %>
+    </div>
+  </div>
+</div>
+<%- include('../partials/foot') %>

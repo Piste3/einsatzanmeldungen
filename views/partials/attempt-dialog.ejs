@@ -1,0 +1,35 @@
+<dialog id="attempt">
+  <form method="post" action="<%= action %>" data-attempt-form>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="person_id" value="">
+    <input type="hidden" name="back" value="<%= back %>">
+    <% if (typeof eventChoice !== 'undefined' && eventChoice) { %><input type="hidden" name="event_id" value=""><% } %>
+    <div class="card-head"><h2>Kontaktversuch erfassen <span class="hint" data-who></span></h2></div>
+    <div class="card-body">
+      <div class="field"><label>Kanal</label>
+        <div class="segmented">
+          <input type="radio" name="channel" id="ch-tel" value="telefon" checked><label for="ch-tel">Telefon</label>
+          <input type="radio" name="channel" id="ch-wa" value="whatsapp"><label for="ch-wa">WhatsApp</label>
+        </div>
+      </div>
+      <div class="fields fields-2">
+        <div class="field"><label for="att-date">Datum</label><input id="att-date" type="date" name="date" value="<%= h.today() %>"></div>
+        <div class="field"><label for="att-time">Uhrzeit</label><input id="att-time" type="time" name="time" value="<%= h.localNow().slice(11, 16) %>"></div>
+      </div>
+      <div class="field"><label for="att-by">Gesendet von</label>
+        <select id="att-by" name="sent_by_user_id"><% for (const u of allUsers) { %><option value="<%= u.id %>" <%= u.id === user.id ? 'selected' : '' %>><%= u.display_name %></option><% } %></select>
+        <div class="field-hint">vorausgefüllt mit dir – änderbar, falls jemand anderes angerufen oder geschrieben hat</div>
+      </div>
+      <div class="field"><label for="att-result">Ergebnis</label>
+        <select id="att-result" name="result" required>
+          <option value="nicht_erreicht" data-ch="telefon">Nicht erreicht</option>
+          <option value="whatsapp" data-ch="whatsapp">Nachricht gesendet, Antwort offen</option>
+          <option value="zugesagt">Zugesagt – Anmeldung erstellen</option>
+          <option value="abgesagt">Abgesagt</option>
+        </select>
+      </div>
+      <div class="field"><label for="att-note">Notiz</label><input id="att-note" type="text" name="note" placeholder="optional"></div>
+    </div>
+    <div class="card-foot"><button class="btn btn-ghost" type="button" data-close-dialog>Abbrechen</button><button class="btn btn-primary" type="submit">Speichern</button></div>
+  </form>
+</dialog>

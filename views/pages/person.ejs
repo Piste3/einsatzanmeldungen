@@ -1,0 +1,81 @@
+<%- include('../partials/head') %>
+<%
+  const age = h.ageAt(p, h.today());
+  const sections = [
+    ['an', 'Angemeldet', 'green'], ['ab', 'Abgemeldet', 'red'], ['unsicher', 'Unsicher', 'yellow'], ['offen', 'Offen', 'gray'],
+  ];
+  const regLine = (reg) => reg ? [reg.assigned.map((a) => a.name).join(' + ') || null, h.labels.SOURCE[reg.source], h.fmtDateTime(reg.registered_at)].filter(Boolean).join(' · ') : '';
+%>
+<%- include('../partials/topbar', {
+  crumbs: [['Personen', '/personen'], [`${p.first_name} ${p.last_name}`]], heading: `${p.first_name} ${p.last_name}`,
+  badges: p.rank_short ? `<span class="rank">${h.escapeHtml(p.rank_short)}</span>` : '', showSearch: false,
+  actions: `<button class="btn" type="button" data-print>Drucken</button><a class="btn" href="/personen/${p.id}?format=xlsx">Excel</a>` + (isAdmin ? `<a class="btn" href="/personen/${p.id}/bearbeiten">Bearbeiten</a>` : ''),
+}) %>
+<div class="grid grid-side">
+  <div class="stack">
+    <div class="card">
+      <div class="card-head"><h2>Stammdaten</h2></div>
+      <div class="card-body">
+        <dl class="kv">
+          <dt>Rang</dt><dd><%= p.rank_name ? `${p.rank_name} (${p.rank_short})` : '–' %></dd>
+          <dt>Mannschaft</dt><dd><%= p.teams || '–' %></dd>
+          <dt>Jahrgang</dt><dd><%= h.birthYear(p) || '–' %><%= age !== null ? ` (${age} J.)` : '' %></dd>
+          <% if (isAdmin && p.birth_date) { %><dt>Geburtsdatum</dt><dd><%= h.fmtDate(p.birth_date) %></dd><% } %>
+          <dt>Mobil</dt><dd><% if (p.mobile) { %><a class="link" href="tel:<%= p.mobile.replace(/\s/g, '') %>"><%= p.mobile %></a><% } else { %>–<% } %></dd>
+          <dt>E-Mail</dt><dd><%= p.email || '–' %></dd>
+          <dt>Verpflegung</dt><dd><% if (!p.diet_category && !p.diet_text) { %>–<% } else if (canSeeDiet) { %><%= [h.labels.DIET[p.diet_category], p.diet_text].filter(Boolean).join(': ') %><% } else { %><%- h.badge('Hinweis vorhanden', 'gray') %><% } %></dd>
+          <dt>Status</dt><dd><%- h.badge(h.labels.PERSON_STATUS[p.status].label, h.labels.PERSON_STATUS[p.status].tone) %></dd>
+        </dl>
+        <% if (p.aliases.length) { %><p class="small muted mt">Namensvarianten: <%= p.aliases.map((a) => `«${a.first_name} ${a.last_name}»`).join(', ') %></p><% } %>
+        <% if (p.internal_note) { %><p class="small mt"><strong>Interne Bemerkung:</strong> <%= p.internal_note %></p><% } %>
+        <% if (linkedUser) { %><p class="small muted mt">Benutzerkonto: <%= linkedUser.username %> (<%= h.labels.ROLES[linkedUser.role] %>)</p><% } %>
+      </div>
+    </div>
+  </div>
+  <div class="stack">
+    <div class="grid grid-2">
+      <% for (const [key, label, tone] of sections) { const items = groups[key]; %>
+        <div class="card">
+          <div class="card-head"><h2><%- h.badge(label, tone) %> <span class="hint"><%= h.plural(items.length, 'Einsatz', 'Einsätze') %></span></h2></div>
+          <div class="card-body">
+            <% if (!items.length) { %><span class="muted small"><%= key === 'unsicher' ? 'Zurzeit keine offenen Kontaktversuche.' : 'keine' %></span><% } %>
+            <% for (const it of items) { %>
+              <div class="ev-item">
+                <div>
+                  <a href="/einsaetze/<%= it.event.id %>"><strong><%= it.event.name %></strong></a>
+                  <div class="small muted"><%= h.weekdayShort(it.event.date) %> <%= h.fmtDateShort(it.event.date) %><%= it.reg ? ` · ${regLine(it.reg)}` : '' %></div>
+                  <% if (key === 'ab' && it.reg) { %><div class="small muted">abgemeldet am <%= h.fmtDateShort(it.reg.updated_at.slice(0, 10)) %> · <%= h.labels.SOURCE[it.reg.source] %></div><% } %>
+                  <% if (key === 'ab' && !it.reg && it.inq) { const last = it.inq.attempts.at(-1); %><div class="small muted">abgesagt<%= last ? ` am ${h.fmtDateShort(last.contacted_at.slice(0, 10))} per ${h.labels.CHANNEL[last.channel].label}` : '' %></div><% } %>
+                  <% if (it.inq && it.inq.attempts.length && key !== 'ab') { %><div class="attempts mt-s"><% for (const a of it.inq.attempts) { %><div class="attempt"><span class="ch <%= a.channel === 'whatsapp' ? 'wa' : '' %>"><%= h.labels.CHANNEL[a.channel].short %></span><%= h.fmtDateShort(a.contacted_at.slice(0, 10)) %> <%= a.contacted_at.slice(11, 16) %> · <%= a.sent_by_name %></div><% } %></div><% } %>
+                </div>
+                <div>
+                  <% if (it.reg) { %><%- h.badge(h.labels.REG_STATUS[it.reg.status].short, h.labels.REG_STATUS[it.reg.status].tone) %><% } %>
+                  <% if (key === 'offen' || key === 'unsicher') { %><button class="btn btn-sm" type="button" data-open-dialog="attempt" data-person="<%= p.id %>" data-event="<%= it.event.id %>" data-who="<%= it.event.name %>">Anfrage erfassen</button><% } %>
+                </div>
+              </div>
+            <% } %>
+          </div>
+        </div>
+      <% } %>
+    </div>
+    <details class="card collapse">
+      <summary>Frühere Einsätze <span class="hint muted small"><%= h.plural(past.length, 'Einsatz', 'Einsätze') %></span></summary>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Datum</th><th>Einsatz</th><th>Schicht</th><th>Quelle</th><th>Status</th></tr></thead>
+          <tbody>
+          <% if (!past.length) { %><tr><td colspan="5" class="empty">Keine früheren Einsätze.</td></tr><% } %>
+          <% for (const r of past) { %><tr><td><%= h.fmtDate(r.event_date) %></td><td><a href="/einsaetze/<%= r.event_id %>"><%= r.event_name %></a></td><td><%= r.assigned.map((a) => a.name).join(', ') || '–' %></td><td><%= h.labels.SOURCE[r.source] %></td><td><%- h.regBadge(r.status) %></td></tr><% } %>
+          </tbody>
+        </table>
+      </div>
+    </details>
+    <details class="card collapse no-print">
+      <summary>Verlauf</summary>
+      <% for (const a of log) { %><div class="activity"><time><%= h.fmtDateTime(a.created_at) %></time> <%= a.summary %></div><% } %>
+      <% if (!log.length) { %><div class="empty">Keine Einträge.</div><% } %>
+    </details>
+  </div>
+</div>
+<%- include('../partials/attempt-dialog', { action: '/anfragen/versuch', back: `/personen/${p.id}`, eventChoice: true }) %>
+<%- include('../partials/foot') %>

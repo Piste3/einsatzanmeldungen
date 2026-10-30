@@ -1,0 +1,31 @@
+'use strict';
+const express = require('express');
+const db = require('../db');
+const feedback = require('../services/feedback');
+const { sendTable, wantsExport } = require('../lib/export');
+const { FEEDBACK } = require('../lib/labels');
+const h = require('../lib/view-helpers');
+
+const router = express.Router();
+
+router.get('/rueckmeldungen', (req, res) => {
+  const filters = { team: req.query.team || '', period: req.query.period || '3m', sort: req.query.sort || 'name', drafts: req.query.drafts || '' };
+  const data = feedback.matrix({ ...filters, includeDrafts: filters.drafts === '1' });
+  const format = wantsExport(req);
+  if (format) {
+    const cols = [
+      { label: 'Rang', value: (r) => r.person.rank_short || '' },
+      { label: 'Vorname', value: (r) => r.person.first_name },
+      { label: 'Nachname', value: (r) => r.person.last_name },
+      { label: 'Mannschaft', value: (r) => r.person.teams || '' },
+      ...data.events.map((e, i) => ({ label: `${e.name} (${h.fmtDateShort(e.date)})`, value: (r) => FEEDBACK[r.cells[i].state].label })),
+    ];
+    return sendTable(res, format, 'Rückmeldungen', cols, data.rows);
+  }
+  res.render('pages/feedback', {
+    title: 'Rückmeldungen', ...data, filters, periods: feedback.PERIODS, teams: db.all('SELECT * FROM teams WHERE active = 1 ORDER BY sort, name'),
+    allUsers: db.all('SELECT id, display_name FROM users WHERE active = 1 ORDER BY display_name'), liveTopics: ['feedback', 'events'],
+  });
+});
+
+module.exports = router;

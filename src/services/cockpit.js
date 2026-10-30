@@ -1,0 +1,63 @@
+'use strict';
+// Cockpit: Was ist heute zu tun?
+const db = require('../db');
+const events = require('./events');
+const audit = require('./audit');
+const { today, addDays, daysUntil, localNow } = require('../lib/dates');
+
+function data() {
+  const upcoming = events.list({ status: 'aktiv', from: today(), to: addDays(today(), 92) });
+  const rows = upcoming.map((e) => ({ ...e, stats: events.stats(e), inForm: events.isInForm(e) }));
+  const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+  const kpis = {
+    neu: db.one("SELECT COUNT(*) AS n FROM registrations g JOIN events e ON e.id = g.event_id WHERE g.status = 'neu' AND e.status IN ('entwurf','veroeffentlicht')").n,
+    neuSeit: db.one("SELECT COUNT(*) AS n FROM registrations WHERE registered_at > ? AND status <> 'ungueltig'", since).n,
+    klaeren: db.one("SELECT COUNT(*) AS n FROM registrations WHERE person_id IS NULL AND status = 'unsicher'").n,
+    nichtErreicht: db.one(`SELECT COUNT(*) AS n FROM inquiries i JOIN events e ON e.id = i.event_id
+      WHERE i.status IN ('nicht_erreicht','whatsapp') AND e.date >= ? AND e.status = 'veroeffentlicht'`, today()).n,
+    next: rows.find((e) => e.status === 'veroeffentlicht') || rows[0] || null,
+  };
+  return { rows, kpis, todos: todos(rows, kpis), activity: audit.recent(12), formErrors: formErrorCount() };
+}
+
+function formErrorCount() {
+  return db.one("SELECT COUNT(*) AS n FROM form_submissions WHERE status = 'fehler'").n;
+}
+
+// Konkrete Hinweise
+function todos(rows, kpis) {
+  const list = [];
+  if (kpis.klaeren) list.push({ tag: 'Klären', tone: 'yellow', text: `${kpis.klaeren} Anmeldung${kpis.klaeren === 1 ? '' : 'en'} ohne sichere Zuordnung`, href: '/klaerungen' });
+  const errors = formErrorCount();
+  if (errors) list.push({ tag: 'Formular', tone: 'red', text: `${errors} Formular-Eingang mit Fehler`, href: '/formulare?status=fehler' });
+  for (const e of rows) {
+    const s = e.stats;
+    if (e.inForm && s.full) list.push({ tag: 'Formular', tone: 'orange', text: `${e.name}: alle Schichten voll, Einsatz steht noch im Formular`, href: `/einsaetze/${e.id}` });
+    for (const sh of s.shifts) {
+      if (!s.full && e.inForm && sh.soll && sh.ist >= sh.soll && e.shifts.length > 1) {
+        list.push({ tag: 'Formular', tone: 'orange', text: `${e.name}: ${sh.name} ist voll, Einsatz steht noch im Formular`, href: `/einsaetze/${e.id}/schichten` });
+      }
+    }
+    if (s.neu) list.push({ tag: 'Bestätigen', tone: 'blue', text: `${e.name}: ${s.neu} neue Anmeldung${s.neu === 1 ? '' : 'en'} bestätigen`, href: `/einsaetze/${e.id}/anmeldungen?status=neu` });
+    if (s.inquiryOpen) list.push({ tag: 'Nachfassen', tone: 'blue', text: `${e.name}: ${s.inquiryOpen} Person${s.inquiryOpen === 1 ? '' : 'en'} noch nicht erreicht`, href: `/einsaetze/${e.id}/anfragen` });
+    const days = daysUntil(e.date);
+    if (e.status === 'veroeffentlicht' && days <= 7 && s.bestaetigt && !e.calendar_sent_at) {
+      list.push({ tag: 'Aufgebot', tone: 'gray', text: `Kalendertermin ${e.name} noch nicht exportiert`, href: `/einsaetze/${e.id}` });
+    }
+    if (e.status === 'entwurf' && days <= 21) list.push({ tag: 'Entwurf', tone: 'gray', text: `${e.name} ist noch nicht veröffentlicht (in ${days} Tagen)`, href: `/einsaetze/${e.id}` });
+  }
+  // Vorbei, aber noch nicht abgeschlossen
+  for (const e of events.list({ status: 'veroeffentlicht', to: today() })) {
+    if (events.lastEnd(e) <= localNow()) list.push({ tag: 'Abschliessen', tone: 'gray', text: `${e.name} ist vorbei und kann abgeschlossen werden`, href: `/einsaetze/${e.id}` });
+  }
+  return list;
+}
+
+function navCounts() {
+  return {
+    klaerungen: db.one("SELECT COUNT(*) AS n FROM registrations WHERE person_id IS NULL AND status = 'unsicher'").n,
+    formErrors: formErrorCount(),
+  };
+}
+
+module.exports = { data, navCounts };

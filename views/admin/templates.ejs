@@ -1,0 +1,59 @@
+<%- include('../partials/head') %>
+<%- include('../partials/topbar', { crumbs: [['Einstellungen'], ['Vorlagen']], heading: 'Einstellungen', showSearch: false }) %>
+<%- include('_tabs') %>
+<div class="stack">
+  <div class="card">
+    <div class="card-head"><h2>Anmeldefragen <span class="hint">zur Auswahl beim Einsatz</span></h2></div>
+    <div class="table-wrap"><table class="form-table">
+      <thead><tr><th>Name</th><th>Fragetext</th><th>Hilfetext</th><th>Reihenfolge</th><th></th></tr></thead>
+      <tbody>
+      <% for (const q of questions.concat([{ id: '' }])) { const fid = `q-${q.id || 'new'}`; %>
+        <tr>
+          <td><input form="<%= fid %>" type="text" name="name" value="<%= q.name || '' %>" placeholder="<%= q.id ? '' : 'Neue Vorlage …' %>" required></td>
+          <td><input form="<%= fid %>" type="text" name="question_text" value="<%= q.question_text || '' %>"></td>
+          <td><input form="<%= fid %>" type="text" name="help_text" value="<%= q.help_text || '' %>"></td>
+          <td><input form="<%= fid %>" type="number" name="sort" value="<%= q.sort ?? '' %>" style="width:70px"></td>
+          <td class="nowrap"><form id="<%= fid %>" method="post" action="/verwaltung/vorlagen/fragen" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="id" value="<%= q.id %>"><button class="btn btn-xs <%= q.id ? '' : 'btn-primary' %>" type="submit"><%= q.id ? 'Speichern' : 'Hinzufügen' %></button></form>
+            <% if (q.id) { %><form method="post" action="/verwaltung/vorlagen/fragen" class="inline" data-confirm="Vorlage löschen?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="id" value="<%= q.id %>"><input type="hidden" name="delete" value="1"><button class="btn btn-xs btn-ghost btn-danger" type="submit">Löschen</button></form><% } %></td>
+        </tr>
+      <% } %>
+      </tbody>
+    </table></div>
+  </div>
+  <div class="card">
+    <div class="card-head"><h2>Tenue-Vorlagen</h2></div>
+    <div class="table-wrap"><table class="form-table">
+      <thead><tr><th>Name</th><th>Text</th><th>Reihenfolge</th><th></th></tr></thead>
+      <tbody>
+      <% for (const t of tenues.concat([{ id: '' }])) { const fid = `t-${t.id || 'new'}`; %>
+        <tr>
+          <td><input form="<%= fid %>" type="text" name="name" value="<%= t.name || '' %>" placeholder="<%= t.id ? '' : 'Neue Vorlage …' %>" required></td>
+          <td><textarea form="<%= fid %>" name="text" rows="2"><%= t.text || '' %></textarea></td>
+          <td><input form="<%= fid %>" type="number" name="sort" value="<%= t.sort ?? '' %>" style="width:70px"></td>
+          <td class="nowrap"><form id="<%= fid %>" method="post" action="/verwaltung/vorlagen/tenue" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="id" value="<%= t.id %>"><button class="btn btn-xs <%= t.id ? '' : 'btn-primary' %>" type="submit"><%= t.id ? 'Speichern' : 'Hinzufügen' %></button></form>
+            <% if (t.id) { %><form method="post" action="/verwaltung/vorlagen/tenue" class="inline" data-confirm="Vorlage löschen?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="id" value="<%= t.id %>"><input type="hidden" name="delete" value="1"><button class="btn btn-xs btn-ghost btn-danger" type="submit">Löschen</button></form><% } %></td>
+        </tr>
+      <% } %>
+      </tbody>
+    </table></div>
+  </div>
+  <div class="card">
+    <div class="card-head"><h2>Zusatzfelder für Einsätze <span class="hint">z. B. «Transport» oder «Verpflegung vor Ort» – stehen automatisch als Baustein zur Verfügung</span></h2></div>
+    <div class="table-wrap"><table class="form-table">
+      <thead><tr><th>Feldname</th><th>Typ</th><th>Pflicht</th><th>Reihenfolge</th><th></th></tr></thead>
+      <tbody>
+      <% for (const f of extras.concat([{ id: '' }])) { const fid = `x-${f.id || 'new'}`; %>
+        <tr>
+          <td><input form="<%= fid %>" type="text" name="name" value="<%= f.name || '' %>" placeholder="<%= f.id ? '' : 'Neues Feld …' %>" required></td>
+          <td><select form="<%= fid %>" name="field_type"><% for (const [k, v] of [['text', 'Text'], ['textarea', 'Mehrzeilig'], ['number', 'Zahl'], ['date', 'Datum'], ['checkbox', 'Ja/Nein']]) { %><option value="<%= k %>" <%= f.field_type === k ? 'selected' : '' %>><%= v %></option><% } %></select></td>
+          <td><input form="<%= fid %>" type="checkbox" name="required" value="1" <%= f.required ? 'checked' : '' %>></td>
+          <td><input form="<%= fid %>" type="number" name="sort" value="<%= f.sort ?? '' %>" style="width:70px"></td>
+          <td class="nowrap"><form id="<%= fid %>" method="post" action="/verwaltung/vorlagen/zusatzfelder" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="id" value="<%= f.id %>"><button class="btn btn-xs <%= f.id ? '' : 'btn-primary' %>" type="submit"><%= f.id ? 'Speichern' : 'Hinzufügen' %></button></form>
+            <% if (f.id) { %><form method="post" action="/verwaltung/vorlagen/zusatzfelder" class="inline" data-confirm="Feld löschen? Bereits erfasste Werte bleiben im Einsatz gespeichert."><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="id" value="<%= f.id %>"><input type="hidden" name="delete" value="1"><button class="btn btn-xs btn-ghost btn-danger" type="submit">Löschen</button></form><% } %></td>
+        </tr>
+      <% } %>
+      </tbody>
+    </table></div>
+  </div>
+</div>
+<%- include('../partials/foot') %>

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Einrichtung · KKB-Einsatzplaner</title>
+  <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="brand"><span class="logo">KKB</span><span><span class="brand-title">Einrichtung</span><br><span class="brand-sub">Erstes Admin-Konto anlegen</span></span></div>
+    <% if (errors.length) { %><div class="flash flash-error"><%= errors.join(' ') %></div><% } %>
+    <form method="post" action="/setup">
+      <input type="hidden" name="token" value="<%= token %>">
+      <div class="field"><label for="display_name">Name</label><input id="display_name" name="display_name" type="text" value="<%= values.display_name || '' %>" placeholder="Vorname Nachname" required></div>
+      <div class="field"><label for="username">Benutzername</label><input id="username" name="username" type="text" value="<%= values.username || '' %>" autocomplete="username" required></div>
+      <div class="field"><label for="email">E-Mail (optional, für späteres Microsoft-Login)</label><input id="email" name="email" type="email" value="<%= values.email || '' %>"></div>
+      <div class="field"><label for="password">Passwort</label><input id="password" name="password" type="password" autocomplete="new-password" minlength="10" required><div class="field-hint">mindestens 10 Zeichen</div></div>
+      <div class="field"><label for="password_confirm">Passwort wiederholen</label><input id="password_confirm" name="password_confirm" type="password" autocomplete="new-password" required></div>
+      <button class="btn btn-primary" type="submit">Admin-Konto anlegen</button>
+    </form>
+  </div>
+</div>
+</body>
+</html>

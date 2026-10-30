@@ -1,0 +1,110 @@
+<%- include('../partials/head') %>
+<%
+  const action = isNew ? '/einsaetze' : `/einsaetze/${e.id}/bearbeiten`;
+  const closed = e.status === 'abgeschlossen';
+  const qt = questionTemplates.find((q) => q.id === Number(e.question_template_id));
+%>
+<form method="post" action="<%= action %>" id="event-form">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
+<% if (!isNew) { %><input type="hidden" name="version" value="<%= e.version %>"><% } %>
+<%- include('../partials/topbar', {
+  crumbs: isNew ? [['Einsätze', '/einsaetze'], ['Neuer Einsatz']] : [['Einsätze', '/einsaetze'], [e.name, `/einsaetze/${e.id}`], ['Bearbeiten']],
+  heading: isNew ? (e.name || 'Neuer Einsatz') : e.name, badges: h.eventBadge(e.status || 'entwurf'), showSearch: false,
+  actions: (isNew ? '' : `<a class="btn" href="/forms/anmeldung?vorschau=1&einsatz=${e.id}" target="_blank" rel="noopener">Formular-Vorschau</a>`)
+    + `<button class="btn" type="submit" name="action" value="save">${isNew ? 'Als Entwurf speichern' : 'Speichern'}</button>`
+    + ((isNew || e.status === 'entwurf') ? '<button class="btn btn-primary" type="submit" name="action" value="publish">Veröffentlichen</button>' : ''),
+}) %>
+<% if (errors.length) { %><div class="flash flash-error"><%= errors.join(' ') %></div><% } %>
+<% if (closed) { %>
+  <div class="callout warn mb"><strong class="cap">Abgeschlossen</strong>Dieser Einsatz ist schreibgeschützt. Als Admin kannst du ihn mit Begründung ändern.
+    <div class="field mt-s"><input type="text" name="reason" required placeholder="Begründung der Änderung"></div></div>
+<% } %>
+
+<div class="grid grid-main">
+  <div class="card">
+    <div class="card-head"><h2>Grunddaten <span class="hint">Nur Name und Datum sind Pflicht – alles andere kann später ergänzt werden.</span></h2></div>
+    <div class="card-body">
+      <div class="fields fields-2">
+        <div class="field"><label for="name">Name des Einsatzes <span class="req">*</span></label><input id="name" name="name" type="text" required value="<%= e.name || '' %>" autofocus></div>
+        <div class="field"><label for="date">Datum <span class="req">*</span></label><input id="date" name="date" type="date" required value="<%= e.date || '' %>"></div>
+      </div>
+      <div class="fields fields-3e">
+        <div class="field"><label for="start_time">Beginn (Antreten)</label><input id="start_time" name="start_time" type="time" value="<%= e.start_time || '' %>"></div>
+        <div class="field"><label for="end_time">Ende (Abtreten)</label><input id="end_time" name="end_time" type="time" value="<%= e.end_time || '' %>"></div>
+        <div class="field"><label for="leader">Einsatzleitung</label>
+          <select id="leader" name="leader_person_id"><option value="">–</option>
+            <% for (const p of leaders) { %><option value="<%= p.id %>" <%= Number(e.leader_person_id) === p.id ? 'selected' : '' %>><%= p.rank_short ? p.rank_short + ' ' : '' %><%= p.first_name %> <%= p.last_name %></option><% } %>
+          </select></div>
+      </div>
+      <div class="fields fields-2">
+        <div class="field"><label for="start_place">Antretensort</label><input id="start_place" name="start_place" type="text" value="<%= e.start_place || '' %>"></div>
+        <div class="field"><label for="end_place">Abtretensort</label><input id="end_place" name="end_place" type="text" value="<%= e.end_place || '' %>" placeholder="leer = wie Antretensort"></div>
+      </div>
+      <div class="field">
+        <label for="tenue">Tenue</label>
+        <div class="template-chips">
+          <% tenueTemplates.forEach((t, i) => { %><button type="button" class="<%= i === 0 ? 'primary' : '' %>" data-fill="tenue" data-text="<%= t.text %>">Vorlage: <%= t.name %></button><% }) %>
+        </div>
+        <textarea id="tenue" name="tenue" rows="2"><%= e.tenue || '' %></textarea>
+      </div>
+      <div class="field"><label for="description">Beschreibung (für Mitglieder sichtbar)</label><textarea id="description" name="description" rows="2"><%= e.description || '' %></textarea></div>
+      <div class="field"><label for="internal_note">Interne Bemerkung</label><textarea id="internal_note" name="internal_note" rows="2" placeholder="nur für Aufgebotsstelle sichtbar"><%= e.internal_note || '' %></textarea></div>
+      <% if (extraDefs.length) { %>
+        <div class="fields fields-2">
+        <% for (const d of extraDefs) { const v = (e.extra || {})[d.name] || ''; %>
+          <div class="field">
+            <label for="extra_<%= d.id %>"><%= d.name %><% if (d.required) { %> <span class="req">*</span><% } %></label>
+            <% if (d.field_type === 'textarea') { %><textarea id="extra_<%= d.id %>" name="extra_<%= d.id %>" rows="2"><%= v %></textarea>
+            <% } else if (d.field_type === 'checkbox') { %><label class="check"><input type="checkbox" id="extra_<%= d.id %>" name="extra_<%= d.id %>" value="1" <%= v ? 'checked' : '' %>> Ja</label>
+            <% } else { %><input id="extra_<%= d.id %>" name="extra_<%= d.id %>" type="<%= d.field_type === 'number' ? 'number' : d.field_type === 'date' ? 'date' : 'text' %>" value="<%= v %>"><% } %>
+          </div>
+        <% } %>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <div class="stack">
+    <div class="card">
+      <div class="card-head"><h2>Schichten <span class="hint">meist nur eine</span></h2></div>
+      <div class="card-body">
+        <% if (isNew) { %>
+          <div class="list-item">
+            <div class="row-between"><strong>Ganzer Einsatz</strong><span class="small muted">automatisch angelegt</span></div>
+            <div class="row mt-s"><label class="small muted" for="target_count">Soll-Anzahl Personen</label><input id="target_count" name="target_count" type="number" min="0" value="<%= e.target_count || '' %>" style="width:90px"></div>
+          </div>
+          <p class="small muted">Weitere Schichten kannst du nach dem Speichern im Reiter «Schichten» hinzufügen.</p>
+        <% } else { %>
+          <% for (const s of e.shifts) { %>
+            <div class="list-item"><div class="row-between"><strong><%= s.name %></strong><% if (s.is_default) { %><span class="small muted">automatisch angelegt</span><% } %></div>
+              <span class="small muted"><%= h.fmtSpan(s.starts_at, s.ends_at) || 'Zeit offen' %> · Soll <strong><%= s.target_count ?? '–' %> Personen</strong></span></div>
+          <% } %>
+          <a class="btn btn-sm" href="/einsaetze/<%= e.id %>/schichten">+ Schicht hinzufügen / bearbeiten</a>
+        <% } %>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>Anmeldeformular</h2></div>
+      <div class="card-body">
+        <div class="field"><label for="question_template_id">Anmeldefrage (aus Vorlage)</label>
+          <select id="question_template_id" name="question_template_id" data-question-template>
+            <option value="">–</option>
+            <% for (const q of questionTemplates) { %><option value="<%= q.id %>" data-question="<%= q.question_text %>" data-help="<%= q.help_text || '' %>" <%= Number(e.question_template_id) === q.id ? 'selected' : '' %>><%= q.name %></option><% } %>
+          </select></div>
+        <div class="field"><label for="question_text">Fragetext</label><input id="question_text" name="question_text" type="text" value="<%= e.question_text || (isNew && questionTemplates[0] ? '' : '') %>" placeholder="<%= e.name ? `Kannst du am ${e.name} teilnehmen?` : 'Kannst du teilnehmen?' %>"></div>
+        <div class="field"><label for="help_text">Hilfetext</label><input id="help_text" name="help_text" type="text" value="<%= e.help_text || '' %>" placeholder="optional"></div>
+        <p class="small muted">Bei mehreren Schichten entsteht die Schichtauswahl automatisch.</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <div class="switch">
+          <input type="checkbox" disabled <%= e.show_in_form ? 'checked' : '' %> aria-label="Im Formular anzeigen">
+          <div><strong>Im Formular anzeigen</strong><div class="small muted">wird beim Veröffentlichen automatisch eingeschaltet<% if (!isNew) { %>; umschalten in der Übersicht des Einsatzes<% } %></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</form>
+<%- include('../partials/foot') %>

@@ -1,0 +1,36 @@
+<%- include('../partials/head') %>
+<%- include('../partials/topbar', { crumbs: [['Einstellungen'], ['Auswahllisten']], heading: 'Einstellungen', showSearch: false }) %>
+<%- include('_tabs') %>
+<div class="grid grid-2">
+  <% for (const [kind, label, rows] of [['raenge', 'Ränge', ranks], ['mannschaften', 'Mannschaften / Kader', teams]]) { %>
+  <div class="card">
+    <div class="card-head"><h2><%= label %></h2></div>
+    <div class="table-wrap">
+      <table class="form-table">
+        <thead><tr><th>Name</th><% if (kind === 'raenge') { %><th>Kürzel</th><% } %><th>Reihenfolge</th><th>Aktiv</th><th>Personen</th><th></th></tr></thead>
+        <tbody>
+        <% for (const r of rows) { const fid = `${kind}-${r.id}`; %>
+          <tr>
+            <td><input form="<%= fid %>" type="text" name="name" value="<%= r.name %>" required></td>
+            <% if (kind === 'raenge') { %><td><input form="<%= fid %>" type="text" name="short" value="<%= r.short %>" style="width:70px"></td><% } %>
+            <td><input form="<%= fid %>" type="number" name="sort" value="<%= r.sort %>" style="width:70px"></td>
+            <td><input form="<%= fid %>" type="checkbox" name="active" value="1" <%= r.active ? 'checked' : '' %>></td>
+            <td><%= r.used %></td>
+            <td class="nowrap"><form id="<%= fid %>" method="post" action="/verwaltung/listen/<%= kind %>" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="id" value="<%= r.id %>"><button class="btn btn-xs" type="submit">Speichern</button></form>
+              <% if (!r.used) { %><form method="post" action="/verwaltung/listen/<%= kind %>" class="inline" data-confirm="Löschen?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="id" value="<%= r.id %>"><input type="hidden" name="delete" value="1"><button class="btn btn-xs btn-ghost btn-danger" type="submit">Löschen</button></form><% } %></td>
+          </tr>
+        <% } %>
+          <tr>
+            <td><input form="new-<%= kind %>" type="text" name="name" placeholder="Neu …" required></td>
+            <% if (kind === 'raenge') { %><td><input form="new-<%= kind %>" type="text" name="short" placeholder="Kürzel" style="width:70px"></td><% } %>
+            <td><input form="new-<%= kind %>" type="number" name="sort" style="width:70px"></td><td></td><td></td>
+            <td><form id="new-<%= kind %>" method="post" action="/verwaltung/listen/<%= kind %>" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-xs btn-primary" type="submit">Hinzufügen</button></form></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <% if (kind === 'raenge') { %><div class="card-body small muted">Die Reihenfolge bestimmt die Sortierung (höher = höherer Rang).</div><% } %>
+  </div>
+  <% } %>
+</div>
+<%- include('../partials/foot') %>

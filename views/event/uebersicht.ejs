@@ -1,0 +1,90 @@
+<%
+  const s = stats;
+  const nextStatus = { entwurf: [['veroeffentlicht', 'Veröffentlichen', 'btn-primary'], ['abgesagt', 'Absagen', 'btn-danger']], veroeffentlicht: [['abgeschlossen', 'Abschliessen', ''], ['entwurf', 'Zurück auf Entwurf', ''], ['abgesagt', 'Absagen', 'btn-danger']], abgesagt: [['entwurf', 'Wieder auf Entwurf setzen', '']], abgeschlossen: isAdmin ? [['veroeffentlicht', 'Wieder öffnen (Admin)', '']] : [] }[event.status] || [];
+%>
+<div class="grid grid-4 mb">
+  <a class="card kpi" href="/einsaetze/<%= event.id %>/anmeldungen?status=neu"><div class="label">Neu eingegangen</div><div class="value"><%= s.neu %></div><div class="sub">noch nicht bestätigt</div></a>
+  <a class="card kpi" href="/einsaetze/<%= event.id %>/anmeldungen?status=zu_pruefen"><div class="label">Zu prüfen</div><div class="value orange"><%= s.zuPruefen %></div><div class="sub">unsicher oder Rückfrage</div></a>
+  <a class="card kpi" href="/einsaetze/<%= event.id %>/anmeldungen?status=bestaetigt"><div class="label">Bestätigt</div><div class="value"><%= s.bestaetigt %></div><div class="sub">von <%= s.total %> Anmeldungen</div></a>
+  <a class="card kpi" href="/einsaetze/<%= event.id %>/anfragen"><div class="label">Ohne Rückmeldung</div><div class="value"><%= s.offen %></div><div class="sub"><%= s.inquiryOpen %> angefragt, nicht erreicht</div></a>
+</div>
+<div class="grid grid-main">
+  <div class="stack">
+    <div class="card">
+      <div class="card-head"><h2>Besetzung</h2><a class="small" href="/einsaetze/<%= event.id %>/schichten">Schichten →</a></div>
+      <div class="card-body">
+        <% for (const sh of s.shifts) { %>
+          <div class="occ">
+            <div class="occ-head"><span><strong><%= sh.name %></strong> · <%= h.fmtSpan(sh.starts_at, sh.ends_at) || 'Zeit offen' %></span><strong><%= sh.ist %> / <%= sh.soll ?? '–' %><%= sh.missing ? ` · ${sh.missing} fehlen` : (sh.soll && sh.ist >= sh.soll ? ' · voll' : '') %></strong></div>
+            <div class="bar <%= sh.tone %>"><span style="width:<%= h.pct(sh.ist, sh.soll) %>%"></span></div>
+          </div>
+        <% } %>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>Angaben</h2></div>
+      <div class="card-body">
+        <dl class="kv left">
+          <dt>Datum</dt><dd><%= h.fmtDateLong(event.date) %></dd>
+          <dt>Antreten</dt><dd><%= event.start_time || '–' %><%= event.start_place ? ` · ${event.start_place}` : '' %></dd>
+          <dt>Abtreten</dt><dd><%= event.end_time || '–' %><%= (event.end_place || event.start_place) ? ` · ${event.end_place || event.start_place}` : '' %></dd>
+          <dt>Einsatzleitung</dt><dd><%= event.leader_last ? `${event.leader_rank || ''} ${event.leader_first} ${event.leader_last}`.trim() + (event.leader_mobile ? ` (${event.leader_mobile})` : '') : '–' %></dd>
+          <dt>Tenue</dt><dd class="pre"><%= event.tenue || '–' %></dd>
+          <dt>Beschreibung</dt><dd class="pre"><%= event.description || '–' %></dd>
+          <% for (const d of extraDefs) { %><dt><%= d.name %></dt><dd><%= (event.extra || {})[d.name] || '–' %></dd><% } %>
+          <dt>Interne Bemerkung</dt><dd class="pre"><%= event.internal_note || '–' %></dd>
+          <dt>Aufgebot</dt><dd><%= event.calendar_sent_at ? `Kalendertermin exportiert ${h.fmtDateTime(event.calendar_sent_at)}` : 'noch nicht exportiert' %></dd>
+        </dl>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>Letzte Aktivität</h2><a class="small" href="/einsaetze/<%= event.id %>/verlauf">Verlauf →</a></div>
+      <% if (!activity.length) { %><div class="empty">Noch keine Aktivität.</div><% } %>
+      <% for (const a of activity) { %><div class="activity" data-row-id="a<%= a.id %>"><time><%= h.fmtRelative(a.created_at) %></time> <%= a.summary %></div><% } %>
+    </div>
+  </div>
+  <div class="stack">
+    <div class="card">
+      <div class="card-head"><h2>Status</h2><%- h.eventBadge(event.status) %></div>
+      <div class="card-body">
+        <p class="small muted">Entwurf → Veröffentlicht → Abgeschlossen (oder jederzeit Abgesagt)</p>
+        <div class="row">
+        <% for (const [st, label, cls] of nextStatus) { %>
+          <form method="post" action="/einsaetze/<%= event.id %>/status" class="inline" <% if (st === 'abgesagt' || st === 'abgeschlossen') { %>data-confirm="<%= st === 'abgesagt' ? 'Einsatz wirklich absagen?' : 'Einsatz abschliessen? Danach sind die Daten schreibgeschützt.' %>"<% } %>>
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="status" value="<%= st %>">
+            <% if (event.status === 'abgeschlossen') { %><input type="text" name="reason" required placeholder="Begründung" class="mb-s"><% } %>
+            <button class="btn btn-sm <%= cls %>" type="submit"><%= label %></button>
+          </form>
+        <% } %>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <form method="post" action="/einsaetze/<%= event.id %>/formular" class="switch" data-autosubmit>
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <input type="hidden" name="show_in_form" value="<%= event.show_in_form ? '0' : '1' %>">
+          <input type="checkbox" <%= event.show_in_form ? 'checked' : '' %> <%= event.status !== 'veroeffentlicht' ? 'disabled' : '' %> data-submit-on-change aria-label="Im Formular anzeigen">
+          <div><strong>Im Formular anzeigen</strong>
+            <div class="small muted">
+              <% if (event.status !== 'veroeffentlicht') { %>Wird beim Veröffentlichen automatisch eingeschaltet.
+              <% } else if (inForm) { %>Steht im Anmeldeformular bis <%= h.fmtLocal(lastEnd) %>.
+              <% } else if (event.show_in_form) { %>Ende der letzten Schicht ist vorbei – automatisch aus dem Formular.
+              <% } else { %>Von Hand aus dem Formular genommen.<% } %>
+            </div>
+          </div>
+        </form>
+        <% if (inForm && s.full) { %><div class="callout orange mt-s">Alle Schichten sind voll – Einsatz aus dem Formular nehmen?</div><% } %>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>Checkliste</h2></div>
+      <div class="card-body">
+        <ul class="checklist">
+          <% for (const c of checklist) { %><li class="<%= c.done ? 'done' : 'open' %>"><span class="dot"><%= c.done ? '✓' : '' %></span><%= c.label %></li><% } %>
+        </ul>
+        <a class="btn btn-sm mt-s" href="/einsaetze/<%= event.id %>/bearbeiten">Angaben ergänzen</a>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,43 @@
+<%- include('../partials/head') %>
+<%- include('../partials/topbar', {
+  crumbs: [['Personen']], heading: 'Personen',
+  actions: `<a class="btn" href="${h.escapeHtml(h.withQuery('/personen', query, { format: 'xlsx' }))}">Excel</a><a class="btn" href="${h.escapeHtml(h.withQuery('/personen', query, { format: 'csv' }))}">CSV</a>`
+    + (isAdmin ? '<a class="btn" href="/personen/import">Import</a><a class="btn btn-primary" href="/personen/neu">+ Neue Person</a>' : ''),
+}) %>
+<form class="filters" method="get" data-autosubmit>
+  <input type="search" name="q" value="<%= filters.q %>" placeholder="Name, E-Mail, Mobil …">
+  <select name="team"><option value="">Mannschaft: alle</option><% for (const t of teams) { %><option value="<%= t.id %>" <%= Number(filters.team) === t.id ? 'selected' : '' %>><%= t.name %></option><% } %></select>
+  <select name="rank"><option value="">Rang: alle</option><% for (const r of ranks) { %><option value="<%= r.id %>" <%= Number(filters.rank) === r.id ? 'selected' : '' %>><%= r.name %></option><% } %></select>
+  <select name="status"><option value="aktiv" <%= filters.status === 'aktiv' ? 'selected' : '' %>>aktiv</option><option value="inaktiv" <%= filters.status === 'inaktiv' ? 'selected' : '' %>>inaktiv</option><option value="ausgetreten" <%= filters.status === 'ausgetreten' ? 'selected' : '' %>>ausgetreten</option><option value="alle" <%= filters.status === 'alle' ? 'selected' : '' %>>alle</option></select>
+  <select name="sort"><option value="name" <%= filters.sort === 'name' ? 'selected' : '' %>>nach Name</option><option value="rang" <%= filters.sort === 'rang' ? 'selected' : '' %>>nach Rang</option></select>
+</form>
+<div class="card">
+  <% if (isAdmin) { %>
+  <form method="post" action="/personen/sammel" id="bulk" class="bulkbar" data-bulk>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="back" value="<%= h.withQuery('/personen', query) %>">
+    <label class="check"><input type="checkbox" data-select-all="ids"> <span class="count" data-selected-count>0 ausgewählt</span></label>
+    <select name="status" data-submit-on-change aria-label="Status setzen"><option value="">Status setzen …</option><option value="aktiv">aktiv</option><option value="inaktiv">inaktiv</option><option value="ausgetreten">ausgetreten</option></select>
+  </form>
+  <% } %>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><% if (isAdmin) { %><th class="check-col"></th><% } %><th>Person</th><th>Mannschaft / Kader</th><th>Jahrgang</th><th>Mobil</th><th>E-Mail</th><th>Status</th></tr></thead>
+      <tbody>
+      <% if (!list.length) { %><tr><td colspan="7" class="empty">Keine Personen gefunden.<% if (isAdmin) { %> <a class="link" href="/personen/import">Stammdaten importieren</a><% } %></td></tr><% } %>
+      <% for (const p of list) { %>
+        <tr data-row-id="p<%= p.id %>-<%= p.version %>">
+          <% if (isAdmin) { %><td class="check-col"><input type="checkbox" name="ids" value="<%= p.id %>" form="bulk" aria-label="Auswählen"></td><% } %>
+          <td><%- h.rank(p.rank_short) %><a href="/personen/<%= p.id %>"><strong><%= p.last_name %> <%= p.first_name %></strong></a></td>
+          <td><%= p.teams || '–' %></td>
+          <td><%= h.birthYear(p) || '–' %></td>
+          <td class="nowrap"><%= p.mobile || '–' %></td>
+          <td><%= p.email || '–' %></td>
+          <td><%- h.badge(h.labels.PERSON_STATUS[p.status].label, h.labels.PERSON_STATUS[p.status].tone) %></td>
+        </tr>
+      <% } %>
+      </tbody>
+      <tfoot><tr><td colspan="<%= isAdmin ? 7 : 6 %>"><%= list.length %> Personen</td></tr></tfoot>
+    </table>
+  </div>
+</div>
+<%- include('../partials/foot') %>

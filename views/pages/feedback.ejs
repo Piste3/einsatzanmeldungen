@@ -1,0 +1,41 @@
+<%- include('../partials/head') %>
+<%- include('../partials/topbar', {
+  crumbs: [['Rückmeldungen']], heading: 'Wer hat sich wofür gemeldet?',
+  actions: `<button class="btn" type="button" data-print>Drucken</button><a class="btn" href="${h.escapeHtml(h.withQuery('/rueckmeldungen', query, { format: 'xlsx' }))}">Excel</a><a class="btn" href="${h.escapeHtml(h.withQuery('/rueckmeldungen', query, { format: 'csv' }))}">CSV</a>`,
+}) %>
+<div class="row-between">
+  <form class="filters" method="get" data-autosubmit>
+    <select name="team"><option value="">Mannschaft: alle</option><% for (const t of teams) { %><option value="<%= t.id %>" <%= Number(filters.team) === t.id ? 'selected' : '' %>><%= t.name %></option><% } %></select>
+    <select name="period"><% for (const [k, p] of Object.entries(periods)) { %><option value="<%= k %>" <%= filters.period === k ? 'selected' : '' %>>Zeitraum: <%= p.label %></option><% } %></select>
+    <select name="sort"><option value="name" <%= filters.sort === 'name' ? 'selected' : '' %>>Sortieren: nach Name</option><option value="offen" <%= filters.sort === 'offen' ? 'selected' : '' %>>Sortieren: offene Einsätze</option></select>
+    <label class="check"><input type="checkbox" name="drafts" value="1" <%= filters.drafts === '1' ? 'checked' : '' %>> Entwürfe zeigen</label>
+  </form>
+  <div class="legend mb"><%- h.feedbackBadge('an') %><%- h.feedbackBadge('ab') %><%- h.feedbackBadge('unsicher') %><%- h.feedbackBadge('offen') %></div>
+</div>
+<div class="card">
+  <div class="table-wrap">
+    <table class="matrix">
+      <thead><tr><th>Mitglied</th><th>Mannschaft</th><% for (const e of events) { %><th><a href="/einsaetze/<%= e.id %>"><span class="ev"><%= e.name %></span></a><span class="dt"><%= h.weekdayShort(e.date) %> <%= h.fmtDateShort(e.date) %></span></th><% } %></tr></thead>
+      <tbody>
+      <% if (!events.length) { %><tr><td colspan="2" class="empty">Keine veröffentlichten Einsätze im gewählten Zeitraum.</td></tr><% } %>
+      <% for (const row of rows) { %>
+        <tr data-row-id="p<%= row.person.id %>-<%= row.cells.map((c) => c.state[0]).join('') %>">
+          <td class="nowrap"><%- h.rank(row.person.rank_short) %><a href="/personen/<%= row.person.id %>"><strong><%= row.person.first_name %> <%= row.person.last_name %></strong></a></td>
+          <td class="muted small"><%= row.person.teams || '–' %></td>
+          <% for (const c of row.cells) { %>
+            <td>
+              <% if (c.reg) { %><a class="cell" href="/einsaetze/<%= c.eventId %>/anmeldungen?q=<%= encodeURIComponent(row.person.last_name) %>" title="Anmeldung öffnen"><%- h.feedbackBadge(c.state) %></a>
+              <% } else { %><button type="button" class="btn-link cell" data-open-dialog="attempt" data-person="<%= row.person.id %>" data-event="<%= c.eventId %>" data-who="<%= `${row.person.first_name} ${row.person.last_name}` %>" title="Anfrage erfassen"><%- h.feedbackBadge(c.state) %></button><% } %>
+            </td>
+          <% } %>
+        </tr>
+      <% } %>
+      </tbody>
+      <% if (events.length) { %>
+      <tfoot><tr><td>Total</td><td><%= rows.length %> Mitglieder</td><% for (const e of events) { const t = totals[e.id]; %><td class="small"><%= t.an %> An · <%= t.ab %> Ab · <%= t.unsicher %> Unsicher · <%= t.offen %> Offen</td><% } %></tr></tfoot>
+      <% } %>
+    </table>
+  </div>
+</div>
+<%- include('../partials/attempt-dialog', { action: '/anfragen/versuch', back: h.withQuery('/rueckmeldungen', query), eventChoice: true }) %>
+<%- include('../partials/foot') %>

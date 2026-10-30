@@ -1,0 +1,40 @@
+<%- include('../partials/head') %>
+<%- include('../partials/topbar', {
+  crumbs: [], heading: 'Einsätze',
+  actions: `<a class="btn" href="${h.escapeHtml(h.withQuery('/einsaetze', query, { format: 'xlsx' }))}">Excel</a><a class="btn" href="${h.escapeHtml(h.withQuery('/einsaetze', query, { format: 'csv' }))}">CSV</a><a class="btn btn-primary" href="/einsaetze/neu">+ Neuer Einsatz</a>`,
+}) %>
+<form class="filters" method="get" data-autosubmit>
+  <select name="status">
+    <option value="aktiv" <%= filters.status === 'aktiv' ? 'selected' : '' %>>Entwürfe und veröffentlichte</option>
+    <option value="" <%= filters.status === '' ? 'selected' : '' %>>Alle Status</option>
+    <% for (const [k, v] of Object.entries(h.labels.EVENT_STATUS)) { %><option value="<%= k %>" <%= filters.status === k ? 'selected' : '' %>><%= v.label %></option><% } %>
+  </select>
+  <label class="row small muted">von <input type="date" name="from" value="<%= filters.from %>"></label>
+  <label class="row small muted">bis <input type="date" name="to" value="<%= filters.to %>"></label>
+  <input type="search" name="q" value="<%= filters.q %>" placeholder="Name filtern …">
+  <button class="btn btn-sm" type="submit">Filtern</button>
+  <% if (filters.from || filters.to || filters.q || filters.status !== 'aktiv') { %><a class="btn btn-sm btn-ghost" href="/einsaetze">Zurücksetzen</a><% } %>
+</form>
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Datum</th><th>Einsatz</th><th>Antreten</th><th>Status</th><th>Besetzung</th><th class="center">Neu</th><th class="center">Bestätigt</th><th>Einsatzleitung</th></tr></thead>
+      <tbody>
+      <% if (!list.length) { %><tr><td colspan="8" class="empty">Keine Einsätze gefunden.</td></tr><% } %>
+      <% for (const e of list) { %>
+        <tr data-row-id="ev<%= e.id %>">
+          <td class="nowrap"><%= h.fmtDateWd(e.date) %></td>
+          <td><a href="/einsaetze/<%= e.id %>"><strong><%= e.name %></strong></a><% if (e.inForm) { %> <%- h.badge('im Formular', 'green') %><% } %></td>
+          <td><%= [e.start_time, e.start_place].filter(Boolean).join(' · ') || '–' %></td>
+          <td><%- h.eventBadge(e.status) %></td>
+          <td><% for (const s of e.stats.shifts) { %><div class="occ"><div class="occ-head"><span><%= s.name %></span><strong><%= s.ist %> / <%= s.soll ?? '–' %></strong></div><div class="bar <%= s.tone %>"><span style="width:<%= h.pct(s.ist, s.soll) %>%"></span></div></div><% } %></td>
+          <td class="center"><%= e.stats.neu || '–' %></td>
+          <td class="center"><%= e.stats.bestaetigt || '–' %></td>
+          <td><%= e.leader_last ? `${e.leader_rank || ''} ${e.leader_first} ${e.leader_last}`.trim() : '–' %></td>
+        </tr>
+      <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<%- include('../partials/foot') %>

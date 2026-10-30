@@ -1,0 +1,63 @@
+<%- include('../partials/head') %>
+<% const action = isNew ? '/personen' : `/personen/${p.id}/bearbeiten`; const teamIds = (p.team_ids || []).map(Number); %>
+<%- include('../partials/topbar', {
+  crumbs: isNew ? [['Personen', '/personen'], ['Neue Person']] : [['Personen', '/personen'], [`${p.first_name} ${p.last_name}`, `/personen/${p.id}`], ['Bearbeiten']],
+  heading: isNew ? 'Neue Person' : `${p.first_name} ${p.last_name}`, showSearch: false,
+}) %>
+<% if (errors.length) { %><div class="flash flash-error"><%= errors.join(' ') %></div><% } %>
+<% if (from) { %><div class="callout mb">Die neue Person wird nach dem Speichern direkt der Anmeldung aus den Klärungen zugeordnet.</div><% } %>
+<div class="grid grid-main">
+  <form method="post" action="<%= action %>" class="card">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <% if (!isNew) { %><input type="hidden" name="version" value="<%= p.version %>"><% } %>
+    <% if (from) { %><input type="hidden" name="from_registration" value="<%= from %>"><% } %>
+    <div class="card-head"><h2>Stammdaten</h2></div>
+    <div class="card-body">
+      <div class="fields fields-2">
+        <div class="field"><label for="first_name">Vorname <span class="req">*</span></label><input id="first_name" type="text" name="first_name" value="<%= p.first_name || '' %>" required></div>
+        <div class="field"><label for="last_name">Nachname <span class="req">*</span></label><input id="last_name" type="text" name="last_name" value="<%= p.last_name || '' %>" required></div>
+      </div>
+      <div class="fields fields-3e">
+        <div class="field"><label for="status">Status</label><select id="status" name="status"><% for (const [k, v] of Object.entries(h.labels.PERSON_STATUS)) { %><option value="<%= k %>" <%= p.status === k ? 'selected' : '' %>><%= v.label %></option><% } %></select><div class="field-hint">Inaktive erscheinen nicht in Vorschlägen</div></div>
+        <div class="field"><label for="rank_id">Rang</label><select id="rank_id" name="rank_id"><option value="">–</option><% for (const r of ranks) { %><option value="<%= r.id %>" <%= Number(p.rank_id) === r.id ? 'selected' : '' %>><%= r.name %> (<%= r.short %>)</option><% } %></select></div>
+        <div class="field"><label>Mannschaft / Kader</label>
+          <% for (const t of teams) { %><label class="check"><input type="checkbox" name="team_ids" value="<%= t.id %>" <%= teamIds.includes(t.id) ? 'checked' : '' %>> <%= t.name %></label><% } %>
+          <% if (!teams.length) { %><span class="small muted">Noch keine Mannschaften – unter Einstellungen › Auswahllisten anlegen.</span><% } %>
+        </div>
+      </div>
+      <div class="fields fields-3e">
+        <div class="field"><label for="birth_date">Geburtsdatum</label><input id="birth_date" type="date" name="birth_date" value="<%= p.birth_date || '' %>"></div>
+        <div class="field"><label for="birth_year">oder Jahrgang</label><input id="birth_year" type="number" name="birth_year" min="1900" max="2100" value="<%= p.birth_date ? '' : (p.birth_year || '') %>"></div>
+        <div></div>
+      </div>
+      <div class="fields fields-2">
+        <div class="field"><label for="mobile">Mobilnummer</label><input id="mobile" type="tel" name="mobile" value="<%= p.mobile || '' %>" placeholder="079 123 45 67"></div>
+        <div class="field"><label for="email">E-Mail</label><input id="email" type="email" name="email" value="<%= p.email || '' %>" placeholder="vorname.nachname@web.kkb.ch"></div>
+      </div>
+      <div class="fields fields-2">
+        <div class="field"><label for="diet_category">Essenseinschränkung</label><select id="diet_category" name="diet_category"><option value="">keine</option><% for (const [k, v] of Object.entries(h.labels.DIET)) { %><option value="<%= k %>" <%= p.diet_category === k ? 'selected' : '' %>><%= v %></option><% } %></select></div>
+        <div class="field"><label for="diet_text">Details</label><input id="diet_text" type="text" name="diet_text" value="<%= p.diet_text || '' %>" placeholder="z. B. Nüsse"></div>
+      </div>
+      <div class="field"><label for="internal_note">Interne Bemerkung</label><textarea id="internal_note" name="internal_note" rows="2"><%= p.internal_note || '' %></textarea></div>
+    </div>
+    <div class="card-foot row" style="padding:0 16px 16px"><button class="btn btn-primary" type="submit">Speichern</button><a class="btn btn-ghost" href="<%= isNew ? (from ? '/klaerungen' : '/personen') : `/personen/${p.id}` %>">Abbrechen</a></div>
+  </form>
+  <% if (!isNew) { %>
+  <div class="card">
+    <div class="card-head"><h2>Namensvarianten <span class="hint">z. B. Spitznamen wie «Chrigi»</span></h2></div>
+    <div class="card-body">
+      <% for (const a of p.aliases) { %>
+        <div class="row-between mb-s"><span>«<%= a.first_name %> <%= a.last_name %>»</span>
+          <form method="post" action="/personen/<%= p.id %>/alias/<%= a.id %>/loeschen" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-xs btn-ghost btn-danger" type="submit">Entfernen</button></form></div>
+      <% } %>
+      <% if (!p.aliases.length) { %><p class="small muted">Noch keine Namensvarianten.</p><% } %>
+      <form method="post" action="/personen/<%= p.id %>/alias" class="mt">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="fields fields-2"><div class="field"><input type="text" name="first_name" placeholder="Vorname" required></div><div class="field"><input type="text" name="last_name" placeholder="Nachname" value="<%= p.last_name %>" required></div></div>
+        <button class="btn btn-sm" type="submit">+ Namensvariante</button>
+      </form>
+    </div>
+  </div>
+  <% } %>
+</div>
+<%- include('../partials/foot') %>

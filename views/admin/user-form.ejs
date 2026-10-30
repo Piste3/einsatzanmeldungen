@@ -1,0 +1,35 @@
+<%- include('../partials/head') %>
+<%- include('../partials/topbar', { crumbs: [['Einstellungen', '/verwaltung'], ['Benutzer', '/verwaltung/benutzer'], [isNew ? 'Neu' : u.display_name]], heading: isNew ? 'Neues Benutzerkonto' : u.display_name, showSearch: false }) %>
+<% if (errors.length) { %><div class="flash flash-error"><%= errors.join(' ') %></div><% } %>
+<div class="grid grid-main">
+  <form method="post" action="<%= isNew ? '/verwaltung/benutzer' : `/verwaltung/benutzer/${u.id}` %>" class="card">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="card-body">
+      <div class="fields fields-2">
+        <div class="field"><label for="display_name">Anzeigename</label><input id="display_name" type="text" name="display_name" value="<%= u.display_name || '' %>" required></div>
+        <div class="field"><label for="username">Benutzername</label><input id="username" type="text" name="username" value="<%= u.username || '' %>" <%= isNew ? 'required' : 'disabled' %> autocomplete="off"></div>
+      </div>
+      <div class="fields fields-2">
+        <div class="field"><label for="role">Rolle</label><select id="role" name="role"><% for (const [k, v] of Object.entries(h.labels.ROLES)) { %><option value="<%= k %>" <%= u.role === k ? 'selected' : '' %>><%= v %></option><% } %></select>
+          <div class="field-hint">Admin: Stammdaten, Benutzer, Einstellungen und alles der Aufgebotsstelle</div></div>
+        <div class="field"><label for="email">E-Mail</label><input id="email" type="email" name="email" value="<%= u.email || '' %>"><div class="field-hint">für die spätere Verknüpfung mit Microsoft</div></div>
+      </div>
+      <div class="field"><label for="person_id">Verknüpfte Person (Stammdaten)</label>
+        <select id="person_id" name="person_id"><option value="">–</option><% for (const p of persons) { %><option value="<%= p.id %>" <%= Number(u.person_id) === p.id ? 'selected' : '' %>><%= p.last_name %> <%= p.first_name %><%= p.rank_short ? ` (${p.rank_short})` : '' %></option><% } %></select>
+        <div class="field-hint">Daraus kommen Rang und Name als «Absender» im Aufgebot.</div></div>
+      <% if (isNew) { %>
+        <div class="field"><label for="password">Startpasswort</label><input id="password" type="text" name="password" autocomplete="off" placeholder="leer lassen = zufällig erzeugen"><div class="field-hint">Muss beim ersten Login geändert werden.</div></div>
+      <% } else { %>
+        <label class="check"><input type="checkbox" name="active" value="1" <%= u.active ? 'checked' : '' %>> Konto aktiv</label>
+      <% } %>
+    </div>
+    <div class="card-body row"><button class="btn btn-primary" type="submit">Speichern</button><a class="btn btn-ghost" href="/verwaltung/benutzer">Abbrechen</a></div>
+  </form>
+  <% if (!isNew) { %>
+  <div class="card"><div class="card-head"><h2>Passwort</h2></div><div class="card-body">
+    <p class="small muted">Erzeugt ein neues Startpasswort, meldet alle Sitzungen ab und verlangt beim nächsten Login ein eigenes Passwort.</p>
+    <form method="post" action="/verwaltung/benutzer/<%= u.id %>/passwort" data-confirm="Passwort von <%= u.display_name %> zurücksetzen?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-sm" type="submit">Passwort zurücksetzen</button></form>
+  </div></div>
+  <% } %>
+</div>
+<%- include('../partials/foot') %>

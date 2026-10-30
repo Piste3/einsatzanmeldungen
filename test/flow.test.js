@@ -1,0 +1,93 @@
+'use strict';
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const { freshDb, system } = require('./helpers');
+const db = require('../src/db');
+const persons = require('../src/services/persons');
+const events = require('../src/services/events');
+const submissions = require('../src/services/submissions');
+const registrations = require('../src/services/registrations');
+const matching = require('../src/services/matching');
+const { today, addDays } = require('../src/lib/dates');
+
+// Absenden ohne Wartezeit: Spam-Mindestzeit umgehen, indem das Token älter gemacht wird
+function ageToken(uid) {
+  db.run('UPDATE form_tokens SET issued_at = ? WHERE uid = ?', new Date(Date.now() - 60000).toISOString(), uid);
+}
+
+function setup() {
+  freshDb();
+  const anna = persons.create({ first_name: 'Anna', last_name: 'Roth', status: 'aktiv' }, system);
+  persons.create({ first_name: 'Christian', last_name: 'Meier', status: 'aktiv' }, system);
+  persons.create({ first_name: 'Christian', last_name: 'Meier', status: 'aktiv' }, system);
+  const offen = events.create({ name: 'Herbstmesse', date: addDays(today(), 5), start_time: '13:00', end_time: '19:00', target_count: 5 }, system);
+  events.setStatus(offen, 'veroeffentlicht', system);
+  const entwurf = events.create({ name: 'Geheim', date: addDays(today(), 9), start_time: '10:00', end_time: '12:00' }, system);
+  return { anna, offen, entwurf };
+}
+
+test('Zuordnung: eindeutig, vertauscht, mehrdeutig, unbekannt', () => {
+  const { anna } = setup();
+  assert.equal(matching.match('anna', 'röth').status, 'unknown');
+  assert.equal(matching.match('Anna', 'Roth').person.id, anna);
+  assert.equal(matching.match('Roth', 'Anna').person.id, anna);
+  assert.equal(matching.match('Christian', 'Meier').status, 'ambiguous');
+  const unknown = matching.match('Ana', 'Rot');
+  assert.equal(unknown.status, 'unknown');
+  assert.equal(unknown.candidates[0].id, anna);
+});
+
+test('Formular: Anmeldung, Duplikat und manipulierte Auswahl', () => {
+  const { anna, offen, entwurf } = setup();
+  const form = submissions.issueForm('127.0.0.1');
+  assert.deepEqual(form.events.map((e) => e.id), [offen]);
+  ageToken(form.uid);
+
+  const body = {
+    submission_uid: form.uid, first_name: 'Anna', last_name: 'Roth',
+    event_ids: [String(offen), String(entwurf)], [`answer_${offen}`]: 'ja', [`answer_${entwurf}`]: 'ja',
+  };
+  const first = submissions.receive(body, { ip: '127.0.0.1' });
+  assert.ok(first.ok);
+  assert.equal(first.submission.status, 'neu');
+  const again = submissions.receive(body, { ip: '127.0.0.1' });
+  assert.ok(again.duplicate);
+  assert.equal(db.one('SELECT COUNT(*) AS n FROM form_submissions').n, 1);
+
+  const done = submissions.processSubmission(first.submission.id);
+  assert.equal(done.status, 'verarbeitet');
+  assert.match(done.error, /nicht im Formular/);
+  const regs = db.all('SELECT * FROM registrations');
+  assert.equal(regs.length, 1);
+  assert.equal(regs[0].event_id, offen);
+  assert.equal(regs[0].person_id, anna);
+  assert.equal(regs[0].status, 'neu');
+});
+
+test('Formular: Spam und unklare Namen landen nicht still in den Anmeldungen', () => {
+  const { offen } = setup();
+  const spam = submissions.issueForm();
+  const s = submissions.receive({ submission_uid: spam.uid, first_name: 'X', last_name: 'Y', event_ids: [String(offen)], [`answer_${offen}`]: 'ja' }, {});
+  assert.equal(s.submission.status, 'spam'); // zu schnell abgeschickt
+
+  const form = submissions.issueForm();
+  ageToken(form.uid);
+  const r = submissions.receive({ submission_uid: form.uid, first_name: 'Christian', last_name: 'Meier', event_ids: [String(offen)], [`answer_${offen}`]: 'ja' }, {});
+  submissions.processSubmission(r.submission.id);
+  const reg = db.one('SELECT * FROM registrations');
+  assert.equal(reg.person_id, null);
+  assert.equal(reg.status, 'unsicher');
+  assert.equal(registrations.unresolved().length, 1);
+});
+
+test('Status: Bestätigen erzeugt Mail, Rückzug entfernt Schichten', () => {
+  const { anna, offen } = setup();
+  db.run("UPDATE persons SET email = 'anna@example.ch' WHERE id = ?", anna);
+  const id = registrations.create({ eventId: offen, personId: anna, matchType: 'auto', source: 'telefon', wishes: [], user: system });
+  registrations.setStatus(id, 'bestaetigt', system);
+  assert.equal(db.one('SELECT COUNT(*) AS n FROM mail_outbox').n, 1);
+  assert.ok(db.one('SELECT COUNT(*) AS n FROM shift_assignments WHERE registration_id = ?', id).n >= 0);
+  registrations.setStatus(id, 'zurueckgezogen', system);
+  assert.equal(db.one('SELECT COUNT(*) AS n FROM shift_assignments WHERE registration_id = ?', id).n, 0);
+  assert.throws(() => registrations.setStatus(id, 'bestaetigt', system, { expected: 'neu' }));
+});

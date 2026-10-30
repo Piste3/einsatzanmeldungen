@@ -1,0 +1,88 @@
+<% const multi = event.shifts.length > 1; const back = `/einsaetze/${event.id}/schichten`; const overlapNames = new Set(overlaps.map((o) => o.person)); %>
+<% for (const o of overlaps) { %>
+  <div class="hint-bar"><span class="tag tag-yellow">Hinweis</span><span><strong><%= o.person %></strong> ist beiden Schichten zugeteilt (<%= o.shifts.join(', ') %>) – die Schichten überschneiden sich von <%= o.from %> bis <%= o.to %>.</span></div>
+<% } %>
+<% if (!multi) { %>
+  <div class="callout mb">Dieser Einsatz hat eine Schicht. Jede Anmeldung gilt automatisch für diese Schicht – es gibt nichts zu verteilen.</div>
+<% } %>
+<% if (multi && unassigned.length) { %>
+  <div class="card mb">
+    <div class="card-head"><h2>Noch keiner Schicht zugeteilt <span class="hint"><%= unassigned.length %> Anmeldungen</span></h2></div>
+    <% for (const r of unassigned) { %>
+      <div class="shift-row">
+        <span class="name"><%- h.rank(r.rank_short) %><a href="/personen/<%= r.person_id %>"><%= r.first_name %> <%= r.last_name %></a></span>
+        <%- h.regBadge(r.status) %>
+        <form method="post" action="/anmeldungen/<%= r.id %>/schichten" data-autosubmit><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="back" value="<%= back %>">
+          <select name="shift_ids" data-submit-on-change aria-label="Schicht zuteilen"><option value="">zuteilen …</option><% for (const c of combos) { %><option value="<%= c.value %>"><%= c.label %></option><% } %></select></form>
+      </div>
+    <% } %>
+  </div>
+<% } %>
+<div class="shift-cols">
+  <% for (const col of columns) { const assignedIds = new Set(col.regs.map((r) => r.id)); %>
+    <div class="card">
+      <div class="card-head">
+        <div><h2><%= col.name %></h2><span class="small muted"><%= h.fmtSpan(col.starts_at, col.ends_at) || 'Zeit offen' %><%= col.start_place ? ` · ${col.start_place}` : '' %></span></div>
+        <div class="occ"><div class="occ-head"><span>Besetzung</span><strong><%= col.ist %> / <%= col.soll ?? '–' %><%= col.soll ? (col.ist >= col.soll ? ' · voll' : ` · ${col.missing} fehlen`) : '' %></strong></div><div class="bar <%= col.tone %>"><span style="width:<%= h.pct(col.ist, col.soll) %>%"></span></div></div>
+      </div>
+      <% if (!col.regs.length) { %><div class="empty">Noch niemand zugeteilt.</div><% } %>
+      <% for (const r of col.regs) { const current = r.assigned.map((a) => a.id).join(','); %>
+        <div class="shift-row <%= overlapNames.has(`${r.rank_short ? r.rank_short + ' ' : ''}${r.first_name} ${r.last_name}`) ? 'overlap' : '' %>" data-row-id="s<%= col.id %>-<%= r.id %>">
+          <span class="name"><%- h.rank(r.rank_short) %><a href="/personen/<%= r.person_id %>"><%= r.first_name %> <%= r.last_name %></a></span>
+          <%- h.badge(h.labels.REG_STATUS[r.status].short, h.labels.REG_STATUS[r.status].tone) %>
+          <% if (multi) { %>
+            <form method="post" action="/anmeldungen/<%= r.id %>/schichten" data-autosubmit><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="back" value="<%= back %>">
+              <select name="shift_ids" data-submit-on-change aria-label="Umteilen">
+                <% for (const c of combos) { %><option value="<%= c.value %>" <%= c.value === current ? 'selected' : '' %>><%= c.label %></option><% } %>
+                <% if (!combos.some((c) => c.value === current)) { %><option value="<%= current %>" selected><%= r.assigned.map((a) => a.name).join(' + ') %></option><% } %>
+                <option value="">aus allen Schichten entfernen</option>
+              </select></form>
+          <% } %>
+        </div>
+      <% } %>
+      <% const addable = regs.filter((r) => !assignedIds.has(r.id)); if (multi && addable.length) { %>
+        <form method="post" action="" class="card-body row" data-add-to-shift>
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="back" value="<%= back %>"><input type="hidden" name="add_shift" value="<%= col.id %>">
+          <select data-add-select aria-label="Person aus Anmeldungen hinzufügen"><option value="">+ Person aus Anmeldungen hinzufügen</option><% for (const r of addable) { %><option value="<%= r.id %>"><%= r.last_name %> <%= r.first_name %> (<%= h.labels.REG_STATUS[r.status].short %>)</option><% } %></select>
+        </form>
+      <% } %>
+    </div>
+  <% } %>
+</div>
+
+<div class="card mt no-print">
+  <div class="card-head"><h2>Schichten verwalten <span class="hint">Name, Zeit, Soll-Anzahl – meist höchstens drei</span></h2></div>
+  <div class="table-wrap">
+    <table class="form-table">
+      <thead><tr><th>Name</th><th>Datum</th><th>Beginn</th><th>Ende</th><th>Soll</th><th>Antretensort (optional)</th><th>Interne Bemerkung</th><th></th></tr></thead>
+      <tbody>
+      <% for (const s of event.shifts) { %>
+        <tr>
+          <td><input form="shift-<%= s.id %>" type="text" name="name" value="<%= s.name %>" required></td>
+          <td><input form="shift-<%= s.id %>" type="date" name="date" value="<%= (s.starts_at || event.date).slice(0, 10) %>"></td>
+          <td><input form="shift-<%= s.id %>" type="time" name="start" value="<%= s.starts_at ? s.starts_at.slice(11, 16) : '' %>"></td>
+          <td><input form="shift-<%= s.id %>" type="time" name="end" value="<%= s.ends_at ? s.ends_at.slice(11, 16) : '' %>"></td>
+          <td><input form="shift-<%= s.id %>" type="number" min="0" name="target_count" value="<%= s.target_count ?? '' %>" style="width:70px"></td>
+          <td><input form="shift-<%= s.id %>" type="text" name="start_place" value="<%= s.start_place || '' %>" placeholder="wie Einsatz"></td>
+          <td><input form="shift-<%= s.id %>" type="text" name="internal_note" value="<%= s.internal_note || '' %>"></td>
+          <td class="nowrap">
+            <form id="shift-<%= s.id %>" method="post" action="/schichten/<%= s.id %>" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><% if (event.status === 'abgeschlossen') { %><input type="hidden" name="reason" value="" data-reason><% } %><button class="btn btn-sm" type="submit">Speichern</button></form>
+            <% if (multi) { %><form method="post" action="/schichten/<%= s.id %>/loeschen" class="inline" data-confirm="Schicht «<%= s.name %>» löschen? Zuteilungen gehen verloren."><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-sm btn-ghost btn-danger" type="submit">Löschen</button></form><% } %>
+          </td>
+        </tr>
+      <% } %>
+        <tr>
+          <td><input form="shift-new" type="text" name="name" placeholder="z. B. Abendschicht" required></td>
+          <td><input form="shift-new" type="date" name="date" value="<%= event.date %>"></td>
+          <td><input form="shift-new" type="time" name="start"></td>
+          <td><input form="shift-new" type="time" name="end"></td>
+          <td><input form="shift-new" type="number" min="0" name="target_count" style="width:70px"></td>
+          <td><input form="shift-new" type="text" name="start_place" placeholder="wie Einsatz"></td>
+          <td><input form="shift-new" type="text" name="internal_note"></td>
+          <td><form id="shift-new" method="post" action="/einsaetze/<%= event.id %>/schichten" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-sm btn-primary" type="submit">+ Schicht hinzufügen</button></form></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <% if (event.status === 'abgeschlossen') { %><div class="card-body small muted">Abgeschlossen: Änderungen nur durch Admins mit Begründung (wird beim Speichern abgefragt).</div><% } %>
+</div>
