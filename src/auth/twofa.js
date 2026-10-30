@@ -20,7 +20,7 @@ const hash = (token) => crypto.createHash('sha256').update(String(token)).digest
 const cookieBase = () => ({ httpOnly: true, sameSite: 'lax', secure: config.secureCookies, path: '/' });
 
 const isEnabled = (user) => Boolean(user && user.auth_provider === 'local' && user.totp_enabled_at && user.totp_secret);
-const mustSetUp = (user) => Boolean(user && user.auth_provider === 'local' && user.twofa_required && !user.totp_enabled_at);
+const mustSetUp = (user) => Boolean(user && user.auth_provider === 'local' && Number(user.password_login ?? 1) && user.twofa_required && !user.totp_enabled_at);
 
 // ---- Gemerkte Geräte ----
 function deviceTrusted(user, req) {

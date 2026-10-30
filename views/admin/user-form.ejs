@@ -19,9 +19,12 @@
         <div class="field-hint">Daraus kommen Rang und Name als «Absender» im Aufgebot.</div></div>
       <% if (msEnabled || Number(u.ms_login)) { %>
       <fieldset class="fieldset mt">
-        <legend>Microsoft-Anmeldung</legend>
+        <legend>Anmeldung</legend>
+        <input type="hidden" name="login_fields" value="1">
         <label class="check"><input type="checkbox" name="ms_login" value="1" <%= Number(u.ms_login) ? 'checked' : '' %>> Mit dem Microsoft-Konto dieser E-Mail-Adresse anmelden erlaubt</label>
-        <div class="field-hint"><%= u.external_id ? 'Verknüpft: Die Person hat sich schon mit Microsoft angemeldet. Ausschalten oder eine andere E-Mail löst die Verknüpfung.' : 'Beim ersten Microsoft-Login wird das Konto über die E-Mail-Adresse verknüpft.' %> Das Login mit Passwort bleibt daneben möglich.<%= msEnabled ? '' : ' Die Microsoft-Anmeldung ist auf dem Server zurzeit ausgeschaltet.' %></div>
+        <div class="field-hint"><%= u.external_id ? 'Verknüpft: Die Person hat sich schon mit Microsoft angemeldet. Ausschalten oder eine andere E-Mail löst die Verknüpfung.' : 'Beim ersten Microsoft-Login wird das Konto über die E-Mail-Adresse verknüpft.' %><%= msEnabled ? '' : ' Die Microsoft-Anmeldung ist auf dem Server zurzeit ausgeschaltet.' %></div>
+        <label class="check mt-s"><input type="checkbox" name="password_login" value="1" <%= Number(u.password_login ?? 1) ? 'checked' : '' %>> Mit Benutzername und Passwort anmelden erlaubt</label>
+        <div class="field-hint">Ausschalten = nur noch Microsoft. Dein eigenes Konto erst, nachdem du dich einmal mit Microsoft angemeldet hast. Notausgang: Wird die Microsoft-Anmeldung auf dem Server ausgeschaltet (<code>AUTH_PROVIDERS=local</code>), gilt das Passwort wieder für alle.</div>
       </fieldset>
       <% } %>
       <fieldset class="fieldset mt">

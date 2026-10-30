@@ -22,6 +22,7 @@ const NEW_COLUMNS = {
     ['totp_secret', 'TEXT'], ['totp_enabled_at', 'TEXT'], ['totp_last_step', 'INTEGER'], ['recovery_codes', 'JSON'],
     ['twofa_required', 'INTEGER NOT NULL DEFAULT 0'], ['twofa_remember_days', 'INTEGER NOT NULL DEFAULT 0'],
     ['theme', "TEXT NOT NULL DEFAULT 'system'"], ['ms_login', 'INTEGER NOT NULL DEFAULT 0'],
+    ['password_login', 'INTEGER NOT NULL DEFAULT 1'],
   ],
 };
 

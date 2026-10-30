@@ -79,6 +79,7 @@ CREATE TABLE IF NOT EXISTS users (
   twofa_remember_days INTEGER NOT NULL DEFAULT 0,  -- 0 = bei jedem Login
   theme TEXT NOT NULL DEFAULT 'system',            -- Darstellung: system, light, dark
   ms_login INTEGER NOT NULL DEFAULT 0,             -- Microsoft-Anmeldung für diese E-Mail freigegeben
+  password_login INTEGER NOT NULL DEFAULT 1,       -- 0 = nur Microsoft (gilt nur, solange Microsoft eingeschaltet ist)
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );

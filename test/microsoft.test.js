@@ -50,7 +50,7 @@ test('Microsoft-Login nur mit Freigabe, danach über die feste ID', async () => 
   let r = await loginAs({ preferred_username: 'Yann@kkb.ch' });
   assert.equal(r.ok, false, 'ohne Freigabe kein Zugang');
 
-  users.update(id, { display_name: 'Yann', role: 'admin', email: 'yann@kkb.ch', ms_login: '1', active: '1' }, admin);
+  users.update(id, { display_name: 'Yann', role: 'admin', email: 'yann@kkb.ch', login_fields: '1', ms_login: '1', password_login: '1', active: '1' }, admin);
   // Nur die (fälschbare) E-Mail-Angabe genügt nicht
   r = await loginAs({ preferred_username: 'fremd@boese.example', email: 'yann@kkb.ch', oid: 'oid-x' });
   assert.equal(r.ok, false);
@@ -68,8 +68,27 @@ test('Microsoft-Login nur mit Freigabe, danach über die feste ID', async () => 
   // Falsche Anwendung oder falsche Signatur
   await assert.rejects(loginAs({ preferred_username: 'yann@kkb.ch', aud: 'andere-app' }));
 
-  // Freigabe entziehen löst die Verknüpfung
+  // Nur noch Microsoft: Passwort-Login abgelehnt, solange Microsoft eingeschaltet ist
+  const local = require('../src/auth/providers/local');
+  const form = { display_name: 'Yann', role: 'admin', email: 'yann@kkb.ch', active: '1', login_fields: '1' };
+  assert.throws(() => users.update(id, form, admin), /Mindestens eine Anmeldeart/);
+  const { id: otherId } = await users.create({ username: 'neu', display_name: 'Neu', role: 'admin', password: 'Sehr-Sicher-2026' }, null);
+  assert.throws(() => users.update(otherId, { ...form, email: 'neu@kkb.ch', ms_login: '1' }, users.get(otherId)), /zuerst einmal erfolgreich mit Microsoft/);
+  users.update(id, { ...form, ms_login: '1' }, users.get(id));
+  assert.equal(users.get(id).password_login, 0);
+  const pw = { username: 'yann', password: 'Sehr-Sicher-2026', ip: '1.2.3.4' };
+  assert.match((await local.authenticate(pw)).error, /nur die Anmeldung mit Microsoft/);
+  assert.equal((await loginAs({ preferred_username: 'yann@kkb.ch' })).ok, true);
+  // Ohne Feld im Formular bleibt die Einstellung erhalten
   users.update(id, { display_name: 'Yann', role: 'admin', email: 'yann@kkb.ch', active: '1' }, admin);
+  assert.equal(users.get(id).password_login, 0);
+  // Notausgang: Microsoft auf dem Server aus -> Passwort gilt wieder
+  config.authProviders = ['local'];
+  assert.equal((await local.authenticate(pw)).ok, true);
+  config.authProviders = ['local', 'microsoft'];
+
+  // Freigabe entziehen löst die Verknüpfung
+  users.update(id, { ...form, password_login: '1' }, admin);
   assert.equal(users.get(id).external_id, null);
   assert.equal((await loginAs({ preferred_username: 'yann@kkb.ch' })).ok, false);
 });

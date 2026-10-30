@@ -108,7 +108,9 @@ Das Login ist austauschbar aufgebaut (`src/auth/providers/`). Die Microsoft-Anme
 3. In `.env` setzen: `AUTH_PROVIDERS=local,microsoft`, `MS_CLIENT_ID` (Anwendungs-ID), `MS_CLIENT_SECRET` und `MS_TENANT_ID` (Verzeichnis-ID bei nur eigenem Mandant, sonst `organizations`). Optional `MS_ALLOWED_TENANTS` mit den Tenant-IDs, aus denen Konten kommen dürfen
 4. In der Verwaltung beim Benutzerkonto die E-Mail-Adresse des Microsoft-Kontos (Anmeldename) eintragen und «Microsoft-Anmeldung erlaubt» ankreuzen. Beim ersten Login wird das Konto über diese Adresse gefunden und mit der festen Microsoft-ID (Mandant + Objekt-ID) verknüpft
 
-Abschalten: `AUTH_PROVIDERS=local` und neu starten. Die Freigaben in der Datenbank stören dann nicht.
+Nur noch Microsoft: pro Benutzer «Mit Benutzername und Passwort anmelden erlaubt» ausschalten (das eigene Konto erst nach einem erfolgreichen Microsoft-Login). Für alle auf einmal: `AUTH_PROVIDERS=microsoft`.
+
+Abschalten / Notausgang: `AUTH_PROVIDERS=local` und neu starten. Dann gilt das Passwort wieder für alle, auch für Konten mit «nur Microsoft».
 
 Verknüpft wird über den Anmeldenamen (`preferred_username`), nicht über die frei setzbare E-Mail-Angabe im Token. Verlangt der Vereins-Mandant eine Admin-Zustimmung für fremde Apps, zeigt Microsoft beim Login «Genehmigung erforderlich»; dann muss ein Admin der App zustimmen. Die Zwei-Faktor-Abfrage des Einsatzplaners gilt nur für das Passwort-Login; bei Microsoft gilt dessen eigene Anmeldesicherheit.
 

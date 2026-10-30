@@ -67,7 +67,7 @@ function requireLogin(req, res, next) {
     return res.status(401).send('Nicht angemeldet');
   }
   // Erzwungener Passwortwechsel (z. B. nach Zurücksetzen durch den Admin)
-  if (req.user.must_change_password && req.user.auth_provider === 'local' && !req.path.startsWith('/konto/passwort')) {
+  if (req.user.must_change_password && req.user.auth_provider === 'local' && Number(req.user.password_login ?? 1) && !req.path.startsWith('/konto/passwort')) {
     return res.redirect('/konto/passwort');
   }
   // Pflicht zur Zwei-Faktor-Anmeldung: zuerst einrichten

@@ -4,6 +4,9 @@ const db = require('../../db');
 const passwords = require('../passwords');
 const throttle = require('../throttle');
 
+const config = require('../../config');
+const msActive = () => config.authProviders.includes('microsoft') && require('./microsoft').enabled();
+
 const GENERIC_ERROR = 'Benutzername oder Passwort ist falsch.';
 
 module.exports = {
@@ -36,6 +39,10 @@ module.exports = {
     }
     // Mit 2FA zählt das Login erst nach dem richtigen Code als erfolgreich
     // (sonst könnte man den Fehlversuchszähler mit dem Passwort immer wieder zurücksetzen)
+    // «Nur Microsoft»: gilt nur, solange die Microsoft-Anmeldung eingeschaltet ist (Notausgang: AUTH_PROVIDERS=local)
+    if (!Number(user.password_login ?? 1) && msActive()) {
+      return { ok: false, error: 'Für dieses Konto ist nur die Anmeldung mit Microsoft erlaubt.' };
+    }
     if (!user.totp_enabled_at) throttle.registerSuccess(user);
     if (passwords.needsRehash(user.password_hash)) {
       db.run('UPDATE users SET password_hash = ? WHERE id = ?', await passwords.hashPassword(password), user.id);
