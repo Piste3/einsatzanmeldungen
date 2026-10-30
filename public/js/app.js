@@ -108,7 +108,6 @@
     const list = d.querySelector('.menu-list');
     if (!list) return;
     const r = d.querySelector('summary').getBoundingClientRect();
-    list.style.position = 'fixed';
     list.style.right = 'auto';
     list.style.bottom = 'auto';
     list.style.maxHeight = '';
@@ -127,10 +126,11 @@
     const d = ev.target;
     if (d.matches && d.matches('details.menu') && d.open) placeMenu(d);
   }, true);
-  const closeMenus = () => $$('details.menu[open]').forEach((d) => d.removeAttribute('open'));
-  window.addEventListener('resize', closeMenus);
+  // Beim Scrollen oder Ändern der Fenstergrösse mitwandern statt zu schliessen
+  const replaceMenus = () => $$('details.menu[open]').forEach(placeMenu);
+  window.addEventListener('resize', replaceMenus);
   document.addEventListener('scroll', (ev) => {
-    if (!ev.target.closest || !ev.target.closest('.menu-list')) closeMenus();
+    if (!(ev.target.closest && ev.target.closest('.menu-list'))) replaceMenus();
   }, true);
 
   document.addEventListener('focusin', (ev) => {

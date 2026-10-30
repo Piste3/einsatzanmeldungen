@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
   <title><%= title %> · <%= verein %></title>
-  <link rel="stylesheet" href="/static/css/form.css">
+  <link rel="stylesheet" href="/static/css/form.css?v=<%= v %>">
 </head>
 <body>
 <header class="f-header"><span class="logo">KKB</span><div><div class="f-title"><%= title %></div><div class="f-sub"><%= verein %></div></div></header>
@@ -34,6 +34,6 @@
   </form>
   <% } %>
 </main>
-<script src="/static/js/form.js"></script>
+<script src="/static/js/form.js?v=<%= v %>"></script>
 </body>
 </html>

@@ -6,6 +6,21 @@ const auth = require('./auth');
 const helpers = require('./lib/view-helpers');
 const { ValidationError, ConflictError, ReadOnlyError } = require('./services/errors');
 
+// Version der CSS/JS-Dateien für die URL (?v=…), damit Browser nach einem Update nicht alte Dateien aus dem Cache nehmen
+function assetVersion() {
+  const fs = require('node:fs');
+  const hash = require('node:crypto').createHash('sha1');
+  const walk = (dir) => {
+    for (const f of fs.readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+      const full = path.join(dir, f.name);
+      if (f.isDirectory()) walk(full);
+      else hash.update(fs.readFileSync(full));
+    }
+  };
+  walk(path.join(__dirname, '..', 'public'));
+  return hash.digest('hex').slice(0, 10);
+}
+
 function createApp() {
   const app = express();
   app.disable('x-powered-by');
@@ -13,6 +28,7 @@ function createApp() {
   app.set('view engine', 'ejs');
   app.set('views', path.join(__dirname, '..', 'views'));
   app.locals.h = helpers;
+  app.locals.v = assetVersion();
 
   // Sicherheits-Header. Das öffentliche Formular darf nur von ClubDesk eingebettet werden.
   app.use((req, res, next) => {

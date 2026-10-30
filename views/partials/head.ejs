@@ -6,7 +6,7 @@
   <meta name="csrf-token" content="<%= csrfToken %>">
   <title><%= title ? title + ' · ' : '' %>KKB-Einsatzplaner</title>
   <link rel="icon" href="/static/img/logo.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/css/app.css">
+  <link rel="stylesheet" href="/static/css/app.css?v=<%= v %>">
 </head>
 <body data-live-topics="<%= (liveTopics || []).join(',') %>"<% if (typeof editKey !== 'undefined' && editKey) { %> data-edit-key="<%= editKey %>"<% } %>>
 <div class="app">
