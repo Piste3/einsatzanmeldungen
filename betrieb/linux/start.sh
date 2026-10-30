@@ -8,7 +8,7 @@ if uses_launchd; then launchctl load -w "$PLIST" 2>/dev/null || true; launchctl 
 if pid_running; then echo "Der Server läuft bereits (PID $(cat "$PID_FILE"))."; exit 0; fi
 if [ ! -d node_modules ]; then echo "Installiere Abhängigkeiten …"; npm ci --omit=dev; fi
 
-nohup "$NODE_BIN" --disable-warning=ExperimentalWarning --env-file-if-exists=.env src/server.js >>"$LOG_FILE" 2>&1 &
+nohup "$NODE_BIN" --disable-warning=ExperimentalWarning --env-file-if-exists=.env src/launcher.js >>"$LOG_FILE" 2>&1 &
 echo $! >"$PID_FILE"
 sleep 2
 if pid_running; then

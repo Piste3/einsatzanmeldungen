@@ -110,3 +110,17 @@ test('Bestätigungsmail: Seite, Vorschau und Speichern (nur Admin)', async () =>
   const lena = await login('lena', 'Aufgebot-2026-x');
   assert.notEqual((await get('/verwaltung/bestaetigungsmail', lena.cookie)).status, 200);
 });
+
+test('System-Seite: nur Admin, Update ohne Starter wird abgelehnt', async () => {
+  const admin = await login('admin', 'Chef-Passwort-2026');
+  const page = await get('/verwaltung/system', admin.cookie);
+  assert.equal(page.status, 200);
+  const html = await page.text();
+  assert.match(html, /alten Startskript/);
+  const csrf = html.match(/name="_csrf" value="([^"]+)"/)[1];
+  const r = await fetch(`${base}/verwaltung/system/neustart`, {
+    method: 'POST', redirect: 'manual', headers: { cookie: admin.cookie, 'content-type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ _csrf: csrf }),
+  });
+  assert.equal(r.status, 302); // Fehlermeldung statt Neustart
+});

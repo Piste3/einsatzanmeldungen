@@ -14,7 +14,7 @@ Webanwendung des Kadetten-Korps Basel für Einsätze, Anmeldungen, Nachfassen, S
 - **Exporte** jeder Liste als Excel (.xlsx) oder CSV, **Import** aus ClubDesk mit Vorschau und Duplikatprüfung
 - **Live-Aktualisierung**: geänderte Listen laden sich selbst nach, und es ist sichtbar, wer gerade dasselbe bearbeitet
 - **Gleichzeitige Änderungen** werden erkannt. Statt still zu überschreiben, erscheint eine Seite zum Übernehmen, erneut Anwenden oder Verwerfen
-- **Verwaltung**: Benutzer, Auswahllisten, Vorlagen, Kalendertermin-Vorlage, Bestätigungsmail (mit Vorschau und Testmail), Einstellungen und tägliche Sicherung
+- **Verwaltung**: Benutzer, Auswahllisten, Vorlagen, Kalendertermin-Vorlage, Bestätigungsmail (mit Vorschau und Testmail), Einstellungen, tägliche Sicherung sowie Update und Neustart per Knopfdruck (System)
 
 Zusätzlich zu den Anmeldestatus aus dem Konzept gibt es **Abgesagt** (im Formular mit «Nein» geantwortet) und **Ungültig** (z. B. Spass-Anmeldung). Beide zählen nicht zur Besetzung. Im Kalendertermin werden nur **bestätigte** Personen als Teilnehmende eingetragen.
 

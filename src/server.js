@@ -28,17 +28,27 @@ if (users.count() === 0) {
 
 server.listen(config.port, config.host, () => {
   console.log(`KKB-Einsatzplaner läuft auf ${config.baseUrl} (Port ${config.port})`);
+  require('./services/updater').markStarted();
   console.log(`Anmeldeformular: ${config.baseUrl}/forms/anmeldung (einbettbar auf: ${config.formFrameAncestors})`);
 });
 jobs.start();
 
-function shutdown() {
+let shuttingDown = false;
+function shutdown(code = 0) {
+  if (shuttingDown) return;
+  shuttingDown = true;
   jobs.stop();
+  live.closeAll();
   server.close(() => {
     db.close();
-    process.exit(0);
+    process.exit(code);
   });
-  setTimeout(() => process.exit(0), 5000).unref();
+  server.closeAllConnections?.();
+  setTimeout(() => process.exit(code), 5000).unref();
 }
-process.on('SIGTERM', shutdown);
-process.on('SIGINT', shutdown);
+process.on('SIGTERM', () => shutdown(0));
+process.on('SIGINT', () => shutdown(0));
+// Über den Starter (launcher.js) gestartet: endet der Starter, endet auch der Server
+if (process.send) process.on('disconnect', () => shutdown(0));
+// Neustart (Verwaltung › System): Exit-Code 75, der Starter startet den Server danach neu
+process.on('kkb:restart', () => shutdown(75));

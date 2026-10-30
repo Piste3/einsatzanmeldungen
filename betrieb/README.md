@@ -16,6 +16,10 @@ Skripte für den Alltag. Es gibt je eine Variante für **Linux/macOS** (`betrieb
 
 Unter Windows sind die `.cmd`-Dateien nur Doppelklick-Starter für die gleichnamigen PowerShell-Skripte (`.ps1`).
 
+## Update und Neustart im Browser
+
+Admins finden unter **Einstellungen › System** die Knöpfe «Nach Updates suchen», «Update installieren» und «Server neu starten», mit Protokoll. Dafür muss der Server über die Skripte hier (oder `npm start`) gestartet sein. Diese starten `src/launcher.js`, der den Server nach einem Update automatisch neu startet. Für das Update muss `git` auf dem Server installiert sein, und das Konto, unter dem der Server läuft, muss von GitHub lesen dürfen.
+
 ## Was die Skripte tun
 
 - **start** startet den Server im Hintergrund und merkt sich die Prozessnummer in `DATA_DIR/server.pid`. Die Ausgabe landet in `DATA_DIR/server.log`. Fehlen die Abhängigkeiten, werden sie zuerst installiert.

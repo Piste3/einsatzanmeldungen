@@ -138,6 +138,29 @@
     if (ev.target.matches('[data-select-on-focus]')) ev.target.select();
   });
 
+  // ---------- Update / Neustart (Verwaltung › System) ----------
+  const updateLog = $('[data-update-log]');
+  if (updateLog && updateLog.dataset.running === '1') {
+    let sawDown = false;
+    const stateEl = $('#update-state');
+    const poll = async () => {
+      try {
+        const res = await fetch('/verwaltung/system/status', { credentials: 'same-origin', cache: 'no-store' });
+        if (!res.ok || res.redirected || !(res.headers.get('content-type') || '').includes('json')) throw new Error('nicht bereit');
+        const st = await res.json();
+        if (st.lines.length) updateLog.textContent = st.lines.join('\n');
+        updateLog.scrollTop = updateLog.scrollHeight;
+        if (stateEl) stateEl.textContent = st.running ? `läuft: ${st.step || ''}` : st.restarting ? 'Neustart …' : '';
+        if (!st.running && !st.restarting) { location.replace('/verwaltung/system'); return; }
+      } catch {
+        sawDown = true;
+        if (stateEl) stateEl.textContent = 'Server startet neu …';
+      }
+      setTimeout(poll, sawDown ? 2000 : 1200);
+    };
+    setTimeout(poll, 800);
+  }
+
   // ---------- Bausteine einfügen ----------
   let lastTokenTarget = null;
   function insertToken(token) {

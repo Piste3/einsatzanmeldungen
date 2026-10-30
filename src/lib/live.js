@@ -93,4 +93,9 @@ function clientCount() {
   return clients.size;
 }
 
-module.exports = { attach, notify, clientCount };
+// Beim Herunterfahren alle Verbindungen schliessen (Code 1012 = Neustart; die Seiten verbinden sich neu)
+function closeAll() {
+  for (const ws of clients) ws.close(1012, 'Neustart');
+}
+
+module.exports = { attach, notify, clientCount, closeAll };

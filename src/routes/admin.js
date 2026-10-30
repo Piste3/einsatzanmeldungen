@@ -275,6 +275,43 @@ router.post('/verwaltung/bestaetigungsmail', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// ---- System: Version, Update, Neustart ----
+const updater = require('../services/updater');
+
+router.get('/verwaltung/system', async (req, res, next) => {
+  try {
+    res.render('admin/system', {
+      title: 'System', version: await updater.currentVersion(), st: await updater.status(), check: null,
+      node: process.version, platform: process.platform,
+    });
+  } catch (err) { next(err); }
+});
+
+router.post('/verwaltung/system/pruefen', async (req, res, next) => {
+  try {
+    res.render('admin/system', {
+      title: 'System', version: await updater.currentVersion(), st: await updater.status(), check: await updater.check(),
+      node: process.version, platform: process.platform,
+    });
+  } catch (err) { next(err); }
+});
+
+router.post('/verwaltung/system/update', (req, res) => {
+  if (!updater.canRestart()) throw new ValidationError(['Der Server wurde noch mit dem alten Startskript gestartet. Bitte einmalig auf dem Server update.cmd (bzw. update.sh) ausführen.']);
+  updater.update(req.user).catch((err) => console.error('Update fehlgeschlagen:', err));
+  res.redirect(303, '/verwaltung/system');
+});
+
+router.post('/verwaltung/system/neustart', (req, res) => {
+  if (!updater.canRestart()) throw new ValidationError(['Der Server wurde noch mit dem alten Startskript gestartet. Bitte einmalig auf dem Server neustart.cmd (bzw. neustart.sh) ausführen.']);
+  updater.restart(req.user);
+  res.redirect(303, '/verwaltung/system?neustart=1');
+});
+
+router.get('/verwaltung/system/status', async (req, res) => {
+  res.set('Cache-Control', 'no-store').json(await updater.status());
+});
+
 // Kleine Vorschau-API für Textfelder (Bestätigungsmail)
 router.post('/verwaltung/vorschau-text', (req, res) => {
   const e = previewEvent(req.body.einsatz);

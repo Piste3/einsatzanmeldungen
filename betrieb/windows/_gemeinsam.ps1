@@ -24,7 +24,7 @@ New-Item -ItemType Directory -Force -Path $DataDir | Out-Null
 $NodeCmd = Get-Command node -ErrorAction SilentlyContinue
 if (-not $NodeCmd) { throw 'Node.js wurde nicht gefunden. Bitte Node.js 22.13 oder neuer installieren.' }
 $NodeBin = $NodeCmd.Source
-$NodeArgs = '--disable-warning=ExperimentalWarning --env-file-if-exists=.env src/server.js'
+$NodeArgs = '--disable-warning=ExperimentalWarning --env-file-if-exists=.env src/launcher.js'
 
 function Get-Task { Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue }
 
@@ -45,6 +45,6 @@ function Test-Admin {
 function Stop-TaskServer {
   Stop-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
   Get-CimInstance Win32_Process -Filter "Name = 'node.exe'" |
-    Where-Object { $_.CommandLine -like '*src/server.js*' -and $_.CommandLine -like '*env-file-if-exists*' } |
+    Where-Object { ($_.CommandLine -like '*src/server.js*' -or $_.CommandLine -like '*src/launcher.js*') -and $_.CommandLine -like '*env-file-if-exists*' } |
     ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
 }

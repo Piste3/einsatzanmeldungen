@@ -11,4 +11,4 @@ RUN mkdir -p /data && chown node:node /data
 VOLUME /data
 EXPOSE 3000
 USER node
-CMD ["node", "--disable-warning=ExperimentalWarning", "src/server.js"]
+CMD ["node", "--disable-warning=ExperimentalWarning", "src/launcher.js"]

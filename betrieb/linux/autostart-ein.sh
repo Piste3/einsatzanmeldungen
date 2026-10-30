@@ -16,7 +16,7 @@ if [ "$(uname)" = "Darwin" ]; then
   <key>WorkingDirectory</key><string>$APP_DIR</string>
   <key>ProgramArguments</key><array>
     <string>$NODE_BIN</string><string>--disable-warning=ExperimentalWarning</string>
-    <string>--env-file-if-exists=.env</string><string>src/server.js</string>
+    <string>--env-file-if-exists=.env</string><string>src/launcher.js</string>
   </array>
   <key>RunAtLoad</key><true/>
   <key>KeepAlive</key><true/>
@@ -44,7 +44,7 @@ Wants=network-online.target
 Type=simple
 User=$(id -un)
 WorkingDirectory=$APP_DIR
-ExecStart=$NODE_BIN --disable-warning=ExperimentalWarning --env-file-if-exists=.env src/server.js
+ExecStart=$NODE_BIN --disable-warning=ExperimentalWarning --env-file-if-exists=.env src/launcher.js
 Restart=on-failure
 RestartSec=5
 
