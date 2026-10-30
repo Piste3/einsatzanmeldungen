@@ -433,3 +433,12 @@ a.fb:hover, button.fb:hover { outline: 2px solid var(--border-strong); outline-o
 .combo-opt:hover, .combo-opt.active { background: #eef1f6; }
 .combo-opt.selected { font-weight: 650; color: var(--orange, #e8742a); }
 .combo-empty { padding: 8px 10px; color: var(--muted); font-size: 13px; }
+
+/* Abschnitte mit einem Speichern-Knopf */
+.section-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; border-top: 1px solid var(--border); background: #fafbfc; border-radius: 0 0 10px 10px; }
+form.dirty .section-foot { background: var(--orange-soft); }
+form.dirty [data-dirty-hint] { color: #9a4a12; font-weight: 600; }
+.form-table tr.new-row td { background: #fcfcfd; }
+.form-table tr.to-delete td { opacity: 0.5; text-decoration: line-through; }
+.form-table tr.to-delete td:last-child { opacity: 1; text-decoration: none; }
+tr.changed td:first-child { box-shadow: inset 3px 0 0 var(--orange, #e8742a); }

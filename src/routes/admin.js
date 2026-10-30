@@ -91,29 +91,59 @@ router.get('/verwaltung/listen', (req, res) => {
   });
 });
 
+// Ein Abschnitt wird als Ganzes gespeichert: Felder heissen «feld__<id>» bzw. «feld__neu»,
+// «row__<id>» markiert jede Zeile (für nicht angekreuzte Checkboxen), «delete__<id>» löscht.
+function sectionRows(body) {
+  const rows = new Map();
+  for (const [key, value] of Object.entries(body)) {
+    const m = /^([a-z_]+)__(\d+|neu)$/.exec(key);
+    if (!m) continue;
+    if (!rows.has(m[2])) rows.set(m[2], { id: m[2] === 'neu' ? 0 : Number(m[2]) });
+    rows.get(m[2])[m[1]] = Array.isArray(value) ? value[value.length - 1] : value;
+  }
+  const list = [...rows.values()];
+  return {
+    existing: list.filter((r) => r.id && r.row !== undefined),
+    added: list.filter((r) => !r.id && String(r.name || '').trim()),
+  };
+}
+
 router.post('/verwaltung/listen/:kind', (req, res) => {
   const kind = req.params.kind;
   const table = { raenge: 'ranks', mannschaften: 'teams' }[kind];
   if (!table) return res.redirect('/verwaltung/listen');
-  const name = String(req.body.name || '').trim();
-  const id = Number(req.body.id || 0);
-  if (req.body.delete === '1' && id) {
-    const used = table === 'ranks' ? db.one('SELECT COUNT(*) AS n FROM persons WHERE rank_id = ?', id).n : db.one('SELECT COUNT(*) AS n FROM person_teams WHERE team_id = ?', id).n;
-    if (used) throw new ValidationError(['Wird noch verwendet – stattdessen deaktivieren.']);
-    db.run(`DELETE FROM ${table} WHERE id = ?`, id);
-  } else {
-    if (!name) throw new ValidationError(['Name fehlt.']);
-    const sort = Number(req.body.sort || 0);
-    const active = req.body.active === '1' || !id ? 1 : 0;
-    if (table === 'ranks') {
-      const short = String(req.body.short || '').trim() || name;
-      if (id) db.run('UPDATE ranks SET name = ?, short = ?, sort = ?, active = ? WHERE id = ?', name, short, sort, active, id);
-      else db.run('INSERT INTO ranks (name, short, sort) VALUES (?, ?, ?)', name, short, sort || (db.one('SELECT max(sort) AS m FROM ranks').m || 0) + 1);
-    } else if (id) db.run('UPDATE teams SET name = ?, sort = ?, active = ? WHERE id = ?', name, sort, active, id);
-    else db.run('INSERT INTO teams (name, sort) VALUES (?, ?)', name, sort || (db.one('SELECT max(sort) AS m FROM teams').m || 0) + 1);
-  }
-  audit.log({ entity: 'settings', action: 'lists', summary: `${req.user.display_name} hat die Auswahlliste «${kind === 'raenge' ? 'Ränge' : 'Mannschaften'}» geändert`, user: req.user });
-  flash(res, 'success', 'Gespeichert.');
+  const { existing, added } = sectionRows(req.body);
+  const problems = [];
+  let changes = 0;
+  db.tx(() => {
+    for (const r of existing) {
+      const name = String(r.name || '').trim();
+      if (r.delete === '1') {
+        const used = table === 'ranks' ? db.one('SELECT COUNT(*) AS n FROM persons WHERE rank_id = ?', r.id).n : db.one('SELECT COUNT(*) AS n FROM person_teams WHERE team_id = ?', r.id).n;
+        if (used) { problems.push(`«${name}» wird noch verwendet – stattdessen deaktivieren.`); continue; }
+        db.run(`DELETE FROM ${table} WHERE id = ?`, r.id);
+        changes++;
+        continue;
+      }
+      if (!name) { problems.push('Ein Name fehlt.'); continue; }
+      const sort = Number(r.sort || 0);
+      const active = r.active === '1' ? 1 : 0;
+      const res2 = table === 'ranks'
+        ? db.run('UPDATE ranks SET name = ?, short = ?, sort = ?, active = ? WHERE id = ? AND (name IS NOT ? OR short IS NOT ? OR sort IS NOT ? OR active IS NOT ?)', name, String(r.short || '').trim() || name, sort, active, r.id, name, String(r.short || '').trim() || name, sort, active)
+        : db.run('UPDATE teams SET name = ?, sort = ?, active = ? WHERE id = ? AND (name IS NOT ? OR sort IS NOT ? OR active IS NOT ?)', name, sort, active, r.id, name, sort, active);
+      changes += Number(res2.changes);
+    }
+    for (const r of added) {
+      const name = String(r.name).trim();
+      const sort = Number(r.sort || 0) || (db.one(`SELECT max(sort) AS m FROM ${table}`).m || 0) + 1;
+      if (table === 'ranks') db.run('INSERT INTO ranks (name, short, sort) VALUES (?, ?, ?)', name, String(r.short || '').trim() || name, sort);
+      else db.run('INSERT INTO teams (name, sort) VALUES (?, ?)', name, sort);
+      changes++;
+    }
+  });
+  if (changes) audit.log({ entity: 'settings', action: 'lists', summary: `${req.user.display_name} hat die Auswahlliste «${kind === 'raenge' ? 'Ränge' : 'Mannschaften'}» geändert`, user: req.user });
+  if (problems.length) flash(res, 'error', `${changes ? 'Gespeichert, aber: ' : ''}${problems.join(' ')}`);
+  else flash(res, 'success', changes ? 'Gespeichert.' : 'Keine Änderungen.');
   res.redirect('/verwaltung/listen');
 });
 
@@ -128,39 +158,52 @@ router.get('/verwaltung/vorlagen', (req, res) => {
 });
 
 router.post('/verwaltung/vorlagen/:kind', (req, res) => {
-  const id = Number(req.body.id || 0);
-  const del = req.body.delete === '1';
-  const sort = Number(req.body.sort || 0);
-  const name = String(req.body.name || '').trim();
-  if (!del && !name) throw new ValidationError(['Name fehlt.']);
-  switch (req.params.kind) {
-    case 'fragen': {
-      if (del) db.run('UPDATE events SET question_template_id = NULL WHERE question_template_id = ?', id), db.run('DELETE FROM question_templates WHERE id = ?', id);
-      else if (id) db.run('UPDATE question_templates SET name = ?, question_text = ?, help_text = ?, sort = ? WHERE id = ?', name, String(req.body.question_text || '').trim() || name, String(req.body.help_text || '').trim() || null, sort, id);
-      else db.run('INSERT INTO question_templates (name, question_text, help_text, sort) VALUES (?, ?, ?, ?)', name, String(req.body.question_text || '').trim() || name, String(req.body.help_text || '').trim() || null, sort);
-      break;
-    }
-    case 'tenue': {
-      if (del) db.run('DELETE FROM tenue_templates WHERE id = ?', id);
-      else if (id) db.run('UPDATE tenue_templates SET name = ?, text = ?, sort = ? WHERE id = ?', name, String(req.body.text || ''), sort, id);
-      else db.run('INSERT INTO tenue_templates (name, text, sort) VALUES (?, ?, ?)', name, String(req.body.text || ''), sort);
-      break;
-    }
-    case 'zusatzfelder': {
-      const type = ['text', 'textarea', 'number', 'date', 'checkbox'].includes(req.body.field_type) ? req.body.field_type : 'text';
-      if (!del && /[{}]/.test(name)) throw new ValidationError(['Der Feldname darf keine geschweiften Klammern enthalten.']);
-      if (del) db.run('DELETE FROM extra_fields WHERE id = ?', id);
-      else if (id) db.run('UPDATE extra_fields SET name = ?, field_type = ?, required = ?, sort = ? WHERE id = ?', name, type, req.body.required ? 1 : 0, sort, id);
-      else {
-        if (db.one('SELECT 1 FROM extra_fields WHERE name = ?', name)) throw new ValidationError(['Dieses Zusatzfeld gibt es schon.']);
-        db.run('INSERT INTO extra_fields (name, field_type, required, sort) VALUES (?, ?, ?, ?)', name, type, req.body.required ? 1 : 0, sort);
+  const kind = req.params.kind;
+  if (!['fragen', 'tenue', 'zusatzfelder'].includes(kind)) return res.redirect('/verwaltung/vorlagen');
+  const { existing, added } = sectionRows(req.body);
+  const problems = [];
+  let changes = 0;
+  const TYPES = ['text', 'textarea', 'number', 'date', 'checkbox'];
+  db.tx(() => {
+    const table = { fragen: 'question_templates', tenue: 'tenue_templates', zusatzfelder: 'extra_fields' }[kind];
+    for (const r of [...existing, ...added]) {
+      const name = String(r.name || '').trim();
+      // neue Einträge ohne Reihenfolge kommen ans Ende
+      const sort = Number(r.sort || 0) || (r.id ? 0 : (db.one(`SELECT max(sort) AS m FROM ${table}`).m || 0) + 1);
+      if (r.id && r.delete === '1') {
+        if (kind === 'fragen') { db.run('UPDATE events SET question_template_id = NULL WHERE question_template_id = ?', r.id); db.run('DELETE FROM question_templates WHERE id = ?', r.id); }
+        if (kind === 'tenue') db.run('DELETE FROM tenue_templates WHERE id = ?', r.id);
+        if (kind === 'zusatzfelder') db.run('DELETE FROM extra_fields WHERE id = ?', r.id);
+        changes++;
+        continue;
       }
-      break;
+      if (!name) { problems.push('Ein Name fehlt.'); continue; }
+      if (kind === 'fragen') {
+        const q = String(r.question_text || '').trim() || name;
+        const help = String(r.help_text || '').trim() || null;
+        changes += Number((r.id
+          ? db.run('UPDATE question_templates SET name = ?, question_text = ?, help_text = ?, sort = ? WHERE id = ? AND (name IS NOT ? OR question_text IS NOT ? OR help_text IS NOT ? OR sort IS NOT ?)', name, q, help, sort, r.id, name, q, help, sort)
+          : db.run('INSERT INTO question_templates (name, question_text, help_text, sort) VALUES (?, ?, ?, ?)', name, q, help, sort)).changes);
+      } else if (kind === 'tenue') {
+        const text = String(r.text || '');
+        changes += Number((r.id
+          ? db.run('UPDATE tenue_templates SET name = ?, text = ?, sort = ? WHERE id = ? AND (name IS NOT ? OR text IS NOT ? OR sort IS NOT ?)', name, text, sort, r.id, name, text, sort)
+          : db.run('INSERT INTO tenue_templates (name, text, sort) VALUES (?, ?, ?)', name, text, sort)).changes);
+      } else {
+        if (/[{}]/.test(name)) { problems.push('Ein Feldname darf keine geschweiften Klammern enthalten.'); continue; }
+        const type = TYPES.includes(r.field_type) ? r.field_type : 'text';
+        const required = r.required === '1' ? 1 : 0;
+        const dup = db.one('SELECT id FROM extra_fields WHERE name = ? AND id <> ?', name, r.id || 0);
+        if (dup) { problems.push(`Das Zusatzfeld «${name}» gibt es schon.`); continue; }
+        changes += Number((r.id
+          ? db.run('UPDATE extra_fields SET name = ?, field_type = ?, required = ?, sort = ? WHERE id = ? AND (name IS NOT ? OR field_type IS NOT ? OR required IS NOT ? OR sort IS NOT ?)', name, type, required, sort, r.id, name, type, required, sort)
+          : db.run('INSERT INTO extra_fields (name, field_type, required, sort) VALUES (?, ?, ?, ?)', name, type, required, sort)).changes);
+      }
     }
-    default: return res.redirect('/verwaltung/vorlagen');
-  }
-  audit.log({ entity: 'settings', action: 'templates', summary: `${req.user.display_name} hat Vorlagen geändert`, user: req.user });
-  flash(res, 'success', 'Gespeichert.');
+  });
+  if (changes) audit.log({ entity: 'settings', action: 'templates', summary: `${req.user.display_name} hat Vorlagen geändert`, user: req.user });
+  if (problems.length) flash(res, 'error', `${changes ? 'Gespeichert, aber: ' : ''}${problems.join(' ')}`);
+  else flash(res, 'success', changes ? 'Gespeichert.' : 'Keine Änderungen.');
   res.redirect('/verwaltung/vorlagen');
 });
 

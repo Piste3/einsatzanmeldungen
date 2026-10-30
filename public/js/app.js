@@ -419,6 +419,62 @@
   restoreScroll();
   window.addEventListener('pageshow', (ev) => { if (ev.persisted) restoreScroll(); });
 
+  // ---------- Ungespeicherte Änderungen schützen ----------
+  // Ein Feld gilt als geändert, wenn es vom Stand beim Laden abweicht.
+  function fieldChanged(el) {
+    if (el.type === 'hidden' || el.disabled || !el.name || el.closest('dialog')) return false;
+    if (el.type === 'checkbox' || el.type === 'radio') return el.checked !== el.defaultChecked;
+    if (el.tagName === 'SELECT') {
+      if (el.multiple) return [...el.options].some((o) => o.selected !== o.defaultSelected);
+      const def = [...el.options].findIndex((o) => o.defaultSelected);
+      return el.selectedIndex !== (def === -1 ? 0 : def);
+    }
+    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') return el.value !== el.defaultValue;
+    return false;
+  }
+  const guardedForms = () => $$('#content form').filter((f) => (f.getAttribute('method') || 'get').toLowerCase() === 'post'
+    && !f.closest('dialog') && !f.matches('[data-bulk], [data-autosubmit]'));
+  const formDirty = (f) => [...f.elements].some(fieldChanged);
+
+  // Abschnitte (Auswahllisten, Vorlagen …): geänderte Zeilen und den Abschnitt markieren
+  function markSection(form) {
+    const dirty = formDirty(form);
+    form.classList.toggle('dirty', dirty);
+    const hint = form.querySelector('[data-dirty-hint]');
+    if (hint) {
+      if (!hint.dataset.text) hint.dataset.text = hint.textContent;
+      hint.textContent = dirty ? 'Ungespeicherte Änderungen in diesem Abschnitt' : hint.dataset.text;
+    }
+    $$('tr', form).forEach((tr) => {
+      tr.classList.toggle('changed', $$('input, select, textarea', tr).some(fieldChanged));
+      const d = tr.querySelector('[data-delete-row]');
+      tr.classList.toggle('to-delete', !!(d && d.checked));
+    });
+  }
+  ['input', 'change'].forEach((type) => document.addEventListener(type, (ev) => {
+    const f = ev.target.form || ev.target.closest('form');
+    if (f && f.matches('[data-section]')) markSection(f);
+  }));
+
+  // Beim Speichern eines Abschnitts warnen, wenn andere Abschnitte ungespeicherte Änderungen haben
+  let submitting = false;
+  document.addEventListener('submit', (ev) => {
+    const form = ev.target;
+    if (ev.defaultPrevented || (form.getAttribute('method') || 'get').toLowerCase() !== 'post') return;
+    const others = guardedForms().filter((f) => f !== form && formDirty(f));
+    if (others.length) {
+      const names = others.map((f) => (f.querySelector('.card-head h2, h2') || {}).firstChild?.textContent?.trim()).filter(Boolean);
+      const msg = `In ${names.length ? `«${names.join('», «')}»` : 'einem anderen Abschnitt'} gibt es ungespeicherte Änderungen. Sie gehen verloren, wenn du jetzt nur diesen Teil speicherst.\n\nTrotzdem fortfahren?`;
+      if (!confirm(msg)) { ev.preventDefault(); ev.stopImmediatePropagation(); return; }
+    }
+    submitting = true;
+    setTimeout(() => { submitting = false; }, 3000);
+  }, true);
+  window.addEventListener('beforeunload', (ev) => {
+    if (submitting) return;
+    if (guardedForms().some(formDirty)) { ev.preventDefault(); ev.returnValue = ''; }
+  });
+
   // ---------- Durchsuchbare Auswahlfelder ----------
   // <select data-search> wird zu einem Eingabefeld mit Vorschlagsliste: tippen filtert die Einträge
   // (Gross/klein, Umlaute und Reihenfolge der Wörter egal). Das echte <select> bleibt im Formular und wird gesetzt.
