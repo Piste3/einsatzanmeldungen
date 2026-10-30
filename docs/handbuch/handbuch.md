@@ -36,6 +36,8 @@ Jeder Einsatz durchläuft dieselben Schritte. Die Mitglieder sehen davon nur ein
 
 Der Einsatzplaner läuft im Browser – auf dem Computer, dem Tablet oder dem Handy. Es muss nichts installiert werden.
 
+**Auf dem Handy** öffnet der Knopf ☰ oben links das Menü. Tabellen erscheinen dort als Karten: pro Person oder Einsatz ein Block mit den Angaben untereinander. Die Rückmeldungen-Tabelle lässt sich seitwärts wischen. Für grössere Arbeiten wie Schichten planen oder Einstellungen ist der Computer bequemer.
+
 ### Anmelden
 
 ![Die Anmeldeseite](bilder/01-login.jpg)

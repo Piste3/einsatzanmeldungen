@@ -555,7 +555,46 @@
     sel.addEventListener('change', () => { if (document.activeElement !== input) input.value = label(); });
     new MutationObserver(() => { if (document.activeElement !== input) input.value = label(); }).observe(sel, { attributes: true, childList: true, subtree: true });
   }
-  const enhanceAll = (root = document) => $$('select[data-search]', root).forEach(enhanceSelect);
+  // Handy: Navigation ein-/ausklappen
+  document.addEventListener('click', (e) => {
+    const t = e.target.closest('[data-nav-toggle]');
+    if (!t) return;
+    const open = document.body.classList.toggle('nav-open');
+    $$('button[data-nav-toggle]').forEach((b) => b.setAttribute('aria-expanded', String(open)));
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') document.body.classList.remove('nav-open'); });
+
+  // Handy: Tabellen als Karten. Jede Zelle bekommt den Spaltentitel als Beschriftung; die erste Inhaltsspalte ist der Titel der Karte.
+  function cardTable(table) {
+    if (table.classList.contains('matrix') || table.closest('.prose, dialog') || table.dataset.cardsDone) return;
+    const heads = $$('thead th', table);
+    if (!heads.length) return;
+    const labels = heads.map((th) => th.textContent.trim());
+    const main = heads.findIndex((th) => !th.classList.contains('check-col') && th.textContent.trim());
+    table.dataset.cardsDone = '1';
+    table.classList.add('cards');
+    labelRows(table, labels, main);
+  }
+  function labelRows(table, labels, main) {
+    for (const tr of $$('tbody tr, tfoot tr', table)) {
+      let col = 0;
+      for (const td of tr.children) {
+        if (!td.hasAttribute('data-label')) {
+          td.setAttribute('data-label', td.colSpan > 1 ? '' : labels[col] || '');
+          if (col === main && td.colSpan === 1) td.classList.add('cell-main');
+        }
+        col += td.colSpan || 1;
+      }
+    }
+  }
+  const cardAll = (root = document) => (root.matches && root.matches('table') ? [root] : $$('table', root)).forEach((t) => {
+    if (t.dataset.cardsDone) { // neu geladene Zeilen nachtragen
+      const heads = $$('thead th', t);
+      labelRows(t, heads.map((th) => th.textContent.trim()), heads.findIndex((th) => !th.classList.contains('check-col') && th.textContent.trim()));
+    } else cardTable(t);
+  });
+
+  const enhanceAll = (root = document) => { $$('select[data-search]', root).forEach(enhanceSelect); cardAll(root.closest ? (root.closest('table') || root) : root); };
   enhanceAll();
   new MutationObserver((muts) => {
     for (const m of muts) for (const n of m.addedNodes) if (n.nodeType === 1) { if (n.matches('select[data-search]')) enhanceSelect(n); else enhanceAll(n); }

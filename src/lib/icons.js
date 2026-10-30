@@ -1,6 +1,9 @@
 'use strict';
 // Kleine Strich-Icons als Inline-SVG (24er Raster, Farbe = Textfarbe)
 const PATHS = {
+  menu: '<path d="M3.5 6.5h17M3.5 12h17M3.5 17.5h17"/>',
+  close: '<path d="M6 6l12 12M18 6 6 18"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="m20.5 20.5-4.5-4.5"/>',
   cockpit: '<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>',
   calendar: '<rect x="3" y="4.5" width="18" height="16.5" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>',
   inbox: '<path d="M3 13.5h5l1.5 3h5l1.5-3h5"/><path d="M5.5 5h13l2.5 8.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5.5Z"/>',
