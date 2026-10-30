@@ -75,7 +75,7 @@ Alles läuft über Umgebungsvariablen. `npm start` liest zusätzlich eine `.env`
 | `SESSION_IDLE_MINUTES` | `120` | Abmeldung nach Inaktivität |
 | `AUTH_PROVIDERS` | `local` | `local`, `microsoft` oder `local,microsoft` |
 | `MS_TENANT_ID`, `MS_CLIENT_ID`, `MS_CLIENT_SECRET` | | Für Microsoft-Login |
-| `FORM_FRAME_ANCESTORS` | `https://*.clubdesk.com https://web.kkb.ch` | Webseiten, die das Formular einbetten dürfen (mit Leerzeichen getrennt) |
+| `FORM_FRAME_ANCESTORS` | `https://*.clubdesk.com https://web.kkb.ch http://web.kkb.ch` | Webseiten, die das Formular einbetten dürfen (mit Leerzeichen getrennt) |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | | E-Mail-Versand der Anmeldebestätigungen |
 | `BACKUP_DIR` | `DATA_DIR/backups` | Ziel der täglichen Sicherung |
 | `BACKUP_KEEP_DAYS` | `30` | Wie lange Sicherungen behalten werden |
@@ -115,7 +115,7 @@ In ClubDesk einen HTML-Block einfügen:
 <iframe src="https://einsatz.kkb.ch/forms/anmeldung" style="width:100%;min-height:1200px;border:0" title="Einsatz-Anmeldung"></iframe>
 ```
 
-Das Formular braucht kein Cookie. Jeder Aufruf bekommt eine einmalige Absende-ID, ein doppeltes Absenden wird erkannt. Jede Absendung wird zuerst roh gespeichert und erst dann verarbeitet. Spam wird über ein verstecktes Feld und eine Mindestzeit abgefangen. Läuft ClubDesk unter einer eigenen Domain, diese bei `FORM_FRAME_ANCESTORS` ergänzen, z. B. `FORM_FRAME_ANCESTORS=https://*.clubdesk.com https://web.kkb.ch`. Die aktuell gültige Liste steht beim Start in der Server-Ausgabe.
+Das Formular braucht kein Cookie. Jeder Aufruf bekommt eine einmalige Absende-ID, ein doppeltes Absenden wird erkannt. Jede Absendung wird zuerst roh gespeichert und erst dann verarbeitet. Spam wird über ein verstecktes Feld und eine Mindestzeit abgefangen. Läuft ClubDesk unter einer eigenen Domain, diese bei `FORM_FRAME_ANCESTORS` ergänzen, z. B. `FORM_FRAME_ANCESTORS=https://*.clubdesk.com https://web.kkb.ch`. Die aktuell gültige Liste steht beim Start in der Server-Ausgabe. Blockiert ein Browser die Einbettung, steht in der Server-Ausgabe eine Zeile «Browser hat blockiert: frame-ancestors · <Adresse>» mit der Seite, die ergänzt werden muss.
 
 Wichtig: Im iFrame genau `/forms/anmeldung` angeben. Alle anderen Seiten (Login, Cockpit, …) lassen sich absichtlich nicht einbetten. Der Reverse-Proxy darf keinen eigenen `X-Frame-Options`-Header setzen.
 

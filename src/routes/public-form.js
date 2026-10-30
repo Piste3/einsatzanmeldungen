@@ -38,6 +38,22 @@ function renderForm(req, res, { values = {}, errors = [], preview = false } = {}
   });
 }
 
+// Meldungen des Browsers, wenn er das Einbetten blockiert (CSP report-uri).
+// Steht dann in der Server-Ausgabe, damit man sieht, welche Seite es versucht hat.
+let reportsThisHour = 0;
+setInterval(() => { reportsThisHour = 0; }, 3600000).unref();
+router.post('/csp-bericht', express.json({ type: ['application/csp-report', 'application/reports+json', 'application/json'], limit: '16kb' }), (req, res) => {
+  if (reportsThisHour++ < 50) {
+    const items = [].concat(req.body || []).map((r) => r['csp-report'] || r.body || r);
+    for (const r of items) {
+      const directive = r['violated-directive'] || r.effectiveDirective || r['effective-directive'] || '?';
+      const blocked = r['blocked-uri'] || r.blockedURL || '?';
+      console.warn(`Browser hat blockiert: ${directive} · ${blocked} · Seite ${r['document-uri'] || r.documentURL || '?'} · ${String(req.headers['user-agent'] || '').slice(0, 120)}`);
+    }
+  }
+  res.status(204).end();
+});
+
 router.get('/anmeldung', (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   if (req.query.vorschau) {

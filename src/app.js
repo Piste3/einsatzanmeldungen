@@ -23,6 +23,7 @@ function createApp() {
       "default-src 'self'", "img-src 'self' data:", "style-src 'self' 'unsafe-inline'", "script-src 'self'", "connect-src 'self'",
       "form-action 'self'", "base-uri 'none'", "object-src 'none'",
       `frame-ancestors ${isForm ? config.formFrameAncestors : "'none'"}`,
+      ...(isForm ? ['report-uri /forms/csp-bericht'] : []),
     ].join('; '));
     if (!isForm) res.setHeader('X-Frame-Options', 'DENY');
     if (config.secureCookies) res.setHeader('Strict-Transport-Security', 'max-age=31536000');

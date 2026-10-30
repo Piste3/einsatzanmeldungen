@@ -83,3 +83,12 @@ test('Formular darf nur in erlaubte Seiten eingebettet werden', async () => {
   const app = await get('/login');
   assert.match(app.headers.get('content-security-policy') || app.headers.get('x-frame-options') || '', /frame-ancestors 'none'|DENY/i);
 });
+
+test('Blockier-Meldungen des Browsers werden angenommen', async () => {
+  const r = await fetch(`${base}/forms/csp-bericht`, {
+    method: 'POST', headers: { 'content-type': 'application/csp-report' },
+    body: JSON.stringify({ 'csp-report': { 'violated-directive': 'frame-ancestors', 'blocked-uri': 'https://example.org', 'document-uri': 'https://x/forms/anmeldung' } }),
+  });
+  assert.equal(r.status, 204);
+  assert.match((await get('/forms/anmeldung')).headers.get('content-security-policy'), /report-uri \/forms\/csp-bericht/);
+});
