@@ -18,6 +18,7 @@ const { today } = require('../lib/dates');
 
 const router = express.Router();
 const twofaOptions = require('../auth/twofa').REMEMBER_OPTIONS;
+const msEnabled = () => Boolean(auth.provider('microsoft'));
 router.use('/verwaltung', auth.requireAdmin);
 
 router.get('/verwaltung', (req, res) => res.redirect('/verwaltung/benutzer'));
@@ -33,7 +34,7 @@ router.get('/verwaltung/benutzer', (req, res) => {
 });
 
 router.get('/verwaltung/benutzer/neu', (req, res) => {
-  res.render('admin/user-form', { title: 'Neues Benutzerkonto', u: { role: 'aufgebotsstelle', active: 1 }, isNew: true, errors: [], persons: personOptions(), twofaOptions });
+  res.render('admin/user-form', { title: 'Neues Benutzerkonto', u: { role: 'aufgebotsstelle', active: 1 }, isNew: true, errors: [], persons: personOptions(), twofaOptions, msEnabled: msEnabled() });
 });
 
 router.post('/verwaltung/benutzer', async (req, res, next) => {
@@ -41,7 +42,7 @@ router.post('/verwaltung/benutzer', async (req, res, next) => {
     const { id, password } = await users.create({ ...req.body, password: req.body.password || null }, req.user);
     res.render('admin/user-created', { title: 'Benutzerkonto angelegt', u: users.get(id), password: req.body.password ? null : password });
   } catch (err) {
-    if (err instanceof ValidationError) return res.status(400).render('admin/user-form', { title: 'Neues Benutzerkonto', u: req.body, isNew: true, errors: err.messages, persons: personOptions(), twofaOptions });
+    if (err instanceof ValidationError) return res.status(400).render('admin/user-form', { title: 'Neues Benutzerkonto', u: req.body, isNew: true, errors: err.messages, persons: personOptions(), twofaOptions, msEnabled: msEnabled() });
     next(err);
   }
 });
@@ -49,7 +50,7 @@ router.post('/verwaltung/benutzer', async (req, res, next) => {
 router.get('/verwaltung/benutzer/:id', (req, res) => {
   const u = users.get(Number(req.params.id));
   if (!u) return res.redirect('/verwaltung/benutzer');
-  res.render('admin/user-form', { title: u.display_name, u, isNew: false, errors: [], persons: personOptions(), twofaOptions });
+  res.render('admin/user-form', { title: u.display_name, u, isNew: false, errors: [], persons: personOptions(), twofaOptions, msEnabled: msEnabled() });
 });
 
 router.post('/verwaltung/benutzer/:id', (req, res) => {
@@ -60,7 +61,7 @@ router.post('/verwaltung/benutzer/:id', (req, res) => {
     res.redirect('/verwaltung/benutzer');
   } catch (err) {
     if (!(err instanceof ValidationError)) throw err;
-    res.status(400).render('admin/user-form', { title: 'Benutzerkonto', u: { ...users.get(id), ...req.body }, isNew: false, errors: err.messages, persons: personOptions(), twofaOptions });
+    res.status(400).render('admin/user-form', { title: 'Benutzerkonto', u: { ...users.get(id), ...req.body }, isNew: false, errors: err.messages, persons: personOptions(), twofaOptions, msEnabled: msEnabled() });
   }
 });
 

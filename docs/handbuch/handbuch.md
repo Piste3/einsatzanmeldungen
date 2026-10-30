@@ -42,6 +42,7 @@ Der Einsatzplaner läuft im Browser – auf dem Computer, dem Tablet oder dem Ha
 
 1. Die Adresse des Einsatzplaners öffnen (z. B. einsatz.holmium.ch) und ein Lesezeichen setzen.
 2. Mit dem persönlichen Benutzernamen und Passwort anmelden. Jede Person hat ein eigenes Konto – Konten werden nicht geteilt.
+   Ist die Microsoft-Anmeldung eingerichtet und für dein Konto freigegeben, geht es auch mit «Mit Microsoft anmelden».
 3. Ist die **Zwei-Faktor-Anmeldung** eingerichtet, fragt der Einsatzplaner danach nach dem 6-stelligen Code aus der Authenticator-App (Kapitel 15).
 4. Es öffnet sich das Cockpit.
 
@@ -396,6 +397,7 @@ Konten anlegen, Rolle wählen (Admin oder Aufgebotsstelle) und mit einer Person 
   - **Pflicht für dieses Konto:** Die Person muss die 2FA beim nächsten Login einrichten. Vorher kommt sie nirgends hin.
   - **Code verlangen:** bei jedem Login, oder einmal pro Tag, Woche, Monat bzw. 3 Monate pro Gerät. Gilt für alle, die 2FA eingerichtet haben – auch freiwillig.
   - **2FA zurücksetzen,** z. B. wenn jemand sein Handy verloren hat. Danach richtet die Person sie neu ein.
+- **Microsoft-Anmeldung** (nur sichtbar, wenn sie auf dem Server eingerichtet ist): E-Mail-Adresse des Microsoft-Kontos eintragen und «Mit dem Microsoft-Konto dieser E-Mail-Adresse anmelden erlaubt» ankreuzen. Beim ersten Login wird das Konto fest mit diesem Microsoft-Konto verknüpft. Häkchen entfernen oder E-Mail ändern löst die Verknüpfung. Das Login mit Passwort bleibt daneben bestehen.
 - **Konto aktiv** ausschalten sperrt den Zugang, ohne Daten zu löschen.
 - **Benutzerkonto löschen** entfernt das Konto endgültig. Was die Person erfasst hat (Anmeldungen, Kontaktversuche, Verlauf), bleibt mit ihrem Namen erhalten, ebenso die verknüpfte Person in den Stammdaten. Das eigene Konto und den letzten aktiven Admin kann man nicht löschen.
 

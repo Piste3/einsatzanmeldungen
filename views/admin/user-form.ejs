@@ -12,11 +12,18 @@
       <div class="fields fields-2">
         <div class="field"><label for="role">Rolle</label><select id="role" name="role"><% for (const [k, v] of Object.entries(h.labels.ROLES)) { %><option value="<%= k %>" <%= u.role === k ? 'selected' : '' %>><%= v %></option><% } %></select>
           <div class="field-hint">Admin: Stammdaten, Benutzer, Einstellungen und alles der Aufgebotsstelle</div></div>
-        <div class="field"><label for="email">E-Mail</label><input id="email" type="email" name="email" value="<%= u.email || '' %>"><div class="field-hint">für die spätere Verknüpfung mit Microsoft</div></div>
+        <div class="field"><label for="email">E-Mail</label><input id="email" type="email" name="email" value="<%= u.email || '' %>"><div class="field-hint">bei Microsoft-Anmeldung: die Adresse des Microsoft-Kontos</div></div>
       </div>
       <div class="field"><label for="person_id">Verknüpfte Person (Stammdaten)</label>
         <select id="person_id" name="person_id" data-search><option value="">–</option><% for (const p of persons) { %><option value="<%= p.id %>" <%= Number(u.person_id) === p.id ? 'selected' : '' %>><%= p.last_name %> <%= p.first_name %><%= p.rank_short ? ` (${p.rank_short})` : '' %></option><% } %></select>
         <div class="field-hint">Daraus kommen Rang und Name als «Absender» im Aufgebot.</div></div>
+      <% if (msEnabled || Number(u.ms_login)) { %>
+      <fieldset class="fieldset mt">
+        <legend>Microsoft-Anmeldung</legend>
+        <label class="check"><input type="checkbox" name="ms_login" value="1" <%= Number(u.ms_login) ? 'checked' : '' %>> Mit dem Microsoft-Konto dieser E-Mail-Adresse anmelden erlaubt</label>
+        <div class="field-hint"><%= u.external_id ? 'Verknüpft: Die Person hat sich schon mit Microsoft angemeldet. Ausschalten oder eine andere E-Mail löst die Verknüpfung.' : 'Beim ersten Microsoft-Login wird das Konto über die E-Mail-Adresse verknüpft.' %> Das Login mit Passwort bleibt daneben möglich.<%= msEnabled ? '' : ' Die Microsoft-Anmeldung ist auf dem Server zurzeit ausgeschaltet.' %></div>
+      </fieldset>
+      <% } %>
       <fieldset class="fieldset mt">
         <legend>Zwei-Faktor-Anmeldung</legend>
         <label class="check"><input type="checkbox" name="twofa_required" value="1" <%= Number(u.twofa_required) ? 'checked' : '' %>> Pflicht für dieses Konto <span class="muted small">(muss beim nächsten Login eingerichtet werden)</span></label>

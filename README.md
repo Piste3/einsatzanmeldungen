@@ -74,7 +74,8 @@ Alles läuft über Umgebungsvariablen. `npm start` liest zusätzlich eine `.env`
 | `SESSION_HOURS` | `12` | Maximale Dauer einer Anmeldung |
 | `SESSION_IDLE_MINUTES` | `120` | Abmeldung nach Inaktivität |
 | `AUTH_PROVIDERS` | `local` | `local`, `microsoft` oder `local,microsoft` |
-| `MS_TENANT_ID`, `MS_CLIENT_ID`, `MS_CLIENT_SECRET` | | Für Microsoft-Login |
+| `MS_TENANT_ID`, `MS_CLIENT_ID`, `MS_CLIENT_SECRET` | | Für Microsoft-Login (`MS_TENANT_ID`: Tenant-ID oder `organizations`) |
+| `MS_ALLOWED_TENANTS` | | Optional: nur Konten aus diesen Tenants (kommagetrennt) |
 | `FORM_FRAME_ANCESTORS` | `https://*.clubdesk.com https://web.kkb.ch https://*.web.kkb.ch http://web.kkb.ch http://*.web.kkb.ch` | Webseiten, die das Formular einbetten dürfen (mit Leerzeichen getrennt) |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | | E-Mail-Versand der Anmeldebestätigungen |
 | `BACKUP_DIR` | `DATA_DIR/backups` | Ziel der täglichen Sicherung |
@@ -98,17 +99,18 @@ Sicherheit des eigenen Logins:
 - Pro Benutzer einstellbar unter Einstellungen › Benutzer: **Pflicht** (ohne Einrichtung ist nach dem Login nur die Einrichtungsseite erreichbar) und **wie häufig** der Code verlangt wird (bei jedem Login oder einmal pro Tag, Woche, Monat oder 3 Monate pro Gerät). Ein Admin kann die 2FA zurücksetzen, wenn ein Handy verloren geht
 - Falsche Codes zählen zur Kontosperre, ein Code ist nur einmal gültig
 
-### Umstellung auf Microsoft SSO
+### Microsoft-Anmeldung (SSO)
 
-Das Login ist austauschbar aufgebaut (`src/auth/providers/`). Microsoft (Entra ID) ist vorbereitet, aber noch nicht gegen einen echten Tenant getestet.
+Das Login ist austauschbar aufgebaut (`src/auth/providers/`). Die Microsoft-Anmeldung (OpenID Connect) läuft neben dem eigenen Login; das Passwort-Login bleibt immer bestehen.
 
-1. In Entra ID eine App-Registrierung anlegen, Typ «Web», Redirect-URI `<BASE_URL>/auth/microsoft/callback`
-2. Ein Client-Secret erzeugen
-3. Setzen: `AUTH_PROVIDERS=local,microsoft`, `MS_TENANT_ID`, `MS_CLIENT_ID`, `MS_CLIENT_SECRET`
-4. Bei den Benutzern in der Verwaltung die E-Mail-Adresse des Microsoft-Kontos eintragen. Beim ersten Microsoft-Login wird das Konto über die E-Mail verknüpft, danach über die feste Microsoft-ID
-5. Wenn alles läuft, `AUTH_PROVIDERS=microsoft` setzen. Dann ist das eigene Login abgeschaltet
+1. Im [Entra Admin Center](https://entra.microsoft.com) › App-Registrierungen › Neue Registrierung. Kontotyp: nur der eigene Mandant (wenn man dort Admin ist) oder «Konten in einem beliebigen Organisationsverzeichnis» (ohne Admin-Rechte im Vereins-Mandanten). Redirect-URI: Plattform «Web», `<BASE_URL>/auth/microsoft/callback`
+2. Zertifikate & Geheimnisse › Neuer geheimer Clientschlüssel. Den **Wert** kopieren
+3. In `.env` setzen: `AUTH_PROVIDERS=local,microsoft`, `MS_CLIENT_ID` (Anwendungs-ID), `MS_CLIENT_SECRET` und `MS_TENANT_ID` (Verzeichnis-ID bei nur eigenem Mandant, sonst `organizations`). Optional `MS_ALLOWED_TENANTS` mit den Tenant-IDs, aus denen Konten kommen dürfen
+4. In der Verwaltung beim Benutzerkonto die E-Mail-Adresse des Microsoft-Kontos (Anmeldename) eintragen und «Microsoft-Anmeldung erlaubt» ankreuzen. Beim ersten Login wird das Konto über diese Adresse gefunden und mit der festen Microsoft-ID (Mandant + Objekt-ID) verknüpft
 
-Rollen bleiben im Einsatzplaner verwaltet. Wer kein Benutzerkonto hat, kommt auch mit Microsoft nicht hinein.
+Abschalten: `AUTH_PROVIDERS=local` und neu starten. Die Freigaben in der Datenbank stören dann nicht.
+
+Verknüpft wird über den Anmeldenamen (`preferred_username`), nicht über die frei setzbare E-Mail-Angabe im Token. Verlangt der Vereins-Mandant eine Admin-Zustimmung für fremde Apps, zeigt Microsoft beim Login «Genehmigung erforderlich»; dann muss ein Admin der App zustimmen. Die Zwei-Faktor-Abfrage des Einsatzplaners gilt nur für das Passwort-Login; bei Microsoft gilt dessen eigene Anmeldesicherheit.
 
 ## Formular in ClubDesk einbetten
 

@@ -14,7 +14,7 @@
           <td><%= u.username %></td>
           <td><%- h.badge(h.labels.ROLES[u.role], u.role === 'admin' ? 'orange' : 'blue') %></td>
           <td><% if (u.person_id) { %><a class="link" href="/personen/<%= u.person_id %>"><%= u.first_name %> <%= u.last_name %></a><% } else { %><span class="muted">nicht verknüpft</span><% } %></td>
-          <td><%= u.auth_provider === 'microsoft' ? 'Microsoft' : 'Passwort' %><%= u.must_change_password ? ' · Startpasswort' : '' %><% if (u.auth_provider === 'local') { %><span class="sub"><%= u.totp_enabled_at ? '2FA aktiv' : (u.twofa_required ? '2FA Pflicht – noch offen' : 'ohne 2FA') %></span><% } %></td>
+          <td>Passwort<%= u.external_id ? ' + Microsoft' : (u.ms_login ? ' · Microsoft freigegeben' : '') %><%= u.must_change_password ? ' · Startpasswort' : '' %><% if (u.auth_provider === 'local') { %><span class="sub"><%= u.totp_enabled_at ? '2FA aktiv' : (u.twofa_required ? '2FA Pflicht – noch offen' : 'ohne 2FA') %></span><% } %></td>
           <td class="nowrap"><%= u.last_login_at ? h.fmtDateTime(u.last_login_at) : '–' %></td>
           <td><%- u.active ? (locked ? h.badge('gesperrt', 'red') : h.badge('aktiv', 'green')) : h.badge('deaktiviert', 'gray') %></td>
           <td class="right nowrap">
@@ -27,5 +27,5 @@
     </table>
   </div>
 </div>
-<div class="callout mt"><strong class="cap">Microsoft SSO</strong>Die Anmeldung ist austauschbar aufgebaut. Für Microsoft 365 die Umgebungsvariablen <code>AUTH_PROVIDERS=local,microsoft</code>, <code>MS_TENANT_ID</code>, <code>MS_CLIENT_ID</code> und <code>MS_CLIENT_SECRET</code> setzen. Bestehende Konten werden beim ersten Microsoft-Login über die E-Mail-Adresse verknüpft; Rollen bleiben erhalten. Details im README.</div>
+<div class="callout mt"><strong class="cap">Microsoft-Anmeldung</strong>Ist sie auf dem Server eingerichtet, erscheint auf der Login-Seite «Mit Microsoft anmelden». Wer sie nutzen darf, legst du pro Benutzerkonto fest: E-Mail-Adresse des Microsoft-Kontos eintragen und «Microsoft-Anmeldung erlaubt» ankreuzen. Das Login mit Passwort bleibt daneben bestehen.</div>
 <%- include('../partials/foot') %>
