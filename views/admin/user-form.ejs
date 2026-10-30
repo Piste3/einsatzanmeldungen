@@ -17,6 +17,13 @@
       <div class="field"><label for="person_id">Verknüpfte Person (Stammdaten)</label>
         <select id="person_id" name="person_id"><option value="">–</option><% for (const p of persons) { %><option value="<%= p.id %>" <%= Number(u.person_id) === p.id ? 'selected' : '' %>><%= p.last_name %> <%= p.first_name %><%= p.rank_short ? ` (${p.rank_short})` : '' %></option><% } %></select>
         <div class="field-hint">Daraus kommen Rang und Name als «Absender» im Aufgebot.</div></div>
+      <fieldset class="fieldset mt">
+        <legend>Zwei-Faktor-Anmeldung</legend>
+        <label class="check"><input type="checkbox" name="twofa_required" value="1" <%= Number(u.twofa_required) ? 'checked' : '' %>> Pflicht für dieses Konto <span class="muted small">(muss beim nächsten Login eingerichtet werden)</span></label>
+        <div class="field mt-s"><label for="twofa_remember_days">Code verlangen</label>
+          <select id="twofa_remember_days" name="twofa_remember_days" style="max-width:320px"><% for (const [d, l] of twofaOptions) { %><option value="<%= d %>" <%= Number(u.twofa_remember_days || 0) === d ? 'selected' : '' %>><%= l %></option><% } %></select>
+          <div class="field-hint">Gilt für alle, die 2FA eingerichtet haben – auch freiwillig. «Pro Gerät» heisst: beim Login lässt sich «nicht mehr fragen» ankreuzen.</div></div>
+      </fieldset>
       <% if (isNew) { %>
         <div class="field"><label for="password">Startpasswort</label><input id="password" type="text" name="password" autocomplete="off" placeholder="leer lassen = zufällig erzeugen"><div class="field-hint">Muss beim ersten Login geändert werden.</div></div>
       <% } else { %>
@@ -29,6 +36,13 @@
   <div class="card"><div class="card-head"><h2>Passwort</h2></div><div class="card-body">
     <p class="small muted">Erzeugt ein neues Startpasswort, meldet alle Sitzungen ab und verlangt beim nächsten Login ein eigenes Passwort.</p>
     <form method="post" action="/verwaltung/benutzer/<%= u.id %>/passwort" data-confirm="Passwort von <%= u.display_name %> zurücksetzen?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-sm" type="submit">Passwort zurücksetzen</button></form>
+  </div>
+  <div class="card-head"><h2>Zwei-Faktor</h2><%- u.totp_enabled_at ? h.badge('eingerichtet', 'green') : (Number(u.twofa_required) ? h.badge('Pflicht, noch nicht eingerichtet', 'orange') : h.badge('nicht eingerichtet', 'gray')) %></div>
+  <div class="card-body">
+    <% if (u.totp_enabled_at) { %>
+      <p class="small muted">Eingerichtet am <%= h.fmtDateTime(u.totp_enabled_at) %>. Zurücksetzen, wenn das Handy verloren ging: Die App-Verknüpfung, die Wiederherstellungscodes und die gemerkten Geräte werden gelöscht, und das Konto wird abgemeldet.</p>
+      <form method="post" action="/verwaltung/benutzer/<%= u.id %>/2fa-zuruecksetzen" data-confirm="Zwei-Faktor-Anmeldung von <%= u.display_name %> zurücksetzen?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-sm" type="submit">2FA zurücksetzen</button></form>
+    <% } else { %><p class="small muted">Einrichten kann die Person selbst unter «Konto › Zwei-Faktor» (Klick auf den eigenen Namen unten links).</p><% } %>
   </div></div>
   <% } %>
 </div>

@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bestätigungscode · KKB-Einsatzplaner</title>
+  <link rel="icon" href="/static/img/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/css/app.css?v=<%= v %>">
+</head>
+<body>
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="brand"><span class="logo">KKB</span><span><span class="brand-title">Einsatzplaner</span><br><span class="brand-sub">Kadetten-Korps Basel</span></span></div>
+    <% if (error) { %><div class="flash flash-error"><%= error %></div><% } %>
+    <p class="small">Gib den 6-stelligen Code aus deiner Authenticator-App ein.</p>
+    <form method="post" action="/login/2fa">
+      <div class="field"><label for="code">Bestätigungscode</label>
+        <input id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="11" required autofocus class="code-input" placeholder="123 456"></div>
+      <% if (rememberDays) { %>
+        <label class="check small"><input type="checkbox" name="remember" value="1"> Auf diesem Gerät <%= rememberDays === 1 ? 'einen Tag' : `${rememberDays} Tage` %> lang nicht mehr fragen</label>
+      <% } %>
+      <button class="btn btn-primary mt-s" type="submit">Bestätigen</button>
+    </form>
+    <p class="small muted mt">Kein Zugriff auf die App? Gib stattdessen einen deiner Wiederherstellungscodes ein (z. B. <code>abcde-fghjk</code>). <a class="link" href="/login">Zurück zum Login</a></p>
+  </div>
+</div>
+</body>
+</html>

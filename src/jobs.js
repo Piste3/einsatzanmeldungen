@@ -22,6 +22,7 @@ function start() {
   timers.push(setInterval(() => live.notify('form', 'cockpit'), 5 * 60 * 1000));
   timers.push(setInterval(safe('cleanup', () => {
     sessions.purgeExpired();
+    require('./auth/twofa').purgeExpired();
     throttle.purgeOld();
     submissions.purgeTokens();
   }), 60 * 60 * 1000));

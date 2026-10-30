@@ -70,6 +70,11 @@ function requireLogin(req, res, next) {
   if (req.user.must_change_password && req.user.auth_provider === 'local' && !req.path.startsWith('/konto/passwort')) {
     return res.redirect('/konto/passwort');
   }
+  // Pflicht zur Zwei-Faktor-Anmeldung: zuerst einrichten
+  if (require('./twofa').mustSetUp(req.user) && !req.path.startsWith('/konto/2fa') && !req.path.startsWith('/konto/passwort')) {
+    if (req.method === 'GET') return res.redirect('/konto/2fa');
+    return res.status(403).send('Bitte zuerst die Zwei-Faktor-Anmeldung einrichten.');
+  }
   next();
 }
 

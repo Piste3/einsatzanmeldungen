@@ -11,8 +11,25 @@ function open(file) {
   if (target !== ':memory:') fs.mkdirSync(path.dirname(target), { recursive: true });
   db = new DatabaseSync(target);
   db.exec('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;');
+  migrate(db);
   db.exec(fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8'));
   return db;
+}
+
+// Neue Spalten in bestehenden Datenbanken nachtragen (CREATE TABLE IF NOT EXISTS ändert alte Tabellen nicht)
+const NEW_COLUMNS = {
+  users: [
+    ['totp_secret', 'TEXT'], ['totp_enabled_at', 'TEXT'], ['totp_last_step', 'INTEGER'], ['recovery_codes', 'JSON'],
+    ['twofa_required', 'INTEGER NOT NULL DEFAULT 0'], ['twofa_remember_days', 'INTEGER NOT NULL DEFAULT 0'],
+  ],
+};
+
+function migrate(d) {
+  for (const [table, cols] of Object.entries(NEW_COLUMNS)) {
+    const existing = d.prepare(`PRAGMA table_info(${table})`).all().map((c) => c.name);
+    if (!existing.length) continue; // Tabelle gibt es noch nicht – entsteht gleich vollständig aus schema.sql
+    for (const [name, def] of cols) if (!existing.includes(name)) d.exec(`ALTER TABLE ${table} ADD COLUMN ${name} ${def}`);
+  }
 }
 
 function get() {

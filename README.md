@@ -94,6 +94,9 @@ Sicherheit des eigenen Logins:
 - Sperre nach 5 Fehlversuchen für 15 Minuten, zusätzlich Bremse pro IP-Adresse
 - Jede Änderung ist mit einem CSRF-Token geschützt
 - Nach einem Passwort-Reset durch einen Admin muss beim nächsten Login ein neues Passwort gesetzt werden
+- **Zwei-Faktor-Anmeldung** (Authenticator-App, TOTP nach RFC 6238) mit 10 einmaligen Wiederherstellungscodes. Jede Person richtet sie selbst unter Konto › Zwei-Faktor ein (Klick auf den eigenen Namen unten links)
+- Pro Benutzer einstellbar unter Einstellungen › Benutzer: **Pflicht** (ohne Einrichtung ist nach dem Login nur die Einrichtungsseite erreichbar) und **wie häufig** der Code verlangt wird (bei jedem Login oder einmal pro Tag, Woche, Monat oder 3 Monate pro Gerät). Ein Admin kann die 2FA zurücksetzen, wenn ein Handy verloren geht
+- Falsche Codes zählen zur Kontosperre, ein Code ist nur einmal gültig
 
 ### Umstellung auf Microsoft SSO
 

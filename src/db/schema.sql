@@ -71,6 +71,12 @@ CREATE TABLE IF NOT EXISTS users (
   failed_logins INTEGER NOT NULL DEFAULT 0,
   locked_until TEXT,
   last_login_at TEXT,
+  totp_secret TEXT,            -- Zwei-Faktor: Geheimnis der Authenticator-App (Base32)
+  totp_enabled_at TEXT,        -- gesetzt = 2FA eingerichtet
+  totp_last_step INTEGER,      -- zuletzt verwendetes Zeitfenster (gegen Wiederverwendung)
+  recovery_codes JSON,         -- SHA-256 der unbenutzten Wiederherstellungscodes
+  twofa_required INTEGER NOT NULL DEFAULT 0,
+  twofa_remember_days INTEGER NOT NULL DEFAULT 0,  -- 0 = bei jedem Login
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );
@@ -292,4 +298,20 @@ CREATE TABLE IF NOT EXISTS calendar_exports (
   content_hash TEXT NOT NULL,
   sequence INTEGER NOT NULL DEFAULT 0,
   exported_at TEXT NOT NULL
+);
+
+-- Zwei-Faktor: angefangene Logins (Passwort ok, Code fehlt noch) und gemerkte Geräte
+CREATE TABLE IF NOT EXISTS login_challenges (
+  id TEXT PRIMARY KEY,         -- SHA-256 des Cookie-Tokens
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  next_url TEXT,
+  attempts INTEGER NOT NULL DEFAULT 0,
+  expires_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS trusted_devices (
+  id TEXT PRIMARY KEY,         -- SHA-256 des Cookie-Tokens
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at TEXT NOT NULL,
+  expires_at TEXT NOT NULL,
+  user_agent TEXT
 );

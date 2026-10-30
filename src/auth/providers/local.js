@@ -34,7 +34,9 @@ module.exports = {
       throttle.registerFailure(user);
       return { ok: false, error: GENERIC_ERROR };
     }
-    throttle.registerSuccess(user);
+    // Mit 2FA zählt das Login erst nach dem richtigen Code als erfolgreich
+    // (sonst könnte man den Fehlversuchszähler mit dem Passwort immer wieder zurücksetzen)
+    if (!user.totp_enabled_at) throttle.registerSuccess(user);
     if (passwords.needsRehash(user.password_hash)) {
       db.run('UPDATE users SET password_hash = ? WHERE id = ?', await passwords.hashPassword(password), user.id);
     }
