@@ -70,8 +70,16 @@ function send(ws, obj) {
 }
 
 // Änderungen kurz sammeln und gebündelt melden
+// Abgeleitete Ansichten: wer Einsätze, Personen oder Klärungen ändert, verändert auch Listen und Zähler
+function expand(t) {
+  if (t.startsWith('event:')) return [t, 'events', 'feedback', 'cockpit'];
+  if (t.startsWith('person:')) return [t, 'persons', 'feedback'];
+  if (['clarifications', 'forms', 'events', 'feedback'].includes(t)) return [t, 'cockpit'];
+  return [t];
+}
+
 function notify(...topics) {
-  for (const t of topics.flat()) if (t) pending.add(String(t));
+  for (const t of topics.flat()) if (t) for (const x of expand(String(t))) pending.add(x);
   if (!timer) {
     timer = setTimeout(flush, 150);
     timer.unref?.();
@@ -83,9 +91,11 @@ function flush() {
   const topics = [...pending];
   pending = new Set();
   // «*» erreicht jede Seite, die irgendeinen Zähler zeigt (Navigation)
+  // Zähler in der Navigation (Klärungen, Formular-Fehler) betreffen alle offenen Seiten
+  const nav = topics.some((t) => t === 'clarifications' || t === 'forms');
   for (const ws of clients) {
     const hit = topics.filter((t) => ws.topics.has(t) || ws.topics.has('*'));
-    send(ws, { type: 'changed', topics: hit, nav: true });
+    if (hit.length || nav) send(ws, { type: 'changed', topics: hit, nav });
   }
 }
 

@@ -202,15 +202,31 @@
   const indicator = () => $('#live-indicator');
   let ws = null;
   let retry = 1000;
-  let dirty = false;
-
-  document.addEventListener('input', (ev) => { if (ev.target.closest('#content form')) dirty = true; });
+  // Ungespeicherte Eingaben in Formularen (Text geändert, Häkchen gesetzt, Auswahl geändert)
+  function hasUnsavedInput() {
+    return $$('#content form[method=post] input, #content form[method=post] textarea, #content form[method=post] select, #content input[form], #content select[form]').some((el) => {
+      if (el.type === 'hidden' || el.disabled) return false;
+      if (el.type === 'checkbox' || el.type === 'radio') return el.checked !== el.defaultChecked;
+      if (el.tagName === 'SELECT') {
+        if (el.multiple) return [...el.options].some((o) => o.selected !== o.defaultSelected);
+        const def = [...el.options].findIndex((o) => o.defaultSelected);
+        return el.selectedIndex !== (def === -1 ? 0 : def);
+      }
+      return el.value !== el.defaultValue;
+    });
+  }
 
   function isBusy() {
     const active = document.activeElement;
-    return dirty || $$('dialog[open]').length > 0 || $$('details.menu[open]').length > 0
+    return hasUnsavedInput() || $$('dialog[open]').length > 0 || $$('details.menu[open]').length > 0
       || (active && active.closest('#content') && ['INPUT', 'TEXTAREA', 'SELECT'].includes(active.tagName));
   }
+
+  // Wurde eine Aktualisierung wegen laufender Eingabe aufgeschoben, sobald möglich nachholen
+  let deferred = false;
+  setInterval(() => {
+    if (deferred && !isBusy()) { deferred = false; refresh(); }
+  }, 1500);
 
   function connect() {
     if (!topics.length && !editKey) return;
@@ -226,6 +242,7 @@
       let msg;
       try { msg = JSON.parse(ev.data); } catch { return; }
       if (msg.type === 'changed' && msg.topics.length) scheduleRefresh();
+      else if (msg.type === 'changed' && msg.nav) refreshNav();
       if (msg.type === 'presence') showPresence(msg.editors);
     });
     ws.addEventListener('close', () => {
@@ -250,6 +267,16 @@
     refreshTimer = setTimeout(refresh, 250);
   }
 
+  // Nur die Zähler in der Navigation auffrischen
+  async function refreshNav() {
+    try {
+      const res = await fetch(location.href, { headers: { 'X-Live-Refresh': '1' }, credentials: 'same-origin' });
+      if (!res.ok || res.redirected) return;
+      const nav = new DOMParser().parseFromString(await res.text(), 'text/html').querySelector('.nav');
+      if (nav && $('.nav')) $('.nav').innerHTML = nav.innerHTML;
+    } catch { /* egal */ }
+  }
+
   async function refresh() {
     if (editKey) return; // Bearbeitungsseiten nicht austauschen
     if (isBusy()) { showStaleHint(); return; }
@@ -265,6 +292,7 @@
       const scroll = window.scrollY;
       // Meldungen nicht erneut anzeigen
       $$('.flash', next).forEach((f) => f.remove());
+      deferred = false;
       cur.innerHTML = next.innerHTML;
       const nav = doc.querySelector('.nav');
       if (nav) $('.nav').innerHTML = nav.innerHTML;
@@ -275,6 +303,7 @@
   }
 
   function showStaleHint() {
+    deferred = true;
     if ($('#stale-hint')) return;
     const div = document.createElement('div');
     div.id = 'stale-hint';
