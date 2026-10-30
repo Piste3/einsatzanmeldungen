@@ -77,6 +77,7 @@ CREATE TABLE IF NOT EXISTS users (
   recovery_codes JSON,         -- SHA-256 der unbenutzten Wiederherstellungscodes
   twofa_required INTEGER NOT NULL DEFAULT 0,
   twofa_remember_days INTEGER NOT NULL DEFAULT 0,  -- 0 = bei jedem Login
+  theme TEXT NOT NULL DEFAULT 'system',            -- Darstellung: system, light, dark
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );

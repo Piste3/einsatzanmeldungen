@@ -1,11 +1,12 @@
 <!doctype html>
-<html lang="de-CH">
+<html lang="de-CH"<% if (user && ["light", "dark"].includes(user.theme)) { %> data-theme="<%= user.theme %>"<% } %>>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="csrf-token" content="<%= csrfToken %>">
   <title><%= title ? title + ' · ' : '' %>KKB-Einsatzplaner</title>
   <link rel="icon" href="/static/img/logo.svg" type="image/svg+xml">
+  <meta name="color-scheme" content="light dark">
   <link rel="stylesheet" href="/static/css/app.css?v=<%= v %>">
 </head>
 <body data-live-topics="<%= (liveTopics || []).join(',') %>"<% if (typeof editKey !== 'undefined' && editKey) { %> data-edit-key="<%= editKey %>"<% } %>>
@@ -41,6 +42,8 @@
         <span class="avatar"><%= h.initials(user.display_name) %></span>
         <span><span class="name"><%= user.display_name %></span><br><span class="role"><%= h.labels.ROLES[user.role] %></span></span>
       </a>
+      <% const themeNext = { system: ['light', 'sun', 'Darstellung: wie System – klicken für Hell'], light: ['dark', 'moon', 'Darstellung: Hell – klicken für Dunkel'], dark: ['system', 'monitor', 'Darstellung: Dunkel – klicken für «wie System»'] }; const th = themeNext[user.theme] || themeNext.system; const thIcon = { system: 'monitor', light: 'sun', dark: 'moon' }[user.theme] || 'monitor'; %>
+      <form method="post" action="/konto/darstellung" class="theme-form"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="theme" value="<%= th[0] %>"><button class="theme-toggle" type="submit" title="<%= th[2] %>" aria-label="<%= th[2] %>"><%- h.icon(thIcon) %></button></form>
       <form method="post" action="/logout"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit" title="Abmelden">Abmelden</button></form>
     </div>
   </aside>

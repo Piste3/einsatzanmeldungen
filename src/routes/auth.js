@@ -136,6 +136,16 @@ router.get('/konto/passwort', auth.requireLogin, (req, res) => {
   res.render('auth/password', { title: 'Passwort ändern', errors: [] });
 });
 
+// Darstellung (Hell / Dunkel / wie System) pro Benutzer
+router.post('/konto/darstellung', auth.requireLogin, auth.csrfProtect, (req, res) => {
+  const theme = ['system', 'light', 'dark'].includes(req.body.theme) ? req.body.theme : 'system';
+  require('../db').run('UPDATE users SET theme = ? WHERE id = ?', theme, req.user.id);
+  const back = String(req.get('referer') || '/');
+  let target = '/';
+  try { const u = new URL(back); if (u.host === req.get('host')) target = u.pathname + u.search; } catch { /* Standard */ }
+  res.redirect(target);
+});
+
 router.post('/konto/passwort', auth.requireLogin, auth.csrfProtect, async (req, res, next) => {
   try {
     await users.changePassword(req.user, req.body.current, req.body.password, req.body.password_confirm, req.sessionToken);
