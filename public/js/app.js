@@ -4,13 +4,51 @@
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
+  // ---------- Eigene Rückfragen statt der Browser-Dialoge (confirm, alert, prompt) ----------
+  // uiDialog liefert ein Promise: true/false, bei input den eingegebenen Text oder null
+  function uiDialog({ title = 'Bitte bestätigen', message = '', input = false, placeholder = '', ok = 'OK', cancel = 'Abbrechen', danger = false }) {
+    return new Promise((resolve) => {
+      const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text) e.textContent = text; return e; };
+      const d = el('dialog', 'ui-dialog');
+      const head = el('div', 'card-head'); head.append(el('h2', '', title));
+      const body = el('div', 'card-body');
+      if (message) body.append(el('p', 'ui-msg', message));
+      let field = null;
+      if (input) { field = el('textarea', 'ui-input'); field.rows = 3; field.placeholder = placeholder; body.append(field); }
+      const foot = el('div', 'card-foot');
+      const okBtn = el('button', `btn ${danger ? 'btn-danger' : 'btn-primary'}`, ok); okBtn.type = 'button';
+      const close = (v) => { d.close(); d.remove(); resolve(v); };
+      const no = () => close(field ? null : false);
+      if (cancel) { const c = el('button', 'btn btn-ghost', cancel); c.type = 'button'; c.addEventListener('click', no); foot.append(c); }
+      foot.append(okBtn);
+      okBtn.addEventListener('click', () => {
+        if (!field) return close(true);
+        if (!field.value.trim()) { field.classList.add('invalid'); field.focus(); return; }
+        close(field.value.trim());
+      });
+      if (field) field.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); okBtn.click(); } });
+      d.addEventListener('cancel', (e) => { e.preventDefault(); if (cancel) no(); else close(true); });
+      d.append(head, body, foot);
+      document.body.append(d);
+      d.showModal();
+      (field || okBtn).focus();
+    });
+  }
+  const uiAlert = (message, title = 'Hinweis') => uiDialog({ title, message, cancel: false });
+  // Text aus data-confirm: erster Absatz = Frage (Titel), Rest = Erklärung
+  function uiConfirm(text, opts = {}) {
+    const [first, ...rest] = String(text).split(/\n\s*\n/);
+    const danger = /lösch|entfern|zurücksetzen|zurücknehmen|verwerfen|absagen/i.test(text);
+    return uiDialog({ title: rest.length ? first : 'Bitte bestätigen', message: rest.length ? rest.join('\n\n') : first, ok: danger ? 'Ja, ausführen' : 'Ja', danger, ...opts });
+  }
+
   // ---------- Formulare ----------
   document.addEventListener('change', (ev) => {
     const t = ev.target;
     if (t.matches('[data-submit-on-change]')) {
       if (t.tagName === 'SELECT' && t.value === '' && t.closest('[data-bulk]')) return;
       if (t.closest('[data-bulk]') && !$$(`input[form="${t.form.id}"]:checked`).length) {
-        alert('Bitte zuerst Einträge ankreuzen.');
+        uiAlert('Bitte zuerst Einträge ankreuzen.');
         t.value = '';
         return;
       }
@@ -114,19 +152,53 @@
     if (el) el.textContent = `${n} ausgewählt`;
   }
 
-  document.addEventListener('submit', (ev) => {
-    const form = ev.target;
+  // Rückfragen vor dem Absenden. Das Absenden wird angehalten, die Fragen nacheinander gestellt
+  // und danach mit demselben Knopf erneut ausgelöst.
+  function submitChecks(form) {
+    const checks = [];
     const msg = form.getAttribute('data-confirm');
-    if (msg && !confirm(msg)) { ev.preventDefault(); return; }
+    if (msg) checks.push(() => uiConfirm(msg));
     const reason = form.querySelector('[data-reason]') || (form.id && $(`[data-reason][form="${form.id}"]`));
     if (reason && !reason.value) {
-      const r = prompt('Der Einsatz ist abgeschlossen. Begründung der Änderung:');
-      if (!r) { ev.preventDefault(); return; }
-      reason.value = r;
+      checks.push(async () => {
+        const r = await uiDialog({ title: 'Einsatz ist abgeschlossen', message: 'Bitte die Änderung kurz begründen. Die Begründung erscheint im Verlauf.', input: true, placeholder: 'Begründung', ok: 'Weiter' });
+        if (r) reason.value = r;
+        return Boolean(r);
+      });
     }
+    if ((form.getAttribute('method') || 'get').toLowerCase() === 'post') {
+      const others = guardedForms().filter((f) => f !== form && formDirty(f));
+      if (others.length) {
+        const names = others.map((f) => (f.querySelector('.card-head h2, h2') || {}).firstChild?.textContent?.trim()).filter(Boolean);
+        checks.push(() => uiDialog({
+          title: 'Ungespeicherte Änderungen',
+          message: `In ${names.length ? `«${names.join('», «')}»` : 'einem anderen Abschnitt'} gibt es ungespeicherte Änderungen. Sie gehen verloren, wenn du jetzt nur diesen Teil speicherst.`,
+          ok: 'Trotzdem speichern', danger: true,
+        }));
+      }
+    }
+    return checks;
+  }
+  document.addEventListener('submit', (ev) => {
+    const form = ev.target;
     if (form.matches('[data-bulk]') && ev.submitter && ev.submitter.type === 'submit' && !$$(`input[form="${form.id}"]:checked`).length) {
-      ev.preventDefault();
-      alert('Bitte zuerst Einträge ankreuzen.');
+      ev.preventDefault(); ev.stopImmediatePropagation();
+      uiAlert('Bitte zuerst Einträge ankreuzen.');
+      return;
+    }
+    if (form.dataset.confirmed) delete form.dataset.confirmed;
+    else {
+      const checks = submitChecks(form);
+      if (checks.length) {
+        ev.preventDefault(); ev.stopImmediatePropagation();
+        const submitter = ev.submitter && ev.submitter.form === form ? ev.submitter : undefined;
+        (async () => {
+          for (const check of checks) if (!(await check())) return;
+          form.dataset.confirmed = '1';
+          form.requestSubmit(submitter);
+        })();
+        return;
+      }
     }
     // Doppelklick verhindern
     if (!ev.defaultPrevented) setTimeout(() => $$('button[type=submit]', form).forEach((b) => { b.disabled = true; }), 0);
@@ -239,7 +311,7 @@
     $$('input[data-bulk-id]', form).forEach((i) => i.remove());
     if (btn.dataset.bulkDialog) {
       const ids = $$(`input[type=checkbox][form="${btn.dataset.bulkDialog}"]:checked`).map((c) => c.value).filter((v) => v && v !== 'on');
-      if (!ids.length) { alert('Bitte zuerst Personen ankreuzen.'); return; }
+      if (!ids.length) { uiAlert('Bitte zuerst Personen ankreuzen.'); return; }
       set('person_id', '');
       for (const id of ids) {
         const i = document.createElement('input');
@@ -461,15 +533,22 @@
   document.addEventListener('submit', (ev) => {
     const form = ev.target;
     if (ev.defaultPrevented || (form.getAttribute('method') || 'get').toLowerCase() !== 'post') return;
-    const others = guardedForms().filter((f) => f !== form && formDirty(f));
-    if (others.length) {
-      const names = others.map((f) => (f.querySelector('.card-head h2, h2') || {}).firstChild?.textContent?.trim()).filter(Boolean);
-      const msg = `In ${names.length ? `«${names.join('», «')}»` : 'einem anderen Abschnitt'} gibt es ungespeicherte Änderungen. Sie gehen verloren, wenn du jetzt nur diesen Teil speicherst.\n\nTrotzdem fortfahren?`;
-      if (!confirm(msg)) { ev.preventDefault(); ev.stopImmediatePropagation(); return; }
-    }
     submitting = true;
     setTimeout(() => { submitting = false; }, 3000);
   }, true);
+  // Link in der App bei ungespeicherten Änderungen: eigene Rückfrage. Beim Schliessen des Tabs oder
+  // Neuladen kann nur der Browser selbst fragen (beforeunload).
+  document.addEventListener('click', (ev) => {
+    const a = ev.target.closest('a[href]');
+    if (!a || ev.defaultPrevented || ev.button !== 0 || ev.ctrlKey || ev.metaKey || ev.shiftKey || a.target || a.hasAttribute('download')) return;
+    const url = new URL(a.href, location.href);
+    if (url.origin !== location.origin || (url.pathname === location.pathname && url.search === location.search && url.hash)) return;
+    if (!guardedForms().some(formDirty)) return;
+    ev.preventDefault();
+    document.body.classList.remove('nav-open');
+    uiDialog({ title: 'Ungespeicherte Änderungen', message: 'Auf dieser Seite gibt es Änderungen, die noch nicht gespeichert sind. Wenn du die Seite verlässt, gehen sie verloren.', ok: 'Verwerfen und weiter', cancel: 'Bleiben', danger: true })
+      .then((go) => { if (go) { submitting = true; location.href = a.href; } });
+  });
   window.addEventListener('beforeunload', (ev) => {
     if (submitting) return;
     if (guardedForms().some(formDirty)) { ev.preventDefault(); ev.returnValue = ''; }

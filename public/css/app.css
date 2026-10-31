@@ -352,6 +352,14 @@ dialog { border: 0; border-radius: 10px; padding: 0; width: min(420px, 94vw); bo
 dialog::backdrop { background: rgba(20, 28, 48, 0.35); }
 dialog .card-head { border-bottom: 1px solid var(--border); }
 dialog .card-foot { padding: 12px 16px; display: flex; justify-content: flex-end; gap: 8px; }
+dialog { background: var(--card); color: var(--text); }
+.ui-dialog .card-head h2 { font-size: 15px; }
+.ui-dialog .ui-msg { white-space: pre-line; color: var(--text-2); margin: 0; }
+.ui-dialog .ui-input { width: 100%; margin-top: 10px; resize: vertical; }
+.ui-dialog .ui-input.invalid { border-color: var(--red); }
+.ui-dialog .card-foot { border-top: 1px solid var(--border-soft); }
+.ui-dialog .btn-primary.btn-danger { background: var(--red); border-color: var(--red); color: #fff; }
+.ui-dialog .btn.btn-danger:not(.btn-ghost):not(.btn-primary) { background: var(--red); color: #fff; }
 .menu { position: relative; display: inline-block; }
 .menu > summary { list-style: none; cursor: pointer; }
 .menu > summary::-webkit-details-marker { display: none; }
