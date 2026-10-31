@@ -47,6 +47,8 @@ function createApp() {
   });
 
   app.use('/static', express.static(path.join(__dirname, '..', 'public'), { maxAge: config.isProd ? '7d' : 0 }));
+  // Seiten nie aus dem Browser-Cache zeigen: Beim Zurückgehen lädt der Browser sie neu und zeigt den aktuellen Stand
+  app.use((req, res, next) => { res.setHeader('Cache-Control', 'no-store'); next(); });
   app.use(express.urlencoded({ extended: false, limit: '2mb', parameterLimit: 5000 }));
   app.use(express.json({ limit: '1mb' }));
 

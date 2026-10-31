@@ -550,7 +550,12 @@
     if (!ev.defaultPrevented && (ev.target.getAttribute('method') || 'get').toLowerCase() === 'post') saveScroll();
   });
   restoreScroll();
-  window.addEventListener('pageshow', (ev) => { if (ev.persisted) restoreScroll(); });
+  // Kommt die Seite beim Zurückgehen aus dem Zwischenspeicher des Browsers (z. B. Safari), neu laden
+  window.addEventListener('pageshow', (ev) => {
+    if (!ev.persisted) return;
+    if (document.querySelector('.app')) location.reload();
+    else restoreScroll();
+  });
 
   // ---------- Ungespeicherte Änderungen schützen ----------
   // Ein Feld gilt als geändert, wenn es vom Stand beim Laden abweicht.

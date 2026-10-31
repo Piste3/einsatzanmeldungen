@@ -35,6 +35,7 @@ test('ohne Anmeldung nur Login und Formular erreichbar', async () => {
   assert.equal(r.status, 302);
   assert.match(r.headers.get('location'), /^\/login/);
   assert.equal((await get('/login')).status, 200);
+  assert.equal((await get('/login')).headers.get('cache-control'), 'no-store', 'Seiten nicht aus dem Browser-Cache');
   assert.equal((await get('/forms/anmeldung')).status, 200);
 });
 
