@@ -204,7 +204,7 @@ router.get('/einsaetze/:id/anfragen', loadEvent, (req, res) => {
     ], list);
   }
   const allUsers = db.all('SELECT id, display_name FROM users WHERE active = 1 ORDER BY display_name');
-  res.render('pages/event', { title: `${e.name} · Anfragen`, tab: 'anfragen', list, filters, allUsers, teams: db.all('SELECT * FROM teams WHERE active = 1 ORDER BY sort, name') });
+  res.render('pages/event', { title: `${e.name} · Anfragen`, tab: 'anfragen', list, filters, allUsers, shiftChoices: require('../services/feedback').shiftChoices([e.id]), teams: db.all('SELECT * FROM teams WHERE active = 1 ORDER BY sort, name') });
 });
 
 router.post('/einsaetze/:id/anfragen/versuch', loadEvent, (req, res) => {

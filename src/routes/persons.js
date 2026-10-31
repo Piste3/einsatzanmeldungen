@@ -155,7 +155,7 @@ router.get('/personen/:id', (req, res) => {
   }
   res.render('pages/person', {
     title: `${p.first_name} ${p.last_name}`, p, groups, past, inqs, canSeeDiet: persons.canSeeDiet(req.user, p.id),
-    log: audit.forPerson(p.id, 30), allUsers: db.all('SELECT id, display_name FROM users WHERE active = 1 ORDER BY display_name'),
+    log: audit.forPerson(p.id, 30), shiftChoices: require('../services/feedback').shiftChoices(), allUsers: db.all('SELECT id, display_name FROM users WHERE active = 1 ORDER BY display_name'),
     linkedUser: db.one('SELECT username, display_name, role FROM users WHERE person_id = ?', p.id), liveTopics: [`person:${p.id}`],
   });
 });

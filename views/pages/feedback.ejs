@@ -4,8 +4,11 @@
   actions: `<button class="btn" type="button" data-print>Drucken</button><a class="btn" href="${h.escapeHtml(h.withQuery('/rueckmeldungen', query, { format: 'xlsx' }))}">Excel</a><a class="btn" href="${h.escapeHtml(h.withQuery('/rueckmeldungen', query, { format: 'csv' }))}">CSV</a>`,
 }) %>
 <%
-  const SYM = { an: '✓', ab: '✕', unsicher: '?', offen: '' };
-  const cellTitle = (c, e, p) => `${p.first_name} ${p.last_name} · ${e.name}: ${h.labels.FEEDBACK[c.state].label}${c.reg ? '' : ' – klicken, um eine Anfrage zu erfassen'}`;
+  const SYM = { an: '✓', ab: '✕', unsicher: '?', offen: '', andere: '–', schicht_offen: '✓' };
+  const cellTitle = (c, col, p) => `${p.first_name} ${p.last_name} · ${col.event.name}${col.shift ? ` · ${col.shift.name}` : ''}: ${h.labels.FEEDBACK[c.state].label}${c.reg ? '' : ' – klicken, um eine Anfrage zu erfassen'}`;
+  const shiftTime = (sh) => (sh.starts_at && sh.ends_at ? `${sh.starts_at.slice(11, 16)}–${sh.ends_at.slice(11, 16)}` : '');
+  const colFill = (col) => { const t = colTotals[col.key]; return col.shift && col.shift.target_count ? Math.min(100, Math.round((t.an / col.shift.target_count) * 100)) : null; };
+  const colTone = (col) => { const f = colFill(col); return f === null ? 'gray' : f >= 100 ? 'green' : f >= 60 ? 'yellow' : 'red'; };
   const fill = (e) => (e.soll ? Math.min(100, Math.round((totals[e.id].an / e.soll) * 100)) : null);
   const tone = (e) => { const f = fill(e); return f === null ? 'gray' : f >= 100 ? 'green' : f >= 60 ? 'yellow' : 'red'; };
 %>
@@ -30,7 +33,7 @@
     <a class="<%= filters.view === 'einsatz' ? 'active' : '' %>" href="<%= h.withQuery('/rueckmeldungen', query, { view: 'einsatz' }) %>">Pro Einsatz</a>
   </div>
   <div class="legend small">
-    <span class="fb fb-an">✓</span> An <span class="fb fb-ab">✕</span> Ab <span class="fb fb-unsicher">?</span> Unsicher <span class="fb fb-offen"></span> Offen
+    <span class="fb fb-an">✓</span> An <span class="fb fb-ab">✕</span> Ab <span class="fb fb-unsicher">?</span> Unsicher <span class="fb fb-offen"></span> Offen<% if (columns.some((c) => c.shift)) { %> <span class="fb fb-schicht_offen">✓</span> An, Schicht offen <span class="fb fb-andere">–</span> Andere Schicht<% } %>
     <span class="muted"> · <%= events.length %> Einsätze · <%= rows.length %><%= rows.length !== allCount ? ` von ${allCount}` : '' %> Mitglieder</span>
   </div>
 </div>
@@ -44,27 +47,33 @@
       <thead>
         <tr>
           <th class="fb-name">Mitglied</th>
-          <% for (const e of events) { const t = totals[e.id]; %>
-            <th class="fb-ev" title="<%= e.name %> · <%= h.weekdayShort(e.date) %> <%= h.fmtDateShort(e.date) %>">
-              <a href="/einsaetze/<%= e.id %>">
+          <% for (const col of columns) { const e = col.event; const t = totals[e.id]; %>
+            <th class="fb-ev <%= col.shift ? 'fb-shift' : '' %> <%= col.first ? 'fb-first' : '' %>" title="<%= e.name %> · <%= h.weekdayShort(e.date) %> <%= h.fmtDateShort(e.date) %><%= col.shift ? ` · ${col.shift.name} ${shiftTime(col.shift)}` : '' %>">
+              <a href="/einsaetze/<%= e.id %><%= col.shift ? '/schichten' : '' %>">
                 <span class="dt"><%= h.weekdayShort(e.date) %> <%= h.fmtDateShort(e.date) %></span>
                 <span class="ev"><%= e.name %></span>
-                <span class="fill fill-<%= tone(e) %>"><span style="width:<%= fill(e) ?? 0 %>%"></span></span>
-                <span class="num"><%= t.an %><%= e.soll ? ` / ${e.soll}` : ' An' %></span>
+                <% if (col.shift) { const ct = colTotals[col.key]; %>
+                  <span class="sh"><%= col.shift.name %></span>
+                  <span class="fill fill-<%= colTone(col) %>"><span style="width:<%= colFill(col) ?? 0 %>%"></span></span>
+                  <span class="num"><%= ct.an %><%= col.shift.target_count ? ` / ${col.shift.target_count}` : ' An' %><%= ct.schicht_offen ? ` · ${ct.schicht_offen} offen` : '' %></span>
+                <% } else { %>
+                  <span class="fill fill-<%= tone(e) %>"><span style="width:<%= fill(e) ?? 0 %>%"></span></span>
+                  <span class="num"><%= t.an %><%= e.soll ? ` / ${e.soll}` : ' An' %></span>
+                <% } %>
               </a>
             </th>
           <% } %>
         </tr>
       </thead>
       <tbody>
-      <% if (!rows.length) { %><tr><td colspan="<%= events.length + 1 %>" class="empty">Keine Mitglieder für diesen Filter.</td></tr><% } %>
+      <% if (!rows.length) { %><tr><td colspan="<%= columns.length + 1 %>" class="empty">Keine Mitglieder für diesen Filter.</td></tr><% } %>
       <% for (const row of rows) { const p = row.person; %>
         <tr data-row-id="p<%= p.id %>-<%= row.cells.map((c) => c.state[0]).join('') %>">
           <td class="fb-name"><%- h.rank(p.rank_short) %><a href="/personen/<%= p.id %>"><strong><%= p.first_name %> <%= p.last_name %></strong></a><% if (p.teams) { %><span class="sub"><%= p.teams %></span><% } %></td>
-          <% row.cells.forEach((c, i) => { const e = events[i]; %>
-            <td class="fb-cell">
-              <% if (c.reg) { %><a class="fb fb-<%= c.state %>" href="/einsaetze/<%= c.eventId %>/anmeldungen?q=<%= encodeURIComponent(p.last_name) %>" title="<%= cellTitle(c, e, p) %>"><%= SYM[c.state] %></a>
-              <% } else { %><button type="button" class="fb fb-<%= c.state %>" data-open-dialog="attempt" data-person="<%= p.id %>" data-event="<%= c.eventId %>" data-who="<%= `${p.first_name} ${p.last_name} · ${e.name}` %>" title="<%= cellTitle(c, e, p) %>"><%= SYM[c.state] %></button><% } %>
+          <% row.cells.forEach((c, i) => { const col = columns[i]; const e = col.event; %>
+            <td class="fb-cell <%= col.first ? 'fb-first' : '' %>">
+              <% if (c.reg) { %><a class="fb fb-<%= c.state %>" href="/einsaetze/<%= c.eventId %>/<%= ['andere', 'schicht_offen'].includes(c.state) ? 'schichten' : `anmeldungen?q=${encodeURIComponent(p.last_name)}` %>" title="<%= cellTitle(c, col, p) %>"><%= SYM[c.state] %></a>
+              <% } else { %><button type="button" class="fb fb-<%= c.state %>" data-open-dialog="attempt" data-person="<%= p.id %>" data-event="<%= c.eventId %>" data-shift="<%= c.shiftId || '' %>" data-who="<%= `${p.first_name} ${p.last_name} · ${e.name}${col.shift ? ` · ${col.shift.name}` : ''}` %>" title="<%= cellTitle(c, col, p) %>"><%= SYM[c.state] %></button><% } %>
             </td>
           <% }) %>
         </tr>
@@ -73,8 +82,8 @@
       <tfoot>
         <tr>
           <td class="fb-name">Total (<%= allCount %> Mitglieder)</td>
-          <% for (const e of events) { const t = totals[e.id]; %>
-            <td class="fb-tot" title="<%= t.an %> An · <%= t.ab %> Ab · <%= t.unsicher %> Unsicher · <%= t.offen %> Offen"><span class="g"><%= t.an %></span> <span class="r"><%= t.ab %></span> <span class="y"><%= t.unsicher %></span> <span class="m"><%= t.offen %></span></td>
+          <% for (const col of columns) { const t = colTotals[col.key]; %>
+            <td class="fb-tot <%= col.first ? 'fb-first' : '' %>" title="<%= t.an %> An<%= col.shift ? ` (${col.shift.name})` : '' %><%= t.schicht_offen ? ` · ${t.schicht_offen} An ohne Schicht` : '' %><%= t.andere ? ` · ${t.andere} andere Schicht` : '' %> · <%= t.ab %> Ab · <%= t.unsicher %> Unsicher · <%= t.offen %> Offen"><span class="g"><%= t.an %></span> <span class="r"><%= t.ab %></span> <span class="y"><%= t.unsicher %></span> <span class="m"><%= t.offen %></span></td>
           <% } %>
         </tr>
       </tfoot>
@@ -85,8 +94,11 @@
 <div class="fb-cards">
   <% events.forEach((e, i) => {
     const groups = { an: [], unsicher: [], ab: [], offen: [] };
-    for (const row of rows) groups[row.cells[i].state].push(row.person);
+    for (const row of rows) groups[row.eventCells[i].state].push(row.person);
     const t = totals[e.id];
+    // Bei mehreren Schichten: wer für welche Schicht
+    const perShift = e.shifts.map((sh) => ({ sh, list: rows.filter((row) => row.cells.some((c) => c.eventId === e.id && c.shiftId === sh.id && c.state === 'an')).map((row) => row.person) }));
+    const noShift = e.shifts.length ? rows.filter((row) => row.cells.some((c) => c.eventId === e.id && c.state === 'schicht_offen')).map((row) => row.person) : [];
   %>
   <div class="card fb-card">
     <div class="card-head">
@@ -95,7 +107,17 @@
     </div>
     <div class="card-body">
       <span class="fill fill-<%= tone(e) %> fill-wide"><span style="width:<%= fill(e) ?? 0 %>%"></span></span>
-      <% for (const [st, list] of Object.entries(groups)) { if (!list.length) continue; const many = st === 'offen' && list.length > 8; %>
+      <% if (perShift.length) { %>
+        <div class="fb-shifts">
+          <% for (const { sh, list } of perShift) { %>
+            <div class="fb-shift-row"><span class="sh-name"><%= sh.name %> <span class="muted small"><%= shiftTime(sh) %></span></span><span class="num"><strong><%= list.length %></strong><%= sh.target_count ? ` / ${sh.target_count}` : '' %></span></div>
+            <div class="fb-names"><% for (const p of list) { %><a class="pill" href="/personen/<%= p.id %>"><%= p.first_name %> <%= p.last_name %></a><% } %><% if (!list.length) { %><span class="muted small">noch niemand</span><% } %></div>
+          <% } %>
+          <% if (noShift.length) { %><div class="fb-shift-row"><span class="sh-name">An, Schicht noch offen</span><a class="link small" href="/einsaetze/<%= e.id %>/schichten">zuteilen →</a></div>
+            <div class="fb-names"><% for (const p of noShift) { %><a class="pill" href="/personen/<%= p.id %>"><%= p.first_name %> <%= p.last_name %></a><% } %></div><% } %>
+        </div>
+      <% } %>
+      <% for (const [st, list] of Object.entries(groups)) { if (!list.length || (st === 'an' && perShift.length)) continue; const many = st === 'offen' && list.length > 8; %>
         <details class="fb-group" <%= many ? '' : 'open' %>>
           <summary><span class="fb fb-<%= st %>"><%= SYM[st] %></span> <%= h.labels.FEEDBACK[st].label %> <span class="muted">· <%= list.length %></span></summary>
           <div class="fb-names">

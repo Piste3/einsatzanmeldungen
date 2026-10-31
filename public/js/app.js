@@ -295,6 +295,12 @@
   }
 
   // ---------- Dialoge ----------
+  function toggleShiftField(dlg) {
+    const field = dlg.querySelector('[data-shift-field]');
+    const result = dlg.querySelector('select[name=result]');
+    if (field) field.hidden = !(dlg.dataset.hasShifts && result && result.value === 'zugesagt');
+  }
+  document.addEventListener('change', (ev) => { if (ev.target.matches('dialog select[name=result]')) toggleShiftField(ev.target.closest('dialog')); });
   function openDialog(btn) {
     const dlg = document.getElementById(btn.dataset.openDialog);
     if (!dlg) return;
@@ -331,6 +337,22 @@
     if (btn.dataset.channel) {
       const radio = form.querySelector(`input[name=channel][value="${btn.dataset.channel}"]`);
       if (radio) { radio.checked = true; radio.dispatchEvent(new Event('change', { bubbles: true })); }
+    }
+    // Schichtauswahl für Zusagen (nur bei Einsätzen mit mehreren Schichten)
+    const shiftBox = dlg.querySelector('[data-shift-options]');
+    if (shiftBox) {
+      let map = {};
+      try { map = JSON.parse(dlg.dataset.shifts || '{}'); } catch { /* keine */ }
+      const list = map[btn.dataset.event || dlg.dataset.event] || [];
+      shiftBox.textContent = '';
+      for (const sh of list) {
+        const l = document.createElement('label'); l.className = 'check';
+        const c = document.createElement('input'); c.type = 'checkbox'; c.name = 'shift_ids'; c.value = sh.id; c.checked = String(sh.id) === btn.dataset.shift;
+        l.append(c, ` ${sh.name}${sh.time ? ` (${sh.time})` : ''}`);
+        shiftBox.append(l);
+      }
+      dlg.dataset.hasShifts = list.length ? '1' : '';
+      toggleShiftField(dlg);
     }
     $$('details.menu[open]').forEach((d) => d.removeAttribute('open'));
     dlg.showModal();

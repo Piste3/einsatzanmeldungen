@@ -1,4 +1,4 @@
-<dialog id="attempt">
+<dialog id="attempt" data-shifts="<%= JSON.stringify(typeof shiftChoices !== 'undefined' ? shiftChoices : {}) %>"<% if (typeof event !== 'undefined' && event && !(typeof eventChoice !== 'undefined' && eventChoice)) { %> data-event="<%= event.id %>"<% } %>>
   <form method="post" action="<%= action %>" data-attempt-form>
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <input type="hidden" name="person_id" value="">
@@ -28,6 +28,10 @@
           <option value="unsicher">Unsicher – weiss es noch nicht</option>
           <option value="abgesagt">Abgesagt</option>
         </select>
+      </div>
+      <div class="field" data-shift-field hidden><label>Für welche Schichten?</label>
+        <div class="check-list" data-shift-options></div>
+        <div class="field-hint">Leer lassen, wenn die Schicht noch offen ist. Zuteilen geht auch später unter «Schichten».</div>
       </div>
       <div class="field"><label for="att-note">Notiz</label><input id="att-note" type="text" name="note" placeholder="optional"></div>
     </div>

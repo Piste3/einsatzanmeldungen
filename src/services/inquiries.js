@@ -117,10 +117,13 @@ function addAttempt(eventId, personId, input, user) {
     let registrationId = inq.registration_id;
     if (result === 'zugesagt' && !registrationId) {
       const existing = db.one("SELECT id FROM registrations WHERE event_id = ? AND person_id = ?", eventId, personId);
+      // gewählte Schichten (bei Einsätzen mit mehreren Schichten)
+      const wishes = [].concat(input.shift_ids || []).map(Number).filter(Boolean);
       registrationId = existing ? existing.id : registrations.create({
         eventId, personId, enteredFirst: person.first_name, enteredLast: person.last_name, matchType: 'manuell',
-        source: channel, answer: 'ja', remark: String(input.note || '').trim() || null, user,
+        source: channel, answer: 'ja', wishes, remark: String(input.note || '').trim() || null, user,
       });
+      if (existing && wishes.length) registrations.applyWishes(existing.id, eventId, wishes, user);
     }
     db.run('UPDATE inquiries SET status = ?, registration_id = ?, version = version + 1, updated_at = ?, updated_by = ? WHERE id = ?',
       status, registrationId || null, nowIso(), user.id, inq.id);

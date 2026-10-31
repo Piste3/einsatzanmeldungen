@@ -299,12 +299,14 @@ Die Seite **Rückmeldungen** beantwortet die wichtigste Frage der Aufgebotsstell
 - **Symbole:** ✓ An, ✕ Ab, ? Unsicher, leeres Feld = Offen.
 - Ein Klick auf eine Anmeldung öffnet sie; ein Klick auf ein leeres oder unsicheres Feld öffnet das Fenster für einen Kontaktversuch – dort lässt sich auch **«Unsicher – weiss es noch nicht»** eintragen.
 - Unten stehen pro Einsatz die Summen An · Ab · Unsicher · Offen.
+- **Einsätze mit mehreren Schichten** haben eine Spalte pro Schicht, mit eigener Besetzung (z. B. «Tagschicht 8 / 10»). ✓ heisst: für diese Schicht angemeldet oder eingeteilt. – heisst: angemeldet, aber für eine andere Schicht. Ein gestricheltes ✓ heisst: zugesagt, aber die Schicht ist noch nicht festgelegt. Ab, Unsicher und Offen gelten für alle Schichten des Einsatzes.
+- Klickt man in einer Schicht-Spalte auf ein offenes Feld und wählt **«Zugesagt»**, ist diese Schicht schon angekreuzt. Weitere Schichten lassen sich dazu wählen, oder man lässt die Auswahl leer und teilt später unter «Schichten» zu. Das gilt genauso beim Erfassen unter Einsatz › Anfragen und auf der Seite eines Mitglieds.
 
 ### Ansicht «Pro Einsatz»
 
 ![Rückmeldungen pro Einsatz](bilder/15-rueckmeldungen-pro-einsatz.jpg)
 
-Eine Karte pro Einsatz mit den Namen, gruppiert nach An, Unsicher, Ab und Offen. Ein Klick auf einen offenen Namen erfasst direkt eine Anfrage. Diese Ansicht ist besonders übersichtlich, wenn viele Einsätze anstehen.
+Eine Karte pro Einsatz mit den Namen, gruppiert nach An, Unsicher, Ab und Offen. Bei mehreren Schichten steht «An» aufgeteilt nach Schicht, jeweils mit Besetzung, dazu «An, Schicht noch offen» mit Link zum Zuteilen. Ein Klick auf einen offenen Namen erfasst direkt eine Anfrage. Diese Ansicht ist besonders übersichtlich, wenn viele Einsätze anstehen.
 
 ### Filter
 
@@ -316,6 +318,8 @@ Namenssuche, Zeitraum (nächste 2 Wochen bis nächstes Jahr), Mannschaft, «Nur 
 | Ab | Abgesagt oder wieder abgemeldet |
 | Unsicher | Nicht erreicht, WhatsApp ohne Antwort, «weiss es noch nicht» oder Anmeldung mit offener Frage |
 | Offen | Noch keine Rückmeldung und noch nicht angefragt |
+| Andere Schicht (–) | Angemeldet, aber für eine andere Schicht dieses Einsatzes |
+| An, Schicht offen (gestricheltes ✓) | Zugesagt, Schicht noch nicht festgelegt |
 
 ### Die Seite eines Mitglieds
 

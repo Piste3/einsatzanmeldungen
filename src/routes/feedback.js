@@ -21,13 +21,14 @@ router.get('/rueckmeldungen', (req, res) => {
       { label: 'Vorname', value: (r) => r.person.first_name },
       { label: 'Nachname', value: (r) => r.person.last_name },
       { label: 'Mannschaft', value: (r) => r.person.teams || '' },
-      ...data.events.map((e, i) => ({ label: `${e.name} (${h.fmtDateShort(e.date)})`, value: (r) => FEEDBACK[r.cells[i].state].label })),
+      ...data.columns.map((c, i) => ({ label: `${c.event.name} (${h.fmtDateShort(c.event.date)})${c.shift ? ` – ${c.shift.name}` : ''}`, value: (r) => FEEDBACK[r.cells[i].state].label })),
     ];
     return sendTable(res, format, 'Rückmeldungen', cols, data.rows);
   }
   res.render('pages/feedback', {
     title: 'Rückmeldungen', ...data, filters, periods: feedback.PERIODS, teams: db.all('SELECT * FROM teams WHERE active = 1 ORDER BY sort, name'),
     allUsers: db.all('SELECT id, display_name FROM users WHERE active = 1 ORDER BY display_name'), liveTopics: ['feedback', 'events'],
+    shiftChoices: feedback.shiftChoices(data.events.map((e) => e.id)),
   });
 });
 

@@ -151,3 +151,26 @@ test('Anfragen: Selbst gemeldet, Sammelerfassung und Zurücknehmen', () => {
   assert.equal(db.one('SELECT COUNT(*) AS n FROM registrations WHERE id = ?', r.registrationId).n, 0);
   assert.equal(db.one('SELECT status FROM inquiries WHERE event_id = ? AND person_id = ?', offen, chris).status, 'whatsapp');
 });
+
+test('Rückmeldungen: Spalte pro Schicht und Zusage mit Schicht', () => {
+  const { anna, offen } = setup();
+  const inquiries = require('../src/services/inquiries');
+  const feedback = require('../src/services/feedback');
+  const d = db.one('SELECT date FROM events WHERE id = ?', offen).date;
+  events.addShift(offen, { name: 'Abend', date: d, start_time: '19:00', end_time: '23:00', target_count: 3 }, system);
+  const [tag, abend] = events.shiftsOf(offen);
+  const bert = persons.create({ first_name: 'Bert', last_name: 'Keller', status: 'aktiv' }, system);
+  // Anna sagt für den Abend zu, Bert ohne Schicht
+  inquiries.addAttempt(offen, anna, { channel: 'telefon', result: 'zugesagt', shift_ids: [String(abend.id)] }, system);
+  inquiries.addAttempt(offen, bert, { channel: 'telefon', result: 'zugesagt' }, system);
+  const m = feedback.matrix({});
+  const cols = m.columns.filter((c) => c.event.id === offen);
+  assert.deepEqual(cols.map((c) => c.shift.id), [tag.id, abend.id]);
+  const row = (id) => m.rows.find((r) => r.person.id === id);
+  const states = (id) => row(id).cells.filter((c) => c.eventId === offen).map((c) => c.state);
+  assert.deepEqual(states(anna), ['andere', 'an']);
+  assert.deepEqual(states(bert), ['schicht_offen', 'schicht_offen']);
+  assert.equal(m.colTotals[`${offen}:${abend.id}`].an, 1);
+  assert.equal(m.totals[offen].an, 2, 'pro Einsatz zählen beide');
+  assert.deepEqual(Object.keys(feedback.shiftChoices([offen])), [String(offen)]);
+});

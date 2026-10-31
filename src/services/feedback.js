@@ -45,22 +45,60 @@ function matrix({ team = '', period = '3m', sort = 'rang', includeDrafts = false
   const ids = evts.map((e) => e.id);
   const regs = new Map();
   const inqs = new Map();
+  const assigned = new Map();
   if (ids.length) {
     const ph = ids.map(() => '?').join(',');
     for (const r of db.all(`SELECT * FROM registrations WHERE event_id IN (${ph}) AND person_id IS NOT NULL`, ...ids)) regs.set(`${r.person_id}:${r.event_id}`, r);
     for (const i of db.all(`SELECT * FROM inquiries WHERE event_id IN (${ph})`, ...ids)) inqs.set(`${i.person_id}:${i.event_id}`, i);
     // Soll = Summe der Soll-Werte aller Schichten
     const soll = new Map(db.all(`SELECT event_id, SUM(target_count) AS n FROM shifts WHERE event_id IN (${ph}) GROUP BY event_id`, ...ids).map((r) => [r.event_id, r.n]));
-    for (const e of evts) e.soll = soll.get(e.id) || null;
-  }
+    const shifts = new Map();
+    for (const sh of db.all(`SELECT id, event_id, name, starts_at, ends_at, target_count FROM shifts WHERE event_id IN (${ph}) ORDER BY sort, starts_at, id`, ...ids)) {
+      if (!shifts.has(sh.event_id)) shifts.set(sh.event_id, []);
+      shifts.get(sh.event_id).push(sh);
+    }
+    for (const e of evts) {
+      e.soll = soll.get(e.id) || null;
+      // Nur bei mehreren Schichten eine Spalte pro Schicht
+      e.shifts = (shifts.get(e.id) || []).length > 1 ? shifts.get(e.id) : [];
+    }
+    for (const a of db.all(`SELECT a.registration_id, a.shift_id FROM shift_assignments a JOIN registrations g ON g.id = a.registration_id WHERE g.event_id IN (${ph})`, ...ids)) {
+      if (!assigned.has(a.registration_id)) assigned.set(a.registration_id, new Set());
+      assigned.get(a.registration_id).add(a.shift_id);
+    }
+  } else for (const e of evts) e.shifts = [];
+  // Spalten: ein Einsatz oder eine Schicht eines Einsatzes
+  const columns = evts.flatMap((e) => (e.shifts.length
+    ? e.shifts.map((sh, i) => ({ event: e, shift: sh, first: i === 0, key: `${e.id}:${sh.id}` }))
+    : [{ event: e, shift: null, first: true, key: `${e.id}:0` }]));
   const totals = Object.fromEntries(evts.map((e) => [e.id, { an: 0, ab: 0, unsicher: 0, offen: 0 }]));
+  const colTotals = Object.fromEntries(columns.map((c) => [c.key, { an: 0, ab: 0, unsicher: 0, offen: 0, andere: 0, schicht_offen: 0 }]));
+  // Schichten einer Anmeldung: Zuteilung, sonst die Wünsche aus dem Formular
+  const shiftsOf = (reg, e) => {
+    if (!reg) return new Set();
+    if (assigned.has(reg.id)) return assigned.get(reg.id);
+    let wishes = [];
+    try { wishes = JSON.parse(reg.shift_wishes || '[]').map(Number); } catch { /* keine */ }
+    return new Set(wishes.filter((id) => e.shifts.some((sh) => sh.id === id)));
+  };
   let rows = people.map((p) => {
-    const cells = evts.map((e) => {
+    const eventCells = evts.map((e) => {
       const c = cellState(regs.get(`${p.id}:${e.id}`), inqs.get(`${p.id}:${e.id}`));
       totals[e.id][c.state]++;
       return { ...c, eventId: e.id };
     });
-    return { person: p, cells, openCount: cells.filter((c) => c.state === 'offen').length };
+    const byEvent = new Map(eventCells.map((c) => [c.eventId, c]));
+    const cells = columns.map((col) => {
+      const base = byEvent.get(col.event.id);
+      let state = base.state;
+      if (col.shift && state === 'an') {
+        const mine = shiftsOf(base.reg, col.event);
+        state = !mine.size ? 'schicht_offen' : mine.has(col.shift.id) ? 'an' : 'andere';
+      }
+      colTotals[col.key][state]++;
+      return { ...base, state, shiftId: col.shift?.id || null };
+    });
+    return { person: p, cells, eventCells, openCount: eventCells.filter((c) => c.state === 'offen').length };
   });
   // Suche und «nur mit offenen» wirken auf die Zeilen, die Summen zählen weiterhin alle Mitglieder
   const allCount = rows.length;
@@ -73,7 +111,19 @@ function matrix({ team = '', period = '3m', sort = 'rang', includeDrafts = false
   // Standard: nach Rang (aus der Abfrage); sort() ist stabil, gleiche Werte behalten die Rangfolge
   if (sort === 'offen') rows.sort((a, b) => b.openCount - a.openCount);
   if (sort === 'name') rows.sort((a, b) => a.person.last_name.localeCompare(b.person.last_name, 'de') || a.person.first_name.localeCompare(b.person.first_name, 'de'));
-  return { events: evts, rows, totals, allCount };
+  return { events: evts, columns, rows, totals, colTotals, allCount };
 }
 
-module.exports = { matrix, cellState, upcomingEvents, PERIODS };
+// Schichten zur Auswahl beim Erfassen einer Zusage: { eventId: [{ id, name, time }] }, nur Einsätze mit mehreren Schichten
+function shiftChoices(eventIds) {
+  const ids = (eventIds || upcomingEvents('12m').map((e) => e.id)).map(Number).filter(Boolean);
+  if (!ids.length) return {};
+  const out = {};
+  for (const sh of db.all(`SELECT id, event_id, name, starts_at, ends_at FROM shifts WHERE event_id IN (${ids.map(() => '?').join(',')}) ORDER BY sort, starts_at, id`, ...ids)) {
+    (out[sh.event_id] ||= []).push({ id: sh.id, name: sh.name, time: sh.starts_at && sh.ends_at ? `${sh.starts_at.slice(11, 16)}–${sh.ends_at.slice(11, 16)}` : '' });
+  }
+  for (const k of Object.keys(out)) if (out[k].length < 2) delete out[k];
+  return out;
+}
+
+module.exports = { matrix, cellState, upcomingEvents, shiftChoices, PERIODS };

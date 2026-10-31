@@ -64,6 +64,9 @@ const FEEDBACK = {
   ab: { label: 'Ab', tone: 'red' },
   unsicher: { label: 'Unsicher', tone: 'yellow' },
   offen: { label: 'Offen', tone: 'gray' },
+  // nur in Schicht-Spalten
+  andere: { label: 'Andere Schicht', tone: 'gray' },
+  schicht_offen: { label: 'An, Schicht noch offen', tone: 'green' },
 };
 
 const PERSON_STATUS = {
