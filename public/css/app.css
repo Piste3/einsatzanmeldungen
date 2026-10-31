@@ -613,3 +613,4 @@ tr.changed td:first-child { box-shadow: inset 3px 0 0 var(--orange, #e8742a); }
 }
 .form-preview { width: 100%; max-width: 480px; height: 560px; border: 1px solid var(--border); border-radius: 10px; display: block; margin: 0 auto; background: #f3f4f7; }
 .check-list { display: flex; flex-direction: column; gap: 6px; margin-top: 2px; }
+.mr-auto { margin-right: auto; }

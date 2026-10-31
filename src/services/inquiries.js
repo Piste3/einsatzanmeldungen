@@ -189,4 +189,29 @@ function attemptLabel(a) {
   return `${CHANNEL[a.channel].short} ${fmtLocal(a.contacted_at).slice(0, 6)} ${a.contacted_at.slice(11, 16)}`;
 }
 
-module.exports = { listForEvent, forPerson, plan, addAttempt, setStatus, removeAttempt, attemptLabel };
+// Alles für eine Person und einen Einsatz zurücksetzen: Anfrage mit allen Kontaktversuchen und die Anmeldung
+// (samt Schichtzuteilung). Der Formular-Eingang bleibt gespeichert. Danach gilt die Person als «offen».
+function resetPerson(eventId, personId, user) {
+  const event = db.one('SELECT * FROM events WHERE id = ?', eventId);
+  const person = db.one('SELECT * FROM persons WHERE id = ?', personId);
+  if (!event || !person) throw new ValidationError(['Einsatz oder Person nicht gefunden.']);
+  if (event.status === 'abgeschlossen' && user.role !== 'admin') throw new ValidationError(['Der Einsatz ist abgeschlossen.']);
+  return db.tx(() => {
+    const reg = db.one('SELECT id FROM registrations WHERE event_id = ? AND person_id = ?', eventId, personId);
+    if (reg) registrations.remove(reg.id, user);
+    const inq = db.one('SELECT id FROM inquiries WHERE event_id = ? AND person_id = ?', eventId, personId);
+    const attempts = inq ? db.one('SELECT COUNT(*) AS n FROM contact_attempts WHERE inquiry_id = ?', inq.id).n : 0;
+    if (inq) db.run('DELETE FROM inquiries WHERE id = ?', inq.id);
+    if (reg || inq) {
+      audit.log({
+        entity: 'inquiry', entityId: inq?.id || null, eventId, personId, action: 'reset',
+        summary: `${user.display_name} hat alles für ${person.first_name} ${person.last_name} zurückgesetzt · ${event.name}`,
+        details: { anmeldung_geloescht: reg ? 'ja' : 'nein', kontaktversuche: attempts }, user,
+      });
+      live.notify(`event:${eventId}`, 'feedback', `person:${personId}`);
+    }
+    return { registration: Boolean(reg), inquiry: Boolean(inq), attempts };
+  });
+}
+
+module.exports = { listForEvent, forPerson, plan, addAttempt, setStatus, removeAttempt, resetPerson, attemptLabel };

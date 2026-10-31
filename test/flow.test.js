@@ -174,3 +174,20 @@ test('Rückmeldungen: Spalte pro Schicht und Zusage mit Schicht', () => {
   assert.equal(m.totals[offen].an, 2, 'pro Einsatz zählen beide');
   assert.deepEqual(Object.keys(feedback.shiftChoices([offen])), [String(offen)]);
 });
+
+test('Anfragen: alles für eine Person bei einem Einsatz zurücksetzen', () => {
+  const { anna, offen } = setup();
+  const inquiries = require('../src/services/inquiries');
+  const feedback = require('../src/services/feedback');
+  inquiries.addAttempt(offen, anna, { channel: 'telefon', result: 'nicht_erreicht' }, system);
+  inquiries.addAttempt(offen, anna, { channel: 'telefon', result: 'zugesagt' }, system);
+  assert.ok(db.one('SELECT 1 FROM shift_assignments a JOIN registrations g ON g.id = a.registration_id WHERE g.person_id = ?', anna));
+  const r = inquiries.resetPerson(offen, anna, system);
+  assert.deepEqual(r, { registration: true, inquiry: true, attempts: 2 });
+  assert.equal(db.one('SELECT COUNT(*) AS n FROM registrations WHERE person_id = ?', anna).n, 0);
+  assert.equal(db.one('SELECT COUNT(*) AS n FROM inquiries WHERE person_id = ?', anna).n, 0);
+  assert.equal(db.one('SELECT COUNT(*) AS n FROM contact_attempts').n, 0);
+  const row = feedback.matrix({}).rows.find((x) => x.person.id === anna);
+  assert.equal(row.eventCells.find((c) => c.eventId === offen).state, 'offen');
+  assert.deepEqual(inquiries.resetPerson(offen, anna, system), { registration: false, inquiry: false, attempts: 0 });
+});

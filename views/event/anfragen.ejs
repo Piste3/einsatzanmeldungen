@@ -67,6 +67,8 @@
                 <form method="post" action="<%= base %>/status" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="person_id" value="<%= r.person_id %>"><input type="hidden" name="status" value="abgesagt"><button class="btn btn-xs" type="submit" title="Antwort ist gekommen: kommt nicht">Abgesagt</button></form>
               <% } %>
               <button class="btn btn-sm" type="button" data-open-dialog="attempt" data-person="<%= r.person_id %>" data-who="<%= `${r.rank_short ? r.rank_short + ' ' : ''}${r.first_name} ${r.last_name}` %>" data-channel="<%= ['nicht_erreicht', 'whatsapp'].includes(r.state) ? 'whatsapp' : 'telefon' %>">Erfassen</button>
+            <% } else if (!locked && done) { %>
+              <button class="icon-btn" type="button" data-reset-person data-person="<%= r.person_id %>" data-who="<%= `${r.rank_short ? r.rank_short + ' ' : ''}${r.first_name} ${r.last_name}` %>" title="Alles zurücksetzen: Kontaktversuche, Anmeldung und Schichten für diesen Einsatz löschen"><%- h.icon('undo') %></button>
             <% } %>
           </td>
         </tr>

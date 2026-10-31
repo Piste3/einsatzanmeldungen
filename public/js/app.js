@@ -295,6 +295,35 @@
   }
 
   // ---------- Dialoge ----------
+  // Kontaktversuch-Fenster: alles für diese Person bei diesem Einsatz zurücksetzen
+  document.addEventListener('click', async (ev) => {
+    const b = ev.target.closest('[data-reset-person]');
+    if (!b) return;
+    // im Kontaktversuch-Fenster oder direkt aus einer Tabellenzeile (data-person, data-event)
+    const dlg = b.closest('dialog') || document.getElementById('attempt');
+    const form = dlg.querySelector('form');
+    const inDialog = Boolean(b.closest('dialog'));
+    const val = (n) => {
+      if (!inDialog && n === 'person_id') return b.dataset.person;
+      if (!inDialog && n === 'event_id') return b.dataset.event || dlg.dataset.event || '';
+      return (form.querySelector(`[name="${n}"]`) || {}).value || '';
+    };
+    const who = (inDialog ? (dlg.querySelector('[data-who]') || {}).textContent : b.dataset.who) || 'diese Person';
+    const ok = await uiDialog({
+      title: 'Alles zurücksetzen?',
+      message: `${who}\n\nAlle Kontaktversuche, die Rückmeldung bzw. Anmeldung und die Schichtzuteilung für diesen Einsatz werden gelöscht. Die Person gilt danach wieder als offen. Ein Formular-Eingang bleibt unter «Formulare» gespeichert.`,
+      ok: 'Zurücksetzen', danger: true,
+    });
+    if (!ok) return;
+    const f = document.createElement('form');
+    f.method = 'post'; f.action = '/anfragen/zuruecksetzen';
+    for (const [n, v] of [['_csrf', val('_csrf')], ['person_id', val('person_id')], ['event_id', val('event_id') || dlg.dataset.event || ''], ['back', val('back')]]) {
+      const i = document.createElement('input'); i.type = 'hidden'; i.name = n; i.value = v; f.append(i);
+    }
+    document.body.append(f);
+    if (dlg.open) dlg.close();
+    f.submit();
+  });
   function toggleShiftField(dlg) {
     const field = dlg.querySelector('[data-shift-field]');
     const result = dlg.querySelector('select[name=result]');
@@ -354,6 +383,8 @@
       dlg.dataset.hasShifts = list.length ? '1' : '';
       toggleShiftField(dlg);
     }
+    const resetBtn = dlg.querySelector('[data-reset-person]');
+    if (resetBtn) resetBtn.hidden = Boolean(btn.dataset.bulkDialog);
     $$('details.menu[open]').forEach((d) => d.removeAttribute('open'));
     dlg.showModal();
     const first = dlg.querySelector('select[name=result]') || $$('select, textarea, input[type=text]', dlg).find((el) => !el.hidden && !el.disabled);

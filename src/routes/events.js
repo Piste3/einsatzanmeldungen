@@ -217,6 +217,15 @@ router.post('/einsaetze/:id/anfragen/versuch', loadEvent, (req, res) => {
   res.redirect(/^\/(?!\/)/.test(String(req.body.back || '')) ? req.body.back : `/einsaetze/${req.event.id}/anfragen`);
 });
 
+// Alles für eine Person bei einem Einsatz zurücksetzen (aus dem Kontaktversuch-Fenster)
+router.post('/anfragen/zuruecksetzen', (req, res) => {
+  const eventId = Number(req.body.event_id);
+  const r = inquiries.resetPerson(eventId, Number(req.body.person_id), req.user);
+  flash(res, 'success', r.registration || r.inquiry ? 'Zurückgesetzt. Die Person gilt für diesen Einsatz wieder als offen.' : 'Es gab nichts zurückzusetzen.');
+  const b = String(req.body.back || '');
+  res.redirect(b.startsWith('/') && !b.startsWith('//') ? b : `/einsaetze/${eventId}/anfragen`);
+});
+
 // Anfrage aus den Rückmeldungen oder der Mitgliederseite erfassen
 router.post('/anfragen/versuch', (req, res) => {
   const eventId = Number(req.body.event_id);
