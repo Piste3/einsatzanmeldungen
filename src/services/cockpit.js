@@ -4,6 +4,7 @@ const db = require('../db');
 const events = require('./events');
 const audit = require('./audit');
 const { today, addDays, daysUntil, localNow } = require('../lib/dates');
+const { BY_RANK } = require('../lib/sorting');
 
 function data() {
   const upcoming = events.list({ status: 'aktiv', from: today(), to: addDays(today(), 92) });
@@ -18,7 +19,18 @@ function data() {
       AND NOT EXISTS (SELECT 1 FROM registrations g WHERE g.event_id = i.event_id AND g.person_id = i.person_id AND g.status <> 'ungueltig')`, today()).n,
     next: rows.find((e) => e.status === 'veroeffentlicht') || rows[0] || null,
   };
-  return { rows, kpis, todos: todos(rows, kpis), activity: audit.recent(12), formErrors: formErrorCount() };
+  return { rows, kpis, todos: todos(rows, kpis), activity: audit.recent(12), formErrors: formErrorCount(), unconfirmed: unconfirmed() };
+}
+
+// Anmeldungen, die noch nicht bestätigt sind (Neu, Rückfrage, Warteliste) – für anstehende Einsätze
+function unconfirmed() {
+  const rows = db.all(`SELECT g.id, g.status, g.source, g.registered_at, g.remark, g.event_id, e.name AS event_name, e.date AS event_date, e.status AS event_status,
+      p.id AS person_id, p.first_name, p.last_name, r.short AS rank_short,
+      (SELECT group_concat(s.name, ', ') FROM shift_assignments a JOIN shifts s ON s.id = a.shift_id WHERE a.registration_id = g.id) AS shifts
+    FROM registrations g JOIN events e ON e.id = g.event_id JOIN persons p ON p.id = g.person_id LEFT JOIN ranks r ON r.id = p.rank_id
+    WHERE g.status IN ('neu','rueckfrage','warteliste') AND e.status IN ('entwurf','veroeffentlicht') AND e.date >= ?
+    ORDER BY e.date, e.id, ${BY_RANK}`, today());
+  return rows;
 }
 
 function formErrorCount() {

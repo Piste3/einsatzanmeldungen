@@ -92,4 +92,30 @@
     </div>
   </div>
 </div>
+<div class="card mt" id="unbestaetigt">
+  <div class="card-head">
+    <h2>Noch nicht bestätigt <span class="hint"><%= unconfirmed.length %> Anmeldung<%= unconfirmed.length === 1 ? '' : 'en' %> für anstehende Einsätze</span></h2>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Person</th><th>Einsatz</th><th>Schicht</th><th>Quelle</th><th>Angemeldet</th><th>Status</th><th class="actions-col"></th></tr></thead>
+      <tbody>
+      <% if (!unconfirmed.length) { %><tr><td colspan="7" class="empty">Alle Anmeldungen sind bestätigt.</td></tr><% } %>
+      <% for (const r of unconfirmed) { %>
+        <tr data-row-id="u<%= r.id %>-<%= r.status %>">
+          <td><%- h.rank(r.rank_short) %><a href="/personen/<%= r.person_id %>"><strong><%= r.first_name %> <%= r.last_name %></strong></a><% if (r.remark) { %><span class="sub">«<%= r.remark %>»</span><% } %></td>
+          <td><a href="/einsaetze/<%= r.event_id %>/anmeldungen?q=<%= encodeURIComponent(r.last_name) %>"><%= r.event_name %></a><span class="sub"><%= h.fmtDateWd(r.event_date) %><%= r.event_status === 'entwurf' ? ' · Entwurf' : '' %></span></td>
+          <td><%= r.shifts || '–' %></td>
+          <td><%= h.labels.SOURCE[r.source] %></td>
+          <td class="nowrap"><%= h.fmtRelative(r.registered_at) %></td>
+          <td><%- h.regBadge(r.status) %></td>
+          <td class="actions-col right nowrap">
+            <form method="post" action="/anmeldungen/<%= r.id %>/status" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="status" value="bestaetigt"><input type="hidden" name="expected" value="<%= r.status %>"><input type="hidden" name="back" value="/"><button class="btn btn-sm" type="submit">Bestätigen</button></form>
+          </td>
+        </tr>
+      <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
 <%- include('../partials/foot') %>
