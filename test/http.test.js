@@ -125,3 +125,24 @@ test('System-Seite: nur Admin, Update ohne Starter wird abgelehnt', async () => 
   });
   assert.equal(r.status, 302); // Fehlermeldung statt Neustart
 });
+
+test('Standard-Anmeldefrage ist bei neuen Einsätzen vorausgewählt', async () => {
+  const settings = require('../src/services/settings');
+  const db = require('../src/db');
+  const admin = await login('admin', 'Chef-Passwort-2026');
+  const page = await get('/verwaltung/vorlagen', admin.cookie);
+  const csrf = (await page.text()).match(/name="_csrf" value="([^"]+)"/)[1];
+  const q = db.one("SELECT * FROM question_templates WHERE name = 'Schichtauswahl'");
+  const save = (def) => fetch(`${base}/verwaltung/vorlagen/fragen`, {
+    method: 'POST', redirect: 'manual', headers: { cookie: admin.cookie, 'content-type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ _csrf: csrf, default_question: def }),
+  });
+  assert.equal((await save(String(q.id))).status, 302);
+  assert.equal(settings.get('default_question_template'), q.id);
+  const html = await (await get('/einsaetze/neu', admin.cookie)).text();
+  assert.match(html, new RegExp(`<option value="${q.id}"[^>]*selected`));
+  assert.match(html, /value="Für welche Schichten kannst du\?"/);
+  await save('');
+  assert.equal(settings.get('default_question_template'), null);
+  assert.doesNotMatch(await (await get('/einsaetze/neu', admin.cookie)).text(), /<option value="\d+"[^>]*data-question[^>]*selected/);
+});

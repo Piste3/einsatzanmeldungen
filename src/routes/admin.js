@@ -160,6 +160,7 @@ router.get('/verwaltung/vorlagen', (req, res) => {
   res.render('admin/templates', {
     title: 'Vorlagen',
     questions: db.all('SELECT * FROM question_templates ORDER BY sort, name'),
+    defaultQuestion: Number(settings.get('default_question_template')) || null,
     tenues: db.all('SELECT * FROM tenue_templates ORDER BY sort, name'),
     extras: events.extraDefs(),
   });
@@ -207,6 +208,12 @@ router.post('/verwaltung/vorlagen/:kind', (req, res) => {
           ? db.run('UPDATE extra_fields SET name = ?, field_type = ?, required = ?, sort = ? WHERE id = ? AND (name IS NOT ? OR field_type IS NOT ? OR required IS NOT ? OR sort IS NOT ?)', name, type, required, sort, r.id, name, type, required, sort)
           : db.run('INSERT INTO extra_fields (name, field_type, required, sort) VALUES (?, ?, ?, ?)', name, type, required, sort)).changes);
       }
+    }
+    // Standard-Anmeldefrage für neue Einsätze («neu» = die gerade hinzugefügte Vorlage)
+    if (kind === 'fragen' && 'default_question' in req.body) {
+      let def = req.body.default_question === 'neu' ? added.find((r) => String(r.name || '').trim()) && db.one('SELECT max(id) AS id FROM question_templates').id || null : Number(req.body.default_question) || null;
+      if (def && !db.one('SELECT 1 FROM question_templates WHERE id = ?', def)) def = null;
+      if (def !== (Number(settings.get('default_question_template')) || null)) { settings.set('default_question_template', def); changes++; }
     }
   });
   if (changes) audit.log({ entity: 'settings', action: 'templates', summary: `${req.user.display_name} hat Vorlagen geändert`, user: req.user });

@@ -1,6 +1,7 @@
 'use strict';
 const express = require('express');
 const db = require('../db');
+const settings = require('../services/settings');
 const events = require('../services/events');
 const registrations = require('../services/registrations');
 const inquiries = require('../services/inquiries');
@@ -63,7 +64,10 @@ router.get('/einsaetze', (req, res) => {
 });
 
 router.get('/einsaetze/neu', (req, res) => {
-  res.render('pages/event-form', { title: 'Neuer Einsatz', e: { status: 'entwurf', shifts: [], extra: {}, date: req.query.date || '' }, isNew: true, errors: [], ...formOptions() });
+  // Standard-Anmeldefrage aus Einstellungen › Vorlagen vorauswählen
+  const def = db.one('SELECT * FROM question_templates WHERE id = ?', Number(settings.get('default_question_template')) || 0);
+  const question = def ? { question_template_id: def.id, question_text: def.question_text, help_text: def.help_text } : {};
+  res.render('pages/event-form', { title: 'Neuer Einsatz', e: { status: 'entwurf', shifts: [], extra: {}, date: req.query.date || '', ...question }, isNew: true, errors: [], ...formOptions() });
 });
 
 router.post('/einsaetze', (req, res, next) => {

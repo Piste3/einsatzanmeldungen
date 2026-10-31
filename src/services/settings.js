@@ -44,6 +44,7 @@ const DEFAULTS = {
   verein_name: 'Kadetten-Korps Basel',
   aufgebot_email: 'aufgebot@kkb.ch',
   email_domain: 'web.kkb.ch',
+  default_question_template: null, // Anmeldefrage, die bei neuen Einsätzen vorausgewählt ist
   calendar: {
     title: '{{einsatz.name}} - {{einsatz.datum_kurz}} - {{schicht.name}}',
     location: '{{antreten.ort}}',

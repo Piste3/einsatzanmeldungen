@@ -7,7 +7,7 @@
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <div class="card-head"><h2>Anmeldefragen <span class="hint">zur Auswahl beim Einsatz</span></h2></div>
     <div class="table-wrap"><table class="form-table">
-      <thead><tr><th>Name</th><th>Fragetext</th><th>Hilfetext</th><th>Reihenfolge</th><th>Entfernen</th></tr></thead>
+      <thead><tr><th>Name</th><th>Fragetext</th><th>Hilfetext</th><th>Reihenfolge</th><th title="Bei neuen Einsätzen vorausgewählt">Standard</th><th>Entfernen</th></tr></thead>
       <tbody>
       <% for (const q of questions.concat([{ id: '' }])) { const k = q.id || 'neu'; %>
         <tr class="<%= q.id ? '' : 'new-row' %>">
@@ -15,9 +15,11 @@
           <td><input type="text" name="question_text__<%= k %>" value="<%= q.question_text || '' %>"></td>
           <td><input type="text" name="help_text__<%= k %>" value="<%= q.help_text || '' %>"></td>
           <td><input type="number" name="sort__<%= k %>" value="<%= q.sort ?? '' %>" style="width:70px"></td>
+          <td><label class="check small"><input type="radio" name="default_question" value="<%= k %>" <%= q.id && q.id === defaultQuestion ? 'checked' : '' %>> Standard</label></td>
           <td><%- del(q.id) %></td>
         </tr>
       <% } %>
+      <tr><td colspan="4" class="right small muted">Kein Standard (bei neuen Einsätzen nichts vorausgewählt)</td><td><label class="check small"><input type="radio" name="default_question" value="" <%= defaultQuestion ? '' : 'checked' %>> keiner</label></td><td></td></tr>
       </tbody>
     </table></div>
     <%- include('_section-foot') %>

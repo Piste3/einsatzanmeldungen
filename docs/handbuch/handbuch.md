@@ -124,7 +124,7 @@ Die Liste zeigt alle Einsätze mit Datum, Antreten, Status, Besetzung und Einsat
 - **Tenue:** mit einem Klick eine Vorlage übernehmen, z. B. «Uniform orange + VD», und bei Bedarf anpassen.
 - **Beschreibung** ist für die Mitglieder im Formular sichtbar, die **interne Bemerkung** nur für die Aufgebotsstelle.
 - **Schichten:** Eine Schicht für den ganzen Einsatz wird automatisch angelegt, hier mit der Soll-Anzahl. Weitere Schichten kommen nach dem Speichern dazu.
-- **Anmeldeformular:** Anmeldefrage aus einer Vorlage wählen und Text und Hilfetext anpassen.
+- **Anmeldeformular:** Anmeldefrage aus einer Vorlage wählen und Text und Hilfetext anpassen. Die Standard-Vorlage (Einstellungen › Vorlagen) ist bei neuen Einsätzen schon ausgewählt.
 - **Als Entwurf speichern** oder direkt **Veröffentlichen** – dann erscheint der Einsatz sofort im Anmeldeformular.
 
 ### Die Übersicht eines Einsatzes
@@ -414,6 +414,8 @@ Konten anlegen, Rolle wählen (Admin oder Aufgebotsstelle) und mit einer Person 
 ![Einstellungen › Vorlagen](bilder/25-vorlagen.jpg)
 
 **Anmeldefragen**, **Tenue-Vorlagen** und **Zusatzfelder** für Einsätze (z. B. «Transport»). Jedes Zusatzfeld steht automatisch als Baustein zur Verfügung.
+
+Bei den Anmeldefragen legt die Spalte **Standard** fest, welche Vorlage bei jedem neuen Einsatz schon vorausgewählt ist, samt Fragetext und Hilfetext. Mit «keiner» ist nichts vorausgewählt.
 
 > **Speichern pro Abschnitt:** In Auswahllisten und Vorlagen hat jeder Abschnitt einen einzigen Speichern-Knopf. Mehrere Zeilen ändern, in der leeren Zeile etwas Neues eintragen, bei anderen «entfernen» ankreuzen – und dann einmal speichern. Geänderte Zeilen sind links orange markiert. Ränge oder Mannschaften, die noch verwendet werden, lassen sich nicht entfernen, nur deaktivieren.
 
