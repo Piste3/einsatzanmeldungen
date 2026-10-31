@@ -383,6 +383,14 @@
       dlg.dataset.hasShifts = list.length ? '1' : '';
       toggleShiftField(dlg);
     }
+    const cur = dlg.querySelector('[data-current-box]');
+    if (cur) {
+      cur.hidden = !btn.dataset.current;
+      cur.querySelector('[data-current-text]').textContent = btn.dataset.current || '';
+      const link = cur.querySelector('[data-current-link]');
+      link.hidden = !btn.dataset.currentLink;
+      if (btn.dataset.currentLink) link.href = btn.dataset.currentLink;
+    }
     const resetBtn = dlg.querySelector('[data-reset-person]');
     if (resetBtn) resetBtn.hidden = Boolean(btn.dataset.bulkDialog);
     $$('details.menu[open]').forEach((d) => d.removeAttribute('open'));

@@ -191,3 +191,14 @@ test('Anfragen: alles für eine Person bei einem Einsatz zurücksetzen', () => {
   assert.equal(row.eventCells.find((c) => c.eventId === offen).state, 'offen');
   assert.deepEqual(inquiries.resetPerson(offen, anna, system), { registration: false, inquiry: false, attempts: 0 });
 });
+
+test('Kontaktversuch bei bestehender Anmeldung: Absage zieht zurück, Zusage aktiviert wieder', () => {
+  const { anna, offen } = setup();
+  const inquiries = require('../src/services/inquiries');
+  const reg = registrations.create({ eventId: offen, personId: anna, source: 'formular', answer: 'ja', user: system });
+  inquiries.addAttempt(offen, anna, { channel: 'telefon', result: 'abgesagt' }, system);
+  assert.equal(registrations.get(reg).status, 'zurueckgezogen');
+  inquiries.addAttempt(offen, anna, { channel: 'telefon', result: 'zugesagt' }, system);
+  assert.equal(registrations.get(reg).status, 'neu');
+  assert.equal(db.one('SELECT COUNT(*) AS n FROM registrations WHERE person_id = ?', anna).n, 1);
+});

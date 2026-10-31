@@ -6,6 +6,7 @@
     <% if (typeof eventChoice !== 'undefined' && eventChoice) { %><input type="hidden" name="event_id" value=""><% } %>
     <div class="card-head"><h2>Kontaktversuch erfassen <span class="hint" data-who></span></h2></div>
     <div class="card-body">
+      <div class="dlg-current small" data-current-box hidden><strong>Aktuell:</strong> <span data-current-text></span> <a class="link" data-current-link href="#">Anmeldung öffnen →</a></div>
       <div class="field"><label>Kanal</label>
         <div class="segmented">
           <input type="radio" name="channel" id="ch-tel" value="telefon" checked><label for="ch-tel">Telefon</label>

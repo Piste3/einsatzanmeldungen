@@ -125,6 +125,17 @@ function addAttempt(eventId, personId, input, user) {
       });
       if (existing && wishes.length) registrations.applyWishes(existing.id, eventId, wishes, user);
     }
+    // Gibt es schon eine Anmeldung, zieht die neue Antwort sie mit: Absage = zurückgezogen, Zusage = wieder aktiv
+    const reg = db.one('SELECT id, status FROM registrations WHERE event_id = ? AND person_id = ?', eventId, personId);
+    if (reg && result === 'abgesagt' && !['zurueckgezogen', 'abgesagt', 'ungueltig'].includes(reg.status)) {
+      registrations.setStatus(reg.id, 'zurueckgezogen', user, { expected: reg.status });
+      registrationId = registrationId || reg.id;
+    }
+    if (reg && result === 'zugesagt' && ['zurueckgezogen', 'abgesagt'].includes(reg.status)) {
+      registrations.setStatus(reg.id, 'neu', user, { expected: reg.status });
+      const wishes = [].concat(input.shift_ids || []).map(Number).filter(Boolean);
+      if (wishes.length) registrations.applyWishes(reg.id, eventId, wishes, user);
+    }
     db.run('UPDATE inquiries SET status = ?, registration_id = ?, version = version + 1, updated_at = ?, updated_by = ? WHERE id = ?',
       status, registrationId || null, nowIso(), user.id, inq.id);
     const resultText = { nicht_erreicht: 'nicht erreicht', whatsapp: 'per WhatsApp angeschrieben', zugesagt: 'Zusage', unsicher: 'noch unsicher', abgesagt: 'Absage' }[result];
