@@ -22,7 +22,7 @@
           <dt>Jahrgang</dt><dd><%= h.birthYear(p) || '–' %><%= age !== null ? ` (${age} J.)` : '' %></dd>
           <% if (isAdmin && p.birth_date) { %><dt>Geburtsdatum</dt><dd><%= h.fmtDate(p.birth_date) %></dd><% } %>
           <dt>Mobil</dt><dd><% if (p.mobile) { %><a class="link" href="tel:<%= p.mobile.replace(/\s/g, '') %>"><%= p.mobile %></a><% } else { %>–<% } %></dd>
-          <dt>E-Mail</dt><dd><%= p.email || '–' %></dd>
+          <dt>E-Mail</dt><dd><% if (p.email) { %><%- h.escapeHtml(p.email).replace('@', '@<wbr>') %><% } else { %>–<% } %></dd>
           <dt>Verpflegung</dt><dd><% if (!p.diet_category && !p.diet_text) { %>–<% } else if (canSeeDiet) { %><%= [h.labels.DIET[p.diet_category], p.diet_text].filter(Boolean).join(': ') %><% } else { %><%- h.badge('Hinweis vorhanden', 'gray') %><% } %></dd>
           <dt>Status</dt><dd><%- h.badge(h.labels.PERSON_STATUS[p.status].label, h.labels.PERSON_STATUS[p.status].tone) %></dd>
         </dl>
