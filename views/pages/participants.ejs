@@ -32,32 +32,5 @@
   <div class="callout warn mb no-print"><%= unresolved === 1 ? '1 Anmeldung ist noch keiner Person zugeordnet und fehlt' : `${unresolved} Anmeldungen sind noch keiner Person zugeordnet und fehlen` %> deshalb in der Liste. → <a class="link" href="/klaerungen">Klärungen</a></div>
 <% } %>
 
-<div class="card participants">
-  <div class="card-head"><h2><%= list.length %> <%= list.length === 1 ? 'Person' : 'Personen' %> <span class="hint"><%= scopes[filters.umfang].label %> · Stand <%= h.fmtDateTime(h.nowIso()) %></span></h2></div>
-  <div class="table-wrap">
-    <table>
-      <thead><tr><th class="nr"></th><th>Name</th><th>Mobil</th><th>Essenseinschränkungen</th><% if (showShift) { %><th>Schicht</th><% } %><% if (showStatus) { %><th>Status</th><% } %></tr></thead>
-      <tbody>
-      <% if (!list.length) { %><tr><td colspan="<%= 4 + (showShift ? 1 : 0) + (showStatus ? 1 : 0) %>" class="empty">Noch niemand angemeldet<%= filters.umfang === 'bestaetigt' ? ' und bestätigt' : '' %>.</td></tr><% } %>
-      <% list.forEach((r, i) => { %>
-        <tr>
-          <td class="nr muted"><%= i + 1 %></td>
-          <td><%- h.rank(r.rank_short) %><a href="/personen/<%= r.person_id %>"><strong><%= r.first_name %> <%= r.last_name %></strong></a></td>
-          <td class="nowrap"><% if (r.mobile) { %><a href="tel:<%= r.mobile.replace(/[^\d+]/g, '') %>"><%= r.mobile %></a><% } else { %><span class="muted">–</span><% } %></td>
-          <td><% if (!r.diet.has) { %><span class="muted">–</span><% } else if (!r.diet.visible) { %><span class="muted">Hinweis vorhanden</span><% } else { %><strong><%= r.diet.category %></strong><%= r.diet.category && r.diet.text ? ': ' : '' %><%= r.diet.text %><% } %></td>
-          <% if (showShift) { %><td><%= shiftOf(r) %></td><% } %>
-          <% if (showStatus) { %><td><%- h.regBadge(r.status) %></td><% } %>
-        </tr>
-      <% }) %>
-      </tbody>
-    </table>
-  </div>
-  <% if (list.length) { %>
-    <div class="card-body diet-summary">
-      <strong>Verpflegung:</strong>
-      <%= summary.map(([label, n]) => `${n} ${label}`).join(' · ') %>
-      <% if (summary.some(([l]) => l === 'Hinweis vorhanden')) { %><span class="sub muted small">«Hinweis vorhanden»: Nach dem Einsatz sieht die genaue Angabe nur noch ein Admin.</span><% } %>
-    </div>
-  <% } %>
-</div>
+<%- include('../partials/participants-table', { personLinks: true }) %>
 <%- include('../partials/foot') %>

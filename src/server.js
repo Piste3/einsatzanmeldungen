@@ -14,7 +14,7 @@ seedDefaults();
 
 const app = createApp();
 const server = http.createServer(app);
-live.attach(server, auth.userFromRequest);
+live.attach(server, auth.userFromRequest, { topicFilter: require('./services/leaders').allowTopic });
 
 // Erster Start: noch kein Benutzer -> Einrichtungs-Link mit einmaligem Token ausgeben
 const users = require('./services/users');

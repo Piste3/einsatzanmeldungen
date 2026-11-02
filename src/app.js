@@ -65,6 +65,7 @@ function createApp() {
   app.use(auth.requireLogin);
   app.use(auth.csrfProtect);
   app.use(helpers.navMiddleware);
+  app.use(require('./routes/leader')); // Einsatzleiter: nur freigegebene Einsätze
   app.use(require('./routes/cockpit'));
   app.use(require('./routes/events'));
   app.use(require('./routes/registrations'));

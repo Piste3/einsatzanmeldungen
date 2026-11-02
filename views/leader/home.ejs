@@ -1,0 +1,34 @@
+<%- include('../partials/head') %>
+<%- include('../partials/topbar', { crumbs: [], heading: 'Meine Einsätze', subline: 'Einsätze, die die Aufgebotsstelle für dich freigegeben hat. Nur lesen – Änderungen macht die Aufgebotsstelle.', showSearch: false }) %>
+<% const rows = (list, emptyText) => { %>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Datum</th><th>Einsatz</th><th>Antreten</th><th>Status</th><th class="center">Angemeldet</th><th class="center">Bestätigt</th><th></th></tr></thead>
+      <tbody>
+      <% if (!list.length) { %><tr><td colspan="7" class="empty"><%= emptyText %></td></tr><% } %>
+      <% for (const e of list) { %>
+        <tr data-row-id="ev<%= e.id %>">
+          <td class="nowrap"><%= h.fmtDateWd(e.date) %></td>
+          <td><a href="/einsaetze/<%= e.id %>"><strong><%= e.name %></strong></a></td>
+          <td><%= [e.start_time, e.start_place].filter(Boolean).join(' · ') || '–' %></td>
+          <td><%- h.eventBadge(e.status) %></td>
+          <td class="center"><%= e.angemeldet || '–' %></td>
+          <td class="center"><%= e.bestaetigt || '–' %></td>
+          <td class="nowrap right"><a class="btn btn-sm" href="/einsaetze/<%= e.id %>/teilnehmerliste?format=pdf" target="_blank" rel="noopener">Teilnehmerliste</a></td>
+        </tr>
+      <% } %>
+      </tbody>
+    </table>
+  </div>
+<% } %>
+<div class="card mb">
+  <div class="card-head"><h2>Anstehend</h2></div>
+  <% rows(upcoming, 'Zurzeit ist kein anstehender Einsatz für dich freigegeben.') %>
+</div>
+<% if (past.length) { %>
+  <div class="card">
+    <div class="card-head"><h2>Vergangen</h2></div>
+    <% rows(past, '') %>
+  </div>
+<% } %>
+<%- include('../partials/foot') %>

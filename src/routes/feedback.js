@@ -27,7 +27,7 @@ router.get('/rueckmeldungen', (req, res) => {
   }
   res.render('pages/feedback', {
     title: 'Rückmeldungen', ...data, filters, periods: feedback.PERIODS, teams: db.all('SELECT * FROM teams WHERE active = 1 ORDER BY sort, name'),
-    allUsers: db.all('SELECT id, display_name FROM users WHERE active = 1 ORDER BY display_name'), liveTopics: ['feedback', 'events'],
+    allUsers: db.all("SELECT id, display_name FROM users WHERE active = 1 AND role <> 'einsatzleiter' ORDER BY display_name"), liveTopics: ['feedback', 'events'],
     shiftChoices: feedback.shiftChoices(data.events.map((e) => e.id)),
   });
 });

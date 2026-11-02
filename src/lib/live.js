@@ -7,8 +7,11 @@ const { WebSocketServer } = require('ws');
 const clients = new Set();
 let pending = new Set();
 let timer = null;
+// Prüft, ob ein Benutzer ein Thema abonnieren darf (Einsatzleiter: nur freigegebene Einsätze)
+let allowTopic = () => true;
 
-function attach(server, authenticate) {
+function attach(server, authenticate, { topicFilter } = {}) {
+  if (topicFilter) allowTopic = topicFilter;
   const wss = new WebSocketServer({ noServer: true });
   server.on('upgrade', (req, socket, head) => {
     if (!req.url.startsWith('/live')) return socket.destroy();
@@ -46,8 +49,8 @@ function onMessage(ws, raw) {
   let msg;
   try { msg = JSON.parse(String(raw)); } catch { return; }
   if (msg.type === 'subscribe' && Array.isArray(msg.topics)) {
-    ws.topics = new Set(msg.topics.map(String).slice(0, 20));
-  } else if (msg.type === 'editing') {
+    ws.topics = new Set(msg.topics.map(String).slice(0, 20).filter((t) => allowTopic(ws.user, t)));
+  } else if (msg.type === 'editing' && ws.user.role !== 'einsatzleiter') {
     const before = ws.editing;
     ws.editing = typeof msg.key === 'string' ? msg.key.slice(0, 60) : null;
     if (before && before !== ws.editing) broadcastPresence(before);

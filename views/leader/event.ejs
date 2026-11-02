@@ -1,0 +1,62 @@
+<%- include('../partials/head') %>
+<%
+  const e = event;
+  const base = `/einsaetze/${e.id}`;
+  const leader = e.leader_person_id ? `${e.leader_rank ? `<span class="rank">${h.escapeHtml(e.leader_rank)}</span>` : ''}${h.escapeHtml(e.leader_first + ' ' + e.leader_last)}` : '–';
+  const sub = `<strong>${h.fmtDateWd(e.date)}</strong><span>Antreten ${h.escapeHtml(e.start_time || '–')}${e.start_place ? ' · ' + h.escapeHtml(e.start_place) : ''}</span><span>Leitung ${leader}</span>`;
+  const q = { umfang: filters.umfang !== 'angemeldet' ? filters.umfang : undefined, schicht: filters.schicht || undefined, sort: filters.sort !== 'rang' ? filters.sort : undefined };
+  const exportUrl = (format) => h.escapeHtml(h.withQuery(`${base}/teilnehmerliste`, q, { format }));
+%>
+<%- include('../partials/topbar', {
+  crumbs: [['Meine Einsätze', '/'], [e.name]], heading: e.name, badges: h.eventBadge(e.status), subline: sub, showSearch: false,
+  actions: `<a class="btn btn-primary" href="${exportUrl('pdf')}" target="_blank" rel="noopener" title="Teilnehmerliste als PDF in einem neuen Tab öffnen">Teilnehmerliste (PDF)</a><a class="btn" href="${exportUrl('xlsx')}">Excel</a><a class="btn" href="${exportUrl('csv')}">CSV</a>`,
+}) %>
+<% if (e.status === 'abgesagt') { %><div class="callout warn mb">Dieser Einsatz wurde abgesagt.</div><% } %>
+<% if (e.status === 'entwurf') { %><div class="callout mb">Dieser Einsatz ist noch ein Entwurf – Angaben können sich noch ändern.</div><% } %>
+
+<div class="grid grid-main mb">
+  <div class="card">
+    <div class="card-head"><h2>Angaben</h2></div>
+    <div class="card-body">
+      <dl class="kv left">
+        <dt>Datum</dt><dd><%= h.fmtDateLong(e.date) %></dd>
+        <dt>Antreten</dt><dd><%= e.start_time || '–' %><%= e.start_place ? ` · ${e.start_place}` : '' %></dd>
+        <dt>Abtreten</dt><dd><%= e.end_time || '–' %><%= (e.end_place || e.start_place) ? ` · ${e.end_place || e.start_place}` : '' %></dd>
+        <dt>Einsatzleitung</dt><dd><%= e.leader_last ? `${e.leader_rank || ''} ${e.leader_first} ${e.leader_last}`.trim() + (e.leader_mobile ? ` (${e.leader_mobile})` : '') : '–' %></dd>
+        <dt>Tenue</dt><dd class="pre"><%= e.tenue || '–' %></dd>
+        <dt>Beschreibung</dt><dd class="pre"><%= e.description || '–' %></dd>
+        <% for (const d of extraDefs) { %><dt><%= d.name %></dt><dd><%= (e.extra || {})[d.name] || '–' %></dd><% } %>
+      </dl>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><h2>Schichten</h2></div>
+    <div class="card-body">
+      <% for (const sh of shifts) { %>
+        <div class="occ">
+          <div class="occ-head"><span><strong><%= sh.name %></strong> · <%= h.fmtSpan(sh.starts_at, sh.ends_at) || 'Zeit offen' %><%= sh.start_place ? ` · ${sh.start_place}` : '' %></span><strong><%= sh.ist %> / <%= sh.soll ?? '–' %></strong></div>
+          <div class="bar <%= sh.tone %>"><span style="width:<%= h.pct(sh.ist, sh.soll) %>%"></span></div>
+        </div>
+      <% } %>
+      <p class="small muted mt-s">Nur lesen. Änderungen und Rückfragen bitte an die Aufgebotsstelle.</p>
+    </div>
+  </div>
+</div>
+
+<form class="filters" method="get" action="<%= base %>" data-autosubmit>
+  <select name="umfang" aria-label="Wer steht auf der Liste?">
+    <% for (const [k, s] of Object.entries(scopes)) { %><option value="<%= k %>" <%= filters.umfang === k ? 'selected' : '' %>><%= s.label %></option><% } %>
+  </select>
+  <% if (e.shifts.length > 1) { %>
+    <select name="schicht" aria-label="Schicht">
+      <option value="">Alle Schichten</option>
+      <% for (const s of e.shifts) { %><option value="<%= s.id %>" <%= filters.schicht === s.id ? 'selected' : '' %>>Nur <%= s.name %></option><% } %>
+    </select>
+  <% } %>
+  <select name="sort" aria-label="Sortierung">
+    <% for (const [k, l] of [['rang', 'Rang: hoch → tief'], ['rang_auf', 'Rang: tief → hoch']]) { %><option value="<%= k %>" <%= filters.sort === k ? 'selected' : '' %>><%= l %></option><% } %>
+  </select>
+</form>
+
+<%- include('../partials/participants-table', { personLinks: false }) %>
+<%- include('../partials/foot') %>

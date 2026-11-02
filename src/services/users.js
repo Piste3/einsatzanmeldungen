@@ -103,6 +103,8 @@ function update(id, input, actor) {
   db.run('UPDATE users SET display_name = ?, email = ?, role = ?, person_id = ?, active = ?, twofa_required = ?, twofa_remember_days = ?, ms_login = ?, password_login = ?, external_id = CASE WHEN ? THEN NULL ELSE external_id END, updated_at = ? WHERE id = ?',
     data.display_name, data.email, data.role, data.person_id, active, twofa.twofa_required, twofa.twofa_remember_days, data.ms_login, data.password_login, unlink ? 1 : 0, nowIso(), id);
   if (!active) sessions.destroyAllForUser(id);
+  // Einsatz-Freigaben gelten nur für Einsatzleiter
+  if (before.role === 'einsatzleiter' && data.role !== 'einsatzleiter') require('./leaders').clearForUser(id);
   audit.log({ entity: 'user', entityId: id, action: 'update', summary: `${actor.display_name} hat das Benutzerkonto «${before.username}» geändert`, details: audit.diff(before, { ...data, active, ...twofa }, ['display_name', 'email', 'role', 'person_id', 'active', 'twofa_required', 'twofa_remember_days', 'ms_login', 'password_login']), user: actor });
 }
 

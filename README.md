@@ -52,7 +52,7 @@ Ohne Passwort wird ein Startpasswort erzeugt, das beim ersten Login geändert we
 npm run seed
 ```
 
-legt Personen und Einsätze wie in der Anleitung an, dazu den Benutzer `lena` mit Passwort `Aufgebot2026!` (Rolle Aufgebotsstelle). Nur für Tests verwenden.
+legt Personen und Einsätze wie in der Anleitung an, dazu den Benutzer `lena` mit Passwort `Aufgebot2026!` (Rolle Aufgebotsstelle) und `marco` / `Leitung2026!` (Rolle Einsatzleiter, für die Herbstmesse freigegeben). Nur für Tests verwenden.
 
 ### Tests
 
@@ -88,6 +88,7 @@ Ohne `SMTP_HOST` werden Bestätigungsmails nicht verschickt, sondern bleiben im 
 
 - **Admin**: alles, inklusive Verwaltung und Änderungen an abgeschlossenen Einsätzen (mit Begründung)
 - **Aufgebotsstelle**: Einsätze, Anmeldungen, Anfragen, Klärungen und Personen, aber keine Verwaltung
+- **Einsatzleiter**: nur Einsätze, die die Aufgebotsstelle freigibt (Tabelle `event_leaders`), nur lesen: Angaben, Schichten, Teilnehmerliste inkl. Export. Alle anderen Seiten sind serverseitig gesperrt (`src/routes/leader.js`)
 
 Sicherheit des eigenen Logins:
 

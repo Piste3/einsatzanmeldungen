@@ -34,19 +34,28 @@ function migrate(d) {
     for (const [name, def] of cols) if (!existing.includes(name)) d.exec(`ALTER TABLE ${table} ADD COLUMN ${name} ${def}`);
   }
   // Anfragestatus «unsicher» (meldet sich noch) erlauben: SQLite kann CHECK nicht ändern -> Tabelle neu aufbauen
-  const inq = d.prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'inquiries'").get();
-  if (inq && !inq.sql.includes("'unsicher'")) {
-    d.exec('PRAGMA foreign_keys = OFF');
-    try {
-      d.exec('BEGIN');
-      d.exec(`CREATE TABLE inquiries_neu ${inq.sql.slice(inq.sql.indexOf('(')).replace("'nicht_erreicht','whatsapp')", "'nicht_erreicht','whatsapp','unsicher')")}`);
-      d.exec('INSERT INTO inquiries_neu SELECT * FROM inquiries; DROP TABLE inquiries; ALTER TABLE inquiries_neu RENAME TO inquiries; COMMIT');
-    } catch (err) {
-      d.exec('ROLLBACK');
-      throw err;
-    } finally {
-      d.exec('PRAGMA foreign_keys = ON');
-    }
+  widenCheck(d, 'inquiries', "'unsicher'", "'nicht_erreicht','whatsapp')", "'nicht_erreicht','whatsapp','unsicher')");
+  // Rolle «Einsatzleiter» erlauben
+  widenCheck(d, 'users', "'einsatzleiter'", "('admin','aufgebotsstelle')", "('admin','aufgebotsstelle','einsatzleiter')");
+}
+
+// Erlaubte Werte einer CHECK-Bedingung erweitern: Tabelle mit gleicher Spaltenfolge neu aufbauen
+function widenCheck(d, table, marker, from, to) {
+  const row = d.prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = ?").get(table);
+  if (!row || row.sql.includes(marker)) return;
+  d.exec('PRAGMA foreign_keys = OFF');
+  // Verweise anderer Tabellen (z. B. sessions -> users) beim Umbenennen nicht umschreiben
+  d.exec('PRAGMA legacy_alter_table = ON');
+  try {
+    d.exec('BEGIN');
+    d.exec(`CREATE TABLE ${table}_neu ${row.sql.slice(row.sql.indexOf('(')).replace(from, to)}`);
+    d.exec(`INSERT INTO ${table}_neu SELECT * FROM ${table}; DROP TABLE ${table}; ALTER TABLE ${table}_neu RENAME TO ${table}; COMMIT`);
+  } catch (err) {
+    d.exec('ROLLBACK');
+    throw err;
+  } finally {
+    d.exec('PRAGMA legacy_alter_table = OFF');
+    d.exec('PRAGMA foreign_keys = ON');
   }
 }
 

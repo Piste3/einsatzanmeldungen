@@ -96,13 +96,14 @@ function localsMiddleware(req, res, next) {
   res.locals.path = req.path;
   res.locals.query = req.query;
   res.locals.isAdmin = req.user?.role === 'admin';
+  res.locals.isLeader = req.user?.role === 'einsatzleiter';
   res.locals.liveTopics = [];
   res.locals.title = '';
   next();
 }
 
 function navMiddleware(req, res, next) {
-  res.locals.nav = require('../services/cockpit').navCounts();
+  res.locals.nav = req.user?.role === 'einsatzleiter' ? {} : require('../services/cockpit').navCounts();
   next();
 }
 

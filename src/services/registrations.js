@@ -91,6 +91,20 @@ function participants(eventId, { scope = 'angemeldet', shiftId = null, sort = 'r
   });
 }
 
+// Teilnehmerliste mit Auswahl aus der Adresszeile (Umfang, Schicht, Sortierung) – für Seite und Export
+function participantView(e, query, user) {
+  const shift = e.shifts.length > 1 ? e.shifts.find((s) => s.id === Number(query.schicht)) || null : null;
+  const filters = {
+    umfang: PARTICIPANT_SCOPES[query.umfang] ? query.umfang : 'angemeldet',
+    schicht: shift ? shift.id : '',
+    sort: query.sort === 'rang_auf' ? 'rang_auf' : 'rang',
+  };
+  const list = participants(e.id, { scope: filters.umfang, shiftId: shift?.id, sort: filters.sort }, user);
+  const shiftOf = (r) => (r.assigned.length ? r.assigned.map((a) => a.name).join(' + ')
+    : r.wishes.length ? `Wunsch: ${e.shifts.filter((s) => r.wishes.includes(s.id)).map((s) => s.name).join(' + ')}` : 'noch keine');
+  return { shift, filters, list, showShift: e.shifts.length > 1 && !shift, showStatus: filters.umfang !== 'bestaetigt', shiftOf };
+}
+
 // Zusammenfassung der Essenseinschränkungen für die Küche: [[Bezeichnung, Anzahl]]
 function dietSummary(list) {
   const counts = new Map();
@@ -354,5 +368,5 @@ function remove(id, user) {
 
 module.exports = {
   remove, get, listForEvent, listForPerson, unresolved, create, setStatus, bulkStatus, updateNote, assignPerson, setShifts, overlaps,
-  applyWishes, personLabel, findUnresolvedDuplicate, hydrate, participants, dietSummary, PARTICIPANT_SCOPES,
+  applyWishes, personLabel, findUnresolvedDuplicate, hydrate, participants, participantView, dietSummary, PARTICIPANT_SCOPES,
 };

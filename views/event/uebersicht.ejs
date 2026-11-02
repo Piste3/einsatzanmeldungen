@@ -77,6 +77,37 @@
         <% if (inForm && s.full) { %><div class="callout orange mt-s">Alle Schichten sind voll – Einsatz aus dem Formular nehmen?</div><% } %>
       </div>
     </div>
+    <div class="card" id="einsatzleiter">
+      <div class="card-head"><h2>Einsatzleiter-Zugriff</h2></div>
+      <div class="card-body">
+        <p class="small muted">Freigegebene Einsatzleiter sehen diesen Einsatz mit Angaben und Teilnehmerliste – nur lesen.</p>
+        <% if (leaderAccess.length) { %>
+          <ul class="plain-list mb-s">
+          <% for (const l of leaderAccess) { %>
+            <li class="row between">
+              <span><strong><%= l.display_name %></strong><% if (!l.active) { %> <%- h.badge('deaktiviert', 'gray') %><% } %><br><span class="small muted">seit <%= h.fmtDateTime(l.granted_at) %><%= l.granted_by_name ? ` · ${l.granted_by_name}` : '' %></span></span>
+              <form method="post" action="/einsaetze/<%= event.id %>/einsatzleiter/<%= l.id %>/entfernen" class="inline" data-confirm="Freigabe für <%= l.display_name %> entfernen?">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-sm btn-ghost" type="submit">Entfernen</button>
+              </form>
+            </li>
+          <% } %>
+          </ul>
+        <% } %>
+        <% if (leaderCandidates.length) { %>
+          <% const suggested = leaderCandidates.find((u) => event.leader_person_id && u.person_id === event.leader_person_id); %>
+          <form method="post" action="/einsaetze/<%= event.id %>/einsatzleiter" class="row">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <select name="user_id" aria-label="Einsatzleiter wählen" required>
+              <% if (!suggested) { %><option value="">Einsatzleiter wählen …</option><% } %>
+              <% for (const u of leaderCandidates) { %><option value="<%= u.id %>" <%= suggested && suggested.id === u.id ? 'selected' : '' %>><%= u.display_name %></option><% } %>
+            </select>
+            <button class="btn btn-sm" type="submit">Freigeben</button>
+          </form>
+        <% } else if (!leaderAccess.length) { %>
+          <p class="small muted">Es gibt noch kein Konto mit der Rolle «Einsatzleiter». <%= isAdmin ? 'Unter Einstellungen › Benutzer anlegen.' : 'Ein Admin legt es unter Einstellungen › Benutzer an.' %></p>
+        <% } %>
+      </div>
+    </div>
     <div class="card">
       <div class="card-head"><h2>Checkliste</h2></div>
       <div class="card-body">

@@ -209,3 +209,71 @@ test('Teilnehmerliste: nach Rang, mit Mobil und Essenseinschränkungen, als Seit
   assert.match(body, /%%EOF\n$/);
   assert.ok(db.one("SELECT 1 FROM audit_log WHERE event_id = ? AND action = 'export'", ev), 'Export steht im Verlauf');
 });
+
+test('Einsatzleiter: sieht nur freigegebene Einsätze, nur lesen', async () => {
+  const db = require('../src/db');
+  const { system } = require('./helpers');
+  const persons = require('../src/services/persons');
+  const events = require('../src/services/events');
+  const registrations = require('../src/services/registrations');
+  const { today, addDays } = require('../src/lib/dates');
+  const pia = persons.create({ first_name: 'Pia', last_name: 'Planer', status: 'aktiv', mobile: '079 555 44 33', diet_category: 'vegan' }, system);
+  const ev = events.create({ name: 'Basler Herbstlauf', date: addDays(today(), 4), start_time: '08:00', end_time: '12:00', internal_note: 'Nur intern: Budget 500' }, system);
+  const other = events.create({ name: 'Geheimer Anlass', date: addDays(today(), 6), start_time: '08:00', end_time: '12:00' }, system);
+  registrations.create({ eventId: ev, personId: pia, matchType: 'auto', source: 'manuell', wishes: [], user: system });
+
+  const { id: leaderId } = await users.create({ username: 'leiter', display_name: 'Leo Leiter', role: 'einsatzleiter', password: 'Kommando-Lauf-2026', must_change_password: false }, null);
+  await users.create({ username: 'auf2', display_name: 'Aufgebot Zwei', role: 'aufgebotsstelle', password: 'Aufgebot-2026-z', must_change_password: false }, null);
+  const leo = await login('leiter', 'Kommando-Lauf-2026');
+  const auf = await login('auf2', 'Aufgebot-2026-z');
+
+  // vor der Freigabe: nichts zu sehen
+  const home = await (await get('/', leo.cookie)).text();
+  assert.match(home, /Meine Einsätze/);
+  assert.doesNotMatch(home, /Basler Herbstlauf/);
+  assert.doesNotMatch(home, /href="\/personen"/, 'kein Menü für Personen');
+  assert.equal((await get(`/einsaetze/${ev}`, leo.cookie)).status, 403);
+  for (const p of ['/einsaetze', '/personen', '/rueckmeldungen', '/klaerungen', '/suche?q=pia', `/einsaetze/${ev}/anmeldungen`, `/einsaetze/${ev}/teilnehmerliste?format=csv`, '/verwaltung']) {
+    assert.equal((await get(p, leo.cookie)).status, 403, p);
+  }
+  assert.equal((await get('/handbuch', leo.cookie)).status, 200);
+  assert.equal((await get('/konto/passwort', leo.cookie)).status, 200);
+
+  // Aufgebotsstelle gibt frei
+  const page = await (await get(`/einsaetze/${ev}`, auf.cookie)).text();
+  assert.match(page, /Einsatzleiter-Zugriff/);
+  assert.match(page, new RegExp(`<option value="${leaderId}"[^>]*>Leo Leiter`));
+  const csrf = page.match(/name="_csrf" value="([^"]+)"/)[1];
+  const post = (path, cookie, token, body = {}) => fetch(`${base}${path}`, {
+    method: 'POST', redirect: 'manual', headers: { cookie, 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ _csrf: token, ...body }),
+  });
+  assert.equal((await post(`/einsaetze/${ev}/einsatzleiter`, auf.cookie, csrf, { user_id: String(leaderId) })).status, 302);
+  assert.ok(db.one('SELECT 1 FROM event_leaders WHERE event_id = ? AND user_id = ?', ev, leaderId));
+  assert.ok(db.one("SELECT 1 FROM audit_log WHERE event_id = ? AND action = 'leader_grant'", ev), 'Freigabe steht im Verlauf');
+
+  // nach der Freigabe: Einsatz mit Angaben und Teilnehmern, aber ohne interne Bemerkung und ohne Bearbeiten
+  assert.match(await (await get('/', leo.cookie)).text(), /Basler Herbstlauf/);
+  const view = await (await get(`/einsaetze/${ev}`, leo.cookie)).text();
+  assert.match(view, /Pia Planer/);
+  assert.match(view, /079 555 44 33/);
+  assert.match(view, /vegan/, 'Essenseinschränkung beim anstehenden freigegebenen Einsatz sichtbar');
+  assert.doesNotMatch(view, /Budget 500/, 'keine interne Bemerkung');
+  assert.doesNotMatch(view, /\/bearbeiten|\/personen\//, 'keine Links zum Bearbeiten oder zu Personen');
+  const csv = await get(`/einsaetze/${ev}/teilnehmerliste?format=csv`, leo.cookie);
+  assert.equal(csv.status, 200);
+  assert.match(await csv.text(), /Planer;Pia;079 555 44 33;vegan/);
+  assert.equal((await get(`/einsaetze/${ev}/teilnehmerliste?format=pdf`, leo.cookie)).headers.get('content-type'), 'application/pdf');
+  assert.equal((await get(`/einsaetze/${ev}/teilnehmerliste`, leo.cookie)).headers.get('location'), `/einsaetze/${ev}`);
+  assert.equal((await get(`/einsaetze/${other}`, leo.cookie)).status, 403, 'andere Einsätze bleiben gesperrt');
+  assert.equal((await get(`/einsaetze/${ev}/schichten`, leo.cookie)).status, 403);
+
+  // Einsatzleiter darf nichts ändern
+  const leoCsrf = view.match(/name="_csrf" value="([^"]+)"/)[1];
+  assert.equal((await post(`/einsaetze/${ev}/status`, leo.cookie, leoCsrf, { status: 'abgesagt' })).status, 403);
+  assert.equal((await post(`/einsaetze/${ev}/einsatzleiter`, leo.cookie, leoCsrf, { user_id: String(leaderId) })).status, 403);
+  assert.equal(db.one('SELECT status FROM events WHERE id = ?', ev).status, 'entwurf');
+
+  // Freigabe entfernen
+  assert.equal((await post(`/einsaetze/${ev}/einsatzleiter/${leaderId}/entfernen`, auf.cookie, csrf)).status, 302);
+  assert.equal((await get(`/einsaetze/${ev}`, leo.cookie)).status, 403);
+});

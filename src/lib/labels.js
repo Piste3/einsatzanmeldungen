@@ -84,7 +84,7 @@ const DIET = {
   andere: 'andere',
 };
 
-const ROLES = { admin: 'Admin', aufgebotsstelle: 'Aufgebotsstelle' };
+const ROLES = { admin: 'Admin', aufgebotsstelle: 'Aufgebotsstelle', einsatzleiter: 'Einsatzleiter' };
 
 const SUBMISSION_STATUS = {
   neu: { label: 'Neu', tone: 'blue' },

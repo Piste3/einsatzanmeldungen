@@ -8,6 +8,7 @@ const inquiries = require('../services/inquiries');
 const calendar = require('../services/calendar');
 const audit = require('../services/audit');
 const persons = require('../services/persons');
+const leaders = require('../services/leaders');
 const { sendTable, wantsExport, contentDisposition } = require('../lib/export');
 const { flash } = require('../lib/view-helpers');
 const h = require('../lib/view-helpers');
@@ -145,7 +146,21 @@ router.get('/einsaetze/:id', loadEvent, (req, res) => {
   res.render('pages/event', {
     title: e.name, tab: 'uebersicht', stats: events.stats(e), checklist: events.checklist(e), inForm: events.isInForm(e),
     lastEnd: events.lastEnd(e), activity: audit.forEvent(e.id, 8), extraDefs: events.extraDefs(),
+    leaderAccess: leaders.forEvent(e.id), leaderCandidates: leaders.candidates(e.id),
   });
+});
+
+// Einsatzleiter für diesen Einsatz freigeben / Freigabe entfernen (Aufgebotsstelle und Admin)
+router.post('/einsaetze/:id/einsatzleiter', loadEvent, (req, res) => {
+  const added = leaders.grant(req.event.id, req.body.user_id, req.user);
+  flash(res, 'success', added ? 'Freigegeben. Der Einsatzleiter sieht den Einsatz jetzt unter «Meine Einsätze».' : 'War bereits freigegeben.');
+  res.redirect(`/einsaetze/${req.event.id}`);
+});
+
+router.post('/einsaetze/:id/einsatzleiter/:uid/entfernen', loadEvent, (req, res) => {
+  leaders.revoke(req.event.id, Number(req.params.uid), req.user);
+  flash(res, 'success', 'Freigabe entfernt.');
+  res.redirect(`/einsaetze/${req.event.id}`);
 });
 
 // Reiter «Anmeldungen»
@@ -191,17 +206,7 @@ router.get('/einsaetze/:id/anmeldungen', loadEvent, (req, res) => {
 // Teilnehmerliste: wer kommt, mit Mobil und Essenseinschränkungen – zum Drucken (PDF), als Excel oder CSV
 router.get('/einsaetze/:id/teilnehmerliste', loadEvent, (req, res) => {
   const e = req.event;
-  const shift = e.shifts.length > 1 ? e.shifts.find((s) => s.id === Number(req.query.schicht)) || null : null;
-  const filters = {
-    umfang: registrations.PARTICIPANT_SCOPES[req.query.umfang] ? req.query.umfang : 'angemeldet',
-    schicht: shift ? shift.id : '',
-    sort: req.query.sort === 'rang_auf' ? 'rang_auf' : 'rang',
-  };
-  const list = registrations.participants(e.id, { scope: filters.umfang, shiftId: shift?.id, sort: filters.sort }, req.user);
-  const showShift = e.shifts.length > 1 && !shift;
-  const showStatus = filters.umfang !== 'bestaetigt';
-  const shiftOf = (r) => (r.assigned.length ? r.assigned.map((a) => a.name).join(' + ')
-    : r.wishes.length ? `Wunsch: ${e.shifts.filter((s) => r.wishes.includes(s.id)).map((s) => s.name).join(' + ')}` : 'noch keine');
+  const { shift, filters, list, showShift, showStatus, shiftOf } = registrations.participantView(e, req.query, req.user);
   const format = req.query.format === 'pdf' ? 'pdf' : wantsExport(req);
   if (format) {
     audit.log({
@@ -281,7 +286,7 @@ router.get('/einsaetze/:id/anfragen', loadEvent, (req, res) => {
       { label: 'Kontaktversuche', value: (r) => r.attempts.map((a) => `${inquiries.attemptLabel(a)} ${a.sent_by_name}${a.note ? ` (${a.note})` : ''}`).join('\n') },
     ], list);
   }
-  const allUsers = db.all('SELECT id, display_name FROM users WHERE active = 1 ORDER BY display_name');
+  const allUsers = db.all("SELECT id, display_name FROM users WHERE active = 1 AND role <> 'einsatzleiter' ORDER BY display_name");
   res.render('pages/event', { title: `${e.name} · Anfragen`, tab: 'anfragen', list, filters, allUsers, shiftChoices: require('../services/feedback').shiftChoices([e.id]), teams: db.all('SELECT * FROM teams WHERE active = 1 ORDER BY sort, name') });
 });
 

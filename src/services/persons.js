@@ -156,13 +156,16 @@ function removeAlias(aliasId, user) {
 }
 
 // Sensible Angaben (Essenseinschränkungen): vollständig nur für Admins,
-// für die Aufgebotsstelle nur bei Personen, die bei einem anstehenden Einsatz angemeldet sind.
+// für die Aufgebotsstelle nur bei Personen, die bei einem anstehenden Einsatz angemeldet sind,
+// für Einsatzleiter nur bei einem anstehenden Einsatz, der für sie freigegeben ist.
 function canSeeDiet(user, personId) {
   if (user?.role === 'admin') return true;
+  const leader = user?.role === 'einsatzleiter';
   return Boolean(db.one(
     `SELECT 1 FROM registrations r JOIN events e ON e.id = r.event_id
-     WHERE r.person_id = ? AND r.status IN ('neu','rueckfrage','warteliste','bestaetigt') AND e.date >= ? AND e.status IN ('entwurf','veroeffentlicht') LIMIT 1`,
-    personId, today(),
+     WHERE r.person_id = ? AND r.status IN ('neu','rueckfrage','warteliste','bestaetigt') AND e.date >= ? AND e.status IN ('entwurf','veroeffentlicht')
+     ${leader ? 'AND EXISTS (SELECT 1 FROM event_leaders l WHERE l.event_id = e.id AND l.user_id = ?)' : ''} LIMIT 1`,
+    personId, today(), ...(leader ? [user.id] : []),
   ));
 }
 

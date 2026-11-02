@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS users (
   username TEXT NOT NULL UNIQUE COLLATE NOCASE,
   display_name TEXT NOT NULL,
   email TEXT,
-  role TEXT NOT NULL CHECK (role IN ('admin','aufgebotsstelle')),
+  role TEXT NOT NULL CHECK (role IN ('admin','aufgebotsstelle','einsatzleiter')),
   person_id INTEGER REFERENCES persons(id),
   password_hash TEXT,          -- NULL bei reinen SSO-Konten
   auth_provider TEXT NOT NULL DEFAULT 'local',
@@ -161,6 +161,16 @@ CREATE TABLE IF NOT EXISTS events (
   updated_by INTEGER
 );
 CREATE INDEX IF NOT EXISTS idx_events_date ON events(date);
+
+-- Freigabe einzelner Einsätze für Konten mit der Rolle «Einsatzleiter» (nur lesen: Angaben + Teilnehmer)
+CREATE TABLE IF NOT EXISTS event_leaders (
+  event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  granted_at TEXT NOT NULL,
+  granted_by INTEGER,
+  PRIMARY KEY (event_id, user_id)
+);
+CREATE INDEX IF NOT EXISTS idx_event_leaders_user ON event_leaders(user_id);
 
 CREATE TABLE IF NOT EXISTS shifts (
   id INTEGER PRIMARY KEY,

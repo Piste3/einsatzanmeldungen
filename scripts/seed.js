@@ -104,6 +104,12 @@ const { today, addDays } = require('../src/lib/dates');
     const r = submissions.receive({ submission_uid: f.uid, first_name: 'Christian', last_name: 'Meier', event_ids: [String(stadtlauf)], [`answer_${stadtlauf}`]: 'ja' }, { ip: '127.0.0.1' });
     submissions.processSubmission(r.submission.id);
   }
+  // Einsatzleiter «marco» (verknüpft mit Marco Rüegg), für die Herbstmesse freigegeben
+  if (!db.one("SELECT 1 FROM users WHERE username = 'marco'")) {
+    const { id: marco } = await users.create({ username: 'marco', display_name: 'Marco Rüegg', role: 'einsatzleiter', person_id: ids['Marco Rüegg'], password: 'Leitung2026!', must_change_password: false }, null);
+    require('../src/services/leaders').grant(messe, marco, lena);
+    console.log('Benutzer «marco» / Passwort «Leitung2026!» (Einsatzleiter, Herbstmesse freigegeben) angelegt.');
+  }
   console.log('Beispieldaten angelegt.');
   db.close();
 })();

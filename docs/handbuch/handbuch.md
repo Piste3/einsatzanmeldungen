@@ -1,6 +1,6 @@
 # KKB-Einsatzplaner – Handbuch
 
-Anleitung für die Aufgebotsstelle und die Admins des Kadetten-Korps Basel. Das Handbuch gehört zur installierten Version: Mit jedem Update kommt automatisch der passende Stand mit.
+Anleitung für die Aufgebotsstelle, die Admins und die Einsatzleiter des Kadetten-Korps Basel. Das Handbuch gehört zur installierten Version: Mit jedem Update kommt automatisch der passende Stand mit.
 
 > **Zu den Bildern:** Alle Namen, Zahlen und Telefonnummern in den Bildern sind frei erfunden.
 
@@ -56,6 +56,7 @@ Nach 5 falschen Versuchen (Passwort oder Code) ist das Konto für 15 Minuten ges
 |---|---|
 | Aufgebotsstelle | Einsätze und Schichten anlegen und veröffentlichen, Anmeldungen prüfen, zuordnen und bestätigen, Anfragen erfassen, Schichten besetzen, Kalendertermine exportieren, drucken und exportieren, Personen pflegen |
 | Admin | Alles, was die Aufgebotsstelle kann, und zusätzlich: Benutzer verwalten, Auswahllisten, Vorlagen, Bestätigungsmail und Einstellungen, Formular-Eingänge, Update und Neustart, Änderungen an abgeschlossenen Einsätzen (mit Begründung) |
+| Einsatzleiter | Sieht nur die Einsätze, die die Aufgebotsstelle für ihn freigegeben hat: Angaben, Schichten und Teilnehmerliste (mit Mobil und Essenseinschränkungen), als PDF, Excel oder CSV. Nur lesen – ändern kann er nichts (siehe «Für Einsatzleiter» unten) |
 | Mitglieder | Haben kein Konto. Sie melden sich nur über das Anmeldeformular auf ClubDesk an |
 
 ### Aufbau der Oberfläche
@@ -93,6 +94,23 @@ Links steht die Navigation, rechts der Inhalt.
 - Das **Symbol daneben** wechselt die Darstellung: «wie System» (Bildschirm), «Hell» (Sonne) oder «Dunkel» (Mond). Die Wahl gilt pro Benutzer auf allen Geräten.
 
 ![Der Einsatzplaner im dunklen Design](bilder/31-dunkel.jpg)
+
+### Für Einsatzleiter
+
+Einsatzleiter melden sich gleich an wie alle anderen. Statt des Cockpits sehen sie **Meine Einsätze**: alle Einsätze, die die Aufgebotsstelle für sie freigegeben hat, anstehende oben, vergangene darunter.
+
+![Meine Einsätze (Einsatzleiter)](bilder/38-meine-einsaetze.jpg)
+
+Ein Klick auf den Einsatz zeigt:
+
+- **Angaben:** Datum, Antreten und Abtreten, Einsatzleitung, Tenue, Beschreibung.
+- **Schichten** mit Zeiten und Besetzung (Ist / Soll).
+- **Teilnehmer** mit Rang, Mobilnummer, Essenseinschränkungen, Schicht und Status, der höchste Rang zuerst. Auswahl wie bei der Teilnehmerliste: «Angemeldete», «Nur bestätigte» oder «Angemeldete + Warteliste», einzelne Schicht, Sortierung.
+- Oben **Teilnehmerliste (PDF)**, **Excel** und **CSV** – genau mit der gewählten Auswahl.
+
+![Einsatz aus Sicht des Einsatzleiters](bilder/39-einsatzleiter-einsatz.jpg)
+
+Einsatzleiter können nichts ändern und sehen keine anderen Einsätze, keine Personenliste, keine Rückmeldungen, Anfragen oder internen Bemerkungen. Änderungen und Rückfragen gehen an die Aufgebotsstelle. Die Essenseinschränkungen sind wie bei der Aufgebotsstelle nur bis zum Einsatz sichtbar, danach steht «Hinweis vorhanden». Jedes PDF und jeder Download steht im Verlauf des Einsatzes.
 
 ## 4 · Das Cockpit
 
@@ -138,6 +156,7 @@ Die Liste zeigt alle Einsätze mit Datum, Antreten, Status, Besetzung und Einsat
 - **Status:** Entwurf → Veröffentlicht → Abgeschlossen, oder jederzeit Abgesagt. Nach dem Abschluss sind die Daten schreibgeschützt; Änderungen sind dann nur noch durch einen Admin mit Begründung möglich. Bei einer Absage bleiben alle Daten erhalten.
 - **Im Formular anzeigen:** schaltet den Einsatz im Anmeldeformular ein oder aus, z. B. wenn er voll ist.
 - **Checkliste:** zeigt, welche Angaben noch fehlen.
+- **Einsatzleiter-Zugriff:** gibt den Einsatz für einen Einsatzleiter frei (siehe «Einsatzleiter freigeben» unten).
 - Oben gibt es **Kalendertermin**, **Drucken** bzw. **Export**, **Teilnehmerliste** und **Bearbeiten**.
 
 ### Reiter «Formular»
@@ -169,6 +188,18 @@ Die Teilnehmerliste zeigt auf einen Blick, wer kommt – mit **Rang, Name, Mobil
 ![Einsatz › Teilnehmerliste als PDF](bilder/35-teilnehmerliste.jpg)
 
 > **Sensible Angaben:** Die Essenseinschränkungen stehen für alle angemeldeten Personen drin, solange der Einsatz bevorsteht. Nach dem Einsatz zeigt die Liste der Aufgebotsstelle nur noch «Hinweis vorhanden»; die genaue Angabe sieht dann nur noch ein Admin.
+
+### Einsatzleiter freigeben
+
+Damit ein Einsatzleiter seinen Einsatz mit allen Angaben und Teilnehmern selbst ansehen kann, gibt die Aufgebotsstelle den Einsatz für ihn frei. Er braucht dafür ein Benutzerkonto mit der Rolle **Einsatzleiter** (legt ein Admin unter Einstellungen › Benutzer an).
+
+![Einsatz › Übersicht › Einsatzleiter-Zugriff](bilder/37-einsatzleiter-freigeben.jpg)
+
+1. Den Einsatz öffnen, Reiter **Übersicht**.
+2. Rechts in der Karte **Einsatzleiter-Zugriff** den Einsatzleiter wählen und **Freigeben** klicken. Ist bei «Einsatzleitung» eine Person eingetragen, die ein Einsatzleiter-Konto hat, ist sie schon vorausgewählt.
+3. Der Einsatz erscheint sofort unter «Meine Einsätze» des Einsatzleiters.
+
+Ein Einsatz kann für mehrere Einsatzleiter freigegeben sein. **Entfernen** nimmt die Freigabe wieder weg. Freigeben und Entfernen stehen im Verlauf des Einsatzes. Die Freigabe bleibt bestehen, bis sie jemand entfernt – auch nach dem Einsatz; die Essenseinschränkungen sind dann aber nicht mehr sichtbar.
 
 ## 6 · So melden sich die Mitglieder an
 
@@ -448,7 +479,7 @@ Unter **Einstellungen** sorgt der Admin dafür, dass die Grundlagen stimmen.
 
 ![Einstellungen › Benutzer](bilder/22-benutzer.jpg)
 
-Konten anlegen, Rolle wählen (Admin oder Aufgebotsstelle) und mit einer Person aus den Stammdaten verknüpfen – daraus kommen Rang und Name als «Absender» im Aufgebot. Die Liste zeigt auch, wer die Zwei-Faktor-Anmeldung eingerichtet hat.
+Konten anlegen, Rolle wählen (Admin, Aufgebotsstelle oder Einsatzleiter) und mit einer Person aus den Stammdaten verknüpfen – daraus kommen Rang und Name als «Absender» im Aufgebot. Die Liste zeigt auch, wer die Zwei-Faktor-Anmeldung eingerichtet hat.
 
 ![Benutzer bearbeiten mit Zwei-Faktor-Einstellungen](bilder/23-benutzer-bearbeiten.jpg)
 
@@ -460,6 +491,7 @@ Konten anlegen, Rolle wählen (Admin oder Aufgebotsstelle) und mit einer Person 
 - **Microsoft-Anmeldung** (nur sichtbar, wenn sie auf dem Server eingerichtet ist, mehr in Kapitel 16): E-Mail-Adresse des Microsoft-Kontos eintragen und «Mit dem Microsoft-Konto dieser E-Mail-Adresse anmelden erlaubt» ankreuzen. Beim ersten Login wird das Konto fest mit diesem Microsoft-Konto verknüpft. Häkchen entfernen oder E-Mail ändern löst die Verknüpfung.
   - **Mit Benutzername und Passwort anmelden erlaubt:** Ausschalten heisst, dass die Person nur noch mit Microsoft hineinkommt. Mindestens eine Anmeldeart muss erlaubt bleiben. Das eigene Passwort-Login lässt sich erst abschalten, wenn man sich einmal erfolgreich mit Microsoft angemeldet hat.
   - **Notausgang:** Wird die Microsoft-Anmeldung auf dem Server ausgeschaltet (`AUTH_PROVIDERS=local` in der `.env`), gilt das Passwort wieder für alle.
+- **Rolle Einsatzleiter:** Das Konto sieht nur Einsätze, die die Aufgebotsstelle freigibt (Kapitel 5, «Einsatzleiter freigeben»). Verknüpft man das Konto mit der Person aus den Stammdaten, wird es bei Einsätzen mit dieser Einsatzleitung zum Freigeben vorgeschlagen. Wechselt das Konto später in eine andere Rolle, verfallen seine Freigaben.
 - **Konto aktiv** ausschalten sperrt den Zugang, ohne Daten zu löschen.
 - **Benutzerkonto löschen** entfernt das Konto endgültig. Was die Person erfasst hat (Anmeldungen, Kontaktversuche, Verlauf), bleibt mit ihrem Namen erhalten, ebenso die verknüpfte Person in den Stammdaten. Das eigene Konto und den letzten aktiven Admin kann man nicht löschen.
 
@@ -636,6 +668,9 @@ Ja. Jede Liste lässt sich drucken und als Excel- oder CSV-Datei exportieren, ge
 
 **Wie bekomme ich eine Liste aller Teilnehmenden mit Telefon und Essenswünschen?**
 Im Einsatz oben auf **Teilnehmerliste** klicken – sie öffnet sich als PDF in einem neuen Tab. Excel, CSV und weitere Auswahl gibt es über den Pfeil daneben.
+
+**Kann der Einsatzleiter selbst sehen, wer kommt?**
+Ja. Er braucht ein Konto mit der Rolle «Einsatzleiter», und die Aufgebotsstelle gibt ihm den Einsatz in der Übersicht unter «Einsatzleiter-Zugriff» frei. Dann sieht er Angaben und Teilnehmerliste – nur lesen.
 
 **Funktioniert der Einsatzplaner auf dem Handy?**
 Ja. Er ist für den Computer gemacht, lässt sich aber auch auf Tablet und Handy bedienen – etwa um unterwegs einen Anruf zu erfassen.

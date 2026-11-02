@@ -14,7 +14,7 @@
   <header class="mobile-bar">
     <button class="mobile-menu" type="button" data-nav-toggle aria-label="Menü öffnen" aria-expanded="false"><%- h.icon('menu') %><% if (nav.klaerungen) { %><span class="dot"></span><% } %></button>
     <a class="mobile-brand" href="/"><span class="logo">KKB</span><span>Einsatzplaner</span></a>
-    <a class="mobile-menu" href="/suche" aria-label="Suchen"><%- h.icon('search') %></a>
+    <% if (!isLeader) { %><a class="mobile-menu" href="/suche" aria-label="Suchen"><%- h.icon('search') %></a><% } %>
   </header>
   <div class="nav-backdrop" data-nav-toggle></div>
   <aside class="sidebar" id="sidebar">
@@ -23,7 +23,9 @@
       <span><span class="brand-title">Einsatzplaner</span><br><span class="brand-sub">Kadetten-Korps Basel</span></span>
     </a>
     <%
-      const navItems = [
+      const navItems = isLeader ? [
+        ['/', 'Meine Einsätze', p => p === '/' || p.startsWith('/einsaetze'), 0, 'calendar'],
+      ] : [
         ['/', 'Cockpit', p => p === '/', 0, 'cockpit'],
         ['/einsaetze', 'Einsätze', p => p.startsWith('/einsaetze'), 0, 'calendar'],
         ['/rueckmeldungen', 'Rückmeldungen', p => p.startsWith('/rueckmeldungen'), 0, 'inbox'],
@@ -39,7 +41,7 @@
       <% if (isAdmin) { %>
         <a href="/formulare" class="<%= path.startsWith('/formulare') ? 'active' : '' %>"><%- h.icon('forms', 'nav-icon') %>Formulare<% if (nav.formErrors) { %><span class="count red"><%= nav.formErrors %></span><% } %></a>
         <a href="/verwaltung" class="<%= path.startsWith('/verwaltung') ? 'active' : '' %>"><%- h.icon('settings', 'nav-icon') %>Einstellungen</a>
-      <% } else { %>
+      <% } else if (!isLeader) { %>
         <a href="/forms/anmeldung?vorschau=1" target="_blank" rel="noopener"><%- h.icon('eye', 'nav-icon') %>Formular-Vorschau</a>
       <% } %>
       <a href="/handbuch" class="<%= path.startsWith('/handbuch') ? 'active' : '' %>"><%- h.icon('book', 'nav-icon') %>Handbuch</a>

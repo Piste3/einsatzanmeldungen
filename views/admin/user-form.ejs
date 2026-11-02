@@ -11,7 +11,7 @@
       </div>
       <div class="fields fields-2">
         <div class="field"><label for="role">Rolle</label><select id="role" name="role"><% for (const [k, v] of Object.entries(h.labels.ROLES)) { %><option value="<%= k %>" <%= u.role === k ? 'selected' : '' %>><%= v %></option><% } %></select>
-          <div class="field-hint">Admin: Stammdaten, Benutzer, Einstellungen und alles der Aufgebotsstelle</div></div>
+          <div class="field-hint">Admin: Stammdaten, Benutzer, Einstellungen und alles der Aufgebotsstelle. Einsatzleiter: sieht nur Einsätze, die die Aufgebotsstelle freigibt (Angaben und Teilnehmer, nur lesen).</div></div>
         <div class="field"><label for="email">E-Mail</label><input id="email" type="email" name="email" value="<%= u.email || '' %>"><div class="field-hint">bei Microsoft-Anmeldung: die Adresse des Microsoft-Kontos</div></div>
       </div>
       <div class="field"><label for="person_id">Verknüpfte Person (Stammdaten)</label>
