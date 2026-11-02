@@ -288,6 +288,7 @@ CREATE TABLE IF NOT EXISTS mail_outbox (
   to_address TEXT NOT NULL,
   subject TEXT NOT NULL,
   body TEXT NOT NULL,
+  body_html TEXT,
   status TEXT NOT NULL DEFAULT 'offen' CHECK (status IN ('offen','gesendet','fehler','nicht_konfiguriert')),
   error TEXT,
   registration_id INTEGER,

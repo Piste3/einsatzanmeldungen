@@ -1,0 +1,5 @@
+<%# Formatierter Text (HTML) mit Editor. Parameter: id, name, formatName, value (HTML), rows %>
+<div class="rte" data-rte>
+  <textarea id="<%= id %>" name="<%= name %>" rows="<%= rows || 16 %>" data-rte-source data-token-target spellcheck="false"><%= value %></textarea>
+  <input type="hidden" name="<%= formatName %>" value="html">
+</div>

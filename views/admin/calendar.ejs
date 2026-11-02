@@ -13,7 +13,8 @@
           <div class="field"><label for="location">Ort</label><input id="location" type="text" name="location" value="<%= tpl.location %>" data-token-target></div>
           <div class="field"><label>Termin von – bis</label><input type="text" value="Antreten (Beginn) bis Abtreten (Ende)" disabled></div>
         </div>
-        <div class="field"><label for="description">Beschreibung</label><textarea id="description" name="description" rows="22" data-token-target><%= tpl.description %></textarea></div>
+        <div class="field"><label for="description">Beschreibung</label>
+          <%- include('../partials/rich-editor', { id: 'description', name: 'description', formatName: 'description_format', value: h.editorHtml(tpl.description, tpl.format), rows: 22 }) %></div>
         <div class="row">
           <label class="check"><input type="checkbox" name="omit_empty_lines" value="1" <%= tpl.omit_empty_lines ? 'checked' : '' %>> Zeilen mit leerem Baustein weglassen</label>
           <label class="check"><input type="checkbox" name="attendees" value="1" <%= tpl.attendees ? 'checked' : '' %>> Angemeldete als Kalender-Teilnehmende eintragen</label>
@@ -21,6 +22,14 @@
             <select name="reminder_minutes" style="width:auto">
               <% for (const [v, l] of [[0, 'keine'], [60, '1 Stunde vorher'], [180, '3 Stunden vorher'], [1440, '1 Tag vorher'], [2880, '2 Tage vorher'], [10080, '1 Woche vorher']]) { %><option value="<%= v %>" <%= Number(tpl.reminder_minutes) === v ? 'selected' : '' %>><%= l %></option><% } %>
             </select></label>
+        </div>
+        <div class="field mt">
+          <label for="html_mode">Formatierung im Kalender</label>
+          <select id="html_mode" name="html_mode" style="width:auto;max-width:100%">
+            <option value="alt" <%= tpl.html_mode !== 'description' ? 'selected' : '' %>>Normal: Klartext + formatierte Fassung (Outlook zeigt die Formatierung)</option>
+            <option value="description" <%= tpl.html_mode === 'description' ? 'selected' : '' %>>HTML direkt in der Beschreibung (z. B. Google Kalender, ClubDesk)</option>
+          </select>
+          <div class="field-hint">Nicht jeder Kalender zeigt Formatierungen an. Apple Kalender zeigt immer den Klartext. Falls nach dem Import HTML-Zeichen wie &lt;div&gt; erscheinen, «Normal» wählen.</div>
         </div>
       </div>
     </div>
@@ -32,7 +41,7 @@
           <div class="title"><%= preview.summary %></div>
           <div class="meta"><%= preview.start ? h.fmtDateLong(preview.start.slice(0, 10)) + ' · ' + preview.start.slice(11, 16) + '–' + (preview.end || '').slice(11, 16) : '' %><br><%= preview.location %><br><%= tpl.reminder_minutes ? 'Erinnerung aktiv' : '' %></div>
           <div class="grid grid-main">
-            <div class="desc"><%= preview.description %></div>
+            <div class="desc rich"><% if (preview.descriptionHtml) { %><%- preview.descriptionHtml %><% } else { %><div style="white-space:pre-wrap"><%= preview.description %></div><% } %></div>
             <div class="small"><strong class="muted">TEILNEHMENDE · <%= preview.people.length %></strong>
               <% for (const p of preview.people) { %><div class="row mt-s"><span class="avatar"><%= h.initials(`${p.first_name} ${p.last_name}`) %></span><%= p.rank_short || '' %> <%= p.first_name %> <%= p.last_name %><%= p.email ? '' : ' (keine E-Mail)' %></div><% } %>
               <% if (!preview.people.length) { %><p class="muted">Noch keine bestätigten Anmeldungen.</p><% } %>

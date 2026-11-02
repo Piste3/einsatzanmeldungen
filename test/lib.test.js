@@ -6,6 +6,7 @@ const { writeXlsx, readXlsx } = require('../src/lib/xlsx');
 const { writeCsv, readCsv } = require('../src/lib/csv');
 const { buildCalendar, fold } = require('../src/lib/ics');
 const { render } = require('../src/lib/template');
+const html = require('../src/lib/html');
 const passwords = require('../src/auth/passwords');
 
 test('Namen werden robust normalisiert', () => {
@@ -38,7 +39,7 @@ test('ICS: gültiger Kalender mit Zeitzone, Zeilenumbruch und Escaping', () => {
   assert.match(ics, /BEGIN:VTIMEZONE/);
   assert.match(ics, /DTSTART;TZID=Europe\/Zurich:20261103T133000/);
   assert.match(ics, /SEQUENCE:2/);
-  assert.match(ics, /SUMMARY:Messe\\, Basel\; Tag/);
+  assert.match(ics, /SUMMARY:Messe\\, Basel\\; Tag/);
   assert.match(ics, /Zeile 1\\nZeile 2/);
   assert.ok(ics.split('\r\n').every((l) => Buffer.byteLength(l) <= 75));
   assert.ok(fold('x'.repeat(200)).split('\r\n').length > 1);
@@ -77,4 +78,29 @@ test('PDF: Umlaute, Seitenumbruch und gültige Querverweise', () => {
   const content = zlib.inflateSync(buf.subarray(first, first + len)).toString('latin1');
   assert.match(content, /\(Person \\\(0\\\)\) Tj/);
   assert.match(content, /\(Teilnehmerliste \\267 Zolli\) Tj/);
+});
+
+test('Formatierte Vorlage: Bausteine, leere Zeilen, Tabellenzeilen und Klartext', () => {
+  const tpl = '<div>Hallo <b>{{person.vorname}}</b></div><div><br></div><div>Tenue: <span style="color: red">{{einsatz.tenue}}</span></div>'
+    + '<table><tbody><tr><td>Antreten</td><td>{{antreten.zeit}}</td></tr><tr><td>Schicht</td><td>{{schicht.name}}</td></tr></tbody></table>'
+    + '<div>Teilnehmende:<br>{{liste}}</div>';
+  const r = html.renderTemplate(tpl, { 'person.vorname': 'Anna <x>', 'einsatz.tenue': '', 'antreten.zeit': '08:00', 'schicht.name': '', liste: 'Hptm A\nLt B' }, { omitEmptyLines: true });
+  assert.match(r.html, /<b>Anna &lt;x&gt;<\/b>/);
+  assert.doesNotMatch(r.html, /Tenue|Schicht/);
+  assert.match(r.html, /<td>Antreten<\/td><td>08:00<\/td>/);
+  assert.match(r.html, /Hptm A<br>Lt B/);
+  assert.equal(r.text, 'Hallo Anna <x>\n\nAntreten | 08:00\n\nTeilnehmende:\nHptm A\nLt B');
+});
+
+test('Formatierte Vorlage: gefährliches HTML wird entfernt', () => {
+  const out = html.sanitize('<p onclick="x()">a<script>alert(1)</script><a href="javascript:alert(1)">b</a><span style="color:red;background:url(x)">c</span><img src=x onerror=y></p>');
+  assert.equal(out, '<p>a<a>b</a><span style="color: red">c</span></p>');
+  assert.equal(html.toText(html.textToHtml('a\n\nb')), 'a\n\nb');
+});
+
+test('ICS: formatierte Beschreibung als X-ALT-DESC', () => {
+  const ics = buildCalendar([{ uid: 'e2@kkb', start: '2026-11-03T13:30', end: '2026-11-03T19:30', summary: 'X', description: 'fett', descriptionHtml: '<b>fett</b>' }]);
+  const unfolded = ics.replace(/\r\n /g, '');
+  assert.match(unfolded, /DESCRIPTION:fett\r\n/);
+  assert.match(unfolded, /X-ALT-DESC;FMTTYPE=text\/html:<!DOCTYPE html>.*<b>fett<\/b>/);
 });

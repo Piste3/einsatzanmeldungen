@@ -12,6 +12,7 @@ const backup = require('../services/backup');
 const audit = require('../services/audit');
 const mailer = require('../lib/mailer');
 const { render } = require('../lib/template');
+const { sanitize: sanitizeHtml } = require('../lib/html');
 const { flash } = require('../lib/view-helpers');
 const { ValidationError } = require('../services/errors');
 const { today } = require('../lib/dates');
@@ -273,8 +274,11 @@ router.get('/verwaltung/kalendertermin', (req, res) => {
 
 router.post('/verwaltung/kalendertermin', (req, res) => {
   const b = req.body;
+  const format = b.description_format === 'html' ? 'html' : 'text';
   const tpl = {
-    title: String(b.title || ''), location: String(b.location || ''), description: String(b.description || ''),
+    title: String(b.title || ''), location: String(b.location || ''),
+    description: format === 'html' ? sanitizeHtml(String(b.description || '')) : String(b.description || ''), format,
+    html_mode: b.html_mode === 'description' ? 'description' : 'alt',
     omit_empty_lines: b.omit_empty_lines === '1', attendees: b.attendees === '1', reminder_minutes: Number(b.reminder_minutes) || 0,
   };
   if (b.preview === '1') {
@@ -319,15 +323,19 @@ router.get('/verwaltung/bestaetigungsmail', (req, res) => confirmationPage(req, 
 router.post('/verwaltung/bestaetigungsmail', async (req, res, next) => {
   try {
     const b = req.body;
-    const conf = { enabled: b.enabled === '1', subject: String(b.subject || ''), body: String(b.body || '') };
+    const format = b.body_format === 'html' ? 'html' : 'text';
+    const conf = {
+      enabled: b.enabled === '1', subject: String(b.subject || ''),
+      body: format === 'html' ? sanitizeHtml(String(b.body || '')) : String(b.body || ''), format,
+    };
     if (b.action === 'preview' || b.preview === '1') return confirmationPage(req, res, conf, { unsaved: true });
     if (b.action === 'test') {
       const to = String(b.test_to || '').trim();
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) throw new ValidationError(['Bitte eine gültige E-Mail-Adresse für die Testmail angeben.']);
       const e = previewEvent(b.einsatz);
       if (!e) throw new ValidationError(['Für die Testmail braucht es mindestens einen Einsatz.']);
-      const { subject, body } = calendar.renderConfirmation(e, e.shifts.slice(0, 1), { first_name: 'Vorname', last_name: 'Nachname' }, req.user, conf);
-      const r = await mailer.send({ to, subject: `[Test] ${subject}`, body });
+      const { subject, body, html } = calendar.renderConfirmation(e, e.shifts.slice(0, 1), { first_name: 'Vorname', last_name: 'Nachname' }, req.user, conf);
+      const r = await mailer.send({ to, subject: `[Test] ${subject}`, body, html });
       const msg = r.sent ? `Testmail an ${to} verschickt.`
         : r.error ? `Testmail konnte nicht verschickt werden: ${r.error}`
           : 'Es ist kein Mailserver (SMTP) eingerichtet – die Testmail liegt nur im Postausgang.';

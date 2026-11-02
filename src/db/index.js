@@ -24,6 +24,7 @@ const NEW_COLUMNS = {
     ['theme', "TEXT NOT NULL DEFAULT 'system'"], ['ms_login', 'INTEGER NOT NULL DEFAULT 0'],
     ['password_login', 'INTEGER NOT NULL DEFAULT 1'],
   ],
+  mail_outbox: [['body_html', 'TEXT']],
 };
 
 function migrate(d) {

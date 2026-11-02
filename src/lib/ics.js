@@ -1,5 +1,6 @@
 'use strict';
 // Kalenderdatei nach RFC 5545, selbst erzeugt (ohne Zusatzbibliothek). Zeitzone Europe/Zurich.
+const { htmlDocument } = require('./html');
 
 const VTIMEZONE = [
   'BEGIN:VTIMEZONE',
@@ -24,7 +25,7 @@ const VTIMEZONE = [
 function escapeText(s) {
   return String(s ?? '')
     .replace(/\\/g, '\\\\')
-    .replace(/;/g, '\;')
+    .replace(/;/g, '\\;')
     .replace(/,/g, '\\,')
     .replace(/\r?\n/g, '\\n');
 }
@@ -53,7 +54,8 @@ const utcStamp = (d = new Date()) => d.toISOString().replace(/[-:]/g, '').replac
 
 /**
  * events: [{ uid, sequence, start, end, summary, location, description, organizer:{name,email},
- *            attendees:[{name,email}], reminderMinutes }]
+ *            descriptionHtml, attendees:[{name,email}], reminderMinutes }]
+ * descriptionHtml: formatierte Beschreibung als X-ALT-DESC (Outlook zeigt sie formatiert an)
  */
 function buildCalendar(events, { method = 'PUBLISH' } = {}) {
   const lines = [
@@ -79,6 +81,7 @@ function buildCalendar(events, { method = 'PUBLISH' } = {}) {
     lines.push(`SUMMARY:${escapeText(ev.summary)}`);
     if (ev.location) lines.push(`LOCATION:${escapeText(ev.location)}`);
     if (ev.description) lines.push(`DESCRIPTION:${escapeText(ev.description)}`);
+    if (ev.descriptionHtml) lines.push(`X-ALT-DESC;FMTTYPE=text/html:${escapeText(htmlDocument(ev.descriptionHtml))}`);
     if (ev.organizer?.email) lines.push(`ORGANIZER;CN=${escapeParam(ev.organizer.name)}:mailto:${ev.organizer.email}`);
     for (const a of ev.attendees || []) {
       if (!a.email) continue;

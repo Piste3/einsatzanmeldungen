@@ -369,7 +369,7 @@ Ist ein Einsatz besetzt, erstellt die Aufgebotsstelle das Aufgebot mit einem Kli
 
 ![Einstellungen › Kalendertermin](bilder/20-vorlage-kalender.jpg)
 
-Unter **Einstellungen › Kalendertermin** legt der Admin einmal fest, wie das Aufgebot aussieht: Titel, Ort, Zeit und Beschreibung aus normalem Text und **Bausteinen** wie `{{einsatz.name}}`. Bausteine werden rechts per Klick eingefügt und beim Export durch die Angaben des Einsatzes ersetzt. **Vorschau** zeigt das Ergebnis für einen echten Einsatz.
+Unter **Einstellungen › Kalendertermin** legt der Admin einmal fest, wie das Aufgebot aussieht: Titel, Ort, Zeit und Beschreibung aus Text und **Bausteinen** wie `{{einsatz.name}}`. Die Beschreibung lässt sich formatieren (siehe «Texte formatieren» unten). Bausteine werden rechts per Klick eingefügt und beim Export durch die Angaben des Einsatzes ersetzt. **Vorschau** zeigt das Ergebnis für einen echten Einsatz.
 
 | Baustein | Beispiel |
 |---|---|
@@ -386,6 +386,39 @@ Unter **Einstellungen › Kalendertermin** legt der Admin einmal fest, wie das A
 | `{{zusatzfeld.Name}}` | jedes Zusatzfeld eines Einsatzes, z. B. Transport |
 
 Optionen: Zeilen mit leerem Baustein weglassen, Bestätigte als Teilnehmende eintragen, Erinnerung z. B. einen Tag vorher.
+
+### Texte formatieren
+
+Die Beschreibung des Kalendertermins und der Text der Bestätigungsmail lassen sich formatieren wie in Word oder Outlook. Über dem Textfeld steht dafür eine Werkzeugleiste:
+
+| Knopf | Wirkung |
+|---|---|
+| **Absatz** | Normaler Text, Überschrift, Zwischentitel oder eingerückter Block |
+| **Schriftart** · **Grösse** | z. B. Arial, Verdana, Georgia · Klein bis Riesig |
+| **F** · *K* · U · ~~S~~ | Fett, Kursiv, Unterstrichen, Durchgestrichen (auch mit Strg+B, Strg+I, Strg+U) |
+| **A** (Schriftfarbe) · **ab** (Hintergrund) | Farbe aus der Palette oder «Eigene Farbe»; «Keine Markierung» entfernt den Hintergrund |
+| Aufzählung · Nummerierung · Einzug | Listen mit Punkten oder Zahlen, Einzug verkleinern oder vergrössern |
+| Ausrichtung | Linksbündig, zentriert, rechtsbündig |
+| Link | Webadresse oder E-Mail-Adresse verlinken (vorher Text markieren) |
+| Tabelle | Grösse im Raster wählen, z. B. 3 × 2. Steht der Cursor in einer Tabelle, gibt es dort auch Zeilen und Spalten einfügen oder löschen, Rahmen ein/aus, Zellenfarbe und Tabelle löschen. Mit der Tab-Taste springt man in die nächste Zelle. |
+| Trennlinie | Horizontale Linie |
+| Formatierung entfernen · Rückgängig · Wiederholen | Markierten Text wieder schlicht machen, Schritte zurücknehmen |
+| `<>` (ganz rechts) | HTML-Quelltext direkt bearbeiten – nur für Fortgeschrittene |
+
+![Tabelle im Text-Editor](bilder/36-editor-tabelle.jpg)
+
+- **Bausteine** fügt man wie bisher rechts per Klick an der Cursorposition ein. Auch Bausteine lassen sich formatieren, z. B. `{{einsatz.name}}` fett.
+- **Leere Bausteine:** Wie bisher fällt die Zeile weg, in der ein leerer Baustein steht. Steht er in einer Tabelle, fällt die ganze **Tabellenzeile** weg (z. B. «Tenue» bei Einsätzen ohne Tenue).
+- **Einfügen aus Word oder Outlook** übernimmt die Formatierung, unnötiger Ballast wird entfernt. Bilder werden nicht übernommen.
+- **Vorschau** zeigt den Text so, wie er beim Empfänger ankommt.
+
+**Was beim Empfänger ankommt:**
+
+- **Bestätigungsmail:** geht als formatierte Mail (HTML) raus und enthält zusätzlich eine Klartext-Fassung für Mailprogramme, die keine Formatierung anzeigen.
+- **Kalendertermin:** Die Kalenderdatei enthält immer eine Klartext-Beschreibung und zusätzlich die formatierte Fassung. **Outlook** zeigt die Formatierung an, **Apple Kalender** nur den Klartext. Tabellen werden im Klartext zu Zeilen wie «Antreten | 13:30».
+- Unter **Formatierung im Kalender** lässt sich umstellen auf **HTML direkt in der Beschreibung**. Das braucht es für Kalender, die nur die Beschreibung lesen, aber HTML darin anzeigen (z. B. **Google Kalender**, eventuell **ClubDesk**). Erscheinen nach dem Import Zeichen wie `<div>` im Termin, zurück auf **Normal** stellen.
+
+> **Tipp:** Nach dem Umstellen einmal einen Kalendertermin exportieren und in ClubDesk bzw. Outlook importieren, um zu sehen, wie er dort aussieht.
 
 ## 13 · Personen und Stammdaten
 
@@ -448,7 +481,7 @@ Bei den Anmeldefragen legt die Spalte **Standard** fest, welche Vorlage bei jede
 
 ![Einstellungen › Bestätigungsmail](bilder/21-bestaetigungsmail.jpg)
 
-Betreff und Text der Anmeldebestätigung mit denselben Bausteinen wie im Kalendertermin. Mit **Vorschau** für einen echten Einsatz prüfen und eine **Testmail** an sich selbst schicken. Der Haken «beim Bestätigen automatisch senden» schaltet den Versand ein oder aus. Ohne eingerichteten Mailserver bleiben die Mails im Postausgang (unter «Formulare») und gehen raus, sobald er eingerichtet ist.
+Betreff und Text der Anmeldebestätigung mit denselben Bausteinen wie im Kalendertermin. Der Text lässt sich formatieren – Schriftart, Grösse, Fett, Kursiv, Farben, Listen, Tabellen und Links (siehe «Texte formatieren» in Kapitel 12). Die Mail geht formatiert raus, mit einer Klartext-Fassung für Mailprogramme ohne HTML. Mit **Vorschau** für einen echten Einsatz prüfen und eine **Testmail** an sich selbst schicken. Der Haken «beim Bestätigen automatisch senden» schaltet den Versand ein oder aus. Ohne eingerichteten Mailserver bleiben die Mails im Postausgang (unter «Formulare») und gehen raus, sobald er eingerichtet ist.
 
 ### Einstellungen und Datensicherung
 

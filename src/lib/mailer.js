@@ -4,6 +4,7 @@
 const db = require('../db');
 const config = require('../config');
 const { nowIso } = require('./dates');
+const { htmlDocument } = require('./html');
 
 let transport = null;
 function getTransport() {
@@ -20,10 +21,11 @@ function getTransport() {
   return transport;
 }
 
-async function send({ to, subject, body, registrationId = null, attachments = [] }) {
+// body: Klartext (immer), html: formatierte Fassung (optional, nur der Inhalt ohne <html>-Gerüst)
+async function send({ to, subject, body, html = null, registrationId = null, attachments = [] }) {
   const info = db.run(
-    'INSERT INTO mail_outbox (to_address, subject, body, status, registration_id, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-    to, subject, body, 'offen', registrationId, nowIso(),
+    'INSERT INTO mail_outbox (to_address, subject, body, body_html, status, registration_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    to, subject, body, html, 'offen', registrationId, nowIso(),
   );
   const id = Number(info.lastInsertRowid);
   const t = getTransport();
@@ -32,7 +34,10 @@ async function send({ to, subject, body, registrationId = null, attachments = []
     return { id, sent: false };
   }
   try {
-    await t.sendMail({ from: config.smtp.from || config.smtp.user, to, subject, text: body, attachments });
+    await t.sendMail({
+      from: config.smtp.from || config.smtp.user, to, subject, text: body,
+      ...(html ? { html: htmlDocument(html, { title: subject }) } : {}), attachments,
+    });
     db.run("UPDATE mail_outbox SET status = 'gesendet', sent_at = ? WHERE id = ?", nowIso(), id);
     return { id, sent: true };
   } catch (err) {

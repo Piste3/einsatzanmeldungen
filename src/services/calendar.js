@@ -7,6 +7,7 @@ const settings = require('./settings');
 const events = require('./events');
 const mailer = require('../lib/mailer');
 const { render } = require('../lib/template');
+const { renderTemplate } = require('../lib/html');
 const { buildCalendar } = require('../lib/ics');
 const { nowIso, fmtDateLong, fmtDateShort, fmtDate } = require('../lib/dates');
 const { BY_RANK } = require('../lib/sorting');
@@ -91,13 +92,21 @@ function cleanTitle(s) {
   return s.replace(/(\s+[-–·|])+\s*$/, '').replace(/^\s*([-–·|]\s+)+/, '').replace(/\s+[-–]\s+(?=[-–]\s)/g, ' ').trim();
 }
 
+// Formatierte Vorlage (HTML) -> { text, html }; alte Klartext-Vorlagen -> nur { text }
+function renderRich(template, format, values, opts) {
+  if (format === 'html') return renderTemplate(template, values, opts);
+  return { text: render(template, values, opts), html: null };
+}
+
 function renderEntry(event, shift, user, tpl = settings.get('calendar')) {
   const { values, start, end, people } = context(event, shift, user);
   const opts = { omitEmptyLines: Boolean(tpl.omit_empty_lines) };
+  const desc = renderRich(tpl.description, tpl.format, values, opts);
   return {
     summary: cleanTitle(render(tpl.title, values)),
     location: render(tpl.location, values),
-    description: render(tpl.description, values, opts),
+    description: desc.text,
+    descriptionHtml: desc.html,
     start, end, people,
   };
 }
@@ -131,9 +140,14 @@ function exportIcs(eventId, { scope = 'event', shiftId = null } = {}, user) {
     const r = renderEntry(event, shift, user, tpl);
     const uid = uidFor(event, shift);
     const attendees = tpl.attendees ? r.people.filter((p) => p.email).map((p) => ({ name: `${p.first_name} ${p.last_name}`, email: p.email })) : [];
-    const sequence = sequenceFor(uid, JSON.stringify([r.summary, r.location, r.description, r.start, r.end, attendees]));
+    // Formatierung zählt mit (sonst übernimmt der Kalender eine reine Farbänderung nicht)
+    const rich = r.descriptionHtml ? [r.descriptionHtml, tpl.html_mode || 'alt'] : [];
+    const sequence = sequenceFor(uid, JSON.stringify([r.summary, r.location, r.description, r.start, r.end, attendees, ...rich]));
+    // Formatierung: als Zusatz (X-ALT-DESC, z. B. Outlook) oder direkt als HTML in der Beschreibung (z. B. Google)
+    const htmlInDescription = r.descriptionHtml && tpl.html_mode === 'description';
     return {
-      uid, sequence, summary: r.summary, location: r.location, description: r.description,
+      uid, sequence, summary: r.summary, location: r.location,
+      description: htmlInDescription ? r.descriptionHtml : r.description, descriptionHtml: r.descriptionHtml,
       start: r.start || `${event.date}T00:00`, end: r.end || r.start || `${event.date}T23:59`, allDay: !r.start,
       organizer: { name: settings.get('verein_name'), email: settings.get('aufgebot_email') },
       attendees, reminderMinutes: Number(tpl.reminder_minutes) || 0,
@@ -157,7 +171,8 @@ function renderConfirmation(event, assigned, person, user, conf = settings.get('
     'person.nachname': person.last_name,
   });
   if (assigned.length > 1) values['schicht.name'] = assigned.map((s) => s.name).join(', ');
-  return { subject: cleanTitle(render(conf.subject, values)), body: render(conf.body, values, { omitEmptyLines: true }) };
+  const body = renderRich(conf.body, conf.format, values, { omitEmptyLines: true });
+  return { subject: cleanTitle(render(conf.subject, values)), body: body.text, html: body.html };
 }
 
 async function sendConfirmation(registrationId, user) {
@@ -167,8 +182,8 @@ async function sendConfirmation(registrationId, user) {
   if (!reg || !reg.email) return { skipped: 'keine E-Mail' };
   const event = events.get(reg.event_id);
   const assigned = db.all('SELECT s.* FROM shift_assignments a JOIN shifts s ON s.id = a.shift_id WHERE a.registration_id = ? ORDER BY s.sort, s.starts_at', registrationId);
-  const { subject, body } = renderConfirmation(event, assigned, reg, user, conf);
-  const result = await mailer.send({ to: reg.email, subject, body, registrationId });
+  const { subject, body, html } = renderConfirmation(event, assigned, reg, user, conf);
+  const result = await mailer.send({ to: reg.email, subject, body, html, registrationId });
   db.run('UPDATE registrations SET confirmation_sent_at = ? WHERE id = ?', nowIso(), registrationId);
   return result;
 }

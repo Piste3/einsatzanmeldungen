@@ -109,6 +109,16 @@ test('Bestätigungsmail: Seite, Vorschau und Speichern (nur Admin)', async () =>
   assert.notEqual(settings.get('confirmation').subject, 'Bestätigt: {{einsatz.name}}');
   assert.equal((await post('save')).status, 302);
   assert.equal(settings.get('confirmation').subject, 'Bestätigt: {{einsatz.name}}');
+  // formatierte Vorlage (HTML aus dem Editor) wird bereinigt gespeichert
+  const rich = await fetch(`${base}/verwaltung/bestaetigungsmail`, {
+    method: 'POST', redirect: 'manual', headers: { cookie: admin.cookie, 'content-type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ _csrf: csrf, enabled: '1', subject: 'S', body: '<div>Hallo <b>{{person.vorname}}</b><script>x</script></div>', body_format: 'html', action: 'save' }),
+  });
+  assert.equal(rich.status, 302);
+  assert.equal(settings.get('confirmation').format, 'html');
+  assert.equal(settings.get('confirmation').body, '<div>Hallo <b>{{person.vorname}}</b></div>');
+  const page2 = await (await get('/verwaltung/bestaetigungsmail', admin.cookie)).text();
+  assert.match(page2, /data-rte/);
   const lena = await login('lena', 'Aufgebot-2026-x');
   assert.notEqual((await get('/verwaltung/bestaetigungsmail', lena.cookie)).status, 200);
 });

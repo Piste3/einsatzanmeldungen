@@ -109,4 +109,7 @@ function navMiddleware(req, res, next) {
 module.exports = {
   ...dates, labels, escapeHtml, badge, regBadge, eventBadge, inquiryBadge, waLink, feedbackBadge, rank, initials, personName, withQuery, pct, nl2br,
   plural, flash, flashMiddleware, localsMiddleware, navMiddleware, icon: require('./icons').icon,
+  // Vorlage für den Text-Editor: alte Klartext-Vorlagen in HTML umwandeln
+  editorHtml: (template, format) => (format === 'html' ? String(template || '') : require('./html').textToHtml(template)),
+  sanitizeHtml: (html) => require('./html').sanitize(html),
 };

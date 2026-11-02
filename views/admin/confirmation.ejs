@@ -14,8 +14,9 @@
         <% if (!smtp) { %><div class="callout warn mb">Es ist kein Mailserver (SMTP) eingerichtet. Bestätigungen werden im Postausgang unter «Formulare» abgelegt, aber nicht versendet. Siehe README (SMTP_HOST usw.).</div><% } %>
         <p class="small muted mb">Die Mail geht an die E-Mail-Adresse der Person, sobald ihre Anmeldung auf «Bestätigt» gesetzt wird. Personen ohne E-Mail-Adresse bekommen keine.</p>
         <div class="field"><label for="subject">Betreff</label><input id="subject" type="text" name="subject" value="<%= conf.subject %>" data-token-target></div>
-        <div class="field"><label for="body">Text</label><textarea id="body" name="body" rows="20" data-token-target><%= conf.body %></textarea>
-          <div class="field-hint">Zeilen, in denen ein Baustein leer ist, werden weggelassen.</div></div>
+        <div class="field"><label for="body">Text</label>
+          <%- include('../partials/rich-editor', { id: 'body', name: 'body', formatName: 'body_format', value: h.editorHtml(conf.body, conf.format), rows: 20 }) %>
+          <div class="field-hint">Zeilen (und Tabellenzeilen), in denen ein Baustein leer ist, werden weggelassen. Die Mail geht formatiert raus, zusätzlich mit einer Klartext-Fassung für Mailprogramme ohne HTML.</div></div>
       </div>
     </div>
     <div class="card">
@@ -25,7 +26,7 @@
         <% if (!preview) { %><p class="muted">Noch kein Einsatz vorhanden.</p><% } else { %>
           <div class="meta">An: <%= preview.to ? `${preview.person.first_name} ${preview.person.last_name} <${preview.to}>` : `${preview.person.first_name} ${preview.person.last_name}` %></div>
           <div class="title"><%= preview.subject %></div>
-          <div class="desc"><%= preview.body %></div>
+          <div class="desc rich"><% if (preview.html) { %><%- preview.html %><% } else { %><div style="white-space:pre-wrap"><%= preview.body %></div><% } %></div>
         <% } %>
       </div>
     </div>
