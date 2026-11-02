@@ -236,8 +236,17 @@ test('Einsatzleiter: sieht nur freigegebene Einsätze, nur lesen', async () => {
   for (const p of ['/einsaetze', '/personen', '/rueckmeldungen', '/klaerungen', '/suche?q=pia', `/einsaetze/${ev}/anmeldungen`, `/einsaetze/${ev}/teilnehmerliste?format=csv`, '/verwaltung']) {
     assert.equal((await get(p, leo.cookie)).status, 403, p);
   }
-  assert.equal((await get('/handbuch', leo.cookie)).status, 200);
+  const leoBook = await (await get('/handbuch', leo.cookie)).text();
+  assert.match(leoBook, /Handbuch für Einsatzleiter/, 'Einsatzleiter sehen ihr eigenes Handbuch');
+  assert.doesNotMatch(leoBook, /Klärungen/, 'nicht das volle Handbuch');
+  assert.equal((await get('/handbuch/einsatzleiter', leo.cookie)).status, 302);
   assert.equal((await get('/konto/passwort', leo.cookie)).status, 200);
+
+  // Aufgebotsstelle: volles Handbuch, Einsatzleiter-Handbuch zum Nachschauen
+  const fullBook = await (await get('/handbuch', auf.cookie)).text();
+  assert.match(fullBook, /Klärungen/);
+  assert.match(fullBook, /href="\/handbuch\/einsatzleiter"/);
+  assert.match(await (await get('/handbuch/einsatzleiter', auf.cookie)).text(), /Was du als Einsatzleiter siehst/);
 
   // Aufgebotsstelle gibt frei
   const page = await (await get(`/einsaetze/${ev}`, auf.cookie)).text();

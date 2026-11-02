@@ -1,7 +1,7 @@
 <%- include('../partials/head') %>
 <%- include('../partials/topbar', {
-  crumbs: [['Handbuch']], heading: 'Handbuch',
-  actions: '<button class="btn" type="button" data-print>Drucken / als PDF</button>', showSearch: false,
+  crumbs: [['Handbuch']], heading: title, showSearch: false,
+  actions: `${locals.other ? `<a class="btn" href="${locals.other.href}">${locals.other.label}</a>` : ''}<button class="btn" type="button" data-print>Drucken / als PDF</button>`,
 }) %>
 <div class="subline mb">Stand <%= h.fmtDate(doc.date.toISOString().slice(0, 10)) %><%= doc.commit ? ` · Version ${doc.commit}` : '' %> · wird mit jedem Update automatisch aktualisiert</div>
 <div class="handbook">

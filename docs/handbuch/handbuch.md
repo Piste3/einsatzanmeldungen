@@ -1,6 +1,6 @@
 # KKB-Einsatzplaner – Handbuch
 
-Anleitung für die Aufgebotsstelle, die Admins und die Einsatzleiter des Kadetten-Korps Basel. Das Handbuch gehört zur installierten Version: Mit jedem Update kommt automatisch der passende Stand mit.
+Anleitung für die Aufgebotsstelle und die Admins des Kadetten-Korps Basel. Einsatzleiter sehen unter «Handbuch» ein eigenes, kurzes [Handbuch für Einsatzleiter](/handbuch/einsatzleiter) mit nur ihren Funktionen. Das Handbuch gehört zur installierten Version: Mit jedem Update kommt automatisch der passende Stand mit.
 
 > **Zu den Bildern:** Alle Namen, Zahlen und Telefonnummern in den Bildern sind frei erfunden.
 
@@ -72,7 +72,7 @@ Links steht die Navigation, rechts der Inhalt.
 | Personen | Stammdaten mit Suche; pro Person eine eigene Seite |
 | Formulare | Eingänge des Anmeldeformulars, Fehler und Postausgang (Admin) |
 | Einstellungen | Benutzer, Auswahllisten, Vorlagen, Kalendertermin, Bestätigungsmail, Einstellungen, System (Admin) |
-| Handbuch | Diese Anleitung, immer im Stand der installierten Version |
+| Handbuch | Diese Anleitung, immer im Stand der installierten Version. Oben rechts geht es zum Handbuch für Einsatzleiter |
 
 ### Bedienung, die überall gleich ist
 
@@ -96,6 +96,8 @@ Links steht die Navigation, rechts der Inhalt.
 ![Der Einsatzplaner im dunklen Design](bilder/31-dunkel.jpg)
 
 ### Für Einsatzleiter
+
+Einsatzleiter haben ein eigenes, kurzes [Handbuch für Einsatzleiter](/handbuch/einsatzleiter); unter «Handbuch» sehen sie nur dieses. Hier die Übersicht für die Aufgebotsstelle:
 
 Einsatzleiter melden sich gleich an wie alle anderen. Statt des Cockpits sehen sie **Meine Einsätze**: alle Einsätze, die die Aufgebotsstelle für sie freigegeben hat, anstehende oben, vergangene darunter.
 
