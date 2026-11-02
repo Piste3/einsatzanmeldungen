@@ -1,0 +1,63 @@
+<%- include('../partials/head') %>
+<%
+  const e = event;
+  const base = `/einsaetze/${e.id}/teilnehmerliste`;
+  const leader = e.leader_person_id ? `${e.leader_rank ? `${h.escapeHtml(e.leader_rank)} ` : ''}${h.escapeHtml(e.leader_first + ' ' + e.leader_last)}` : '–';
+  const sub = `<strong>${h.escapeHtml(e.name)}</strong><span>${h.fmtDateWd(e.date)}</span><span>Antreten ${h.escapeHtml(e.start_time || '–')}${e.start_place ? ' · ' + h.escapeHtml(e.start_place) : ''}</span><span>Leitung ${leader}</span>`;
+  const q = { umfang: filters.umfang !== 'angemeldet' ? filters.umfang : undefined, schicht: filters.schicht || undefined, sort: filters.sort !== 'rang' ? filters.sort : undefined };
+  const exportUrl = (format) => h.escapeHtml(h.withQuery(base, q, { format }));
+%>
+<%- include('../partials/topbar', {
+  crumbs: [['Einsätze', '/einsaetze'], [e.name, `/einsaetze/${e.id}`], ['Teilnehmerliste']],
+  heading: `Teilnehmerliste${shift ? ` · ${shift.name}` : ''}`, subline: sub, showSearch: false,
+  actions: `<button class="btn btn-primary" type="button" data-print>Drucken / als PDF</button><a class="btn" href="${exportUrl('xlsx')}">Excel</a><a class="btn" href="${exportUrl('csv')}">CSV</a>`,
+}) %>
+
+<form class="filters" method="get" action="<%= base %>" data-autosubmit>
+  <select name="umfang" aria-label="Wer steht auf der Liste?">
+    <% for (const [k, s] of Object.entries(scopes)) { %><option value="<%= k %>" <%= filters.umfang === k ? 'selected' : '' %>><%= s.label %></option><% } %>
+  </select>
+  <% if (e.shifts.length > 1) { %>
+    <select name="schicht" aria-label="Schicht">
+      <option value="">Alle Schichten</option>
+      <% for (const s of e.shifts) { %><option value="<%= s.id %>" <%= filters.schicht === s.id ? 'selected' : '' %>>Nur <%= s.name %></option><% } %>
+    </select>
+  <% } %>
+  <select name="sort" aria-label="Sortierung">
+    <% for (const [k, l] of [['rang', 'Rang: hoch → tief'], ['rang_auf', 'Rang: tief → hoch']]) { %><option value="<%= k %>" <%= filters.sort === k ? 'selected' : '' %>><%= l %></option><% } %>
+  </select>
+</form>
+
+<% if (unresolved) { %>
+  <div class="callout warn mb no-print"><%= unresolved === 1 ? '1 Anmeldung ist noch keiner Person zugeordnet und fehlt' : `${unresolved} Anmeldungen sind noch keiner Person zugeordnet und fehlen` %> deshalb in der Liste. → <a class="link" href="/klaerungen">Klärungen</a></div>
+<% } %>
+
+<div class="card participants">
+  <div class="card-head"><h2><%= list.length %> <%= list.length === 1 ? 'Person' : 'Personen' %> <span class="hint"><%= scopes[filters.umfang].label %> · Stand <%= h.fmtDateTime(h.nowIso()) %></span></h2></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th class="nr"></th><th>Name</th><th>Mobil</th><th>Essenseinschränkungen</th><% if (showShift) { %><th>Schicht</th><% } %><% if (showStatus) { %><th>Status</th><% } %></tr></thead>
+      <tbody>
+      <% if (!list.length) { %><tr><td colspan="<%= 4 + (showShift ? 1 : 0) + (showStatus ? 1 : 0) %>" class="empty">Noch niemand angemeldet<%= filters.umfang === 'bestaetigt' ? ' und bestätigt' : '' %>.</td></tr><% } %>
+      <% list.forEach((r, i) => { %>
+        <tr>
+          <td class="nr muted"><%= i + 1 %></td>
+          <td><%- h.rank(r.rank_short) %><a href="/personen/<%= r.person_id %>"><strong><%= r.first_name %> <%= r.last_name %></strong></a></td>
+          <td class="nowrap"><% if (r.mobile) { %><a href="tel:<%= r.mobile.replace(/[^\d+]/g, '') %>"><%= r.mobile %></a><% } else { %><span class="muted">–</span><% } %></td>
+          <td><% if (!r.diet.has) { %><span class="muted">–</span><% } else if (!r.diet.visible) { %><span class="muted">Hinweis vorhanden</span><% } else { %><strong><%= r.diet.category %></strong><%= r.diet.category && r.diet.text ? ': ' : '' %><%= r.diet.text %><% } %></td>
+          <% if (showShift) { %><td><%= shiftOf(r) %></td><% } %>
+          <% if (showStatus) { %><td><%- h.regBadge(r.status) %></td><% } %>
+        </tr>
+      <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% if (list.length) { %>
+    <div class="card-body diet-summary">
+      <strong>Verpflegung:</strong>
+      <%= summary.map(([label, n]) => `${n} ${label}`).join(' · ') %>
+      <% if (summary.some(([l]) => l === 'Hinweis vorhanden')) { %><span class="sub muted small">«Hinweis vorhanden»: Nach dem Einsatz sieht die genaue Angabe nur noch ein Admin.</span><% } %>
+    </div>
+  <% } %>
+</div>
+<%- include('../partials/foot') %>

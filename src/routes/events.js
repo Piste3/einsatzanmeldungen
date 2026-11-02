@@ -186,6 +186,47 @@ router.get('/einsaetze/:id/anmeldungen', loadEvent, (req, res) => {
   res.render('pages/event', { title: `${e.name} · Anmeldungen`, tab: 'anmeldungen', list, counts, total: all.length, filters, available, dietOf });
 });
 
+// Teilnehmerliste: wer kommt, mit Mobil und Essenseinschränkungen – zum Drucken (PDF), als Excel oder CSV
+router.get('/einsaetze/:id/teilnehmerliste', loadEvent, (req, res) => {
+  const e = req.event;
+  const shift = e.shifts.length > 1 ? e.shifts.find((s) => s.id === Number(req.query.schicht)) || null : null;
+  const filters = {
+    umfang: registrations.PARTICIPANT_SCOPES[req.query.umfang] ? req.query.umfang : 'angemeldet',
+    schicht: shift ? shift.id : '',
+    sort: req.query.sort === 'rang_auf' ? 'rang_auf' : 'rang',
+  };
+  const list = registrations.participants(e.id, { scope: filters.umfang, shiftId: shift?.id, sort: filters.sort }, req.user);
+  const showShift = e.shifts.length > 1 && !shift;
+  const showStatus = filters.umfang !== 'bestaetigt';
+  const shiftOf = (r) => (r.assigned.length ? r.assigned.map((a) => a.name).join(' + ')
+    : r.wishes.length ? `Wunsch: ${e.shifts.filter((s) => r.wishes.includes(s.id)).map((s) => s.name).join(' + ')}` : 'noch keine');
+  const format = wantsExport(req);
+  if (format) {
+    audit.log({
+      entity: 'event', entityId: e.id, eventId: e.id, action: 'export',
+      summary: `${req.user.display_name} hat die Teilnehmerliste${shift ? ` (${shift.name})` : ''} für «${e.name}» exportiert (${format === 'csv' ? 'CSV' : 'Excel'}, ${list.length} Personen)`,
+      user: req.user,
+    });
+    const cols = [
+      { label: 'Nr.', value: (r) => list.indexOf(r) + 1 },
+      { label: 'Rang', value: (r) => r.rank_short || '' },
+      { label: 'Nachname', value: (r) => r.last_name },
+      { label: 'Vorname', value: (r) => r.first_name },
+      { label: 'Mobil', value: (r) => r.mobile || '' },
+      { label: 'Essenseinschränkung', value: (r) => (r.diet.visible ? r.diet.category : r.diet.label) },
+      { label: 'Details', value: (r) => r.diet.text },
+    ];
+    if (showShift) cols.push({ label: 'Schicht', value: shiftOf });
+    if (showStatus) cols.push({ label: 'Status', value: (r) => REG_STATUS[r.status].short });
+    return sendTable(res, format, `Teilnehmerliste ${e.name}${shift ? ` ${shift.name}` : ''}`, cols, list);
+  }
+  res.render('pages/participants', {
+    title: `${e.name} · Teilnehmerliste`, list, filters, shift, showShift, showStatus, shiftOf,
+    summary: registrations.dietSummary(list), scopes: registrations.PARTICIPANT_SCOPES,
+    unresolved: db.one("SELECT COUNT(*) AS n FROM registrations WHERE event_id = ? AND person_id IS NULL AND status = 'unsicher'", e.id).n,
+  });
+});
+
 // Reiter «Anfragen»
 router.get('/einsaetze/:id/anfragen', loadEvent, (req, res) => {
   const e = req.event;

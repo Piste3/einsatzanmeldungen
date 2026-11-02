@@ -138,7 +138,7 @@ Die Liste zeigt alle Einsätze mit Datum, Antreten, Status, Besetzung und Einsat
 - **Status:** Entwurf → Veröffentlicht → Abgeschlossen, oder jederzeit Abgesagt. Nach dem Abschluss sind die Daten schreibgeschützt; Änderungen sind dann nur noch durch einen Admin mit Begründung möglich. Bei einer Absage bleiben alle Daten erhalten.
 - **Im Formular anzeigen:** schaltet den Einsatz im Anmeldeformular ein oder aus, z. B. wenn er voll ist.
 - **Checkliste:** zeigt, welche Angaben noch fehlen.
-- Oben gibt es **Kalendertermin**, **Drucken** bzw. **Export** und **Bearbeiten**.
+- Oben gibt es **Kalendertermin**, **Drucken** bzw. **Export**, **Teilnehmerliste** und **Bearbeiten**.
 
 ### Reiter «Formular»
 
@@ -151,6 +151,22 @@ Zeigt genau, wie der Einsatz im Anmeldeformular aussieht, und bis wann er dort s
 ![Einsatz › Verlauf](bilder/19-verlauf.jpg)
 
 Jede Änderung am Einsatz, an Anmeldungen und Anfragen steht hier mit Zeitpunkt und Person.
+
+### Teilnehmerliste
+
+![Einsatz › Teilnehmerliste](bilder/35-teilnehmerliste.jpg)
+
+Die Teilnehmerliste zeigt auf einen Blick, wer kommt – mit **Rang, Name, Mobilnummer und Essenseinschränkungen**. Sie öffnet sich über den Knopf **Teilnehmerliste** oben auf jeder Seite des Einsatzes.
+
+- **Wer steht drauf:** «Angemeldete» (neu, Rückfrage und bestätigt – wie die Besetzung), «Nur bestätigte» oder «Angemeldete + Warteliste». Abmeldungen, Absagen und ungültige Anmeldungen stehen nie drauf.
+- **Schicht:** Hat der Einsatz mehrere Schichten, lässt sich die Liste auf eine Schicht einschränken. Sonst zeigt eine Spalte, wer in welcher Schicht ist.
+- **Sortierung:** nach Rang, der höchste zuerst; umschaltbar auf «tief → hoch». Innerhalb des Rangs alphabetisch.
+- **Verpflegung:** Unter der Liste steht die Zusammenfassung für die Küche, z. B. «2 vegetarisch · 1 Allergie · 7 ohne Einschränkung».
+- **Drucken / als PDF** druckt die Liste ohne Menü und Filter. Im Druckfenster «Als PDF speichern» wählen, um sie als PDF weiterzugeben.
+- **Excel** und **CSV** laden die Liste als Datei herunter, mit Essenseinschränkung und Details in getrennten Spalten. Jeder Datei-Export wird im Verlauf des Einsatzes festgehalten.
+- Anmeldungen, die noch keiner Person zugeordnet sind, fehlen in der Liste. Ein Hinweis oben führt zu den Klärungen.
+
+> **Sensible Angaben:** Die Essenseinschränkungen stehen für alle angemeldeten Personen drin, solange der Einsatz bevorsteht. Nach dem Einsatz zeigt die Liste der Aufgebotsstelle nur noch «Hinweis vorhanden»; die genaue Angabe sieht dann nur noch ein Admin.
 
 ## 6 · So melden sich die Mitglieder an
 
@@ -582,6 +598,9 @@ Ja. Alle sehen live denselben Stand. Bearbeiten zwei Personen denselben Eintrag,
 
 **Kann ich die Listen ausdrucken oder nach Excel exportieren?**
 Ja. Jede Liste lässt sich drucken und als Excel- oder CSV-Datei exportieren, genau mit den eingestellten Filtern.
+
+**Wie bekomme ich eine Liste aller Teilnehmenden mit Telefon und Essenswünschen?**
+Im Einsatz oben auf **Teilnehmerliste** klicken. Dort lässt sie sich drucken, als PDF speichern oder als Excel/CSV herunterladen.
 
 **Funktioniert der Einsatzplaner auf dem Handy?**
 Ja. Er ist für den Computer gemacht, lässt sich aber auch auf Tablet und Handy bedienen – etwa um unterwegs einen Anruf zu erfassen.

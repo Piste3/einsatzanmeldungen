@@ -147,3 +147,48 @@ test('Standard-Anmeldefrage ist bei neuen Einsätzen vorausgewählt', async () =
   assert.equal(settings.get('default_question_template'), null);
   assert.doesNotMatch(await (await get('/einsaetze/neu', admin.cookie)).text(), /<option value="\d+"[^>]*data-question[^>]*selected/);
 });
+
+test('Teilnehmerliste: nach Rang, mit Mobil und Essenseinschränkungen, als Seite, Excel und CSV', async () => {
+  const db = require('../src/db');
+  const { system } = require('./helpers');
+  const persons = require('../src/services/persons');
+  const events = require('../src/services/events');
+  const registrations = require('../src/services/registrations');
+  const { today, addDays } = require('../src/lib/dates');
+  const rank = (s) => db.one('SELECT id FROM ranks WHERE short = ?', s).id;
+  const sdt = persons.create({ first_name: 'Sina', last_name: 'Soldat', status: 'aktiv', rank_id: rank('Sdt'), mobile: '079 111 22 33', diet_category: 'vegetarisch' }, system);
+  const hptm = persons.create({ first_name: 'Hans', last_name: 'Haupt', status: 'aktiv', rank_id: rank('Hptm'), mobile: '079 999 88 77', diet_category: 'allergie', diet_text: 'Nüsse' }, system);
+  const wm = persons.create({ first_name: 'Willi', last_name: 'Wacht', status: 'aktiv', rank_id: rank('Wm') }, system);
+  const weg = persons.create({ first_name: 'Abi', last_name: 'Gemeldet', status: 'aktiv' }, system);
+  const ev = events.create({ name: 'Zolli-Fest', date: addDays(today(), 3), start_time: '09:00', end_time: '17:00' }, system);
+  const reg = (pid) => registrations.create({ eventId: ev, personId: pid, matchType: 'auto', source: 'manuell', wishes: [], user: system });
+  reg(sdt); reg(wm);
+  registrations.setStatus(reg(hptm), 'bestaetigt', system);
+  registrations.setStatus(reg(weg), 'zurueckgezogen', system);
+
+  // eigene Aufgebotsstelle (lena ist durch den Sperr-Test oben gesperrt)
+  await users.create({ username: 'mara', display_name: 'Mara', role: 'aufgebotsstelle', password: 'Aufgebot-2026-m', must_change_password: false }, null);
+  const mara = await login('mara', 'Aufgebot-2026-m');
+  const html = await (await get(`/einsaetze/${ev}/teilnehmerliste`, mara.cookie)).text();
+  const order = ['Hans Haupt', 'Willi Wacht', 'Sina Soldat'].map((n) => html.indexOf(n));
+  assert.ok(order.every((i) => i > 0) && order[0] < order[1] && order[1] < order[2], 'höchster Rang zuerst');
+  assert.doesNotMatch(html, /Abi Gemeldet/, 'Abmeldungen stehen nicht auf der Liste');
+  assert.match(html, /079 999 88 77/);
+  assert.match(html, /Allergie<\/strong>: Nüsse/, 'Aufgebotsstelle sieht die Angaben der Angemeldeten');
+  assert.match(html, /1 Allergie · 1 vegetarisch · 1 ohne Einschränkung/);
+
+  const auf = await (await get(`/einsaetze/${ev}/teilnehmerliste?sort=rang_auf&umfang=bestaetigt`, mara.cookie)).text();
+  assert.match(auf, /Hans Haupt/);
+  assert.doesNotMatch(auf, /Sina Soldat/, 'nur bestätigte');
+
+  const csv = await get(`/einsaetze/${ev}/teilnehmerliste?format=csv`, mara.cookie);
+  assert.match(csv.headers.get('content-disposition'), /Teilnehmerliste_Zolli-Fest/);
+  const lines = (await csv.text()).replace(/^﻿/, '').trim().split(/\r?\n/);
+  assert.match(lines[0], /Nr\.;Rang;Nachname;Vorname;Mobil;Essenseinschränkung;Details;Status/);
+  assert.match(lines[1], /^1;Hptm;Haupt;Hans;079 999 88 77;Allergie;Nüsse;Bestätigt$/);
+  assert.equal(lines.length, 4);
+  const xlsx = await get(`/einsaetze/${ev}/teilnehmerliste?format=xlsx`, mara.cookie);
+  assert.equal(xlsx.status, 200);
+  assert.match(xlsx.headers.get('content-type'), /spreadsheetml/);
+  assert.ok(db.one("SELECT 1 FROM audit_log WHERE event_id = ? AND action = 'export'", ev), 'Export steht im Verlauf');
+});

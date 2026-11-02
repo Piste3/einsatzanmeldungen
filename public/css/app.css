@@ -615,3 +615,15 @@ tr.changed td:first-child { box-shadow: inset 3px 0 0 var(--orange, #e8742a); }
 .check-list { display: flex; flex-direction: column; gap: 6px; margin-top: 2px; }
 .mr-auto { margin-right: auto; }
 .dlg-current { background: var(--surface-2); border: 1px solid var(--border-soft); border-radius: 8px; padding: 8px 10px; margin-bottom: 12px; color: var(--text-2); }
+
+/* Teilnehmerliste */
+.participants th.nr, .participants td.nr { width: 34px; padding-right: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.participants td a[href^="tel:"] { color: inherit; font-variant-numeric: tabular-nums; }
+.diet-summary { border-top: 1px solid var(--border); font-size: 13px; }
+.diet-summary .sub { display: block; margin-top: 4px; }
+@media print {
+  .participants td, .participants th { padding: 5px 8px; font-size: 11px; }
+  .participants tr { break-inside: avoid; }
+  .participants a { color: inherit; text-decoration: none; }
+}
+@media (max-width: 760px) { table.cards td.nr { display: none; } }

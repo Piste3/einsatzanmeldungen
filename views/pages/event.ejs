@@ -21,7 +21,7 @@
 %>
 <%- include('../partials/topbar', {
   crumbs: [['Einsätze', '/einsaetze'], [e.name]], heading: e.name, badges: badgesHtml, subline: sub, showSearch: false,
-  actions: cal + exp + `<a class="btn" href="${base}/bearbeiten">Bearbeiten</a>`,
+  actions: cal + exp + `<a class="btn" href="${base}/teilnehmerliste">Teilnehmerliste</a><a class="btn" href="${base}/bearbeiten">Bearbeiten</a>`,
 }) %>
 <% if (e.status === 'abgeschlossen') { %><div class="callout warn mb">Dieser Einsatz ist abgeschlossen. Die Daten sind schreibgeschützt; Änderungen nur noch durch einen Admin mit Begründung.</div><% } %>
 <% if (e.status === 'abgesagt') { %><div class="callout warn mb">Dieser Einsatz wurde abgesagt. Alle Daten bleiben erhalten.</div><% } %>

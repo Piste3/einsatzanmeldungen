@@ -5,7 +5,7 @@ const audit = require('./audit');
 const live = require('../lib/live');
 const persons = require('./persons');
 const { nowIso } = require('../lib/dates');
-const { REG_STATUS, REG_STATUS_MANUAL, SOURCE } = require('../lib/labels');
+const { REG_STATUS, REG_STATUS_MANUAL, REG_COUNTING, SOURCE, DIET } = require('../lib/labels');
 const { ValidationError, ConflictError } = require('./errors');
 const { nameKey } = require('../lib/normalize');
 const { rankOrder } = require('../lib/sorting');
@@ -52,6 +52,54 @@ function listForEvent(eventId, { status = '', q = '', sort = 'rang' } = {}) {
     params.push(`%${q.toLowerCase()}%`, `%${q.toLowerCase()}%`);
   }
   return hydrate(db.all(`${SELECT} WHERE ${where.join(' AND ')} ORDER BY ${sort === 'neu' ? 'g.registered_at DESC, g.id DESC' : `p.id IS NULL, ${rankOrder(sort)}, g.id`}`, ...params));
+}
+
+// Teilnehmerliste eines Einsatzes: wer kommt, mit Mobil und Essenseinschränkungen.
+// Umfang: «angemeldet» (zählt zur Besetzung), «bestaetigt» oder «warteliste» (angemeldet + Warteliste).
+// Essenseinschränkungen nur, wo der Benutzer sie sehen darf (sonst «Hinweis vorhanden»).
+const PARTICIPANT_SCOPES = {
+  angemeldet: { label: 'Angemeldete', statuses: REG_COUNTING },
+  bestaetigt: { label: 'Nur bestätigte', statuses: ['bestaetigt'] },
+  warteliste: { label: 'Angemeldete + Warteliste', statuses: [...REG_COUNTING, 'warteliste'] },
+};
+
+function participants(eventId, { scope = 'angemeldet', shiftId = null, sort = 'rang' } = {}, user = null) {
+  const statuses = (PARTICIPANT_SCOPES[scope] || PARTICIPANT_SCOPES.angemeldet).statuses;
+  const where = ['g.event_id = ?', 'g.person_id IS NOT NULL', `g.status IN (${statuses.map(() => '?').join(',')})`];
+  const params = [eventId, ...statuses];
+  if (shiftId) {
+    where.push('EXISTS (SELECT 1 FROM shift_assignments a WHERE a.registration_id = g.id AND a.shift_id = ?)');
+    params.push(Number(shiftId));
+  }
+  const rows = hydrate(db.all(`${SELECT} WHERE ${where.join(' AND ')} ORDER BY ${rankOrder(sort)}, g.id`, ...params));
+  const diets = new Map();
+  if (rows.length) {
+    const ids = rows.map((r) => r.person_id);
+    for (const p of db.all(`SELECT id, diet_category, diet_text FROM persons WHERE id IN (${ids.map(() => '?').join(',')})`, ...ids)) diets.set(p.id, p);
+  }
+  return rows.map((r) => {
+    const d = diets.get(r.person_id) || {};
+    const has = Boolean(d.diet_category || d.diet_text);
+    const visible = has && persons.canSeeDiet(user, r.person_id);
+    r.diet = {
+      has, visible,
+      category: visible && d.diet_category ? DIET[d.diet_category] || d.diet_category : '',
+      text: visible ? d.diet_text || '' : '',
+    };
+    r.diet.label = !has ? '' : visible ? [r.diet.category, r.diet.text].filter(Boolean).join(': ') : 'Hinweis vorhanden';
+    return r;
+  });
+}
+
+// Zusammenfassung der Essenseinschränkungen für die Küche: [[Bezeichnung, Anzahl]]
+function dietSummary(list) {
+  const counts = new Map();
+  for (const r of list) {
+    const key = !r.diet.has ? 'ohne Einschränkung' : !r.diet.visible ? 'Hinweis vorhanden' : r.diet.category || 'andere';
+    counts.set(key, (counts.get(key) || 0) + 1);
+  }
+  const last = ['Hinweis vorhanden', 'ohne Einschränkung'];
+  return [...counts].sort((a, b) => (last.indexOf(a[0]) - last.indexOf(b[0])) || b[1] - a[1] || a[0].localeCompare(b[0], 'de'));
 }
 
 function listForPerson(personId) {
@@ -306,5 +354,5 @@ function remove(id, user) {
 
 module.exports = {
   remove, get, listForEvent, listForPerson, unresolved, create, setStatus, bulkStatus, updateNote, assignPerson, setShifts, overlaps,
-  applyWishes, personLabel, findUnresolvedDuplicate, hydrate,
+  applyWishes, personLabel, findUnresolvedDuplicate, hydrate, participants, dietSummary, PARTICIPANT_SCOPES,
 };
