@@ -10,7 +10,7 @@
   <% if (event.status === 'abgeschlossen') { %><input type="hidden" name="reason" value="" data-reason><% } %>
   <div class="fields fields-2">
     <div class="field"><label for="<%= fid %>-unit">Abteilung <span class="req">*</span></label>
-      <input id="<%= fid %>-unit" type="text" name="unit_name" list="ext-units" required maxlength="120" value="<%= isNewExt ? '' : x.unit_name %>" placeholder="z. B. Feuerwehr Riehen" autocomplete="off">
+      <input id="<%= fid %>-unit" type="text" name="unit_name" list="ext-units" required maxlength="120" value="<%= isNewExt ? '' : x.unit_name %>" placeholder="z. B. VK NWS" autocomplete="off">
       <div class="field-hint">Aus der Liste wählen oder neuen Namen eintippen – er wird für das nächste Mal gespeichert.</div></div>
     <div class="field"><label for="<%= fid %>-count">Anzahl Personen <span class="req">*</span></label>
       <input id="<%= fid %>-count" type="number" name="person_count" min="1" max="9999" step="1" required value="<%= isNewExt ? '' : x.person_count %>" inputmode="numeric"></div>
