@@ -31,7 +31,7 @@
           <summary>
             <span class="name"><span class="tag tag-blue">extern</span> <strong><%= x.unit_name %></strong></span>
             <span class="ext-count"><strong><%= h.plural(x.person_count, 'Person', 'Personen') %></strong></span>
-            <span class="ext-meta muted small"><%= [multiShift ? (x.allShifts ? 'alle Schichten' : x.shiftNames.join(' + ')) : '', x.contact ? `Kontakt: ${x.contact}` : '', x.note || ''].filter(Boolean).join(' · ') %></span>
+            <span class="ext-meta muted small"><%= [multiShift ? (x.allShifts ? 'alle Schichten' : x.shiftNames.join(' + ')) : '', x.dietLabel ? `Essen: ${x.dietLabel}` : '', x.contact ? `Kontakt: ${x.contact}` : '', x.note || ''].filter(Boolean).join(' · ') %></span>
             <span class="btn btn-sm btn-ghost no-print">Bearbeiten</span>
           </summary>
           <%- include('_external-form', { x }) %>

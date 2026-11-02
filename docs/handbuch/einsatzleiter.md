@@ -57,7 +57,7 @@ Gibt dir die Aufgebotsstelle einen weiteren Einsatz frei, erscheint er sofort in
 | Schicht | Erscheint, wenn der Einsatz mehrere Schichten hat. «noch keine» heisst: noch nicht eingeteilt. |
 | Status | **Bestätigt** – fix dabei. **Neu eingegangen** und **Rückfrage nötig** – angemeldet, aber von der Aufgebotsstelle noch nicht bestätigt. **Warteliste** – nur bei der Auswahl «Angemeldete + Warteliste». |
 
-Unter der Tabelle stehen die **externen Abteilungen** (Leute anderer Abteilungen, nur mit Anzahl, ohne Namen) und die **Verpflegung** als Zusammenfassung für die Küche, z. B. «2 vegetarisch · 1 Allergie · 7 ohne Einschränkung».
+Unter der Tabelle stehen die **externen Abteilungen** (Leute anderer Abteilungen, nur mit Anzahl, ohne Namen, z. B. «2× vegetarisch, 1× Allergie: Nüsse») und die **Verpflegung** als Zusammenfassung für die Küche, z. B. «3 vegetarisch · 1 Allergie · 7 ohne Einschränkung». Die Essenseinschränkungen der externen Abteilungen sind darin schon mitgezählt.
 
 **Auswahl über der Tabelle:**
 

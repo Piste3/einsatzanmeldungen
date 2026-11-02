@@ -204,6 +204,7 @@ CREATE TABLE IF NOT EXISTS event_externals (
   shift_ids JSON NOT NULL DEFAULT '[]',  -- leer = alle Schichten des Einsatzes
   contact TEXT,                -- Ansprechperson der Abteilung (Name, Telefon)
   note TEXT,
+  diets JSON NOT NULL DEFAULT '[]',     -- Essenseinschränkungen: [{ count, category, text }]
   version INTEGER NOT NULL DEFAULT 1,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL,

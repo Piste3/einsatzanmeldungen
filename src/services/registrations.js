@@ -112,14 +112,14 @@ function participantView(e, query, user) {
   };
 }
 
-// Zusammenfassung der Essenseinschränkungen für die Küche: [[Bezeichnung, Anzahl]]
-function dietSummary(list) {
-  const counts = new Map();
+// Zusammenfassung der Essenseinschränkungen für die Küche: [[Bezeichnung, Anzahl]], inkl. externe Abteilungen
+function dietSummary(list, exts = []) {
+  const counts = externals.dietCounts(exts);
   for (const r of list) {
     const key = !r.diet.has ? 'ohne Einschränkung' : !r.diet.visible ? 'Hinweis vorhanden' : r.diet.category || 'andere';
     counts.set(key, (counts.get(key) || 0) + 1);
   }
-  const last = ['Hinweis vorhanden', 'ohne Einschränkung'];
+  const last = ['Hinweis vorhanden', 'ohne Einschränkung', 'extern (keine Angaben)'];
   return [...counts].sort((a, b) => (last.indexOf(a[0]) - last.indexOf(b[0])) || b[1] - a[1] || a[0].localeCompare(b[0], 'de'));
 }
 

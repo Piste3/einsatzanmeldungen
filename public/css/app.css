@@ -708,6 +708,9 @@ tr.changed td:first-child { box-shadow: inset 3px 0 0 var(--orange, #e8742a); }
 .ext-add[open] > summary { display: none; }
 .shift-row.ext { background: var(--surface-2); }
 @media (max-width: 760px) { .ext-row > summary .ext-meta { flex-basis: 100%; } }
+.diet-rows { display: grid; gap: 6px; margin-bottom: 6px; }
+.diet-row { display: grid; grid-template-columns: 76px minmax(130px, 180px) minmax(0, 1fr) auto; gap: 6px; align-items: center; }
+@media (max-width: 560px) { .diet-row { grid-template-columns: 64px minmax(0, 1fr) auto; } .diet-row input[name="diet_text"] { grid-column: 1 / 3; grid-row: 2; } }
 .participants .ext-head { border-top: 1px solid var(--border); padding-bottom: 6px; }
 .participants .tag-ext { min-width: 0; }
 .shift-cols .occ-head { gap: 8px; }

@@ -243,7 +243,7 @@ router.get('/einsaetze/:id/teilnehmerliste', loadEvent, (req, res) => {
   const baseName = `Teilnehmerliste ${e.name}${shift ? ` ${shift.name}` : ''}`;
   if (format === 'pdf') {
     const leader = e.leader_person_id ? `Leitung ${[e.leader_rank, e.leader_first, e.leader_last].filter(Boolean).join(' ')}` : '';
-    const summary = registrations.dietSummary(list);
+    const summary = registrations.dietSummary(list, exts);
     const columns = [
       { label: 'Nr.', fit: true, align: 'right', value: (r, i) => String(i + 1) },
       { label: 'Rang', fit: true, value: (r) => r.rank_short || '' },
@@ -257,8 +257,9 @@ router.get('/einsaetze/:id/teilnehmerliste', loadEvent, (req, res) => {
       { label: 'Abteilung', width: 2, value: (x) => ({ text: x.unit_name, bold: true }) },
       { label: 'Personen', fit: true, align: 'right', value: (x) => ({ text: String(x.person_count), bold: true }) },
       ...(showShift ? [{ label: 'Schicht', width: 1.3, value: (x) => externals.shiftLabel(x, e.shifts) }] : []),
-      { label: 'Kontakt', width: 1.8, value: (x) => x.contact || '–' },
-      { label: 'Bemerkung', width: 1.8, value: (x) => x.note || '' },
+      { label: 'Essenseinschränkungen', width: 2.2, value: (x) => (x.dietLabel ? { text: x.dietLabel, bold: true } : { text: '–', muted: true }) },
+      { label: 'Kontakt', width: 1.6, value: (x) => x.contact || '–' },
+      { label: 'Bemerkung', width: 1.4, value: (x) => x.note || '' },
     ];
     const pdf = tablePdf({
       title: `Teilnehmerliste · ${e.name}${shift ? ` · ${shift.name}` : ''}`,
@@ -275,7 +276,7 @@ router.get('/einsaetze/:id/teilnehmerliste', loadEvent, (req, res) => {
         rows: exts.map((x) => extColumns.map((c) => c.value(x))),
       }] : [],
       after: list.length || extTotal ? [
-        { label: 'Verpflegung:', text: [...summary.map(([l, n]) => `${n} ${l}`), ...(extTotal ? [`${extTotal} extern (keine Angaben)`] : [])].join(' · ') },
+        { label: 'Verpflegung:', text: summary.map(([l, n]) => `${n} ${l}`).join(' · ') },
         ...(summary.some(([l]) => l === 'Hinweis vorhanden') ? [{ text: '«Hinweis vorhanden»: Nach dem Einsatz sieht die genaue Angabe nur noch ein Admin.', muted: true }] : []),
       ] : [],
       footer: `${settings.get('verein_name') || 'KKB'} · KKB-Einsatzplaner · Stand ${h.fmtDateTime(h.nowIso())}`,
@@ -302,14 +303,14 @@ router.get('/einsaetze/:id/teilnehmerliste', loadEvent, (req, res) => {
     cols.splice(1, 0, { label: 'Anzahl', value: (r) => (r.ext ? r.ext.person_count : 1) });
     const extCols = {
       'Nr.': () => '', Anzahl: (x) => x.person_count, Rang: () => 'extern', Nachname: (x) => x.unit_name, Vorname: () => '',
-      Mobil: (x) => x.contact || '', 'Essenseinschränkung': () => '', Details: (x) => x.note || '', Schicht: (x) => externals.shiftLabel(x, e.shifts), Status: () => '',
+      Mobil: (x) => x.contact || '', 'Essenseinschränkung': (x) => x.dietLabel, Details: (x) => x.note || '', Schicht: (x) => externals.shiftLabel(x, e.shifts), Status: () => '',
     };
     const wrapCols = cols.map((c) => ({ label: c.label, value: (r) => (r.ext ? extCols[c.label](r.ext) : c.value(r)) }));
     return sendTable(res, format, baseName, wrapCols, [...list, ...exts.map((x) => ({ ext: x }))]);
   }
   res.render('pages/participants', {
     title: `${e.name} · Teilnehmerliste`, list, filters, shift, showShift, showStatus, shiftOf,
-    summary: registrations.dietSummary(list), scopes: registrations.PARTICIPANT_SCOPES, exts, extTotal, extShift: (x) => externals.shiftLabel(x, e.shifts),
+    summary: registrations.dietSummary(list, exts), scopes: registrations.PARTICIPANT_SCOPES, exts, extTotal, extShift: (x) => externals.shiftLabel(x, e.shifts),
     unresolved: db.one("SELECT COUNT(*) AS n FROM registrations WHERE event_id = ? AND person_id IS NULL AND status = 'unsicher'", e.id).n,
   });
 });

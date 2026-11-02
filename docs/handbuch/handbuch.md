@@ -172,6 +172,7 @@ Manchmal helfen andere Abteilungen oder Vereine mit, z. B. die Feuerwehr oder ei
 - **Abteilung:** aus der Liste wählen oder einen neuen Namen eintippen. Ein neuer Name wird automatisch in die Liste aufgenommen und beim nächsten Einsatz vorgeschlagen. Gross- und Kleinschreibung spielt keine Rolle.
 - **Anzahl Personen** eintragen.
 - **Schichten:** Hat der Einsatz mehrere Schichten, ankreuzen, in welchen die Abteilung mithilft. Sind alle angekreuzt, gilt sie für den ganzen Einsatz, auch für später hinzugefügte Schichten.
+- **Essenseinschränkungen** (freiwillig): pro Zeile die Anzahl Personen, die Art (vegetarisch, vegan, Allergie, Unverträglichkeit, religiös, andere) und bei Bedarf Details, z. B. «2 · vegetarisch» und «1 · Allergie · Nüsse». Mit **+ weitere Einschränkung** kommt eine Zeile dazu, mit **✕** fällt sie weg. Auch hier braucht es keine Namen. Wer nicht aufgeführt ist, isst ohne Einschränkung. Es können nicht mehr Einschränkungen als Personen erfasst werden.
 - **Kontakt** (z. B. «Hptm Muster, 079 …») und **Bemerkung** sind freiwillig.
 - Mit **Bearbeiten** lassen sich die Angaben ändern oder die Abteilung **vom Einsatz entfernen**.
 
@@ -179,7 +180,8 @@ Was die externen Personen bewirken:
 
 - Sie **zählen in der Besetzung mit** (Ist / Soll) – in der Übersicht, im Cockpit, in der Einsatzliste und unter «Schichten». Ist eine Schicht damit voll, erscheint der übliche Hinweis.
 - In den **Rückmeldungen** steht die Zahl zusätzlich, z. B. «9 + 6 ext. / 10».
-- Auf der **Teilnehmerliste** (Seite, PDF, Excel, CSV) stehen sie in einem eigenen Abschnitt mit Anzahl, Schicht, Kontakt und Bemerkung. Oben steht das Total, z. B. «11 Personen + 9 extern = 20 total». In der Verpflegung erscheinen sie als «9 extern (keine Angaben)».
+- Auf der **Teilnehmerliste** (Seite, PDF, Excel, CSV) stehen sie in einem eigenen Abschnitt mit Anzahl, Schicht, Essenseinschränkungen, Kontakt und Bemerkung. Oben steht das Total, z. B. «11 Personen + 9 extern = 20 total».
+- In der **Verpflegung** unter der Teilnehmerliste zählen ihre Essenseinschränkungen zu denen der eigenen Leute dazu, z. B. «3 vegetarisch». Die übrigen Personen dieser Abteilung zählen als «ohne Einschränkung». Hat eine Abteilung gar keine Essenseinschränkungen eingetragen, erscheinen ihre Personen als «extern (keine Angaben)».
 - Jede Änderung steht im Verlauf des Einsatzes.
 
 ### Reiter «Formular»
@@ -199,7 +201,7 @@ Jede Änderung am Einsatz, an Anmeldungen und Anfragen steht hier mit Zeitpunkt 
 Die Teilnehmerliste zeigt auf einen Blick, wer kommt – mit **Rang, Name, Mobilnummer und Essenseinschränkungen**, der höchste Rang zuerst. Ein Klick auf **Teilnehmerliste** oben auf jeder Seite des Einsatzes öffnet sie sofort als **PDF in einem neuen Tab**. Von dort lässt sie sich drucken, speichern oder weiterschicken.
 
 - Unter der Liste steht die Zusammenfassung für die Küche, z. B. «2 vegetarisch · 1 Allergie · 7 ohne Einschränkung».
-- **Externe Abteilungen** stehen in einem eigenen Abschnitt unter den Personen, mit Anzahl, Schicht, Kontakt und Bemerkung. In Excel und CSV kommen sie als eigene Zeilen mit Rang «extern» und einer Spalte «Anzahl» ans Ende. Ist die Liste auf eine Schicht eingeschränkt, erscheinen nur die Abteilungen dieser Schicht.
+- **Externe Abteilungen** stehen in einem eigenen Abschnitt unter den Personen, mit Anzahl, Schicht, Essenseinschränkungen, Kontakt und Bemerkung; ihre Essenseinschränkungen zählen in der Verpflegung mit. In Excel und CSV kommen sie als eigene Zeilen mit Rang «extern» und einer Spalte «Anzahl» ans Ende. Ist die Liste auf eine Schicht eingeschränkt, erscheinen nur die Abteilungen dieser Schicht.
 - Der kleine Pfeil **▾** neben dem Knopf bietet die Liste auch als **Excel** oder **CSV** an, mit Essenseinschränkung und Details in getrennten Spalten.
 - **Auswahl anpassen …** (ebenfalls im Pfeil-Menü) zeigt die Liste in der App und lässt wählen:
   - **Wer steht drauf:** «Angemeldete» (neu, Rückfrage und bestätigt – wie die Besetzung), «Nur bestätigte» oder «Angemeldete + Warteliste». Abmeldungen, Absagen und ungültige Anmeldungen stehen nie drauf.
@@ -700,7 +702,7 @@ Im Einsatz oben auf **Teilnehmerliste** klicken – sie öffnet sich als PDF in 
 Ja. Er braucht ein Konto mit der Rolle «Einsatzleiter», und die Aufgebotsstelle gibt ihm den Einsatz in der Übersicht unter «Einsatzleiter-Zugriff» frei. Dann sieht er Angaben und Teilnehmerliste – nur lesen.
 
 **Eine andere Abteilung schickt Leute. Muss ich alle Namen erfassen?**
-Nein. In der Übersicht des Einsatzes unter **Externe Abteilungen** nur die Abteilung und die Anzahl Personen eintragen. Sie zählen in der Besetzung mit und stehen auf der Teilnehmerliste.
+Nein. In der Übersicht des Einsatzes unter **Externe Abteilungen** nur die Abteilung und die Anzahl Personen eintragen, bei Bedarf auch Essenseinschränkungen als Anzahl (z. B. 2 × vegetarisch). Sie zählen in der Besetzung und in der Verpflegung mit und stehen auf der Teilnehmerliste.
 
 **Funktioniert der Einsatzplaner auf dem Handy?**
 Ja. Er ist für den Computer gemacht, lässt sich aber auch auf Tablet und Handy bedienen – etwa um unterwegs einen Anruf zu erfassen.

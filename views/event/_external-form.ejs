@@ -21,6 +21,22 @@
         <% for (const s of event.shifts) { %><label class="check"><input type="checkbox" name="shift_ids" value="<%= s.id %>" <%= isNewExt || x.allShifts || x.shiftIds.includes(s.id) ? 'checked' : '' %>> <%= s.name %></label><% } %>
       </div></div>
   <% } %>
+  <%
+    const dietRows = [...(isNewExt ? [] : x.dietList), { count: '', category: '', text: '' }];
+    const dietRow = (d) => `<div class="diet-row" data-diet-row>
+      <input type="number" name="diet_count" min="1" max="9999" step="1" inputmode="numeric" value="${h.escapeHtml(d.count)}" placeholder="Anz." aria-label="Anzahl Personen">
+      <select name="diet_category" aria-label="Art"><option value="">Art wählen</option>${Object.entries(h.labels.DIET).map(([k, v]) => `<option value="${k}"${d.category === k ? ' selected' : ''}>${h.escapeHtml(v)}</option>`).join('')}</select>
+      <input type="text" name="diet_text" maxlength="200" value="${h.escapeHtml(d.text)}" placeholder="Details, z. B. Nüsse" aria-label="Details">
+      <button type="button" class="btn btn-sm btn-ghost" data-diet-remove title="Zeile entfernen" aria-label="Zeile entfernen">✕</button>
+    </div>`;
+  %>
+  <div class="field"><label>Essenseinschränkungen <span class="muted small">(optional, nur Anzahl)</span></label>
+    <div class="diet-rows" data-diet-rows>
+      <% for (const d of dietRows) { %><%- dietRow(d) %><% } %>
+    </div>
+    <template data-diet-template><%- dietRow({ count: '', category: '', text: '' }) %></template>
+    <button type="button" class="btn btn-sm btn-ghost" data-diet-add>+ weitere Einschränkung</button>
+    <div class="field-hint">Zum Beispiel 2 × vegetarisch, 1 × Allergie «Nüsse». Wer nicht aufgeführt ist, isst ohne Einschränkung.</div></div>
   <div class="fields fields-2">
     <div class="field"><label for="<%= fid %>-contact">Kontakt <span class="muted small">(optional)</span></label>
       <input id="<%= fid %>-contact" type="text" name="contact" maxlength="500" value="<%= isNewExt ? '' : x.contact || '' %>" placeholder="z. B. Hptm Muster, 079 123 45 67"></div>

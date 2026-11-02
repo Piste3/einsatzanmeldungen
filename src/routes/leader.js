@@ -50,7 +50,7 @@ router.get('/einsaetze/:id(\\d+)', loadGranted, (req, res) => {
   const view = registrations.participantView(e, req.query, req.user);
   res.render('leader/event', {
     title: e.name, ...view, shifts: events.stats(e).shifts, extraDefs: events.extraDefs(),
-    summary: registrations.dietSummary(view.list), scopes: registrations.PARTICIPANT_SCOPES,
+    summary: registrations.dietSummary(view.list, view.exts), scopes: registrations.PARTICIPANT_SCOPES,
     liveTopics: [`event:${e.id}`, `leader:${req.user.id}`],
   });
 });

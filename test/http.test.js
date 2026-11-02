@@ -323,20 +323,30 @@ test('Externe Abteilungen: mit Anzahl erfassen, zählen in der Besetzung, stehen
 
   // ändern und Verlauf
   const x = db.one('SELECT id FROM event_externals WHERE person_count = 6');
-  assert.equal((await post(`/einsaetze/${ev}/externe/${x.id}`, [['unit_name', 'Feuerwehr Riehen'], ['person_count', '7'], ['shift_ids', String(tag.id)], ['contact', 'Hptm Muster 079 555 44 33']])).status, 302);
+  assert.equal((await post(`/einsaetze/${ev}/externe/${x.id}`, [['unit_name', 'Feuerwehr Riehen'], ['person_count', '7'], ['shift_ids', String(tag.id)], ['contact', 'Hptm Muster 079 555 44 33'],
+    ['diet_count', '2'], ['diet_category', 'vegetarisch'], ['diet_text', ''],
+    ['diet_count', '1'], ['diet_category', 'allergie'], ['diet_text', 'Nüsse'],
+    ['diet_count', ''], ['diet_category', ''], ['diet_text', '']])).status, 302);
+  assert.deepEqual(JSON.parse(db.one('SELECT diets FROM event_externals WHERE id = ?', x.id).diets), [{ count: 2, category: 'vegetarisch', text: '' }, { count: 1, category: 'allergie', text: 'Nüsse' }]);
+  // mehr Einschränkungen als Personen: abgelehnt, alte Angaben bleiben
+  await post(`/einsaetze/${ev}/externe/${x.id}`, [['unit_name', 'Feuerwehr Riehen'], ['person_count', '7'], ['shift_ids', String(tag.id)], ['diet_count', '8'], ['diet_category', 'vegan'], ['diet_text', '']]);
+  assert.match(db.one('SELECT diets FROM event_externals WHERE id = ?', x.id).diets, /Nüsse/);
   st = events.stats(events.get(ev));
   assert.equal(st.shifts[0].ist, 9);
-  assert.ok(db.one("SELECT 1 FROM audit_log WHERE event_id = ? AND entity_type = 'external' AND summary LIKE '%Anzahl 6 → 7%'", ev));
+  assert.ok(db.one("SELECT 1 FROM audit_log WHERE event_id = ? AND entity_type = 'external' AND summary LIKE '%Anzahl 6 → 7%Essenseinschränkungen%'", ev));
 
   const html = await (await get(`/einsaetze/${ev}/teilnehmerliste`, ext.cookie)).text();
   assert.match(html, /0 Personen \+ 9 extern/);
   assert.match(html, /Feuerwehr Riehen/);
   assert.match(html, /Hptm Muster 079 555 44 33/);
+  assert.match(html, /2× vegetarisch/);
+  assert.match(html, /1× Allergie<\/strong>: Nüsse/);
+  assert.match(html, /Verpflegung:<\/strong>\s*2 vegetarisch · 1 Allergie · 4 ohne Einschränkung · 2 extern \(keine Angaben\)/);
   const abendHtml = await (await get(`/einsaetze/${ev}/teilnehmerliste?schicht=${abend.id}`, ext.cookie)).text();
   assert.match(abendHtml, /0 Personen \+ 2 extern/);
   const csv = (await (await get(`/einsaetze/${ev}/teilnehmerliste?format=csv`, ext.cookie)).text()).replace(/^﻿/, '').trim().split(/\r?\n/);
   assert.match(csv[0], /^Nr\.;Anzahl;Rang;Nachname/);
-  assert.match(csv[1], /^;7;extern;Feuerwehr Riehen;;Hptm Muster 079 555 44 33/);
+  assert.match(csv[1], /^;7;extern;Feuerwehr Riehen;;Hptm Muster 079 555 44 33;"2× vegetarisch, 1× Allergie: Nüsse";/);
   const pdf = Buffer.from(await (await get(`/einsaetze/${ev}/teilnehmerliste?format=pdf`, ext.cookie)).arrayBuffer());
   assert.match(pdf.toString('latin1'), /^%PDF-1\.4/);
   assert.equal((await get(`/einsaetze/${ev}/schichten`, ext.cookie)).status, 200);

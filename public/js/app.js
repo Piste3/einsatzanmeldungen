@@ -212,6 +212,21 @@
       return;
     }
     if (t.matches('[data-print]')) { ev.preventDefault(); window.print(); return; }
+    // Essenseinschränkungen externer Abteilungen: Zeile hinzufügen / entfernen
+    if (t.matches('[data-diet-add]')) {
+      const field = t.closest('.field');
+      const rows = $('[data-diet-rows]', field);
+      rows.insertAdjacentHTML('beforeend', $('[data-diet-template]', field).innerHTML);
+      $$('[data-diet-row]', rows).pop().querySelector('input').focus();
+      return;
+    }
+    if (t.matches('[data-diet-remove]')) {
+      const row = t.closest('[data-diet-row]');
+      const rows = row.parentElement;
+      if ($$('[data-diet-row]', rows).length > 1) row.remove();
+      else { $$('input', row).forEach((i) => { i.value = ''; }); $('select', row).value = ''; }
+      return;
+    }
     if (t.matches('[data-fill]')) {
       const target = document.getElementById(t.dataset.fill);
       if (target) { target.value = t.dataset.text; target.focus(); }
