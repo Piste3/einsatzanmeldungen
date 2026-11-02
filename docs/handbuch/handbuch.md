@@ -101,10 +101,10 @@ Das Cockpit beantwortet jeden Tag die Frage: Was ist zu tun?
 ![Das Cockpit](bilder/02-cockpit.jpg)
 
 - **Kennzahlen:** neue Anmeldungen, unklare Namen, noch nicht erreichte Personen und die Tage bis zum nächsten Einsatz.
-- **Anstehende Einsätze:** Besetzung pro Schicht (Ist / Soll; grün = voll, gelb = teilweise, rot = viele fehlen), dazu wie viele Anmeldungen neu, unsicher oder offen sind. Ein Klick öffnet den Einsatz.
-- **Noch nicht bestätigt:** unten alle Anmeldungen für anstehende Einsätze mit Status «Neu eingegangen», «Rückfrage nötig» oder «Warteliste», nach Einsatz und Rang geordnet, mit Schicht, Quelle und Zeitpunkt. **Bestätigen** bestätigt direkt aus dem Cockpit. Ein Klick auf den Einsatz öffnet die Anmeldung dort.
-- **Zu tun:** konkrete Hinweise, z. B. Anmeldungen bestätigen, Personen nachfassen, ein voller Einsatz, der noch im Formular steht, oder ein Aufgebot, das noch nicht exportiert ist.
-- **Letzte Aktivität:** wer sich wann angemeldet hat, wer wen angefragt und wer was bestätigt hat.
+- **Noch nicht bestätigt:** zuoberst links alle Anmeldungen für anstehende Einsätze mit Status «Neu eingegangen», «Rückfrage nötig» oder «Warteliste», nach Einsatz und Rang geordnet, mit Schicht, Quelle und Zeitpunkt. **Bestätigen** bestätigt direkt aus dem Cockpit. Ein Klick auf den Einsatz öffnet die Anmeldung dort.
+- **Anstehende Einsätze:** direkt darunter die Besetzung pro Schicht (Ist / Soll; grün = voll, gelb = teilweise, rot = viele fehlen), dazu wie viele Anmeldungen neu, unsicher oder offen sind. Ein Klick öffnet den Einsatz.
+- **Zu tun** (rechts): konkrete Hinweise, z. B. Anmeldungen bestätigen, Personen nachfassen, ein voller Einsatz, der noch im Formular steht, oder ein Aufgebot, das noch nicht exportiert ist.
+- **Letzte Aktivität** (rechts, unter «Zu tun»): wer sich wann angemeldet hat, wer wen angefragt und wer was bestätigt hat.
 
 ## 5 · Einen Einsatz anlegen und veröffentlichen
 

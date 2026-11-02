@@ -38,40 +38,66 @@
 </div>
 
 <div class="grid grid-main">
-  <div class="card">
-    <div class="card-head">
-      <h2>Anstehende Einsätze <span class="hint">nächste 3 Monate</span></h2>
-      <a class="small" href="/einsaetze">Alle Einsätze →</a>
+  <div class="stack">
+    <div class="card" id="unbestaetigt">
+      <div class="card-head">
+        <h2>Noch nicht bestätigt <span class="hint"><%= unconfirmed.length %> Anmeldung<%= unconfirmed.length === 1 ? '' : 'en' %> für anstehende Einsätze</span></h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Person</th><th>Einsatz / Schicht</th><th>Eingang</th><th>Status</th><th class="actions-col"></th></tr></thead>
+          <tbody>
+          <% if (!unconfirmed.length) { %><tr><td colspan="5" class="empty">Alle Anmeldungen sind bestätigt.</td></tr><% } %>
+          <% for (const r of unconfirmed) { %>
+            <tr data-row-id="u<%= r.id %>-<%= r.status %>">
+              <td><%- h.rank(r.rank_short) %><a class="nowrap" href="/personen/<%= r.person_id %>"><strong><%= r.first_name %> <%= r.last_name %></strong></a><% if (r.remark) { %><span class="sub">«<%= r.remark %>»</span><% } %></td>
+              <td><a href="/einsaetze/<%= r.event_id %>/anmeldungen?q=<%= encodeURIComponent(r.last_name) %>"><%= r.event_name %></a><span class="sub"><%= h.fmtDateWd(r.event_date) %><%= r.event_status === 'entwurf' ? ' · Entwurf' : '' %><%= r.shifts ? ` · ${r.shifts}` : '' %></span></td>
+              <td class="nowrap"><%= h.labels.SOURCE[r.source] %><span class="sub"><%= h.fmtRelative(r.registered_at) %></span></td>
+              <td><%- h.regBadge(r.status) %></td>
+              <td class="actions-col right nowrap">
+                <form method="post" action="/anmeldungen/<%= r.id %>/status" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="status" value="bestaetigt"><input type="hidden" name="expected" value="<%= r.status %>"><input type="hidden" name="back" value="/"><button class="btn btn-sm" type="submit">Bestätigen</button></form>
+              </td>
+            </tr>
+          <% } %>
+          </tbody>
+        </table>
+      </div>
     </div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Einsatz</th><th>Besetzung (Ist / Soll)</th><th class="center">Neu</th><th class="center">Unsicher</th><th class="center">Offen</th></tr></thead>
-        <tbody>
-        <% if (!rows.length) { %><tr><td colspan="5" class="empty">Keine anstehenden Einsätze. <a class="link" href="/einsaetze/neu">Neuen Einsatz anlegen</a></td></tr><% } %>
-        <% for (const e of rows) { %>
-          <tr data-row-id="ev<%= e.id %>">
-            <td>
-              <a href="/einsaetze/<%= e.id %>"><strong><%= e.name %></strong></a>
-              <span class="sub"><%= h.fmtDateWd(e.date) %> · <%= h.plural(e.shifts.length, 'Schicht', 'Schichten') %></span>
-              <div class="mt-s"><% if (e.status === 'entwurf') { %><%- h.badge('Entwurf', 'gray') %><% } else if (e.inForm) { %><%- h.badge('im Formular', 'green') %><% } else { %><%- h.badge('nicht im Formular', 'gray') %><% } %></div>
-            </td>
-            <td>
-              <% if (e.status === 'entwurf') { %><span class="muted small">noch nicht veröffentlicht</span><% } else { %>
-                <% for (const s of e.stats.shifts) { %>
-                  <div class="occ">
-                    <div class="occ-head"><span><%= s.name %></span><strong><%= s.ist %> / <%= s.soll ?? '–' %></strong></div>
-                    <div class="bar <%= s.tone %>"><span style="width:<%= h.pct(s.ist, s.soll) %>%"></span></div>
-                  </div>
+    <div class="card">
+      <div class="card-head">
+        <h2>Anstehende Einsätze <span class="hint">nächste 3 Monate</span></h2>
+        <a class="small" href="/einsaetze">Alle Einsätze →</a>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Einsatz</th><th>Besetzung (Ist / Soll)</th><th class="center">Neu</th><th class="center">Unsicher</th><th class="center">Offen</th></tr></thead>
+          <tbody>
+          <% if (!rows.length) { %><tr><td colspan="5" class="empty">Keine anstehenden Einsätze. <a class="link" href="/einsaetze/neu">Neuen Einsatz anlegen</a></td></tr><% } %>
+          <% for (const e of rows) { %>
+            <tr data-row-id="ev<%= e.id %>">
+              <td>
+                <a href="/einsaetze/<%= e.id %>"><strong><%= e.name %></strong></a>
+                <span class="sub"><%= h.fmtDateWd(e.date) %> · <%= h.plural(e.shifts.length, 'Schicht', 'Schichten') %></span>
+                <div class="mt-s"><% if (e.status === 'entwurf') { %><%- h.badge('Entwurf', 'gray') %><% } else if (e.inForm) { %><%- h.badge('im Formular', 'green') %><% } else { %><%- h.badge('nicht im Formular', 'gray') %><% } %></div>
+              </td>
+              <td>
+                <% if (e.status === 'entwurf') { %><span class="muted small">noch nicht veröffentlicht</span><% } else { %>
+                  <% for (const s of e.stats.shifts) { %>
+                    <div class="occ">
+                      <div class="occ-head"><span><%= s.name %></span><strong><%= s.ist %> / <%= s.soll ?? '–' %></strong></div>
+                      <div class="bar <%= s.tone %>"><span style="width:<%= h.pct(s.ist, s.soll) %>%"></span></div>
+                    </div>
+                  <% } %>
                 <% } %>
-              <% } %>
-            </td>
-            <td class="center"><%= e.status === 'entwurf' ? '–' : e.stats.neu %></td>
-            <td class="center"><% if (e.stats.zuPruefen) { %><%- h.badge(e.stats.zuPruefen, 'yellow') %><% } else { %>–<% } %></td>
-            <td class="center"><%= e.status === 'entwurf' ? '–' : e.stats.offen %></td>
-          </tr>
-        <% } %>
-        </tbody>
-      </table>
+              </td>
+              <td class="center"><%= e.status === 'entwurf' ? '–' : e.stats.neu %></td>
+              <td class="center"><% if (e.stats.zuPruefen) { %><%- h.badge(e.stats.zuPruefen, 'yellow') %><% } else { %>–<% } %></td>
+              <td class="center"><%= e.status === 'entwurf' ? '–' : e.stats.offen %></td>
+            </tr>
+          <% } %>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -90,32 +116,6 @@
         <div class="activity" data-row-id="a<%= a.id %>"><time><%= h.fmtRelative(a.created_at) %></time> <%= a.summary %></div>
       <% } %>
     </div>
-  </div>
-</div>
-<div class="card mt" id="unbestaetigt">
-  <div class="card-head">
-    <h2>Noch nicht bestätigt <span class="hint"><%= unconfirmed.length %> Anmeldung<%= unconfirmed.length === 1 ? '' : 'en' %> für anstehende Einsätze</span></h2>
-  </div>
-  <div class="table-wrap">
-    <table>
-      <thead><tr><th>Person</th><th>Einsatz</th><th>Schicht</th><th>Quelle</th><th>Angemeldet</th><th>Status</th><th class="actions-col"></th></tr></thead>
-      <tbody>
-      <% if (!unconfirmed.length) { %><tr><td colspan="7" class="empty">Alle Anmeldungen sind bestätigt.</td></tr><% } %>
-      <% for (const r of unconfirmed) { %>
-        <tr data-row-id="u<%= r.id %>-<%= r.status %>">
-          <td><%- h.rank(r.rank_short) %><a href="/personen/<%= r.person_id %>"><strong><%= r.first_name %> <%= r.last_name %></strong></a><% if (r.remark) { %><span class="sub">«<%= r.remark %>»</span><% } %></td>
-          <td><a href="/einsaetze/<%= r.event_id %>/anmeldungen?q=<%= encodeURIComponent(r.last_name) %>"><%= r.event_name %></a><span class="sub"><%= h.fmtDateWd(r.event_date) %><%= r.event_status === 'entwurf' ? ' · Entwurf' : '' %></span></td>
-          <td><%= r.shifts || '–' %></td>
-          <td><%= h.labels.SOURCE[r.source] %></td>
-          <td class="nowrap"><%= h.fmtRelative(r.registered_at) %></td>
-          <td><%- h.regBadge(r.status) %></td>
-          <td class="actions-col right nowrap">
-            <form method="post" action="/anmeldungen/<%= r.id %>/status" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="status" value="bestaetigt"><input type="hidden" name="expected" value="<%= r.status %>"><input type="hidden" name="back" value="/"><button class="btn btn-sm" type="submit">Bestätigen</button></form>
-          </td>
-        </tr>
-      <% } %>
-      </tbody>
-    </table>
   </div>
 </div>
 <%- include('../partials/foot') %>
