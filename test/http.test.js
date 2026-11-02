@@ -190,5 +190,12 @@ test('Teilnehmerliste: nach Rang, mit Mobil und Essenseinschränkungen, als Seit
   const xlsx = await get(`/einsaetze/${ev}/teilnehmerliste?format=xlsx`, mara.cookie);
   assert.equal(xlsx.status, 200);
   assert.match(xlsx.headers.get('content-type'), /spreadsheetml/);
+  const pdf = await get(`/einsaetze/${ev}/teilnehmerliste?format=pdf`, mara.cookie);
+  assert.equal(pdf.headers.get('content-type'), 'application/pdf');
+  assert.match(pdf.headers.get('content-disposition'), /^inline; filename="Teilnehmerliste_Zolli-Fest_/);
+  const body = Buffer.from(await pdf.arrayBuffer()).toString('latin1');
+  assert.match(body, /^%PDF-1\.4/);
+  assert.match(body, /\/Count 1 /);
+  assert.match(body, /%%EOF\n$/);
   assert.ok(db.one("SELECT 1 FROM audit_log WHERE event_id = ? AND action = 'export'", ev), 'Export steht im Verlauf');
 });

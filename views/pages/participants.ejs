@@ -10,7 +10,7 @@
 <%- include('../partials/topbar', {
   crumbs: [['Einsätze', '/einsaetze'], [e.name, `/einsaetze/${e.id}`], ['Teilnehmerliste']],
   heading: `Teilnehmerliste${shift ? ` · ${shift.name}` : ''}`, subline: sub, showSearch: false,
-  actions: `<button class="btn btn-primary" type="button" data-print>Drucken / als PDF</button><a class="btn" href="${exportUrl('xlsx')}">Excel</a><a class="btn" href="${exportUrl('csv')}">CSV</a>`,
+  actions: `<a class="btn btn-primary" href="${exportUrl('pdf')}" target="_blank" rel="noopener">PDF öffnen</a><a class="btn" href="${exportUrl('xlsx')}">Excel</a><a class="btn" href="${exportUrl('csv')}">CSV</a>`,
 }) %>
 
 <form class="filters" method="get" action="<%= base %>" data-autosubmit>

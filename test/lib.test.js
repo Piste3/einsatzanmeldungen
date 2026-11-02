@@ -57,3 +57,24 @@ test('Passwörter: Hash prüfen und Richtlinie', async () => {
   assert.ok(passwords.checkPolicy('anna-1234567890', { username: 'anna' }).length);
   assert.equal(passwords.checkPolicy('Sehr-geheim-2026', { username: 'anna' }).length, 0);
 });
+
+test('PDF: Umlaute, Seitenumbruch und gültige Querverweise', () => {
+  const zlib = require('node:zlib');
+  const { tablePdf, encode, wrap } = require('../src/lib/pdf');
+  assert.deepEqual(encode('äÖ«»–·€→'), [0xe4, 0xd6, 0xab, 0xbb, 150, 0xb7, 128, 45, 62]);
+  assert.deepEqual(wrap('eins zwei drei', 10, 30), ['eins', 'zwei', 'drei']);
+  const rows = Array.from({ length: 80 }, (_, i) => [String(i + 1), { text: `Person (${i})`, bold: true }, '079 000 00 00']);
+  const buf = tablePdf({ title: 'Teilnehmerliste · Zolli', columns: [{ label: 'Nr.', fit: true }, { label: 'Name', width: 2 }, { label: 'Mobil', fit: true }], rows, footer: 'Test' });
+  const s = buf.toString('latin1');
+  assert.match(s, /\/Count 3 /);
+  // Jeder xref-Eintrag zeigt genau auf «n 0 obj»
+  const start = Number(s.match(/startxref\n(\d+)/)[1]);
+  const entries = s.slice(start).match(/\d{10} 00000 n/g).map((e) => Number(e.slice(0, 10)));
+  entries.forEach((off, i) => assert.equal(s.slice(off, off + `${i + 1} 0 obj`.length), `${i + 1} 0 obj`));
+  // Klammern im Text sind maskiert, Umlaute als Oktalcode
+  const first = s.indexOf('stream\n') + 7;
+  const len = Number(s.slice(0, first).match(/\/Length (\d+)[^\n]*\nstream\n$/)[1]);
+  const content = zlib.inflateSync(buf.subarray(first, first + len)).toString('latin1');
+  assert.match(content, /\(Person \\\(0\\\)\) Tj/);
+  assert.match(content, /\(Teilnehmerliste \\267 Zolli\) Tj/);
+});

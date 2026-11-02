@@ -14,6 +14,8 @@ const h = require('../lib/view-helpers');
 const { REG_STATUS, SOURCE, INQUIRY_STATUS, INQUIRY_ROW, MATCH_TYPE, DIET } = require('../lib/labels');
 const { ValidationError, ConflictError } = require('../services/errors');
 const { BY_RANK } = require('../lib/sorting');
+const { tablePdf } = require('../lib/pdf');
+const { today } = require('../lib/dates');
 
 const router = express.Router();
 
@@ -200,13 +202,48 @@ router.get('/einsaetze/:id/teilnehmerliste', loadEvent, (req, res) => {
   const showStatus = filters.umfang !== 'bestaetigt';
   const shiftOf = (r) => (r.assigned.length ? r.assigned.map((a) => a.name).join(' + ')
     : r.wishes.length ? `Wunsch: ${e.shifts.filter((s) => r.wishes.includes(s.id)).map((s) => s.name).join(' + ')}` : 'noch keine');
-  const format = wantsExport(req);
+  const format = req.query.format === 'pdf' ? 'pdf' : wantsExport(req);
   if (format) {
     audit.log({
       entity: 'event', entityId: e.id, eventId: e.id, action: 'export',
-      summary: `${req.user.display_name} hat die Teilnehmerliste${shift ? ` (${shift.name})` : ''} für «${e.name}» exportiert (${format === 'csv' ? 'CSV' : 'Excel'}, ${list.length} Personen)`,
+      summary: `${req.user.display_name} hat die Teilnehmerliste${shift ? ` (${shift.name})` : ''} für «${e.name}» exportiert (${{ pdf: 'PDF', csv: 'CSV', xlsx: 'Excel' }[format]}, ${list.length} Personen)`,
       user: req.user,
     });
+  }
+  const baseName = `Teilnehmerliste ${e.name}${shift ? ` ${shift.name}` : ''}`;
+  if (format === 'pdf') {
+    const leader = e.leader_person_id ? `Leitung ${[e.leader_rank, e.leader_first, e.leader_last].filter(Boolean).join(' ')}` : '';
+    const summary = registrations.dietSummary(list);
+    const columns = [
+      { label: 'Nr.', fit: true, align: 'right', value: (r, i) => String(i + 1) },
+      { label: 'Rang', fit: true, value: (r) => r.rank_short || '' },
+      { label: 'Name', width: 2, value: (r) => ({ text: `${r.first_name} ${r.last_name}`, bold: true }) },
+      { label: 'Mobil', fit: true, value: (r) => r.mobile || '–' },
+      { label: 'Essenseinschränkungen', width: 2.6, value: (r) => (!r.diet.has ? { text: '–', muted: true } : !r.diet.visible ? { text: r.diet.label, muted: true } : { text: r.diet.label, bold: true }) },
+    ];
+    if (showShift) columns.push({ label: 'Schicht', width: 1.5, value: shiftOf });
+    if (showStatus) columns.push({ label: 'Status', fit: true, value: (r) => REG_STATUS[r.status].short });
+    const pdf = tablePdf({
+      title: `Teilnehmerliste · ${e.name}${shift ? ` · ${shift.name}` : ''}`,
+      subtitle: [
+        [h.fmtDateWd(e.date), e.start_time ? `Antreten ${e.start_time}${e.start_place ? ` · ${e.start_place}` : ''}` : '', leader].filter(Boolean).join('  ·  '),
+        `${registrations.PARTICIPANT_SCOPES[filters.umfang].label} · ${list.length} ${list.length === 1 ? 'Person' : 'Personen'} · ${filters.sort === 'rang_auf' ? 'tiefster Rang zuerst' : 'höchster Rang zuerst'}`,
+      ],
+      columns,
+      rows: list.map((r, i) => columns.map((c) => c.value(r, i))),
+      empty: 'Noch niemand angemeldet.',
+      after: list.length ? [
+        { label: 'Verpflegung:', text: summary.map(([l, n]) => `${n} ${l}`).join(' · ') },
+        ...(summary.some(([l]) => l === 'Hinweis vorhanden') ? [{ text: '«Hinweis vorhanden»: Nach dem Einsatz sieht die genaue Angabe nur noch ein Admin.', muted: true }] : []),
+      ] : [],
+      footer: `${settings.get('verein_name') || 'KKB'} · KKB-Einsatzplaner · Stand ${h.fmtDateTime(h.nowIso())}`,
+    });
+    const file = `${baseName.replace(/[^\w\-äöüÄÖÜ]+/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '')}_${today()}.pdf`;
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', contentDisposition(file).replace(/^attachment/, 'inline'));
+    return res.send(pdf);
+  }
+  if (format) {
     const cols = [
       { label: 'Nr.', value: (r) => list.indexOf(r) + 1 },
       { label: 'Rang', value: (r) => r.rank_short || '' },
@@ -218,7 +255,7 @@ router.get('/einsaetze/:id/teilnehmerliste', loadEvent, (req, res) => {
     ];
     if (showShift) cols.push({ label: 'Schicht', value: shiftOf });
     if (showStatus) cols.push({ label: 'Status', value: (r) => REG_STATUS[r.status].short });
-    return sendTable(res, format, `Teilnehmerliste ${e.name}${shift ? ` ${shift.name}` : ''}`, cols, list);
+    return sendTable(res, format, baseName, cols, list);
   }
   res.render('pages/participants', {
     title: `${e.name} · Teilnehmerliste`, list, filters, shift, showShift, showStatus, shiftOf,

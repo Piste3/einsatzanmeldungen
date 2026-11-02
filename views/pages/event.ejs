@@ -21,7 +21,7 @@
 %>
 <%- include('../partials/topbar', {
   crumbs: [['Einsätze', '/einsaetze'], [e.name]], heading: e.name, badges: badgesHtml, subline: sub, showSearch: false,
-  actions: cal + exp + `<a class="btn" href="${base}/teilnehmerliste">Teilnehmerliste</a><a class="btn" href="${base}/bearbeiten">Bearbeiten</a>`,
+  actions: cal + exp + `<a class="btn" href="${base}/teilnehmerliste?format=pdf" target="_blank" rel="noopener" title="Teilnehmerliste als PDF in einem neuen Tab öffnen">Teilnehmerliste</a><details class="menu"><summary class="btn" aria-label="Teilnehmerliste: weitere Formate" title="Teilnehmerliste: weitere Formate">▾</summary><div class="menu-list"><a href="${base}/teilnehmerliste?format=pdf" target="_blank" rel="noopener">Teilnehmerliste als PDF</a><a href="${base}/teilnehmerliste?format=xlsx">Teilnehmerliste als Excel</a><a href="${base}/teilnehmerliste?format=csv">Teilnehmerliste als CSV</a><div class="sep"></div><a href="${base}/teilnehmerliste">Auswahl anpassen …</a></div></details><a class="btn" href="${base}/bearbeiten">Bearbeiten</a>`,
 }) %>
 <% if (e.status === 'abgeschlossen') { %><div class="callout warn mb">Dieser Einsatz ist abgeschlossen. Die Daten sind schreibgeschützt; Änderungen nur noch durch einen Admin mit Begründung.</div><% } %>
 <% if (e.status === 'abgesagt') { %><div class="callout warn mb">Dieser Einsatz wurde abgesagt. Alle Daten bleiben erhalten.</div><% } %>
