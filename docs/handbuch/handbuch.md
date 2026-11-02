@@ -404,7 +404,7 @@ Die meisten Einsätze haben nur eine Schicht für alle. Dann gibt es nichts zu v
 ![Einsatz › Schichten mit zwei Schichten](bilder/13-schichten.jpg)
 
 - Jede Schicht ist eine Spalte mit Zeit und Besetzung (Ist / Soll). Grün heisst voll. Darunter Ist / Soll pro Funktion, z. B. «EL 1/1 · SC 2/2 · TN 5/6».
-- **Schichten verwalten** (unten): Name, Zeit und das Soll pro Funktion (Spalten EL, SC, BF, TN). Die Spalte «Soll» zeigt die Summe.
+- **Schichten verwalten** (unten): Name, Zeit und das Soll pro Funktion (Spalten EL, SC, BF, TN). Die Spalte «Soll» zeigt die Summe und rechnet beim Tippen mit. Die Tabelle hat **einen einzigen Speichern-Knopf** unten rechts: mehrere Schichten ändern, bei Bedarf in der untersten Zeile eine neue Schicht eintragen, dann einmal **Speichern**. Geänderte Zeilen sind links orange markiert, und der Fuss der Tabelle zeigt «Ungespeicherte Änderungen». **+ Hinzufügen** in der neuen Zeile speichert ebenfalls alles auf einmal. **Löschen** wirkt sofort pro Zeile (mit Rückfrage). Ist eine Zeile ungültig, z. B. eine angefangene neue Schicht ohne Namen, wird nichts gespeichert.
 - **Noch keiner Schicht zugeteilt:** Anmeldungen ohne Schicht stehen oben und werden über «zuteilen …» eingeteilt.
 - **Umteilen** über das Auswahlfeld bei der Person. Eine Person kann auch mehreren Schichten zugeteilt sein («Tag + Abend»).
 - **+ Person aus Anmeldungen hinzufügen:** Name tippen und auswählen.
@@ -585,7 +585,7 @@ Die Liste **Externe Abteilungen** füllt sich auch von selbst, wenn bei einem Ei
 
 Bei den Anmeldefragen legt die Spalte **Standard** fest, welche Vorlage bei jedem neuen Einsatz schon vorausgewählt ist, samt Fragetext und Hilfetext. Mit «keiner» ist nichts vorausgewählt.
 
-> **Speichern pro Abschnitt:** In Auswahllisten und Vorlagen hat jeder Abschnitt einen einzigen Speichern-Knopf. Mehrere Zeilen ändern, in der leeren Zeile etwas Neues eintragen, bei anderen «entfernen» ankreuzen – und dann einmal speichern. Geänderte Zeilen sind links orange markiert. Ränge, Mannschaften oder externe Abteilungen, die noch verwendet werden, lassen sich nicht entfernen, nur deaktivieren.
+> **Speichern pro Abschnitt:** In Auswahllisten, Vorlagen und bei «Schichten verwalten» hat jeder Abschnitt einen einzigen Speichern-Knopf. Mehrere Zeilen ändern, in der leeren Zeile etwas Neues eintragen, bei anderen «entfernen» ankreuzen – und dann einmal speichern. Geänderte Zeilen sind links orange markiert. Ränge, Mannschaften oder externe Abteilungen, die noch verwendet werden, lassen sich nicht entfernen, nur deaktivieren.
 
 ### Bestätigungsmail
 

@@ -214,6 +214,19 @@
     if (!ev.defaultPrevented) setTimeout(() => $$('button[type=submit]', form).forEach((b) => { b.disabled = true; }), 0);
   }, true);
 
+  // Schichten verwalten: Soll-Summe pro Zeile mitrechnen; eine angefangene neue Zeile braucht einen Namen
+  document.addEventListener('input', (ev) => {
+    const row = ev.target.closest('[data-soll-row]');
+    if (!row) return;
+    const parts = $$('[data-soll-part]', row).map((i) => Number(i.value) || 0);
+    const sum = $('[data-soll-sum]', row);
+    if (sum) sum.textContent = parts.some(Boolean) ? parts.reduce((a, n) => a + n, 0) : (row.matches('[data-new-shift]') ? '' : '–');
+    if (row.matches('[data-new-shift]')) {
+      const name = $('input[name="name__neu"]', row);
+      name.required = $$('input', row).some((i) => i !== name && i.type !== 'date' && i.value.trim());
+    }
+  });
+
   document.addEventListener('click', (ev) => {
     const t = ev.target.closest('button, a, [data-print]');
     if (!t) {
@@ -235,6 +248,12 @@
       const rows = row.parentElement;
       if ($$('[data-diet-row]', rows).length > 1) row.remove();
       else { $$('input', row).forEach((i) => { i.value = ''; }); $('select', row).value = ''; }
+      return;
+    }
+    // Schichten verwalten: «+ Hinzufügen» braucht einen Namen in der neuen Zeile
+    if (t.matches('[data-add-shift]')) {
+      const name = $('input[name="name__neu"]', t.closest('tr'));
+      if (name) name.required = true;
       return;
     }
     if (t.matches('[data-fill]')) {

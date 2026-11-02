@@ -278,14 +278,7 @@ function cleanShift(event, input) {
 function addShift(eventId, input, user, { reason } = {}) {
   const e = get(eventId);
   assertEditable(e, user, reason);
-  const s = cleanShift(e, input);
-  const sort = (db.one('SELECT max(sort) AS m FROM shifts WHERE event_id = ?', eventId).m ?? 0) + 1;
-  const info = db.run('INSERT INTO shifts (event_id, name, starts_at, ends_at, start_place, internal_note, sort) VALUES (?, ?, ?, ?, ?, ?, ?)',
-    eventId, s.name, s.starts_at, s.ends_at, s.start_place, s.internal_note, sort);
-  setShiftTargets(Number(info.lastInsertRowid), targetsFromInput(input) || {});
-  // Sobald es mehrere Schichten gibt, ist die Standardschicht eine normale Schicht
-  db.run('UPDATE shifts SET is_default = 0 WHERE event_id = ?', eventId);
-  audit.log({ entity: 'shift', entityId: Number(info.lastInsertRowid), eventId, action: 'create', summary: `${user.display_name} hat bei «${e.name}» die Schicht «${s.name}» hinzugefügt`, user });
+  insertShift(e, cleanShift(e, input), targetsFromInput(input) || {}, user);
   live.notify(`event:${eventId}`, 'form');
 }
 
@@ -303,6 +296,70 @@ function updateShift(shiftId, input, user, { reason } = {}) {
   if (targets && JSON.stringify(targets) !== JSON.stringify(functions.parseTargets(shift.function_targets))) details.soll = { alt: shift.target_count, neu: functions.total(targets) || null };
   audit.log({ entity: 'shift', entityId: shiftId, eventId: e.id, action: 'update', summary: `${user.display_name} hat die Schicht «${s.name}» bei «${e.name}» geändert`, details, user });
   live.notify(`event:${e.id}`, 'form');
+}
+
+// Tabelle «Schichten verwalten»: alle Zeilen mit einem Klick speichern. Gespeichert werden nur
+// Zeilen, die sich geändert haben; ist in der leeren Zeile ein Name eingetragen, kommt eine neue
+// Schicht dazu. Alles oder nichts: ist eine Zeile ungültig, wird nichts gespeichert.
+// rows: { <shiftId>: { name, date, start, end, start_place, internal_note, fn_target_<fid> } }
+function saveShifts(eventId, rows, newRow, user, { reason } = {}) {
+  const e = get(eventId);
+  if (!e) throw new ValidationError(['Einsatz nicht gefunden.']);
+  assertEditable(e, user, reason);
+  const updates = [];
+  for (const shift of db.all('SELECT * FROM shifts WHERE event_id = ? ORDER BY sort, id', eventId)) {
+    const input = rows && rows[shift.id];
+    if (!input) continue;
+    let s;
+    let targets;
+    try {
+      s = cleanShift(e, input);
+      targets = targetsFromInput(input);
+    } catch (err) {
+      if (err instanceof ValidationError) throw new ValidationError(err.messages.map((m) => `Schicht «${shift.name}»: ${m}`));
+      throw err;
+    }
+    const oldTargets = functions.parseTargets(shift.function_targets);
+    const targetsChanged = Boolean(targets) && JSON.stringify(functions.parseTargets(targets)) !== JSON.stringify(oldTargets);
+    const details = audit.diff(shift, s, Object.keys(s));
+    if (!Object.keys(details).length && !targetsChanged) continue;
+    if (targetsChanged) details.soll = { alt: shift.target_count, neu: functions.total(targets) || null };
+    updates.push({ shift, s, targets: targetsChanged ? targets : null, details });
+  }
+  let added = null;
+  const hasNew = newRow && ['name', 'start', 'end', 'start_place', 'internal_note'].some((k) => String(newRow[k] || '').trim())
+    || (newRow && Object.keys(newRow).some((k) => k.startsWith('fn_target_') && String(newRow[k] || '').trim()));
+  if (hasNew) {
+    if (!String(newRow.name || '').trim()) throw new ValidationError(['Neue Schicht: Name fehlt.']);
+    try {
+      added = { s: cleanShift(e, newRow), targets: targetsFromInput(newRow) || {} };
+    } catch (err) {
+      if (err instanceof ValidationError) throw new ValidationError(err.messages.map((m) => `Neue Schicht: ${m}`));
+      throw err;
+    }
+  }
+  if (!updates.length && !added) return { updated: 0, added: false };
+  db.tx(() => {
+    for (const u of updates) {
+      db.run('UPDATE shifts SET name = ?, starts_at = ?, ends_at = ?, start_place = ?, internal_note = ?, is_default = 0, version = version + 1 WHERE id = ?',
+        u.s.name, u.s.starts_at, u.s.ends_at, u.s.start_place, u.s.internal_note, u.shift.id);
+      if (u.targets) setShiftTargets(u.shift.id, u.targets);
+      audit.log({ entity: 'shift', entityId: u.shift.id, eventId: e.id, action: 'update', summary: `${user.display_name} hat die Schicht «${u.s.name}» bei «${e.name}» geändert${reason ? ` – Begründung: ${reason}` : ''}`, details: u.details, user });
+    }
+    if (added) insertShift(e, added.s, added.targets, user);
+  });
+  live.notify(`event:${e.id}`, 'form');
+  return { updated: updates.length, added: Boolean(added) };
+}
+
+function insertShift(e, s, targets, user) {
+  const sort = (db.one('SELECT max(sort) AS m FROM shifts WHERE event_id = ?', e.id).m ?? 0) + 1;
+  const info = db.run('INSERT INTO shifts (event_id, name, starts_at, ends_at, start_place, internal_note, sort) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    e.id, s.name, s.starts_at, s.ends_at, s.start_place, s.internal_note, sort);
+  setShiftTargets(Number(info.lastInsertRowid), targets || {});
+  // Sobald es mehrere Schichten gibt, ist die Standardschicht eine normale Schicht
+  db.run('UPDATE shifts SET is_default = 0 WHERE event_id = ?', e.id);
+  audit.log({ entity: 'shift', entityId: Number(info.lastInsertRowid), eventId: e.id, action: 'create', summary: `${user.display_name} hat bei «${e.name}» die Schicht «${s.name}» hinzugefügt`, user });
 }
 
 function deleteShift(shiftId, user, { reason } = {}) {
@@ -383,7 +440,7 @@ function label(e) {
 }
 
 module.exports = {
-  get, list, create, update, setStatus, setShowInForm, addShift, updateShift, deleteShift, checklist, stats, span, lastEnd,
+  get, list, create, update, setStatus, setShowInForm, addShift, updateShift, saveShifts, deleteShift, checklist, stats, span, lastEnd,
   shiftEnded, isInForm, openForForm, shiftsOf, extraDefs, assertEditable, occupancyTone, label, FIELD_LABELS, lastChange, parseJson,
   fmtDateShort, setShiftTargets,
 };

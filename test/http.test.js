@@ -473,6 +473,37 @@ test('Funktionen: Soll pro Einsatz festlegen, zuweisen, Ist/Soll und Teilnehmerl
   assert.equal((await get(`/einsaetze/${ev}/schichten`, auf.cookie)).status, 200);
   assert.equal((await get(`/einsaetze/${ev}/bearbeiten`, auf.cookie)).status, 200);
 
+  // Schichten verwalten: ein Speichern-Knopf für alle Zeilen, neue Zeile wird mitgespeichert
+  const shPage = await (await get(`/einsaetze/${ev}/schichten`, auf.cookie)).text();
+  assert.match(shPage, new RegExp(`action="/einsaetze/${ev}/schichten/speichern"`));
+  assert.match(shPage, new RegExp(`name="name__${sh1.id}"`));
+  assert.doesNotMatch(shPage, new RegExp(`action="/schichten/${sh1.id}"`), 'kein Speichern pro Zeile mehr');
+  const sh0 = events.get(ev).shifts[0];
+  const rowOf = (s, extra = {}) => [['name', s.name], ['date', s.starts_at ? s.starts_at.slice(0, 10) : events.get(ev).date], ['start', s.starts_at ? s.starts_at.slice(11, 16) : ''],
+    ['end', s.ends_at ? s.ends_at.slice(11, 16) : ''], ['start_place', s.start_place || ''], ['internal_note', s.internal_note || ''],
+    ...['EL', 'SC', 'BF', 'TN'].map((k) => [`fn_target_${fn(k)}`, String(s.targets[fn(k)] ?? '')])].map(([k, v]) => [`${k}__${s.id}`, extra[k] ?? v]);
+  const logCount = () => db.one("SELECT count(*) AS n FROM audit_log WHERE entity_type = 'shift'").n;
+  // nichts geändert: nichts gespeichert, kein Verlaufseintrag
+  const before = logCount();
+  assert.equal((await post(`/einsaetze/${ev}/schichten/speichern`, rowOf(sh0))).status, 302);
+  assert.equal(logCount(), before);
+  // angefangene neue Zeile ohne Namen: Fehler, auch die geänderte Zeile bleibt ungespeichert
+  await post(`/einsaetze/${ev}/schichten/speichern`, [...rowOf(sh0, { name: 'Tagschicht' }), ['name__neu', ''], [`fn_target_${fn('TN')}__neu`, '2']]);
+  assert.equal(events.get(ev).shifts[0].name, sh0.name);
+  // Zeile ändern und gleichzeitig eine neue Schicht anlegen
+  assert.equal((await post(`/einsaetze/${ev}/schichten/speichern`, [...rowOf(sh0, { name: 'Tagschicht', [`fn_target_${fn('SC')}`]: '3' }),
+    ['name__neu', 'Nacht'], ['date__neu', events.get(ev).date], ['start__neu', '22:00'], ['end__neu', '23:30'], [`fn_target_${fn('TN')}__neu`, '2']])).status, 302);
+  const after = events.get(ev).shifts;
+  assert.equal(after.length, 2);
+  assert.equal(after[0].name, 'Tagschicht');
+  assert.equal(after[0].targets[fn('SC')], 3);
+  assert.equal(after[1].name, 'Nacht');
+  assert.equal(after[1].target_count, 2);
+  assert.equal(logCount(), before + 2);
+  events.deleteShift(after[1].id, system);
+  db.run('UPDATE shifts SET name = ? WHERE id = ?', sh0.name, sh0.id);
+  events.setShiftTargets(sh0.id, sh0.targets);
+
   // Teilnehmerliste: Spalte Funktion, Ist/Soll, Export
   const tl = await (await get(`/einsaetze/${ev}/teilnehmerliste?sort=funktion`, auf.cookie)).text();
   assert.match(tl, /Funktionen \(Ist\/Soll\)/);

@@ -434,6 +434,25 @@ router.post('/einsaetze/:id/schichten', loadEvent, (req, res) => {
   res.redirect(`/einsaetze/${req.event.id}/schichten`);
 });
 
+// Tabelle «Schichten verwalten»: ein Speichern-Knopf für alle Zeilen (Felder <feld>__<schicht-id>, neue Zeile <feld>__neu)
+router.post('/einsaetze/:id/schichten/speichern', loadEvent, (req, res) => {
+  const rows = {};
+  let newRow = null;
+  for (const [key, value] of Object.entries(req.body)) {
+    const m = /^(\w+?)__(\d+|neu)$/.exec(key);
+    if (!m) continue;
+    const v = Array.isArray(value) ? value[value.length - 1] : value;
+    if (m[2] === 'neu') (newRow ||= {})[m[1]] = v;
+    else (rows[m[2]] ||= {})[m[1]] = v;
+  }
+  const r = events.saveShifts(req.event.id, rows, newRow, req.user, { reason: req.body.reason });
+  const parts = [];
+  if (r.updated) parts.push(r.updated === 1 ? '1 Schicht gespeichert' : `${r.updated} Schichten gespeichert`);
+  if (r.added) parts.push('neue Schicht hinzugefügt');
+  flash(res, parts.length ? 'success' : 'info', parts.length ? `${parts.join(', ').replace(/^./, (c) => c.toUpperCase())}.` : 'Keine Änderungen – nichts zu speichern.');
+  res.redirect(`/einsaetze/${req.event.id}/schichten`);
+});
+
 router.post('/schichten/:sid', (req, res) => {
   const s = db.one('SELECT * FROM shifts WHERE id = ?', Number(req.params.sid));
   if (!s) return res.redirect('/einsaetze');
