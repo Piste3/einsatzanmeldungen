@@ -47,10 +47,13 @@ Gibt dir die Aufgebotsstelle einen weiteren Einsatz frei, erscheint er sofort in
 
 **Schichten:** Pro Schicht die Zeit und die Besetzung, z. B. «8 / 10» – 8 Personen eingeteilt, 10 gebraucht. Der Balken ist grün, wenn die Schicht voll ist, gelb ab der Hälfte und rot darunter. Kommen Leute einer anderen Abteilung, steht darunter z. B. «6 eigene + 4 extern».
 
+**Funktionen:** Hat die Aufgebotsstelle festgelegt, wie viele Einsatzleiter (EL), Sektorchefs (SC), Busfahrer (BF) und Einsatzteilnehmer (TN) es braucht, zeigt diese Karte pro Funktion Ist / Soll, z. B. «SC 1 / 2 · 1 fehlt», und wer eingeteilt ist. Wer keine Funktion hat, zählt als Einsatzteilnehmer. Eingeteilt wird von der Aufgebotsstelle.
+
 **Teilnehmer:** Die Tabelle unten zeigt, wer kommt, der höchste Rang zuerst.
 
 | Spalte | Bedeutung |
 |---|---|
+| Funktion | EL, SC, BF oder TN – erscheint, sobald Funktionen festgelegt sind. |
 | Name | Mit Rang. |
 | Mobil | Auf dem Handy direkt antippen, um anzurufen. |
 | Essenseinschränkungen | Z. B. «vegetarisch» oder «Allergie: Nüsse». «–» heisst keine Einschränkung. |
@@ -63,7 +66,7 @@ Unter der Tabelle stehen die **externen Abteilungen** (Leute anderer Abteilungen
 
 - **Wer steht drauf:** «Angemeldete» (Standard: neu, Rückfrage und bestätigt), «Nur bestätigte» oder «Angemeldete + Warteliste». Abmeldungen und Absagen stehen nie drauf.
 - **Schicht:** Bei mehreren Schichten lässt sich die Liste auf eine Schicht einschränken.
-- **Sortierung:** «Rang: hoch → tief» oder «Rang: tief → hoch», innerhalb des Rangs alphabetisch.
+- **Sortierung:** «Rang: hoch → tief» oder «Rang: tief → hoch», innerhalb des Rangs alphabetisch, oder «Funktion, dann Rang» (EL, SC, BF zuerst).
 
 Die Seite aktualisiert sich von selbst, sobald die Aufgebotsstelle etwas ändert – die grüne Anzeige **Live** oben rechts zeigt das an. Du musst nicht neu laden.
 

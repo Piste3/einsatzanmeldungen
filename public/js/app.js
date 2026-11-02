@@ -81,7 +81,7 @@
     }
     if (t.matches('[data-add-select]') && t.value) {
       const form = t.closest('form');
-      form.action = `/anmeldungen/${t.value}/schichten`;
+      form.action = (t.dataset.addAction || '/anmeldungen/{id}/schichten').replace('{id}', encodeURIComponent(t.value));
       saveScroll();
       form.submit();
     }

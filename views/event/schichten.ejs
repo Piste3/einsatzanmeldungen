@@ -11,7 +11,7 @@
     <div class="card-head"><h2>Noch keiner Schicht zugeteilt <span class="hint"><%= unassigned.length %> Anmeldungen</span></h2></div>
     <% for (const r of unassigned) { %>
       <div class="shift-row">
-        <span class="name"><%- h.rank(r.rank_short) %><a href="/personen/<%= r.person_id %>"><%= r.first_name %> <%= r.last_name %></a></span>
+        <span class="name"><%- h.rank(r.rank_short) %><a href="/personen/<%= r.person_id %>"><%= r.first_name %> <%= r.last_name %></a><% if (!r.func.is_default) { %> <span class="fn-tag" title="<%= r.func.name %>"><%= r.func.short %></span><% } %></span>
         <%- h.regBadge(r.status) %>
         <form method="post" action="/anmeldungen/<%= r.id %>/schichten" data-autosubmit><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="back" value="<%= back %>">
           <select name="shift_ids" data-submit-on-change aria-label="Schicht zuteilen"><option value="">zuteilen …</option><% for (const c of combos) { %><option value="<%= c.value %>"><%= c.label %></option><% } %></select></form>
@@ -29,7 +29,7 @@
       <% if (!col.regs.length && !col.exts.length) { %><div class="empty">Noch niemand zugeteilt.</div><% } %>
       <% for (const r of col.regs) { const current = r.assigned.map((a) => a.id).join(','); %>
         <div class="shift-row <%= overlapNames.has(`${r.rank_short ? r.rank_short + ' ' : ''}${r.first_name} ${r.last_name}`) ? 'overlap' : '' %>" data-row-id="s<%= col.id %>-<%= r.id %>">
-          <span class="name"><%- h.rank(r.rank_short) %><a href="/personen/<%= r.person_id %>"><%= r.first_name %> <%= r.last_name %></a></span>
+          <span class="name"><%- h.rank(r.rank_short) %><a href="/personen/<%= r.person_id %>"><%= r.first_name %> <%= r.last_name %></a><% if (!r.func.is_default) { %> <span class="fn-tag" title="<%= r.func.name %>"><%= r.func.short %></span><% } %></span>
           <%- h.badge(h.labels.REG_STATUS[r.status].short, h.labels.REG_STATUS[r.status].tone) %>
           <% if (multi) { %>
             <form method="post" action="/anmeldungen/<%= r.id %>/schichten" data-autosubmit><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="back" value="<%= back %>">
@@ -43,7 +43,7 @@
       <% } %>
       <% for (const x of col.exts) { %>
         <div class="shift-row ext" data-row-id="x<%= col.id %>-<%= x.id %>">
-          <span class="name"><a href="/einsaetze/<%= event.id %>#externe"><strong><%= x.unit_name %></strong></a><%= x.contact ? ` · ${x.contact}` : '' %></span>
+          <span class="name"><a href="/einsaetze/<%= event.id %>#externe"><strong><%= x.unit_name %></strong></a><% if (!x.func.is_default) { %> <span class="fn-tag" title="<%= x.func.name %>"><%= x.func.short %></span><% } %><%= x.contact ? ` · ${x.contact}` : '' %></span>
           <span class="tag tag-blue tag-ext">extern · <%= h.plural(x.person_count, 'Person', 'Personen') %></span>
         </div>
       <% } %>

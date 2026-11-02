@@ -98,6 +98,10 @@ router.get('/verwaltung/listen', (req, res) => {
     ranks: db.all('SELECT r.*, (SELECT COUNT(*) FROM persons p WHERE p.rank_id = r.id) AS used FROM ranks r ORDER BY sort, name'),
     teams: db.all('SELECT t.*, (SELECT COUNT(*) FROM person_teams pt WHERE pt.team_id = t.id) AS used FROM teams t ORDER BY sort, name'),
     externalUnits: db.all('SELECT u.*, (SELECT COUNT(DISTINCT x.event_id) FROM event_externals x WHERE x.unit_id = u.id) AS used FROM external_units u ORDER BY sort, name COLLATE NOCASE'),
+    functionList: db.all(`SELECT f.*, (SELECT COUNT(DISTINCT e.id) FROM events e WHERE json_extract(e.function_targets, '$."' || f.id || '"') IS NOT NULL
+        OR EXISTS (SELECT 1 FROM registrations g WHERE g.event_id = e.id AND g.function_id = f.id)
+        OR EXISTS (SELECT 1 FROM event_externals x WHERE x.event_id = e.id AND x.function_id = f.id)) AS used
+      FROM functions f ORDER BY sort, name COLLATE NOCASE`),
   });
 });
 
@@ -120,8 +124,13 @@ function sectionRows(body) {
 
 router.post('/verwaltung/listen/:kind', (req, res) => {
   const kind = req.params.kind;
-  const table = { raenge: 'ranks', mannschaften: 'teams', externe: 'external_units' }[kind];
-  const usedSql = { ranks: 'SELECT COUNT(*) AS n FROM persons WHERE rank_id = ?', teams: 'SELECT COUNT(*) AS n FROM person_teams WHERE team_id = ?', external_units: 'SELECT COUNT(*) AS n FROM event_externals WHERE unit_id = ?' }[table];
+  const table = { raenge: 'ranks', mannschaften: 'teams', externe: 'external_units', funktionen: 'functions' }[kind];
+  const usedSql = {
+    ranks: 'SELECT COUNT(*) AS n FROM persons WHERE rank_id = ?', teams: 'SELECT COUNT(*) AS n FROM person_teams WHERE team_id = ?', external_units: 'SELECT COUNT(*) AS n FROM event_externals WHERE unit_id = ?',
+    functions: `SELECT (SELECT COUNT(*) FROM registrations WHERE function_id = ?1) + (SELECT COUNT(*) FROM event_externals WHERE function_id = ?1)
+      + (SELECT COUNT(*) FROM events WHERE json_extract(function_targets, '$."' || ?1 || '"') IS NOT NULL) + (SELECT COUNT(*) FROM functions WHERE id = ?1 AND is_default = 1) AS n`,
+  }[table];
+  const hasShort = table === 'ranks' || table === 'functions';
   if (!table) return res.redirect('/verwaltung/listen');
   const { existing, added } = sectionRows(req.body);
   const problems = [];
@@ -139,20 +148,29 @@ router.post('/verwaltung/listen/:kind', (req, res) => {
       if (!name) { problems.push('Ein Name fehlt.'); continue; }
       const sort = Number(r.sort || 0);
       const active = r.active === '1' ? 1 : 0;
-      const res2 = table === 'ranks'
-        ? db.run('UPDATE ranks SET name = ?, short = ?, sort = ?, active = ? WHERE id = ? AND (name IS NOT ? OR short IS NOT ? OR sort IS NOT ? OR active IS NOT ?)', name, String(r.short || '').trim() || name, sort, active, r.id, name, String(r.short || '').trim() || name, sort, active)
+      const res2 = hasShort
+        ? db.run(`UPDATE ${table} SET name = ?, short = ?, sort = ?, active = ? WHERE id = ? AND (name IS NOT ? OR short IS NOT ? OR sort IS NOT ? OR active IS NOT ?)`, name, String(r.short || '').trim() || name, sort, active, r.id, name, String(r.short || '').trim() || name, sort, active)
         : db.run(`UPDATE ${table} SET name = ?, sort = ?, active = ? WHERE id = ? AND (name IS NOT ? OR sort IS NOT ? OR active IS NOT ?)`, name, sort, active, r.id, name, sort, active);
       changes += Number(res2.changes);
     }
     for (const r of added) {
       const name = String(r.name).trim();
       const sort = Number(r.sort || 0) || (db.one(`SELECT max(sort) AS m FROM ${table}`).m || 0) + 1;
-      if (table === 'ranks') db.run('INSERT INTO ranks (name, short, sort) VALUES (?, ?, ?)', name, String(r.short || '').trim() || name, sort);
+      if (hasShort) db.run(`INSERT INTO ${table} (name, short, sort) VALUES (?, ?, ?)`, name, String(r.short || '').trim() || name, sort);
       else db.run(`INSERT INTO ${table} (name, sort) VALUES (?, ?)`, name, sort);
       changes++;
     }
+    // Funktionen: genau eine ist Standard (wer keine Funktion hat, zählt als diese) – sie bleibt immer aktiv
+    if (table === 'functions') {
+      const def = Number(req.body.default_function);
+      if (def && db.one('SELECT 1 FROM functions WHERE id = ?', def) && !db.one('SELECT 1 FROM functions WHERE id = ? AND is_default = 1', def)) {
+        db.run('UPDATE functions SET is_default = CASE WHEN id = ? THEN 1 ELSE 0 END', def);
+        changes++;
+      }
+      db.run('UPDATE functions SET active = 1 WHERE is_default = 1');
+    }
   });
-  if (changes) audit.log({ entity: 'settings', action: 'lists', summary: `${req.user.display_name} hat die Auswahlliste «${{ raenge: 'Ränge', mannschaften: 'Mannschaften', externe: 'Externe Abteilungen' }[kind]}» geändert`, user: req.user });
+  if (changes) audit.log({ entity: 'settings', action: 'lists', summary: `${req.user.display_name} hat die Auswahlliste «${{ raenge: 'Ränge', mannschaften: 'Mannschaften', externe: 'Externe Abteilungen', funktionen: 'Funktionen' }[kind]}» geändert`, user: req.user });
   if (problems.length) flash(res, 'error', `${changes ? 'Gespeichert, aber: ' : ''}${problems.join(' ')}`);
   else flash(res, 'success', changes ? 'Gespeichert.' : 'Keine Änderungen.');
   res.redirect('/verwaltung/listen');

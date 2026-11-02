@@ -4,7 +4,7 @@
   const sections = [
     ['an', 'Angemeldet', 'green'], ['ab', 'Abgemeldet', 'red'], ['unsicher', 'Unsicher', 'yellow'], ['offen', 'Offen', 'gray'],
   ];
-  const regLine = (reg) => reg ? [reg.assigned.map((a) => a.name).join(' + ') || null, h.labels.SOURCE[reg.source], h.fmtDateTime(reg.registered_at)].filter(Boolean).join(' · ') : '';
+  const regLine = (reg) => reg ? [reg.func && !reg.func.is_default && !['zurueckgezogen', 'abgesagt', 'ungueltig'].includes(reg.status) ? `${reg.func.name} (${reg.func.short})` : null, reg.assigned.map((a) => a.name).join(' + ') || null, h.labels.SOURCE[reg.source], h.fmtDateTime(reg.registered_at)].filter(Boolean).join(' · ') : '';
 %>
 <%- include('../partials/topbar', {
   crumbs: [['Personen', '/personen'], [`${p.first_name} ${p.last_name}`]], heading: `${p.first_name} ${p.last_name}`,

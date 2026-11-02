@@ -15,6 +15,14 @@
     <div class="field"><label for="<%= fid %>-count">Anzahl Personen <span class="req">*</span></label>
       <input id="<%= fid %>-count" type="number" name="person_count" min="1" max="9999" step="1" required value="<%= isNewExt ? '' : x.person_count %>" inputmode="numeric"></div>
   </div>
+  <% if (typeof functionOptions !== 'undefined' && functionOptions.length > 1) { const cur = isNewExt ? null : x.func; %>
+    <div class="field"><label for="<%= fid %>-fn">Funktion</label>
+      <select id="<%= fid %>-fn" name="function_id">
+        <% for (const f of functionOptions) { %><option value="<%= f.id %>" <%= (cur ? cur.id === f.id : f.is_default) ? 'selected' : '' %>><%= f.short %> · <%= f.name %></option><% } %>
+        <% if (cur && !functionOptions.some((f) => f.id === cur.id)) { %><option value="<%= cur.id %>" selected><%= cur.short %> · <%= cur.name %></option><% } %>
+      </select>
+      <div class="field-hint">Meist <%= (functionOptions.find((f) => f.is_default) || {}).name || 'Einsatzteilnehmer' %>. Zählt so in «Funktionen» mit.</div></div>
+  <% } %>
   <% if (multiShift) { %>
     <div class="field"><label>Schichten</label>
       <div class="row">

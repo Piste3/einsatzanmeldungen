@@ -25,7 +25,9 @@ const NEW_COLUMNS = {
     ['password_login', 'INTEGER NOT NULL DEFAULT 1'],
   ],
   mail_outbox: [['body_html', 'TEXT']],
-  event_externals: [['diets', "JSON NOT NULL DEFAULT '[]'"]],
+  event_externals: [['diets', "JSON NOT NULL DEFAULT '[]'"], ['function_id', 'INTEGER REFERENCES functions(id)']],
+  events: [['function_targets', "JSON NOT NULL DEFAULT '{}'"]],
+  registrations: [['function_id', 'INTEGER REFERENCES functions(id)']],
 };
 
 function migrate(d) {

@@ -5,6 +5,7 @@ const externals = require('./externals');
 const audit = require('./audit');
 const live = require('../lib/live');
 const persons = require('./persons');
+const functions = require('./functions');
 const { nowIso } = require('../lib/dates');
 const { REG_STATUS, REG_STATUS_MANUAL, REG_COUNTING, SOURCE, DIET } = require('../lib/labels');
 const { ValidationError, ConflictError } = require('./errors');
@@ -18,11 +19,19 @@ const SELECT = `
   FROM registrations g
   JOIN events e ON e.id = g.event_id
   LEFT JOIN persons p ON p.id = g.person_id
-  LEFT JOIN ranks r ON r.id = p.rank_id`;
+  LEFT JOIN ranks r ON r.id = p.rank_id
+  LEFT JOIN functions f ON f.id = g.function_id`;
+
+// Sortierung: Rang (Standard), Rang aufsteigend oder Funktion (EL, SC, BF … zuerst), dann Rang
+const BY_FUNCTION = 'coalesce(f.sort, (SELECT min(sort) FROM functions WHERE is_default = 1), 999), coalesce(f.id, 0)';
+const orderFor = (sort) => (sort === 'funktion' ? `${BY_FUNCTION}, ${rankOrder('rang')}` : rankOrder(sort));
+const SORTS = ['rang', 'rang_auf', 'funktion'];
 
 function hydrate(rows) {
   if (!rows.length) return rows;
   const ids = rows.map((r) => r.id);
+  const fnMap = functions.byId();
+  const fnDef = functions.defaultFn([...fnMap.values()]);
   const assigns = db.all(`SELECT a.registration_id, s.id, s.name, s.starts_at, s.ends_at FROM shift_assignments a JOIN shifts s ON s.id = a.shift_id
     WHERE a.registration_id IN (${ids.map(() => '?').join(',')}) ORDER BY s.sort, s.starts_at`, ...ids);
   const byReg = new Map();
@@ -35,6 +44,7 @@ function hydrate(rows) {
     try { r.wishes = JSON.parse(r.shift_wishes || '[]'); } catch { r.wishes = []; }
     r.person_name = r.person_id ? `${r.first_name} ${r.last_name}` : null;
     r.entered_name = `${r.entered_first_name || ''} ${r.entered_last_name || ''}`.trim();
+    r.func = functions.of(r.function_id, fnMap, fnDef);
   }
   return rows;
 }
@@ -52,7 +62,7 @@ function listForEvent(eventId, { status = '', q = '', sort = 'rang' } = {}) {
     where.push("(lower(coalesce(p.first_name,'') || ' ' || coalesce(p.last_name,'')) LIKE ? OR lower(coalesce(g.entered_first_name,'') || ' ' || coalesce(g.entered_last_name,'')) LIKE ?)");
     params.push(`%${q.toLowerCase()}%`, `%${q.toLowerCase()}%`);
   }
-  return hydrate(db.all(`${SELECT} WHERE ${where.join(' AND ')} ORDER BY ${sort === 'neu' ? 'g.registered_at DESC, g.id DESC' : `p.id IS NULL, ${rankOrder(sort)}, g.id`}`, ...params));
+  return hydrate(db.all(`${SELECT} WHERE ${where.join(' AND ')} ORDER BY ${sort === 'neu' ? 'g.registered_at DESC, g.id DESC' : `p.id IS NULL, ${orderFor(sort)}, g.id`}`, ...params));
 }
 
 // Teilnehmerliste eines Einsatzes: wer kommt, mit Mobil und Essenseinschränkungen.
@@ -72,7 +82,7 @@ function participants(eventId, { scope = 'angemeldet', shiftId = null, sort = 'r
     where.push('EXISTS (SELECT 1 FROM shift_assignments a WHERE a.registration_id = g.id AND a.shift_id = ?)');
     params.push(Number(shiftId));
   }
-  const rows = hydrate(db.all(`${SELECT} WHERE ${where.join(' AND ')} ORDER BY ${rankOrder(sort)}, g.id`, ...params));
+  const rows = hydrate(db.all(`${SELECT} WHERE ${where.join(' AND ')} ORDER BY ${orderFor(sort)}, g.id`, ...params));
   const diets = new Map();
   if (rows.length) {
     const ids = rows.map((r) => r.person_id);
@@ -98,7 +108,7 @@ function participantView(e, query, user) {
   const filters = {
     umfang: PARTICIPANT_SCOPES[query.umfang] ? query.umfang : 'angemeldet',
     schicht: shift ? shift.id : '',
-    sort: query.sort === 'rang_auf' ? 'rang_auf' : 'rang',
+    sort: SORTS.includes(query.sort) ? query.sort : 'rang',
   };
   const list = participants(e.id, { scope: filters.umfang, shiftId: shift?.id, sort: filters.sort }, user);
   const shiftOf = (r) => (r.assigned.length ? r.assigned.map((a) => a.name).join(' + ')
@@ -106,8 +116,9 @@ function participantView(e, query, user) {
   // Externe Abteilungen (nur Anzahl) – bei gewählter Schicht nur die, die in dieser Schicht helfen
   const exts = externals.forEvent(e.id, e.shifts).filter((x) => !shift || externals.coversShift(x, shift.id));
   const extTotal = exts.reduce((a, x) => a + x.person_count, 0);
+  const fnSummary = functions.summary(e);
   return {
-    shift, filters, list, showShift: e.shifts.length > 1 && !shift, showStatus: filters.umfang !== 'bestaetigt', shiftOf,
+    fnSummary, showFunction: fnSummary.hasTargets || fnSummary.rows.some((r) => !r.is_default && r.ist), shift, filters, list, showShift: e.shifts.length > 1 && !shift, showStatus: filters.umfang !== 'bestaetigt', shiftOf,
     exts, extTotal, extShift: (x) => externals.shiftLabel(x, e.shifts),
   };
 }
@@ -375,5 +386,5 @@ function remove(id, user) {
 
 module.exports = {
   remove, get, listForEvent, listForPerson, unresolved, create, setStatus, bulkStatus, updateNote, assignPerson, setShifts, overlaps,
-  applyWishes, personLabel, findUnresolvedDuplicate, hydrate, participants, participantView, dietSummary, PARTICIPANT_SCOPES,
+  applyWishes, personLabel, findUnresolvedDuplicate, hydrate, participants, participantView, dietSummary, PARTICIPANT_SCOPES, SORTS,
 };

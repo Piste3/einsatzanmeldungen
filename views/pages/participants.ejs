@@ -24,7 +24,7 @@
     </select>
   <% } %>
   <select name="sort" aria-label="Sortierung">
-    <% for (const [k, l] of [['rang', 'Rang: hoch → tief'], ['rang_auf', 'Rang: tief → hoch']]) { %><option value="<%= k %>" <%= filters.sort === k ? 'selected' : '' %>><%= l %></option><% } %>
+    <% for (const [k, l] of [['rang', 'Rang: hoch → tief'], ['rang_auf', 'Rang: tief → hoch'], ['funktion', 'Funktion, dann Rang']]) { %><option value="<%= k %>" <%= filters.sort === k ? 'selected' : '' %>><%= l %></option><% } %>
   </select>
 </form>
 

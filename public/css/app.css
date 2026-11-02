@@ -714,3 +714,32 @@ tr.changed td:first-child { box-shadow: inset 3px 0 0 var(--orange, #e8742a); }
 .participants .ext-head { border-top: 1px solid var(--border); padding-bottom: 6px; }
 .participants .tag-ext { min-width: 0; }
 .shift-cols .occ-head { gap: 8px; }
+
+/* ---------- Funktionen an Einsätzen (EL, SC, BF, TN …) ---------- */
+.bar.orange > span { background: var(--orange); }
+.fn-tag { display: inline-block; font-size: 10.5px; font-weight: 700; letter-spacing: .02em; color: var(--blue); background: var(--blue-bg); border-radius: 4px; padding: 1px 5px; vertical-align: 1px; }
+.fn-tag.fn-default { color: var(--text-2); background: var(--gray-bg); font-weight: 600; }
+.fn-occ + .fn-occ { margin-top: 12px; }
+.fn-occ .occ-head > span { display: inline-flex; align-items: center; gap: 4px; }
+.fn-people { display: flex; flex-wrap: wrap; gap: 4px 6px; margin-top: 6px; }
+.fn-person { display: inline-flex; align-items: center; gap: 2px; font-size: 12.5px; background: var(--gray-bg); border-radius: 6px; padding: 2px 4px 2px 7px; }
+.fn-person .rank { margin-right: 4px; background: var(--card); }
+.fn-person .tag-ext { min-width: 0; margin-right: 4px; }
+.fn-remove { border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 11px; padding: 0 3px; line-height: 1; }
+.fn-remove:hover { color: var(--red); }
+.fn-add { margin-top: 6px; max-width: 360px; }
+.fn-targets { display: grid; gap: 6px; }
+.fn-target { display: grid; grid-template-columns: 34px 1fr 84px; align-items: center; gap: 8px; margin: 0; font-weight: 400; }
+.fn-target .fn-tag { text-align: center; }
+.fn-target input { width: 84px; }
+.fn-line { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.fn-chip { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; }
+.fn-chip.tone-red { color: var(--red); }
+.fn-chip.tone-yellow { color: var(--yellow); }
+.fn-chip.tone-green { color: var(--green); }
+.fn-chip.tone-orange { color: var(--orange-dark); }
+.fn-select select { width: auto; min-width: 64px; padding-top: 3px; padding-bottom: 3px; font-weight: 600; }
+.fn-select select.fn-is-default { font-weight: 400; color: var(--text-2); }
+.fn-suggest { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 12.5px; }
+.card-body.fn-line { border-bottom: 1px solid var(--border-soft); padding-top: 8px; padding-bottom: 8px; }
+@media print { .fn-tag { border: 1px solid #999; background: none !important; color: #000 !important; } }

@@ -3,18 +3,19 @@
 const db = require('../db');
 const audit = require('./audit');
 const externals = require('./externals');
+const functions = require('./functions');
 const live = require('../lib/live');
 const { nowIso, localNow, isYmd, isHm, addDays, fmtDate, fmtDateShort } = require('../lib/dates');
 const { EVENT_STATUS, REG_COUNTING } = require('../lib/labels');
 const { ConflictError, ValidationError, ReadOnlyError } = require('./errors');
 
 const FIELDS = ['name', 'date', 'description', 'start_time', 'end_time', 'start_place', 'end_place', 'tenue', 'leader_person_id',
-  'internal_note', 'question_template_id', 'question_text', 'help_text', 'extra'];
+  'internal_note', 'question_template_id', 'question_text', 'help_text', 'extra', 'function_targets'];
 const FIELD_LABELS = {
   name: 'Name', date: 'Datum', description: 'Beschreibung', start_time: 'Beginn (Antreten)', end_time: 'Ende (Abtreten)',
   start_place: 'Antretensort', end_place: 'Abtretensort', tenue: 'Tenue', leader_person_id: 'Einsatzleitung',
   internal_note: 'Interne Bemerkung', question_template_id: 'Anmeldefrage (Vorlage)', question_text: 'Fragetext', help_text: 'Hilfetext',
-  extra: 'Zusatzfelder', status: 'Status', show_in_form: 'Im Formular anzeigen',
+  extra: 'Zusatzfelder', function_targets: 'Soll pro Funktion', status: 'Status', show_in_form: 'Im Formular anzeigen',
 };
 
 function get(id) {
@@ -22,6 +23,7 @@ function get(id) {
     FROM events e LEFT JOIN persons p ON p.id = e.leader_person_id LEFT JOIN ranks r ON r.id = p.rank_id WHERE e.id = ?`, id);
   if (!e) return null;
   e.extra = parseJson(e.extra, {});
+  e.targets = functions.parseTargets(e.function_targets);
   e.shifts = shiftsOf(id);
   return e;
 }
@@ -47,6 +49,7 @@ function list({ status = '', from = '', to = '', q = '' } = {}) {
     ${where.length ? `WHERE ${where.join(' AND ')}` : ''} ORDER BY e.date, e.start_time, e.id`, ...params);
   for (const e of rows) {
     e.extra = parseJson(e.extra, {});
+    e.targets = functions.parseTargets(e.function_targets);
     e.shifts = shiftsOf(e.id);
   }
   return rows;
@@ -112,6 +115,7 @@ function clean(input, extraDefs) {
     question_text: s(input.question_text),
     help_text: s(input.help_text),
     extra: JSON.stringify(extra),
+    function_targets: functions.cleanTargets(input),
   };
   const errors = [];
   if (!data.name) errors.push('Name des Einsatzes fehlt.');
@@ -289,7 +293,8 @@ function checklist(e) {
     { label: 'Abtreten (Zeit)', done: Boolean(e.end_time) },
     { label: 'Einsatzleitung', done: Boolean(e.leader_person_id) },
     { label: 'Tenue', done: Boolean(e.tenue) },
-    { label: 'Soll-Anzahl pro Schicht', done: e.shifts.every((s) => s.target_count) },
+    { label: 'Soll pro Funktion (EL, SC, BF, TN …)', done: Object.keys(e.targets || functions.parseTargets(e.function_targets)).length > 0 },
+    { label: 'Soll-Anzahl pro Schicht', done: e.shifts.every((s) => s.target_count) || (e.shifts.length === 1 && targetTotal(e) > 0) },
     { label: 'Anmeldefrage', done: Boolean(e.question_text) },
     { label: 'Veröffentlicht', done: e.status !== 'entwurf' },
   ];
@@ -303,12 +308,15 @@ function stats(e) {
   const ph = REG_COUNTING.map(() => '?').join(',');
   // Externe Abteilungen zählen mit ihrer Anzahl Personen zur Besetzung
   const ext = externals.countsByShift(e.id, e.shifts);
+  // Nur eine Schicht ohne eigene Soll-Anzahl: Total aus «Soll pro Funktion» gilt als Soll
+  const fnTotal = e.shifts.length === 1 ? targetTotal(e) : 0;
   const shifts = e.shifts.map((s) => {
     const intern = db.one(`SELECT COUNT(*) AS n FROM shift_assignments a JOIN registrations r ON r.id = a.registration_id
       WHERE a.shift_id = ? AND r.status IN (${ph})`, s.id, ...REG_COUNTING).n;
     const extern = ext[s.id] || 0;
     const ist = intern + extern;
-    return { ...s, ist, intern, extern, soll: s.target_count, tone: occupancyTone(ist, s.target_count), missing: s.target_count ? Math.max(0, s.target_count - ist) : null };
+    const soll = s.target_count || fnTotal || null;
+    return { ...s, ist, intern, extern, soll, sollFromFunctions: !s.target_count && Boolean(fnTotal), tone: occupancyTone(ist, soll), missing: soll ? Math.max(0, soll - ist) : null };
   });
   const inquiryOpen = db.one(`SELECT COUNT(*) AS n FROM inquiries i WHERE i.event_id = ? AND i.status IN ('nicht_erreicht','whatsapp','unsicher')
     AND NOT EXISTS (SELECT 1 FROM registrations g WHERE g.event_id = i.event_id AND g.person_id = i.person_id AND g.status <> 'ungueltig')`, e.id).n;
@@ -331,6 +339,11 @@ function stats(e) {
   };
 }
 
+// Summe aller Soll-Werte pro Funktion
+function targetTotal(e) {
+  return Object.values(e.targets || functions.parseTargets(e.function_targets)).reduce((a, n) => a + n, 0);
+}
+
 function occupancyTone(ist, soll) {
   if (!soll) return 'gray';
   if (ist >= soll) return 'green';
@@ -345,5 +358,5 @@ function label(e) {
 module.exports = {
   get, list, create, update, setStatus, setShowInForm, addShift, updateShift, deleteShift, checklist, stats, span, lastEnd,
   shiftEnded, isInForm, openForForm, shiftsOf, extraDefs, assertEditable, occupancyTone, label, FIELD_LABELS, lastChange, parseJson,
-  fmtDateShort,
+  fmtDateShort, targetTotal,
 };

@@ -10,6 +10,18 @@ CREATE TABLE IF NOT EXISTS ranks (
   active INTEGER NOT NULL DEFAULT 1
 );
 
+-- Funktionen an einem Einsatz (EL, SC, BF, Einsatzteilnehmer …). Genau eine ist Standard:
+-- Wer keine Funktion zugewiesen hat, zählt als diese (Einsatzteilnehmer).
+-- Nicht zu verwechseln mit der Benutzer-Rolle «Einsatzleiter» (Login, Lesezugriff).
+CREATE TABLE IF NOT EXISTS functions (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,          -- z. B. «Sektorchef»
+  short TEXT NOT NULL,         -- z. B. «SC»
+  sort INTEGER NOT NULL DEFAULT 0,  -- kleine Zahl = weiter oben (EL zuerst)
+  active INTEGER NOT NULL DEFAULT 1,
+  is_default INTEGER NOT NULL DEFAULT 0
+);
+
 CREATE TABLE IF NOT EXISTS teams (
   id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,          -- Mannschaft / Kader
@@ -153,6 +165,7 @@ CREATE TABLE IF NOT EXISTS events (
   question_text TEXT,
   help_text TEXT,
   extra JSON NOT NULL DEFAULT '{}',
+  function_targets JSON NOT NULL DEFAULT '{}',  -- Soll pro Funktion: { "<functions.id>": Anzahl }
   calendar_sent_at TEXT,       -- zuletzt Kalendertermin exportiert
   version INTEGER NOT NULL DEFAULT 1,
   created_at TEXT NOT NULL,
@@ -205,6 +218,7 @@ CREATE TABLE IF NOT EXISTS event_externals (
   contact TEXT,                -- Ansprechperson der Abteilung (Name, Telefon)
   note TEXT,
   diets JSON NOT NULL DEFAULT '[]',     -- Essenseinschränkungen: [{ count, category, text }]
+  function_id INTEGER REFERENCES functions(id),  -- NULL = Standardfunktion (Einsatzteilnehmer)
   version INTEGER NOT NULL DEFAULT 1,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL,
@@ -253,6 +267,7 @@ CREATE TABLE IF NOT EXISTS registrations (
   shift_wishes JSON NOT NULL DEFAULT '[]',
   remark TEXT,                 -- Bemerkung aus dem Formular
   internal_note TEXT,
+  function_id INTEGER REFERENCES functions(id),  -- Funktion an diesem Einsatz; NULL = Standardfunktion (Einsatzteilnehmer)
   status TEXT NOT NULL DEFAULT 'neu' CHECK (status IN ('neu','unsicher','rueckfrage','warteliste','bestaetigt','zurueckgezogen','abgesagt','ungueltig')),
   duplicate_count INTEGER NOT NULL DEFAULT 0,
   confirmation_sent_at TEXT,

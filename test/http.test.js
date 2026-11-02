@@ -369,3 +369,116 @@ test('Externe Abteilungen: mit Anzahl erfassen, zählen in der Besetzung, stehen
   assert.match(lists, /Externe Abteilungen/);
   assert.match(lists, /value="Feuerwehr Riehen"/);
 });
+
+test('Funktionen: Soll pro Einsatz festlegen, zuweisen, Ist/Soll und Teilnehmerliste', async () => {
+  const db = require('../src/db');
+  const { system } = require('./helpers');
+  const persons = require('../src/services/persons');
+  const events = require('../src/services/events');
+  const registrations = require('../src/services/registrations');
+  const functions = require('../src/services/functions');
+  const { today, addDays } = require('../src/lib/dates');
+  const fn = (short) => db.one('SELECT id FROM functions WHERE short = ?', short).id;
+  const rank = (s) => db.one('SELECT id FROM ranks WHERE short = ?', s).id;
+  assert.deepEqual(db.all('SELECT short FROM functions ORDER BY sort').map((f) => f.short), ['EL', 'SC', 'BF', 'TN']);
+
+  await users.create({ username: 'fkt', display_name: 'Fkt', role: 'aufgebotsstelle', password: 'Aufgebot-2026-f', must_change_password: false }, null);
+  const auf = await login('fkt', 'Aufgebot-2026-f');
+  const form = await (await get('/einsaetze/neu', auf.cookie)).text();
+  assert.match(form, /Soll pro Funktion/);
+  assert.match(form, new RegExp(`name="fn_target_${fn('BF')}"`));
+  const csrf = form.match(/name="_csrf" value="([^"]+)"/)[1];
+  const post = (path, fields) => fetch(`${base}${path}`, {
+    method: 'POST', redirect: 'manual', headers: { cookie: auf.cookie, 'content-type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams([['_csrf', csrf], ...fields]),
+  });
+
+  // Einsatz mit Soll: 1 EL, 2 SC, 1 BF, 3 TN (0 = braucht es nicht)
+  const created = await post('/einsaetze', [['name', 'Fasnachtsumzug'], ['date', addDays(today(), 8)], ['start_time', '13:00'], ['end_time', '18:00'],
+    [`fn_target_${fn('EL')}`, '1'], [`fn_target_${fn('SC')}`, '2'], [`fn_target_${fn('BF')}`, '1'], [`fn_target_${fn('TN')}`, '3']]);
+  assert.equal(created.status, 302);
+  const ev = Number(created.headers.get('location').match(/\/einsaetze\/(\d+)/)[1]);
+  assert.deepEqual(events.get(ev).targets, { [fn('EL')]: 1, [fn('SC')]: 2, [fn('BF')]: 1, [fn('TN')]: 3 });
+  // ungültige Zahl wird abgelehnt
+  assert.equal((await post('/einsaetze', [['name', 'X'], ['date', addDays(today(), 8)], [`fn_target_${fn('EL')}`, '-1']])).status, 400);
+
+  const mk = (first, last, r) => persons.create({ first_name: first, last_name: last, status: 'aktiv', rank_id: r ? rank(r) : null }, system);
+  const ids = { marco: mk('Marco', 'Leit', 'Oblt'), sara: mk('Sara', 'Sektor', 'Wm'), ben: mk('Ben', 'Bus', 'Gfr'), tim: mk('Tim', 'Teil', 'Fw'), ida: mk('Ida', 'Ab', 'Sdt') };
+  const reg = {};
+  for (const [k, pid] of Object.entries(ids)) reg[k] = registrations.create({ eventId: ev, personId: pid, matchType: 'auto', source: 'manuell', wishes: [], user: system });
+  registrations.setStatus(reg.ida, 'zurueckgezogen', system);
+
+  // Einzeln zuweisen und als Sammelaktion
+  assert.equal((await post(`/anmeldungen/${reg.marco}/funktion`, [['function_id', String(fn('EL'))], ['back', `/einsaetze/${ev}`]])).status, 302);
+  assert.equal(db.one('SELECT function_id FROM registrations WHERE id = ?', reg.marco).function_id, fn('EL'));
+  assert.ok(db.one("SELECT 1 FROM audit_log WHERE event_id = ? AND action = 'function' AND summary LIKE '%Marco Leit die Funktion Einsatzleiter (EL)%'", ev));
+  assert.equal((await post(`/einsaetze/${ev}/anmeldungen/sammel`, [['ids', String(reg.sara)], ['ids', String(reg.ben)], ['function_select', String(fn('SC'))], ['status_select', '']])).status, 302);
+  await post(`/anmeldungen/${reg.ben}/funktion`, [['function_id', String(fn('BF'))]]);
+  // Abgemeldete bekommen keine Funktion
+  await post(`/anmeldungen/${reg.ida}/funktion`, [['function_id', String(fn('SC'))]]);
+  assert.equal(db.one('SELECT function_id FROM registrations WHERE id = ?', reg.ida).function_id, null);
+  // zurück auf Standard = NULL
+  await post(`/anmeldungen/${reg.tim}/funktion`, [['function_id', String(fn('SC'))]]);
+  await post(`/anmeldungen/${reg.tim}/funktion`, [['function_id', String(fn('TN'))]]);
+  assert.equal(db.one('SELECT function_id FROM registrations WHERE id = ?', reg.tim).function_id, null);
+
+  // Externe Abteilung als Einsatzteilnehmer (Standard) und eine mit Funktion BF
+  await post(`/einsaetze/${ev}/externe`, [['unit_name', 'VK NWS'], ['person_count', '2']]);
+  await post(`/einsaetze/${ev}/externe`, [['unit_name', 'Carfahrer AG'], ['person_count', '1'], ['function_id', String(fn('BF'))]]);
+
+  const sum = functions.summary(events.get(ev));
+  const row = (s) => sum.rows.find((r) => r.short === s);
+  assert.deepEqual(['EL', 'SC', 'BF', 'TN'].map((s) => [row(s).ist, row(s).soll]), [[1, 1], [1, 2], [2, 1], [3, 3]]);
+  assert.equal(row('TN').extern, 2);
+  assert.equal(row('BF').over, 1);
+  assert.equal(functions.line(sum), 'EL 1/1 · SC 1/2 · BF 2/1 · TN 3/3');
+  // eine Schicht ohne eigene Soll-Anzahl: Total aus den Funktionen gilt als Soll
+  const st = events.stats(events.get(ev));
+  assert.equal(st.shifts[0].soll, 7);
+  assert.ok(st.shifts[0].sollFromFunctions);
+
+  // Übersicht: Karte «Funktionen», Vorschlag für den Einsatzleiter-Zugriff (Konto der Person mit Funktion EL)
+  await users.create({ username: 'marco2', display_name: 'Marco Leit', role: 'einsatzleiter', person_id: ids.marco, password: 'Kommando-Marco-2026', must_change_password: false }, null);
+  const over = await (await get(`/einsaetze/${ev}`, auf.cookie)).text();
+  assert.match(over, /id="funktionen"/);
+  assert.match(over, /1 \/ 2 · 1 fehlt/);
+  assert.match(over, /2 \/ 1 · 1 zu viel/);
+  assert.match(over, /ist als Einsatzleiter \(EL\) eingeteilt und hat ein Einsatzleiter-Konto/);
+  const anm = await (await get(`/einsaetze/${ev}/anmeldungen?sort=funktion`, auf.cookie)).text();
+  assert.match(anm, /Funktion zuweisen/);
+  const order = ['Marco Leit', 'Sara Sektor', 'Ben Bus', 'Tim Teil'].map((n) => anm.indexOf(n));
+  assert.ok(order.every((i) => i > 0) && order.every((v, i) => i === 0 || order[i - 1] < v), 'nach Funktion sortiert');
+  assert.equal((await get(`/einsaetze/${ev}/schichten`, auf.cookie)).status, 200);
+  assert.equal((await get(`/einsaetze/${ev}/bearbeiten`, auf.cookie)).status, 200);
+
+  // Teilnehmerliste: Spalte Funktion, Ist/Soll, Export
+  const tl = await (await get(`/einsaetze/${ev}/teilnehmerliste?sort=funktion`, auf.cookie)).text();
+  assert.match(tl, /Funktionen \(Ist\/Soll, ganzer Einsatz\)/);
+  assert.ok(tl.indexOf('Marco Leit') < tl.indexOf('Tim Teil'));
+  const csv = (await (await get(`/einsaetze/${ev}/teilnehmerliste?format=csv&sort=funktion`, auf.cookie)).text()).replace(/^﻿/, '').trim().split(/\r?\n/);
+  assert.match(csv[0], /^Nr\.;Anzahl;Funktion;Rang;Nachname/);
+  assert.match(csv[1], /^1;1;EL;Oblt;Leit;Marco/);
+  assert.ok(csv.some((l) => /^;1;BF;extern;Carfahrer AG/.test(l)));
+  const pdf = Buffer.from(await (await get(`/einsaetze/${ev}/teilnehmerliste?format=pdf`, auf.cookie)).arrayBuffer()).toString('latin1');
+  assert.match(pdf, /^%PDF-1\.4/);
+
+  // Einsatzleiter-Ansicht zeigt die Funktionen (nur lesen)
+  const lead = await login('marco2', 'Kommando-Marco-2026');
+  const leadCsrf = (await (await get(`/einsaetze/${ev}`, auf.cookie)).text()).match(/name="_csrf" value="([^"]+)"/)[1];
+  await fetch(`${base}/einsaetze/${ev}/einsatzleiter`, { method: 'POST', redirect: 'manual', headers: { cookie: auf.cookie, 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ _csrf: leadCsrf, user_id: String(db.one("SELECT id FROM users WHERE username = 'marco2'").id) }) });
+  const lv = await (await get(`/einsaetze/${ev}`, lead.cookie)).text();
+  assert.match(lv, /id="funktionen"/);
+  assert.doesNotMatch(lv, /zuweisen …|Soll ändern/, 'nur lesen');
+
+  // Auswahlliste: Funktionen verwalten (Admin); verwendete und die Standardfunktion lassen sich nicht entfernen
+  const admin = await login('admin', 'Chef-Passwort-2026');
+  const lists = await (await get('/verwaltung/listen', admin.cookie)).text();
+  assert.match(lists, /Funktionen an Einsätzen/);
+  const aCsrf = lists.match(/name="_csrf" value="([^"]+)"/)[1];
+  const fields = [['_csrf', aCsrf], ['default_function', String(fn('TN'))]];
+  for (const f of db.all('SELECT * FROM functions')) fields.push([`row__${f.id}`, '1'], [`name__${f.id}`, f.name], [`short__${f.id}`, f.short], [`sort__${f.id}`, String(f.sort)], [`active__${f.id}`, '1'], [`delete__${f.id}`, '1']);
+  fields.push(['name__neu', 'Sanität'], ['short__neu', 'SAN'], ['sort__neu', '5']);
+  await fetch(`${base}/verwaltung/listen/funktionen`, { method: 'POST', redirect: 'manual', headers: { cookie: admin.cookie, 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(fields) });
+  assert.deepEqual(db.all('SELECT short FROM functions ORDER BY sort').map((f) => f.short), ['EL', 'SC', 'BF', 'TN', 'SAN']);
+  assert.equal(db.one('SELECT short FROM functions WHERE is_default = 1').short, 'TN');
+});

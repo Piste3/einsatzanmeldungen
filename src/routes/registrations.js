@@ -2,6 +2,7 @@
 const express = require('express');
 const db = require('../db');
 const registrations = require('../services/registrations');
+const functions = require('../services/functions');
 const { flash } = require('../lib/view-helpers');
 const { REG_STATUS } = require('../lib/labels');
 const { ConflictError, ValidationError } = require('../services/errors');
@@ -42,6 +43,9 @@ router.post('/einsaetze/:id/anmeldungen/sammel', (req, res) => {
   const valid = ids.filter((id) => db.one('SELECT 1 FROM registrations WHERE id = ? AND event_id = ?', id, eventId));
   if (!valid.length) {
     flash(res, 'error', 'Bitte zuerst Anmeldungen ankreuzen.');
+  } else if (req.body.function_select) {
+    const { changed, errors } = functions.bulkAssign(valid, Number(req.body.function_select), req.user);
+    flash(res, errors.length ? 'error' : 'success', `Funktion bei ${changed} Anmeldung${changed === 1 ? '' : 'en'} gesetzt.${errors.length ? ` ${[...new Set(errors)].join(' ')}` : ''}`);
   } else if (req.body.bulk_action === 'export') {
     return res.redirect(`/einsaetze/${eventId}/anmeldungen?format=${req.body.format === 'csv' ? 'csv' : 'xlsx'}`);
   } else {
@@ -49,6 +53,14 @@ router.post('/einsaetze/:id/anmeldungen/sammel', (req, res) => {
     flash(res, errors.length ? 'error' : 'success', `${changed} Anmeldung${changed === 1 ? '' : 'en'} geändert.${errors.length ? ` ${[...new Set(errors)].join(' ')}` : ''}`);
   }
   res.redirect(String(req.body.back || '').startsWith('/') ? req.body.back : `/einsaetze/${eventId}/anmeldungen`);
+});
+
+// Funktion zuweisen (EL, SC, BF, Einsatzteilnehmer …)
+router.post('/anmeldungen/:rid/funktion', (req, res) => {
+  const reg = load(req);
+  const r = functions.assign(reg.id, Number(req.body.function_id) || null, req.user);
+  if (r.changed) flash(res, 'success', `${registrations.personLabel(reg)}: Funktion ${r.target.name} (${r.target.short}).`);
+  res.redirect(back(req, reg));
 });
 
 router.post('/anmeldungen/:rid/notiz', (req, res) => {

@@ -83,6 +83,19 @@
         <% } %>
       </div>
     </div>
+    <% const shownFns = functionList.filter((f) => f.active || f.is_default || (e.targets || {})[f.id]); %>
+    <div class="card" id="funktionen">
+      <div class="card-head"><h2>Soll pro Funktion <span class="hint">wie viele braucht es?</span></h2></div>
+      <div class="card-body">
+        <div class="fn-targets">
+          <% for (const f of shownFns) { const v = e[`fn_target_${f.id}`] ?? (e.targets || {})[f.id] ?? ''; %>
+            <label class="fn-target" for="fn_target_<%= f.id %>"><span class="fn-tag<%= f.is_default ? ' fn-default' : '' %>"><%= f.short %></span><span class="fn-name"><%= f.name %></span>
+              <input id="fn_target_<%= f.id %>" name="fn_target_<%= f.id %>" type="number" min="0" max="9999" step="1" inputmode="numeric" value="<%= v %>" placeholder="–"></label>
+          <% } %>
+        </div>
+        <p class="small muted mt-s">Leer lassen, was es nicht braucht. Zuweisen kannst du die Funktionen in der Übersicht oder im Reiter «Anmeldungen». Wer keine Funktion hat, zählt als <%= (functionList.find((f) => f.is_default) || {}).name || 'Einsatzteilnehmer' %>.<% if (isNew || e.shifts.length === 1) { %> Ohne eigene Soll-Anzahl der Schicht gilt das Total als Soll.<% } %></p>
+      </div>
+    </div>
     <div class="card">
       <div class="card-head"><h2>Anmeldeformular</h2></div>
       <div class="card-body">

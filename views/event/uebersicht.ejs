@@ -18,10 +18,12 @@
             <div class="occ-head"><span><strong><%= sh.name %></strong> · <%= h.fmtSpan(sh.starts_at, sh.ends_at) || 'Zeit offen' %></span><strong><%= sh.ist %> / <%= sh.soll ?? '–' %><%= sh.missing ? ` · ${sh.missing} fehlen` : (sh.soll && sh.ist >= sh.soll ? ' · voll' : '') %></strong></div>
             <div class="bar <%= sh.tone %>"><span style="width:<%= h.pct(sh.ist, sh.soll) %>%"></span></div>
             <% if (sh.extern) { %><div class="small muted ext-split"><%= sh.intern %> eigene + <%= sh.extern %> extern</div><% } %>
+            <% if (sh.sollFromFunctions) { %><div class="small muted">Soll = Total aus «Soll pro Funktion»</div><% } %>
           </div>
         <% } %>
       </div>
     </div>
+    <%- include('_functions', { fnSummary, assignable, functionOptions, editable: true }) %>
     <% const extTotal = externals.reduce((a, x) => a + x.person_count, 0); const multiShift = event.shifts.length > 1; %>
     <div class="card" id="externe">
       <div class="card-head"><h2>Externe Abteilungen <span class="hint">nur Anzahl Personen, ohne Namen</span></h2><% if (extTotal) { %><strong class="small"><%= h.plural(extTotal, 'Person', 'Personen') %></strong><% } %></div>
@@ -31,7 +33,7 @@
           <summary>
             <span class="name"><span class="tag tag-blue">extern</span> <strong><%= x.unit_name %></strong></span>
             <span class="ext-count"><strong><%= h.plural(x.person_count, 'Person', 'Personen') %></strong></span>
-            <span class="ext-meta muted small"><%= [multiShift ? (x.allShifts ? 'alle Schichten' : x.shiftNames.join(' + ')) : '', x.dietLabel ? `Essen: ${x.dietLabel}` : '', x.contact ? `Kontakt: ${x.contact}` : '', x.note || ''].filter(Boolean).join(' · ') %></span>
+            <span class="ext-meta muted small"><%= [x.func.is_default ? '' : `Funktion ${x.func.short}`, multiShift ? (x.allShifts ? 'alle Schichten' : x.shiftNames.join(' + ')) : '', x.dietLabel ? `Essen: ${x.dietLabel}` : '', x.contact ? `Kontakt: ${x.contact}` : '', x.note || ''].filter(Boolean).join(' · ') %></span>
             <span class="btn btn-sm btn-ghost no-print">Bearbeiten</span>
           </summary>
           <%- include('_external-form', { x }) %>
@@ -107,7 +109,14 @@
     <div class="card" id="einsatzleiter">
       <div class="card-head"><h2>Einsatzleiter-Zugriff</h2></div>
       <div class="card-body">
-        <p class="small muted">Freigegebene Einsatzleiter sehen diesen Einsatz mit Angaben und Teilnehmerliste – nur lesen.</p>
+        <p class="small muted">Login für Einsatzleiter: Freigegebene Konten sehen diesen Einsatz mit Angaben und Teilnehmerliste – nur lesen. Unabhängig von der Funktion EL.</p>
+        <% for (const u of leaderSuggestions) { %>
+          <form method="post" action="/einsaetze/<%= event.id %>/einsatzleiter" class="callout mb-s fn-suggest">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="user_id" value="<%= u.id %>">
+            <span><strong><%= u.display_name %></strong> ist als <%= u.func.name %> (<%= u.func.short %>) eingeteilt und hat ein Einsatzleiter-Konto.</span>
+            <button class="btn btn-sm btn-primary" type="submit">Freigeben</button>
+          </form>
+        <% } %>
         <% if (leaderAccess.length) { %>
           <ul class="plain-list mb-s">
           <% for (const l of leaderAccess) { %>

@@ -2,33 +2,35 @@
 <%- include('../partials/topbar', { crumbs: [['Einstellungen'], ['Auswahllisten']], heading: 'Einstellungen', showSearch: false }) %>
 <%- include('_tabs') %>
 <div class="grid grid-2">
-  <% for (const [kind, label, rows] of [['raenge', 'Ränge', ranks], ['mannschaften', 'Mannschaften / Kader', teams], ['externe', 'Externe Abteilungen', externalUnits]]) { %>
+  <% for (const [kind, label, rows] of [['raenge', 'Ränge', ranks], ['mannschaften', 'Mannschaften / Kader', teams], ['externe', 'Externe Abteilungen', externalUnits], ['funktionen', 'Funktionen an Einsätzen', functionList]]) { const withShort = kind === 'raenge' || kind === 'funktionen'; %>
   <form class="card" method="post" action="/verwaltung/listen/<%= kind %>" data-section>
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <div class="card-head"><h2><%= label %></h2></div>
     <div class="table-wrap">
       <table class="form-table">
-        <thead><tr><th>Name</th><% if (kind === 'raenge') { %><th>Kürzel</th><% } %><th>Reihenfolge</th><th>Aktiv</th><th><%= kind === 'externe' ? 'Einsätze' : 'Personen' %></th><th>Entfernen</th></tr></thead>
+        <thead><tr><th>Name</th><% if (withShort) { %><th>Kürzel</th><% } %><th>Reihenfolge</th><th>Aktiv</th><% if (kind === 'funktionen') { %><th>Standard</th><% } %><th><%= ['externe', 'funktionen'].includes(kind) ? 'Einsätze' : 'Personen' %></th><th>Entfernen</th></tr></thead>
         <tbody>
         <% for (const r of rows) { %>
           <tr>
             <td><input type="hidden" name="row__<%= r.id %>" value="1"><input type="text" name="name__<%= r.id %>" value="<%= r.name %>" required></td>
-            <% if (kind === 'raenge') { %><td><input type="text" name="short__<%= r.id %>" value="<%= r.short %>" style="width:70px"></td><% } %>
+            <% if (withShort) { %><td><input type="text" name="short__<%= r.id %>" value="<%= r.short %>" style="width:70px"></td><% } %>
             <td><input type="number" name="sort__<%= r.id %>" value="<%= r.sort %>" style="width:70px"></td>
             <td><input type="checkbox" name="active__<%= r.id %>" value="1" <%= r.active ? 'checked' : '' %>></td>
+            <% if (kind === 'funktionen') { %><td><input type="radio" name="default_function" value="<%= r.id %>" <%= r.is_default ? 'checked' : '' %> aria-label="Standardfunktion"></td><% } %>
             <td><%= r.used %></td>
-            <td><% if (!r.used) { %><label class="check small"><input type="checkbox" name="delete__<%= r.id %>" value="1" data-delete-row> entfernen</label><% } else { %><span class="muted small" title="Wird verwendet – stattdessen deaktivieren">–</span><% } %></td>
+            <td><% if (!r.used && !r.is_default) { %><label class="check small"><input type="checkbox" name="delete__<%= r.id %>" value="1" data-delete-row> entfernen</label><% } else { %><span class="muted small" title="Wird verwendet – stattdessen deaktivieren">–</span><% } %></td>
           </tr>
         <% } %>
           <tr class="new-row">
             <td><input type="text" name="name__neu" placeholder="+ Neu …"></td>
-            <% if (kind === 'raenge') { %><td><input type="text" name="short__neu" placeholder="Kürzel" style="width:70px"></td><% } %>
-            <td><input type="number" name="sort__neu" style="width:70px"></td><td></td><td></td><td></td>
+            <% if (withShort) { %><td><input type="text" name="short__neu" placeholder="Kürzel" style="width:70px"></td><% } %>
+            <td><input type="number" name="sort__neu" style="width:70px"></td><td></td><% if (kind === 'funktionen') { %><td></td><% } %><td></td><td></td>
           </tr>
         </tbody>
       </table>
     </div>
     <% if (kind === 'externe') { %><div class="card-body small muted">Andere Abteilungen oder Vereine, die bei Einsätzen mithelfen. Beim Einsatz kann man auch direkt einen neuen Namen eintippen – er landet dann hier. Inaktive Abteilungen werden beim Einsatz nicht mehr vorgeschlagen.</div><% } %>
+    <% if (kind === 'funktionen') { %><div class="card-body small muted">Pro Einsatz legst du fest, wie viele es von jeder Funktion braucht, und weist sie den Angemeldeten zu. Wer keine Funktion zugewiesen hat, zählt als <strong>Standard</strong> (Einsatzteilnehmer). Kleine Zahl bei der Reihenfolge = weiter oben. Nicht zu verwechseln mit der Benutzer-Rolle «Einsatzleiter» (Login).</div><% } %>
     <% if (kind === 'raenge') { %><div class="card-body small muted">Die Reihenfolge bestimmt die Sortierung: kleine Zahl = tiefer Rang. Listen zeigen die Personen standardmässig vom höchsten zum tiefsten Rang.</div><% } %>
     <%- include('_section-foot') %>
   </form>

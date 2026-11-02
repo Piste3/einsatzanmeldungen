@@ -10,10 +10,11 @@ const audit = require('../services/audit');
 const persons = require('../services/persons');
 const leaders = require('../services/leaders');
 const externals = require('../services/externals');
+const functions = require('../services/functions');
 const { sendTable, wantsExport, contentDisposition } = require('../lib/export');
 const { flash } = require('../lib/view-helpers');
 const h = require('../lib/view-helpers');
-const { REG_STATUS, SOURCE, INQUIRY_STATUS, INQUIRY_ROW, MATCH_TYPE, DIET } = require('../lib/labels');
+const { REG_STATUS, SOURCE, INQUIRY_STATUS, INQUIRY_ROW, MATCH_TYPE, DIET, REG_COUNTING } = require('../lib/labels');
 const { ValidationError, ConflictError } = require('../services/errors');
 const { BY_RANK } = require('../lib/sorting');
 const { tablePdf } = require('../lib/pdf');
@@ -28,6 +29,7 @@ function formOptions() {
     questionTemplates: db.all('SELECT * FROM question_templates ORDER BY sort, name'),
     tenueTemplates: db.all('SELECT * FROM tenue_templates ORDER BY sort, name'),
     extraDefs: events.extraDefs(),
+    functionList: functions.all(),
   };
 }
 
@@ -60,6 +62,7 @@ router.get('/einsaetze', (req, res) => {
       { label: 'Im Formular', value: (e) => (e.inForm ? 'ja' : 'nein') },
       { label: 'Einsatzleitung', value: (e) => (e.leader_last ? `${e.leader_rank || ''} ${e.leader_first} ${e.leader_last}`.trim() : '') },
       { label: 'Schichten', value: (e) => e.stats.shifts.map((s) => `${s.name} ${s.ist}/${s.soll ?? '–'}`).join(', ') },
+      { label: 'Funktionen', value: (e) => functions.line(functions.summary(e)) },
       { label: 'Neu', value: (e) => e.stats.neu },
       { label: 'Bestätigt', value: (e) => e.stats.bestaetigt },
     ], list);
@@ -118,7 +121,7 @@ function renderEventConflict(req, res, err) {
   const current = err.current;
   const mine = { ...req.body };
   const rows = Object.entries(events.FIELD_LABELS)
-    .filter(([k]) => !['status', 'show_in_form', 'extra'].includes(k))
+    .filter(([k]) => !['status', 'show_in_form', 'extra', 'function_targets'].includes(k))
     .map(([k, label]) => ({ key: k, label, theirs: current[k] ?? '', mine: mine[k] ?? '' }))
     .filter((r) => String(r.theirs) !== String(r.mine));
   res.status(409).render('pages/conflict', {
@@ -149,8 +152,21 @@ router.get('/einsaetze/:id', loadEvent, (req, res) => {
     lastEnd: events.lastEnd(e), activity: audit.forEvent(e.id, 8), extraDefs: events.extraDefs(),
     leaderAccess: leaders.forEvent(e.id), leaderCandidates: leaders.candidates(e.id),
     externals: externals.forEvent(e.id, e.shifts), unitOptions: externals.units({ activeOnly: true }),
+    ...functionPanel(e),
   });
 });
+
+// Karte «Funktionen» in der Übersicht: Ist/Soll, wer welche Funktion hat, Vorschläge für den Einsatzleiter-Zugriff
+function functionPanel(e) {
+  const fnSummary = functions.summary(e);
+  // Zum Zuweisen angeboten: zugeordnete Anmeldungen, die zur Besetzung zählen (Neu, Rückfrage, Bestätigt)
+  const assignable = registrations.listForEvent(e.id).filter((r) => r.person_id && REG_COUNTING.includes(r.status));
+  // Personen mit einer Funktion (ausser Einsatzteilnehmer), die ein Einsatzleiter-Konto ohne Freigabe für diesen Einsatz haben
+  const withFn = new Map(assignable.filter((r) => !r.func.is_default).map((r) => [r.person_id, r]));
+  const leaderSuggestions = leaders.candidates(e.id).filter((u) => u.person_id && withFn.has(u.person_id))
+    .map((u) => ({ ...u, func: withFn.get(u.person_id).func }));
+  return { fnSummary, assignable, leaderSuggestions, functionOptions: functions.all({ activeOnly: true }) };
+}
 
 // Einsatzleiter für diesen Einsatz freigeben / Freigabe entfernen (Aufgebotsstelle und Admin)
 router.post('/einsaetze/:id/einsatzleiter', loadEvent, (req, res) => {
@@ -191,7 +207,7 @@ router.post('/einsaetze/:id/externe/:xid/loeschen', loadEvent, (req, res) => {
 // Reiter «Anmeldungen»
 router.get('/einsaetze/:id/anmeldungen', loadEvent, (req, res) => {
   const e = req.event;
-  const filters = { status: req.query.status || '', q: req.query.q || '', sort: ['neu', 'rang_auf'].includes(req.query.sort) ? req.query.sort : 'rang' };
+  const filters = { status: req.query.status || '', q: req.query.q || '', sort: ['neu', 'rang_auf', 'funktion'].includes(req.query.sort) ? req.query.sort : 'rang' };
   const list = registrations.listForEvent(e.id, filters);
   const canSeeDiet = (r) => r.person_id && persons.canSeeDiet(req.user, r.person_id);
   const dietOf = (r) => {
@@ -213,6 +229,7 @@ router.get('/einsaetze/:id/anmeldungen', loadEvent, (req, res) => {
       { label: 'Angemeldet', value: (r) => h.fmtDateTime(r.registered_at) },
       { label: 'Schichtwunsch', value: (r) => e.shifts.filter((s) => r.wishes.includes(s.id)).map((s) => s.name).join(', ') },
       { label: 'Zugeteilt', value: (r) => r.assigned.map((a) => a.name).join(', ') },
+      { label: 'Funktion', value: (r) => (r.person_id && !functions.INACTIVE_REG.includes(r.status) ? r.func.short : '') },
       { label: 'Bemerkung', value: (r) => r.remark || '' },
       { label: 'Interne Bemerkung', value: (r) => r.internal_note || '' },
       { label: 'Status', value: (r) => REG_STATUS[r.status].label },
@@ -225,13 +242,16 @@ router.get('/einsaetze/:id/anmeldungen', loadEvent, (req, res) => {
   for (const r of all) counts[r.status] = (counts[r.status] || 0) + 1;
   const available = db.all(`SELECT p.id, p.first_name, p.last_name, r.short AS rank_short FROM persons p LEFT JOIN ranks r ON r.id = p.rank_id
     WHERE p.status = 'aktiv' AND NOT EXISTS (SELECT 1 FROM registrations g WHERE g.event_id = ? AND g.person_id = p.id) ORDER BY ${BY_RANK}`, e.id);
-  res.render('pages/event', { title: `${e.name} · Anmeldungen`, tab: 'anmeldungen', list, counts, total: all.length, filters, available, dietOf });
+  res.render('pages/event', {
+    title: `${e.name} · Anmeldungen`, tab: 'anmeldungen', list, counts, total: all.length, filters, available, dietOf,
+    functionOptions: functions.all({ activeOnly: true }), fnSummary: functions.summary(e),
+  });
 });
 
 // Teilnehmerliste: wer kommt, mit Mobil und Essenseinschränkungen – zum Drucken (PDF), als Excel oder CSV
 router.get('/einsaetze/:id/teilnehmerliste', loadEvent, (req, res) => {
   const e = req.event;
-  const { shift, filters, list, showShift, showStatus, shiftOf, exts, extTotal } = registrations.participantView(e, req.query, req.user);
+  const { shift, filters, list, showShift, showStatus, shiftOf, exts, extTotal, fnSummary, showFunction } = registrations.participantView(e, req.query, req.user);
   const format = req.query.format === 'pdf' ? 'pdf' : wantsExport(req);
   if (format) {
     audit.log({
@@ -246,6 +266,7 @@ router.get('/einsaetze/:id/teilnehmerliste', loadEvent, (req, res) => {
     const summary = registrations.dietSummary(list, exts);
     const columns = [
       { label: 'Nr.', fit: true, align: 'right', value: (r, i) => String(i + 1) },
+      ...(showFunction ? [{ label: 'Fkt.', fit: true, value: (r) => (r.func.is_default ? { text: r.func.short, muted: true } : { text: r.func.short, bold: true }) }] : []),
       { label: 'Rang', fit: true, value: (r) => r.rank_short || '' },
       { label: 'Name', width: 2, value: (r) => ({ text: `${r.first_name} ${r.last_name}`, bold: true }) },
       { label: 'Mobil', fit: true, value: (r) => r.mobile || '–' },
@@ -256,6 +277,7 @@ router.get('/einsaetze/:id/teilnehmerliste', loadEvent, (req, res) => {
     const extColumns = [
       { label: 'Abteilung', width: 2, value: (x) => ({ text: x.unit_name, bold: true }) },
       { label: 'Personen', fit: true, align: 'right', value: (x) => ({ text: String(x.person_count), bold: true }) },
+      ...(showFunction ? [{ label: 'Fkt.', fit: true, value: (x) => x.func.short }] : []),
       ...(showShift ? [{ label: 'Schicht', width: 1.3, value: (x) => externals.shiftLabel(x, e.shifts) }] : []),
       { label: 'Essenseinschränkungen', width: 2.2, value: (x) => (x.dietLabel ? { text: x.dietLabel, bold: true } : { text: '–', muted: true }) },
       { label: 'Kontakt', width: 1.6, value: (x) => x.contact || '–' },
@@ -265,7 +287,8 @@ router.get('/einsaetze/:id/teilnehmerliste', loadEvent, (req, res) => {
       title: `Teilnehmerliste · ${e.name}${shift ? ` · ${shift.name}` : ''}`,
       subtitle: [
         [h.fmtDateWd(e.date), e.start_time ? `Antreten ${e.start_time}${e.start_place ? ` · ${e.start_place}` : ''}` : '', leader].filter(Boolean).join('  ·  '),
-        `${registrations.PARTICIPANT_SCOPES[filters.umfang].label} · ${list.length} ${list.length === 1 ? 'Person' : 'Personen'}${extTotal ? ` + ${extTotal} extern = ${list.length + extTotal} total` : ''} · ${filters.sort === 'rang_auf' ? 'tiefster Rang zuerst' : 'höchster Rang zuerst'}`,
+        `${registrations.PARTICIPANT_SCOPES[filters.umfang].label} · ${list.length} ${list.length === 1 ? 'Person' : 'Personen'}${extTotal ? ` + ${extTotal} extern = ${list.length + extTotal} total` : ''} · ${{ rang_auf: 'tiefster Rang zuerst', funktion: 'nach Funktion, dann Rang' }[filters.sort] || 'höchster Rang zuerst'}`,
+        ...(fnSummary.hasTargets || showFunction ? [`Funktionen (Ist/Soll, ganzer Einsatz): ${functions.line(fnSummary)}`] : []),
       ],
       columns,
       rows: list.map((r, i) => columns.map((c) => c.value(r, i))),
@@ -289,6 +312,7 @@ router.get('/einsaetze/:id/teilnehmerliste', loadEvent, (req, res) => {
   if (format) {
     const cols = [
       { label: 'Nr.', value: (r) => list.indexOf(r) + 1 },
+      ...(showFunction ? [{ label: 'Funktion', value: (r) => r.func.short }] : []),
       { label: 'Rang', value: (r) => r.rank_short || '' },
       { label: 'Nachname', value: (r) => r.last_name },
       { label: 'Vorname', value: (r) => r.first_name },
@@ -302,14 +326,14 @@ router.get('/einsaetze/:id/teilnehmerliste', loadEvent, (req, res) => {
     // Externe Abteilungen als eigene Zeilen unten anhängen: Rang «extern», Name = Abteilung, Spalte «Anzahl»
     cols.splice(1, 0, { label: 'Anzahl', value: (r) => (r.ext ? r.ext.person_count : 1) });
     const extCols = {
-      'Nr.': () => '', Anzahl: (x) => x.person_count, Rang: () => 'extern', Nachname: (x) => x.unit_name, Vorname: () => '',
+      'Nr.': () => '', Anzahl: (x) => x.person_count, Funktion: (x) => x.func.short, Rang: () => 'extern', Nachname: (x) => x.unit_name, Vorname: () => '',
       Mobil: (x) => x.contact || '', 'Essenseinschränkung': (x) => x.dietLabel, Details: (x) => x.note || '', Schicht: (x) => externals.shiftLabel(x, e.shifts), Status: () => '',
     };
     const wrapCols = cols.map((c) => ({ label: c.label, value: (r) => (r.ext ? extCols[c.label](r.ext) : c.value(r)) }));
     return sendTable(res, format, baseName, wrapCols, [...list, ...exts.map((x) => ({ ext: x }))]);
   }
   res.render('pages/participants', {
-    title: `${e.name} · Teilnehmerliste`, list, filters, shift, showShift, showStatus, shiftOf,
+    title: `${e.name} · Teilnehmerliste`, list, filters, shift, showShift, showStatus, shiftOf, fnSummary, showFunction,
     summary: registrations.dietSummary(list, exts), scopes: registrations.PARTICIPANT_SCOPES, exts, extTotal, extShift: (x) => externals.shiftLabel(x, e.shifts),
     unresolved: db.one("SELECT COUNT(*) AS n FROM registrations WHERE event_id = ? AND person_id IS NULL AND status = 'unsicher'", e.id).n,
   });
