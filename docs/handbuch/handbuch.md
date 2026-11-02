@@ -144,8 +144,8 @@ Die Liste zeigt alle Einsätze mit Datum, Antreten, Status, Besetzung und Einsat
 - **Einsatzleitung:** aus den Personen wählen (tippen zum Suchen). Rang und Telefonnummer kommen so automatisch ins Aufgebot.
 - **Tenue:** mit einem Klick eine Vorlage übernehmen, z. B. «Uniform orange + VD», und bei Bedarf anpassen.
 - **Beschreibung** ist für die Mitglieder im Formular sichtbar, die **interne Bemerkung** nur für die Aufgebotsstelle.
-- **Schichten:** Eine Schicht für den ganzen Einsatz wird automatisch angelegt, hier mit der Soll-Anzahl. Weitere Schichten kommen nach dem Speichern dazu.
-- **Soll pro Funktion:** wie viele Einsatzleiter (EL), Sektorchefs (SC), Busfahrer (BF) und Einsatzteilnehmer (TN) es braucht. Leer lassen, was es nicht braucht. Siehe «Funktionen» unten.
+- **Schichten:** Eine Schicht für den ganzen Einsatz wird automatisch angelegt. Weitere Schichten kommen nach dem Speichern dazu.
+- **Soll pro Funktion:** wie viele Einsatzleiter (EL), Sektorchefs (SC), Busfahrer (BF) und Einsatzteilnehmer (TN) es braucht. Leer lassen, was es nicht braucht. Das Total ist das Soll des Einsatzes. Siehe «Funktionen» unten.
 - **Anmeldeformular:** Anmeldefrage aus einer Vorlage wählen und Text und Hilfetext anpassen. Die Standard-Vorlage (Einstellungen › Vorlagen) ist bei neuen Einsätzen schon ausgewählt.
 - **Als Entwurf speichern** oder direkt **Veröffentlichen** – dann erscheint der Einsatz sofort im Anmeldeformular.
 
@@ -177,7 +177,9 @@ Pro Einsatz legst du fest, wie viele es von jeder Funktion braucht, und teilst d
 
 ![Einsatz bearbeiten › Soll pro Funktion](bilder/41-soll-pro-funktion.jpg)
 
-**Soll festlegen:** Beim Anlegen oder unter **Bearbeiten** in der Karte **Soll pro Funktion** die Anzahl pro Funktion eintragen, z. B. 1 EL, 2 SC, 1 BF, 12 TN. Leer oder 0 heisst: braucht es nicht. Hat der Einsatz nur eine Schicht und dort keine eigene Soll-Anzahl, gilt das Total (hier 16) automatisch als Soll der Besetzung.
+**Soll festlegen:** Beim Anlegen oder unter **Bearbeiten** in der Karte **Soll pro Funktion** die Anzahl pro Funktion eintragen, z. B. 1 EL, 2 SC, 1 BF, 12 TN. Leer oder 0 heisst: braucht es nicht.
+
+> **Soll der Schicht und Soll pro Funktion:** Das Soll der Schicht sagt, wie viele Personen eine Schicht insgesamt braucht; das Soll pro Funktion teilt das auf (z. B. 1 EL + 2 SC + 1 BF + 12 TN). Hat der Einsatz **nur eine Schicht**, ist ihr Soll immer das Total der Funktionen (hier 16) – es gibt also nur eine Zahl, und im Reiter «Schichten» ist das Feld gesperrt. Hat der Einsatz **mehrere Schichten**, gilt das Soll pro Funktion für den ganzen Einsatz, und das Soll jeder Schicht stellst du im Reiter «Schichten» separat ein, weil dieselbe Person in mehreren Schichten sein kann.
 
 ![Einsatz › Übersicht › Funktionen](bilder/42-funktionen.jpg)
 
@@ -401,7 +403,7 @@ Die meisten Einsätze haben nur eine Schicht für alle. Dann gibt es nichts zu v
 
 ![Einsatz › Schichten mit zwei Schichten](bilder/13-schichten.jpg)
 
-- Jede Schicht ist eine Spalte mit Zeit und Besetzung (Ist / Soll). Grün heisst voll.
+- Jede Schicht ist eine Spalte mit Zeit und Besetzung (Ist / Soll). Grün heisst voll. Bei nur einer Schicht ist das Soll das Total aus «Soll pro Funktion»; ändern unter **Bearbeiten**.
 - **Noch keiner Schicht zugeteilt:** Anmeldungen ohne Schicht stehen oben und werden über «zuteilen …» eingeteilt.
 - **Umteilen** über das Auswahlfeld bei der Person. Eine Person kann auch mehreren Schichten zugeteilt sein («Tag + Abend»).
 - **+ Person aus Anmeldungen hinzufügen:** Name tippen und auswählen.

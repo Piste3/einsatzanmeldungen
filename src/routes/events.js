@@ -424,7 +424,7 @@ router.get('/einsaetze/:id/schichten', loadEvent, (req, res) => {
     combos.push({ value: ids.join(','), label: e.shifts.filter((s) => ids.includes(s.id)).map((s) => (ids.length > 1 ? s.name.replace(/schicht$/i, '') : s.name)).join(' + ') });
   }
   combos.sort((a, b) => a.value.split(',').length - b.value.split(',').length);
-  res.render('pages/event', { title: `${e.name} · Schichten`, tab: 'schichten', stats, columns, unassigned, combos, overlaps: registrations.overlaps(e.id), regs });
+  res.render('pages/event', { title: `${e.name} · Schichten`, tab: 'schichten', stats, columns, unassigned, combos, overlaps: registrations.overlaps(e.id), regs, fnTotal: events.targetTotal(e) });
 });
 
 router.post('/einsaetze/:id/schichten', loadEvent, (req, res) => {

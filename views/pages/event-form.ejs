@@ -71,13 +71,13 @@
         <% if (isNew) { %>
           <div class="list-item">
             <div class="row-between"><strong>Ganzer Einsatz</strong><span class="small muted">automatisch angelegt</span></div>
-            <div class="row mt-s"><label class="small muted" for="target_count">Soll-Anzahl Personen</label><input id="target_count" name="target_count" type="number" min="0" value="<%= e.target_count || '' %>" style="width:90px"></div>
+            <div class="small muted mt-s">Soll = Total aus «Soll pro Funktion» (unten)</div>
           </div>
           <p class="small muted">Weitere Schichten kannst du nach dem Speichern im Reiter «Schichten» hinzufügen.</p>
         <% } else { %>
           <% for (const s of e.shifts) { %>
             <div class="list-item"><div class="row-between"><strong><%= s.name %></strong><% if (s.is_default) { %><span class="small muted">automatisch angelegt</span><% } %></div>
-              <span class="small muted"><%= h.fmtSpan(s.starts_at, s.ends_at) || 'Zeit offen' %> · Soll <strong><%= s.target_count ?? '–' %> Personen</strong></span></div>
+              <span class="small muted"><%= h.fmtSpan(s.starts_at, s.ends_at) || 'Zeit offen' %> · Soll <strong><%= s.target_count ?? '–' %> Personen</strong><%= e.shifts.length === 1 ? ' (= Total aus «Soll pro Funktion»)' : '' %></span></div>
           <% } %>
           <a class="btn btn-sm" href="/einsaetze/<%= e.id %>/schichten">+ Schicht hinzufügen / bearbeiten</a>
         <% } %>
@@ -93,7 +93,7 @@
               <input id="fn_target_<%= f.id %>" name="fn_target_<%= f.id %>" type="number" min="0" max="9999" step="1" inputmode="numeric" value="<%= v %>" placeholder="–"></label>
           <% } %>
         </div>
-        <p class="small muted mt-s">Leer lassen, was es nicht braucht. Zuweisen kannst du die Funktionen in der Übersicht oder im Reiter «Anmeldungen». Wer keine Funktion hat, zählt als <%= (functionList.find((f) => f.is_default) || {}).name || 'Einsatzteilnehmer' %>.<% if (isNew || e.shifts.length === 1) { %> Ohne eigene Soll-Anzahl der Schicht gilt das Total als Soll.<% } %></p>
+        <p class="small muted mt-s">Leer lassen, was es nicht braucht. Zuweisen kannst du die Funktionen in der Übersicht oder im Reiter «Anmeldungen». Wer keine Funktion hat, zählt als <%= (functionList.find((f) => f.is_default) || {}).name || 'Einsatzteilnehmer' %>.<% if (isNew || e.shifts.length === 1) { %> Das Total ist das Soll der Besetzung.<% } else { %> Gilt für den ganzen Einsatz; das Soll pro Schicht stellst du im Reiter «Schichten» ein.<% } %></p>
       </div>
     </div>
     <div class="card">

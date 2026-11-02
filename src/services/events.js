@@ -140,10 +140,11 @@ function create(input, user) {
       ...FIELDS.map((f) => data[f]), now, now, user.id, user.id,
     );
     const id = Number(info.lastInsertRowid);
-    // Standardschicht für den ganzen Einsatz
+    // Standardschicht für den ganzen Einsatz; Soll = Total aus «Soll pro Funktion» (sonst die alte Einzelangabe)
     const sp = span(data.date, data.start_time, data.end_time);
+    const fnTotal = targetTotal({ function_targets: data.function_targets });
     db.run('INSERT INTO shifts (event_id, name, starts_at, ends_at, target_count, is_default, sort) VALUES (?, ?, ?, ?, ?, 1, 0)',
-      id, 'Ganzer Einsatz', sp.starts_at, sp.ends_at, input.target_count ? Number(input.target_count) : null);
+      id, 'Ganzer Einsatz', sp.starts_at, sp.ends_at, fnTotal || (input.target_count ? Number(input.target_count) : null));
     audit.log({ entity: 'event', entityId: id, eventId: id, action: 'create', summary: `${user.display_name} hat den Einsatz «${data.name}» angelegt`, user });
     live.notify('events');
     return id;
@@ -172,6 +173,8 @@ function update(id, input, expectedVersion, user, { reason } = {}) {
       const sp = span(data.date, data.start_time, data.end_time);
       db.run('UPDATE shifts SET starts_at = ?, ends_at = ? WHERE id = ?', sp.starts_at, sp.ends_at, before.shifts[0].id);
     }
+    // Nur eine Schicht: ihr Soll ist das Total aus «Soll pro Funktion» (kein zweites, abweichendes Soll)
+    syncSingleShift(id, data.function_targets);
     const beforeCmp = { ...before, extra: JSON.stringify(before.extra) };
     const changes = audit.diff(beforeCmp, data, FIELDS);
     if (Object.keys(changes).length) {
@@ -264,6 +267,7 @@ function updateShift(shiftId, input, user, { reason } = {}) {
   const e = get(shift.event_id);
   assertEditable(e, user, reason);
   const s = cleanShift(e, input);
+  if (e.shifts.length === 1 && targetTotal(e) > 0) s.target_count = targetTotal(e);
   db.run('UPDATE shifts SET name = ?, starts_at = ?, ends_at = ?, target_count = ?, start_place = ?, internal_note = ?, is_default = 0, version = version + 1 WHERE id = ?',
     s.name, s.starts_at, s.ends_at, s.target_count, s.start_place, s.internal_note, shiftId);
   audit.log({ entity: 'shift', entityId: shiftId, eventId: e.id, action: 'update', summary: `${user.display_name} hat die Schicht «${s.name}» bei «${e.name}» geändert`, details: audit.diff(shift, s, Object.keys(s)), user });
@@ -337,6 +341,15 @@ function stats(e) {
     offen: Math.max(0, activePersons - responded),
     full: shifts.length > 0 && shifts.every((s) => s.soll && s.ist >= s.soll),
   };
+}
+
+// Einsatz mit nur einer Schicht: Soll der Schicht = Total aus «Soll pro Funktion» (sofern dort etwas steht)
+function syncSingleShift(eventId, functionTargets) {
+  const total = targetTotal({ function_targets: functionTargets });
+  const shifts = shiftsOf(eventId);
+  if (total > 0 && shifts.length === 1 && shifts[0].target_count !== total) {
+    db.run('UPDATE shifts SET target_count = ? WHERE id = ?', total, shifts[0].id);
+  }
 }
 
 // Summe aller Soll-Werte pro Funktion

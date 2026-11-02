@@ -435,7 +435,10 @@ test('Funktionen: Soll pro Einsatz festlegen, zuweisen, Ist/Soll und Teilnehmerl
   // eine Schicht ohne eigene Soll-Anzahl: Total aus den Funktionen gilt als Soll
   const st = events.stats(events.get(ev));
   assert.equal(st.shifts[0].soll, 7);
-  assert.ok(st.shifts[0].sollFromFunctions);
+  assert.equal(events.get(ev).shifts[0].target_count, 7, 'Schicht-Soll = Total der Funktionen');
+  // Soll der einzigen Schicht lässt sich nicht abweichend setzen
+  events.updateShift(events.get(ev).shifts[0].id, { name: 'Ganzer Einsatz', target_count: 1 }, system);
+  assert.equal(events.get(ev).shifts[0].target_count, 7);
 
   // Übersicht: Karte «Funktionen», Vorschlag für den Einsatzleiter-Zugriff (Konto der Person mit Funktion EL)
   await users.create({ username: 'marco2', display_name: 'Marco Leit', role: 'einsatzleiter', person_id: ids.marco, password: 'Kommando-Marco-2026', must_change_password: false }, null);

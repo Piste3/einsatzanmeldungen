@@ -69,7 +69,7 @@
           <td><input form="shift-<%= s.id %>" type="date" name="date" value="<%= (s.starts_at || event.date).slice(0, 10) %>"></td>
           <td><input form="shift-<%= s.id %>" type="time" name="start" value="<%= s.starts_at ? s.starts_at.slice(11, 16) : '' %>"></td>
           <td><input form="shift-<%= s.id %>" type="time" name="end" value="<%= s.ends_at ? s.ends_at.slice(11, 16) : '' %>"></td>
-          <td><input form="shift-<%= s.id %>" type="number" min="0" name="target_count" value="<%= s.target_count ?? '' %>" style="width:70px"></td>
+          <td><% if (!multi && fnTotal) { %><input form="shift-<%= s.id %>" type="number" name="target_count" value="<%= fnTotal %>" style="width:70px" readonly title="Total aus «Soll pro Funktion» – ändern unter Bearbeiten"><% } else { %><input form="shift-<%= s.id %>" type="number" min="0" name="target_count" value="<%= s.target_count ?? '' %>" style="width:70px"><% } %></td>
           <td><input form="shift-<%= s.id %>" type="text" name="start_place" value="<%= s.start_place || '' %>" placeholder="wie Einsatz"></td>
           <td><input form="shift-<%= s.id %>" type="text" name="internal_note" value="<%= s.internal_note || '' %>"></td>
           <td class="nowrap">
