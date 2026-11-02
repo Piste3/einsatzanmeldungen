@@ -62,7 +62,7 @@
   <div class="card-head"><h2>Schichten verwalten <span class="hint">Name, Zeit, Soll pro Funktion – das Soll der Schicht ist die Summe</span></h2></div>
   <div class="table-wrap">
     <table class="form-table">
-      <thead><tr><th>Name</th><th>Datum</th><th>Beginn</th><th>Ende</th><% for (const f of fnCols) { %><th class="fn-col" title="Soll <%= f.name %>"><span class="fn-tag<%= f.is_default ? ' fn-default' : '' %>"><%= f.short %></span></th><% } %><th title="Summe der Funktionen">Soll</th><th>Antretensort (optional)</th><th>Interne Bemerkung</th><th></th></tr></thead>
+      <thead><tr><th>Name</th><th>Datum</th><th>Beginn</th><th>Ende</th><% for (const f of fnCols) { %><th class="fn-col" title="Soll <%= f.name %>"><span class="fn-tag<%= f.is_default ? ' fn-default' : '' %>"><%= f.short %></span></th><% } %><th class="fn-col" title="Summe der Funktionen">Soll</th><th>Antretensort (optional)</th><th>Interne Bemerkung</th><th></th></tr></thead>
       <tbody>
       <% for (const s of event.shifts) { %>
         <tr>
@@ -71,7 +71,7 @@
           <td><input form="shift-<%= s.id %>" type="time" name="start" value="<%= s.starts_at ? s.starts_at.slice(11, 16) : '' %>"></td>
           <td><input form="shift-<%= s.id %>" type="time" name="end" value="<%= s.ends_at ? s.ends_at.slice(11, 16) : '' %>"></td>
           <% for (const f of fnCols) { %><td class="fn-col"><input form="shift-<%= s.id %>" type="number" min="0" max="9999" name="fn_target_<%= f.id %>" value="<%= s.targets[f.id] ?? '' %>" placeholder="–" aria-label="Soll <%= f.short %>"></td><% } %>
-          <td class="nowrap"><strong><%= s.target_count ?? '–' %></strong></td>
+          <td class="fn-col"><strong><%= s.target_count ?? '–' %></strong></td>
           <td><input form="shift-<%= s.id %>" type="text" name="start_place" value="<%= s.start_place || '' %>" placeholder="wie Einsatz"></td>
           <td><input form="shift-<%= s.id %>" type="text" name="internal_note" value="<%= s.internal_note || '' %>"></td>
           <td class="nowrap">

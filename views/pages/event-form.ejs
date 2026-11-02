@@ -78,18 +78,18 @@
       <div class="table-wrap">
         <table class="form-table fn-grid" data-fn-grid>
           <thead>
-            <tr><th>Funktion</th><% for (const c of cols) { %><th class="right"><%= c.name %><% if (c.starts_at) { %><span class="sub muted"><%= h.fmtSpan(c.starts_at, c.ends_at) %></span><% } %></th><% } %></tr>
+            <tr><th>Funktion</th><% for (const c of cols) { %><th class="fn-cell"><%= c.name %><% if (c.starts_at) { %><span class="sub muted"><%= h.fmtSpan(c.starts_at, c.ends_at) %></span><% } %></th><% } %></tr>
           </thead>
           <tbody>
           <% for (const f of shownFns) { %>
             <tr>
               <td class="nowrap"><span class="fn-tag<%= f.is_default ? ' fn-default' : '' %>"><%= f.short %></span> <%= f.name %></td>
-              <% cols.forEach((c, i) => { %><td class="right"><input name="<%= keyOf(c, f) %>" type="number" min="0" max="9999" step="1" inputmode="numeric" value="<%= valOf(c, f) %>" placeholder="–" data-fn-col="<%= i %>" aria-label="<%= f.short %> <%= c.name %>"></td><% }) %>
+              <% cols.forEach((c, i) => { %><td class="fn-cell"><input name="<%= keyOf(c, f) %>" type="number" min="0" max="9999" step="1" inputmode="numeric" value="<%= valOf(c, f) %>" placeholder="–" data-fn-col="<%= i %>" aria-label="<%= f.short %> <%= c.name %>"></td><% }) %>
             </tr>
           <% } %>
           </tbody>
           <tfoot>
-            <tr><th>Soll der Schicht</th><% cols.forEach((c, i) => { %><th class="right"><span data-fn-total="<%= i %>"><%= colTotal(c) || '–' %></span> Pers.</th><% }) %></tr>
+            <tr><th>Soll der Schicht <span class="muted">(Personen)</span></th><% cols.forEach((c, i) => { %><th class="fn-cell"><span class="fn-sum" data-fn-total="<%= i %>"><%= colTotal(c) || '–' %></span></th><% }) %></tr>
           </tfoot>
         </table>
       </div>
