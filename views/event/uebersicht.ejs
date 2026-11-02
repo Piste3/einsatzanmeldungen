@@ -18,7 +18,6 @@
             <div class="occ-head"><span><strong><%= sh.name %></strong> · <%= h.fmtSpan(sh.starts_at, sh.ends_at) || 'Zeit offen' %></span><strong><%= sh.ist %> / <%= sh.soll ?? '–' %><%= sh.missing ? ` · ${sh.missing} fehlen` : (sh.soll && sh.ist >= sh.soll ? ' · voll' : '') %></strong></div>
             <div class="bar <%= sh.tone %>"><span style="width:<%= h.pct(sh.ist, sh.soll) %>%"></span></div>
             <% if (sh.extern) { %><div class="small muted ext-split"><%= sh.intern %> eigene + <%= sh.extern %> extern</div><% } %>
-            <% if (sh.sollFromFunctions) { %><div class="small muted">Soll = Total aus «Soll pro Funktion»</div><% } %>
           </div>
         <% } %>
       </div>

@@ -43,6 +43,16 @@
   }
 
   // ---------- Formulare ----------
+  // Soll pro Schicht und Funktion: Summe pro Schicht laufend nachführen
+  document.addEventListener('input', (ev) => {
+    const t = ev.target;
+    if (!t.matches || !t.matches('[data-fn-col]')) return;
+    const grid = t.closest('[data-fn-grid]');
+    const col = t.getAttribute('data-fn-col');
+    const sum = $$(`[data-fn-col="${col}"]`, grid).reduce((a, i) => a + (parseInt(i.value, 10) > 0 ? parseInt(i.value, 10) : 0), 0);
+    const out = $(`[data-fn-total="${col}"]`, grid);
+    if (out) out.textContent = sum || '–';
+  });
   document.addEventListener('change', (ev) => {
     const t = ev.target;
     if (t.matches('[data-submit-on-change]')) {

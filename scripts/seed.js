@@ -59,13 +59,14 @@ const { today, addDays } = require('../src/lib/dates');
   const fnTargets = (t) => Object.fromEntries(Object.entries(t).map(([k, n]) => [`fn_target_${fn[k]}`, n]));
   const messe = events.create({
     name: '554. Basler Herbstmesse', date: d1, start_time: '13:30', end_time: '23:00', start_place: 'Tramhaltestelle «Clarastrasse» (Tram 6, 14, 15)',
-    tenue, leader_person_id: ids['Marco Rüegg'], description: 'Verkehrsdienst rund um die Messe.', ...fnTargets({ EL: 1, SC: 2, BF: 1, TN: 12 }),
+    tenue, leader_person_id: ids['Marco Rüegg'], description: 'Verkehrsdienst rund um die Messe.',
   }, lena);
   const shifts = events.shiftsOf(messe);
-  events.updateShift(shifts[0].id, { name: 'Tagschicht', start: '13:30', end: '19:30', target_count: 10 }, lena);
-  events.addShift(messe, { name: 'Abendschicht', start: '19:00', end: '23:00', target_count: 6 }, lena);
+  // Soll pro Schicht und Funktion; das Soll der Schicht ist die Summe (10 bzw. 6)
+  events.updateShift(shifts[0].id, { name: 'Tagschicht', start: '13:30', end: '19:30', ...fnTargets({ EL: 1, SC: 2, BF: 1, TN: 6 }) }, lena);
+  events.addShift(messe, { name: 'Abendschicht', start: '19:00', end: '23:00', ...fnTargets({ SC: 1, TN: 5 }) }, lena);
   events.setStatus(messe, 'veroeffentlicht', lena);
-  const stadtlauf = events.create({ name: 'Basler Stadtlauf', date: addDays(today(), 32), start_time: '15:00', end_time: '20:00', start_place: 'Marktplatz, vor dem Rathaus', tenue, leader_person_id: ids['Marco Rüegg'], target_count: 15, ...fnTargets({ EL: 1, SC: 1, TN: 13 }) }, lena);
+  const stadtlauf = events.create({ name: 'Basler Stadtlauf', date: addDays(today(), 32), start_time: '15:00', end_time: '20:00', start_place: 'Marktplatz, vor dem Rathaus', tenue, leader_person_id: ids['Marco Rüegg'], ...fnTargets({ EL: 1, SC: 1, TN: 13 }) }, lena);
   events.setStatus(stadtlauf, 'veroeffentlicht', lena);
   const markt = events.create({ name: 'Weihnachtsmarkt Münsterplatz', date: addDays(today(), 46), start_time: '16:00', end_time: '21:00', start_place: 'Münsterplatz', target_count: 12 }, lena);
   events.setStatus(markt, 'veroeffentlicht', lena);

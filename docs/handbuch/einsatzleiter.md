@@ -47,7 +47,7 @@ Gibt dir die Aufgebotsstelle einen weiteren Einsatz frei, erscheint er sofort in
 
 **Schichten:** Pro Schicht die Zeit und die Besetzung, z. B. «8 / 10» – 8 Personen eingeteilt, 10 gebraucht. Der Balken ist grün, wenn die Schicht voll ist, gelb ab der Hälfte und rot darunter. Kommen Leute einer anderen Abteilung, steht darunter z. B. «6 eigene + 4 extern».
 
-**Funktionen:** Hat die Aufgebotsstelle festgelegt, wie viele Einsatzleiter (EL), Sektorchefs (SC), Busfahrer (BF) und Einsatzteilnehmer (TN) es braucht, zeigt diese Karte pro Funktion Ist / Soll, z. B. «SC 1 / 2 · 1 fehlt», und wer eingeteilt ist. Wer keine Funktion hat, zählt als Einsatzteilnehmer. Eingeteilt wird von der Aufgebotsstelle.
+**Funktionen:** Hat die Aufgebotsstelle festgelegt, wie viele Einsatzleiter (EL), Sektorchefs (SC), Busfahrer (BF) und Einsatzteilnehmer (TN) es braucht, zeigt diese Karte pro Schicht und Funktion Ist / Soll, z. B. «SC 1 / 2 · 1 fehlt», und wer eingeteilt ist. Die Funktion einer Person gilt in allen ihren Schichten. Wer keine Funktion hat, zählt als Einsatzteilnehmer. Eingeteilt wird von der Aufgebotsstelle.
 
 **Teilnehmer:** Die Tabelle unten zeigt, wer kommt, der höchste Rang zuerst.
 

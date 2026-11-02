@@ -21,6 +21,7 @@
 <% } %>
 
 <div class="grid grid-main">
+  <div class="stack">
   <div class="card">
     <div class="card-head"><h2>Grunddaten <span class="hint">Nur Name und Datum sind Pflicht – alles andere kann später ergänzt werden.</span></h2></div>
     <div class="card-body">
@@ -64,38 +65,41 @@
     </div>
   </div>
 
-  <div class="stack">
-    <div class="card">
-      <div class="card-head"><h2>Schichten <span class="hint">meist nur eine</span></h2></div>
-      <div class="card-body">
-        <% if (isNew) { %>
-          <div class="list-item">
-            <div class="row-between"><strong>Ganzer Einsatz</strong><span class="small muted">automatisch angelegt</span></div>
-            <div class="small muted mt-s">Soll = Total aus «Soll pro Funktion» (unten)</div>
-          </div>
-          <p class="small muted">Weitere Schichten kannst du nach dem Speichern im Reiter «Schichten» hinzufügen.</p>
-        <% } else { %>
-          <% for (const s of e.shifts) { %>
-            <div class="list-item"><div class="row-between"><strong><%= s.name %></strong><% if (s.is_default) { %><span class="small muted">automatisch angelegt</span><% } %></div>
-              <span class="small muted"><%= h.fmtSpan(s.starts_at, s.ends_at) || 'Zeit offen' %> · Soll <strong><%= s.target_count ?? '–' %> Personen</strong><%= e.shifts.length === 1 ? ' (= Total aus «Soll pro Funktion»)' : '' %></span></div>
-          <% } %>
-          <a class="btn btn-sm" href="/einsaetze/<%= e.id %>/schichten">+ Schicht hinzufügen / bearbeiten</a>
-        <% } %>
-      </div>
-    </div>
-    <% const shownFns = functionList.filter((f) => f.active || f.is_default || (e.targets || {})[f.id]); %>
+<%
+  // Soll pro Schicht und Funktion: Spalten = Schichten (neu: nur «Ganzer Einsatz»), Zeilen = Funktionen
+  const cols = isNew ? [{ id: null, name: 'Ganzer Einsatz', targets: {} }] : e.shifts;
+  const keyOf = (c, f) => (c.id ? `fn_target_${c.id}_${f.id}` : `fn_target_${f.id}`);
+  const valOf = (c, f) => e[keyOf(c, f)] ?? (c.targets || {})[f.id] ?? '';
+  const shownFns = functionList.filter((f) => f.active || f.is_default || cols.some((c) => (c.targets || {})[f.id]));
+  const colTotal = (c) => shownFns.reduce((a, f) => a + (Number(valOf(c, f)) > 0 ? Number(valOf(c, f)) : 0), 0);
+%>
     <div class="card" id="funktionen">
-      <div class="card-head"><h2>Soll pro Funktion <span class="hint">wie viele braucht es?</span></h2></div>
-      <div class="card-body">
-        <div class="fn-targets">
-          <% for (const f of shownFns) { const v = e[`fn_target_${f.id}`] ?? (e.targets || {})[f.id] ?? ''; %>
-            <label class="fn-target" for="fn_target_<%= f.id %>"><span class="fn-tag<%= f.is_default ? ' fn-default' : '' %>"><%= f.short %></span><span class="fn-name"><%= f.name %></span>
-              <input id="fn_target_<%= f.id %>" name="fn_target_<%= f.id %>" type="number" min="0" max="9999" step="1" inputmode="numeric" value="<%= v %>" placeholder="–"></label>
+      <div class="card-head"><h2>Schichten und Soll <span class="hint">wie viele braucht es?</span></h2><% if (!isNew) { %><a class="small" href="/einsaetze/<%= e.id %>/schichten">Schichten verwalten →</a><% } %></div>
+      <div class="table-wrap">
+        <table class="form-table fn-grid" data-fn-grid>
+          <thead>
+            <tr><th>Funktion</th><% for (const c of cols) { %><th class="right"><%= c.name %><% if (c.starts_at) { %><span class="sub muted"><%= h.fmtSpan(c.starts_at, c.ends_at) %></span><% } %></th><% } %></tr>
+          </thead>
+          <tbody>
+          <% for (const f of shownFns) { %>
+            <tr>
+              <td class="nowrap"><span class="fn-tag<%= f.is_default ? ' fn-default' : '' %>"><%= f.short %></span> <%= f.name %></td>
+              <% cols.forEach((c, i) => { %><td class="right"><input name="<%= keyOf(c, f) %>" type="number" min="0" max="9999" step="1" inputmode="numeric" value="<%= valOf(c, f) %>" placeholder="–" data-fn-col="<%= i %>" aria-label="<%= f.short %> <%= c.name %>"></td><% }) %>
+            </tr>
           <% } %>
-        </div>
-        <p class="small muted mt-s">Leer lassen, was es nicht braucht. Zuweisen kannst du die Funktionen in der Übersicht oder im Reiter «Anmeldungen». Wer keine Funktion hat, zählt als <%= (functionList.find((f) => f.is_default) || {}).name || 'Einsatzteilnehmer' %>.<% if (isNew || e.shifts.length === 1) { %> Das Total ist das Soll der Besetzung.<% } else { %> Gilt für den ganzen Einsatz; das Soll pro Schicht stellst du im Reiter «Schichten» ein.<% } %></p>
+          </tbody>
+          <tfoot>
+            <tr><th>Soll der Schicht</th><% cols.forEach((c, i) => { %><th class="right"><span data-fn-total="<%= i %>"><%= colTotal(c) || '–' %></span> Pers.</th><% }) %></tr>
+          </tfoot>
+        </table>
+      </div>
+      <div class="card-body small muted">
+        Leer lassen, was es nicht braucht. Das Soll der Schicht ist die Summe. Wer keine Funktion hat, zählt als <%= (functionList.find((f) => f.is_default) || {}).name || 'Einsatzteilnehmer' %>. Zuweisen kannst du die Funktionen in der Übersicht oder im Reiter «Anmeldungen».
+        <% if (isNew) { %>Weitere Schichten kannst du nach dem Speichern im Reiter «Schichten» hinzufügen.<% } %>
       </div>
     </div>
+  </div>
+  <div class="stack">
     <div class="card">
       <div class="card-head"><h2>Anmeldeformular</h2></div>
       <div class="card-body">

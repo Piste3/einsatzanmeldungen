@@ -1,0 +1,6 @@
+<%# Kurzzeile «Funktionen (Ist/Soll)» – bei mehreren Schichten eine Gruppe pro Schicht. Erwartet: fnSummary %>
+<% for (const sh of fnSummary.shifts) { const rows = sh.rows.filter((x) => x.soll || x.ist); if (!rows.length) continue; %>
+  <span class="fn-group"><% if (fnSummary.multi) { %><span class="muted"><%= sh.name %>:</span><% } %>
+    <% for (const f of rows) { %><span class="fn-chip tone-<%= f.tone %>" title="<%= f.name %>"><span class="fn-tag<%= f.is_default ? ' fn-default' : '' %>"><%= f.short %></span> <%= f.ist %>/<%= f.soll ?? '–' %></span><% } %>
+  </span>
+<% } %>

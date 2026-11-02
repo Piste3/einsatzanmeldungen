@@ -10,12 +10,12 @@ const { EVENT_STATUS, REG_COUNTING } = require('../lib/labels');
 const { ConflictError, ValidationError, ReadOnlyError } = require('./errors');
 
 const FIELDS = ['name', 'date', 'description', 'start_time', 'end_time', 'start_place', 'end_place', 'tenue', 'leader_person_id',
-  'internal_note', 'question_template_id', 'question_text', 'help_text', 'extra', 'function_targets'];
+  'internal_note', 'question_template_id', 'question_text', 'help_text', 'extra'];
 const FIELD_LABELS = {
   name: 'Name', date: 'Datum', description: 'Beschreibung', start_time: 'Beginn (Antreten)', end_time: 'Ende (Abtreten)',
   start_place: 'Antretensort', end_place: 'Abtretensort', tenue: 'Tenue', leader_person_id: 'Einsatzleitung',
   internal_note: 'Interne Bemerkung', question_template_id: 'Anmeldefrage (Vorlage)', question_text: 'Fragetext', help_text: 'Hilfetext',
-  extra: 'Zusatzfelder', function_targets: 'Soll pro Funktion', status: 'Status', show_in_form: 'Im Formular anzeigen',
+  extra: 'Zusatzfelder', status: 'Status', show_in_form: 'Im Formular anzeigen',
 };
 
 function get(id) {
@@ -23,7 +23,6 @@ function get(id) {
     FROM events e LEFT JOIN persons p ON p.id = e.leader_person_id LEFT JOIN ranks r ON r.id = p.rank_id WHERE e.id = ?`, id);
   if (!e) return null;
   e.extra = parseJson(e.extra, {});
-  e.targets = functions.parseTargets(e.function_targets);
   e.shifts = shiftsOf(id);
   return e;
 }
@@ -32,8 +31,26 @@ function parseJson(s, fallback) {
   try { return typeof s === 'string' ? JSON.parse(s) : s ?? fallback; } catch { return fallback; }
 }
 
+// Schichten mit «targets» = Soll pro Funktion ({ id: Anzahl }); target_count ist die Summe davon
 function shiftsOf(eventId) {
-  return db.all('SELECT * FROM shifts WHERE event_id = ? ORDER BY sort, starts_at, id', eventId);
+  return db.all('SELECT * FROM shifts WHERE event_id = ? ORDER BY sort, starts_at, id', eventId)
+    .map((s) => ({ ...s, targets: functions.parseTargets(s.function_targets) }));
+}
+
+// Soll pro Funktion einer Schicht speichern; das Soll der Schicht ist die Summe
+function setShiftTargets(shiftId, targets) {
+  const json = JSON.stringify(targets || {});
+  const sum = functions.total(targets) || null;
+  db.run('UPDATE shifts SET function_targets = ?, target_count = ? WHERE id = ?', json, sum, shiftId);
+}
+
+// Formular -> Soll pro Funktion; ältere Aufrufe mit nur «target_count» zählen als Standardfunktion (Einsatzteilnehmer)
+function targetsFromInput(input, prefix = 'fn_target_') {
+  const t = functions.readTargets(input, prefix);
+  if (t) return t;
+  const n = Number(input?.target_count);
+  if (input && input.target_count !== undefined && input.target_count !== '' && Number.isInteger(n) && n > 0) return { [functions.defaultFn().id]: n };
+  return input && input.target_count !== undefined ? {} : null;
 }
 
 function list({ status = '', from = '', to = '', q = '' } = {}) {
@@ -49,7 +66,6 @@ function list({ status = '', from = '', to = '', q = '' } = {}) {
     ${where.length ? `WHERE ${where.join(' AND ')}` : ''} ORDER BY e.date, e.start_time, e.id`, ...params);
   for (const e of rows) {
     e.extra = parseJson(e.extra, {});
-    e.targets = functions.parseTargets(e.function_targets);
     e.shifts = shiftsOf(e.id);
   }
   return rows;
@@ -115,7 +131,6 @@ function clean(input, extraDefs) {
     question_text: s(input.question_text),
     help_text: s(input.help_text),
     extra: JSON.stringify(extra),
-    function_targets: functions.cleanTargets(input),
   };
   const errors = [];
   if (!data.name) errors.push('Name des Einsatzes fehlt.');
@@ -132,6 +147,7 @@ function extraDefs() {
 
 function create(input, user) {
   const data = clean(input, extraDefs());
+  const targets = targetsFromInput(input);
   return db.tx(() => {
     const now = nowIso();
     const info = db.run(
@@ -140,11 +156,11 @@ function create(input, user) {
       ...FIELDS.map((f) => data[f]), now, now, user.id, user.id,
     );
     const id = Number(info.lastInsertRowid);
-    // Standardschicht für den ganzen Einsatz; Soll = Total aus «Soll pro Funktion» (sonst die alte Einzelangabe)
+    // Standardschicht für den ganzen Einsatz mit Soll pro Funktion; Soll der Schicht = Summe
     const sp = span(data.date, data.start_time, data.end_time);
-    const fnTotal = targetTotal({ function_targets: data.function_targets });
-    db.run('INSERT INTO shifts (event_id, name, starts_at, ends_at, target_count, is_default, sort) VALUES (?, ?, ?, ?, ?, 1, 0)',
-      id, 'Ganzer Einsatz', sp.starts_at, sp.ends_at, fnTotal || (input.target_count ? Number(input.target_count) : null));
+    const sid = Number(db.run('INSERT INTO shifts (event_id, name, starts_at, ends_at, is_default, sort) VALUES (?, ?, ?, ?, 1, 0)',
+      id, 'Ganzer Einsatz', sp.starts_at, sp.ends_at).lastInsertRowid);
+    setShiftTargets(sid, targets || {});
     audit.log({ entity: 'event', entityId: id, eventId: id, action: 'create', summary: `${user.display_name} hat den Einsatz «${data.name}» angelegt`, user });
     live.notify('events');
     return id;
@@ -159,6 +175,12 @@ function assertEditable(event, user, reason) {
 
 function update(id, input, expectedVersion, user, { reason } = {}) {
   const data = clean(input, extraDefs());
+  // Soll pro Schicht und Funktion aus dem Formular (Felder fn_target_<schicht>_<funktion>)
+  const shiftTargets = new Map();
+  for (const sh of shiftsOf(id)) {
+    const t = functions.readTargets(input, `fn_target_${sh.id}_`);
+    if (t) shiftTargets.set(sh.id, t);
+  }
   return db.tx(() => {
     const before = get(id);
     if (!before) throw new ValidationError(['Einsatz nicht gefunden.']);
@@ -173,8 +195,14 @@ function update(id, input, expectedVersion, user, { reason } = {}) {
       const sp = span(data.date, data.start_time, data.end_time);
       db.run('UPDATE shifts SET starts_at = ?, ends_at = ? WHERE id = ?', sp.starts_at, sp.ends_at, before.shifts[0].id);
     }
-    // Nur eine Schicht: ihr Soll ist das Total aus «Soll pro Funktion» (kein zweites, abweichendes Soll)
-    syncSingleShift(id, data.function_targets);
+    let targetsChanged = false;
+    for (const sh of before.shifts) {
+      const t = shiftTargets.get(sh.id);
+      if (t && JSON.stringify(t) !== JSON.stringify(sh.targets)) { setShiftTargets(sh.id, t); targetsChanged = true; }
+    }
+    if (targetsChanged) {
+      audit.log({ entity: 'event', entityId: id, eventId: id, action: 'targets', summary: `${user.display_name} hat bei «${data.name}» das Soll pro Funktion geändert${reason ? ` – Begründung: ${reason}` : ''}`, user });
+    }
     const beforeCmp = { ...before, extra: JSON.stringify(before.extra) };
     const changes = audit.diff(beforeCmp, data, FIELDS);
     if (Object.keys(changes).length) {
@@ -241,9 +269,8 @@ function cleanShift(event, input) {
   if (input.start && !isHm(input.start)) throw new ValidationError(['Beginn als HH:MM angeben.']);
   if (input.end && !isHm(input.end)) throw new ValidationError(['Ende als HH:MM angeben.']);
   const sp = span(date, input.start, input.end);
-  const target = input.target_count === '' || input.target_count == null ? null : Math.max(0, Number(input.target_count) || 0);
   return {
-    name, starts_at: sp.starts_at, ends_at: sp.ends_at, target_count: target,
+    name, starts_at: sp.starts_at, ends_at: sp.ends_at,
     start_place: String(input.start_place || '').trim() || null, internal_note: String(input.internal_note || '').trim() || null,
   };
 }
@@ -253,8 +280,9 @@ function addShift(eventId, input, user, { reason } = {}) {
   assertEditable(e, user, reason);
   const s = cleanShift(e, input);
   const sort = (db.one('SELECT max(sort) AS m FROM shifts WHERE event_id = ?', eventId).m ?? 0) + 1;
-  const info = db.run('INSERT INTO shifts (event_id, name, starts_at, ends_at, target_count, start_place, internal_note, sort) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-    eventId, s.name, s.starts_at, s.ends_at, s.target_count, s.start_place, s.internal_note, sort);
+  const info = db.run('INSERT INTO shifts (event_id, name, starts_at, ends_at, start_place, internal_note, sort) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    eventId, s.name, s.starts_at, s.ends_at, s.start_place, s.internal_note, sort);
+  setShiftTargets(Number(info.lastInsertRowid), targetsFromInput(input) || {});
   // Sobald es mehrere Schichten gibt, ist die Standardschicht eine normale Schicht
   db.run('UPDATE shifts SET is_default = 0 WHERE event_id = ?', eventId);
   audit.log({ entity: 'shift', entityId: Number(info.lastInsertRowid), eventId, action: 'create', summary: `${user.display_name} hat bei «${e.name}» die Schicht «${s.name}» hinzugefügt`, user });
@@ -267,10 +295,13 @@ function updateShift(shiftId, input, user, { reason } = {}) {
   const e = get(shift.event_id);
   assertEditable(e, user, reason);
   const s = cleanShift(e, input);
-  if (e.shifts.length === 1 && targetTotal(e) > 0) s.target_count = targetTotal(e);
-  db.run('UPDATE shifts SET name = ?, starts_at = ?, ends_at = ?, target_count = ?, start_place = ?, internal_note = ?, is_default = 0, version = version + 1 WHERE id = ?',
-    s.name, s.starts_at, s.ends_at, s.target_count, s.start_place, s.internal_note, shiftId);
-  audit.log({ entity: 'shift', entityId: shiftId, eventId: e.id, action: 'update', summary: `${user.display_name} hat die Schicht «${s.name}» bei «${e.name}» geändert`, details: audit.diff(shift, s, Object.keys(s)), user });
+  const targets = targetsFromInput(input);
+  db.run('UPDATE shifts SET name = ?, starts_at = ?, ends_at = ?, start_place = ?, internal_note = ?, is_default = 0, version = version + 1 WHERE id = ?',
+    s.name, s.starts_at, s.ends_at, s.start_place, s.internal_note, shiftId);
+  if (targets) setShiftTargets(shiftId, targets);
+  const details = audit.diff(shift, s, Object.keys(s));
+  if (targets && JSON.stringify(targets) !== JSON.stringify(functions.parseTargets(shift.function_targets))) details.soll = { alt: shift.target_count, neu: functions.total(targets) || null };
+  audit.log({ entity: 'shift', entityId: shiftId, eventId: e.id, action: 'update', summary: `${user.display_name} hat die Schicht «${s.name}» bei «${e.name}» geändert`, details, user });
   live.notify(`event:${e.id}`, 'form');
 }
 
@@ -297,8 +328,7 @@ function checklist(e) {
     { label: 'Abtreten (Zeit)', done: Boolean(e.end_time) },
     { label: 'Einsatzleitung', done: Boolean(e.leader_person_id) },
     { label: 'Tenue', done: Boolean(e.tenue) },
-    { label: 'Soll pro Funktion (EL, SC, BF, TN …)', done: Object.keys(e.targets || functions.parseTargets(e.function_targets)).length > 0 },
-    { label: 'Soll-Anzahl pro Schicht', done: e.shifts.every((s) => s.target_count) || (e.shifts.length === 1 && targetTotal(e) > 0) },
+    { label: e.shifts.length > 1 ? 'Soll pro Schicht und Funktion' : 'Soll pro Funktion (EL, SC, BF, TN …)', done: e.shifts.every((s) => s.target_count) },
     { label: 'Anmeldefrage', done: Boolean(e.question_text) },
     { label: 'Veröffentlicht', done: e.status !== 'entwurf' },
   ];
@@ -312,15 +342,13 @@ function stats(e) {
   const ph = REG_COUNTING.map(() => '?').join(',');
   // Externe Abteilungen zählen mit ihrer Anzahl Personen zur Besetzung
   const ext = externals.countsByShift(e.id, e.shifts);
-  // Nur eine Schicht ohne eigene Soll-Anzahl: Total aus «Soll pro Funktion» gilt als Soll
-  const fnTotal = e.shifts.length === 1 ? targetTotal(e) : 0;
   const shifts = e.shifts.map((s) => {
     const intern = db.one(`SELECT COUNT(*) AS n FROM shift_assignments a JOIN registrations r ON r.id = a.registration_id
       WHERE a.shift_id = ? AND r.status IN (${ph})`, s.id, ...REG_COUNTING).n;
     const extern = ext[s.id] || 0;
     const ist = intern + extern;
-    const soll = s.target_count || fnTotal || null;
-    return { ...s, ist, intern, extern, soll, sollFromFunctions: !s.target_count && Boolean(fnTotal), tone: occupancyTone(ist, soll), missing: soll ? Math.max(0, soll - ist) : null };
+    const soll = s.target_count || null;
+    return { ...s, ist, intern, extern, soll, tone: occupancyTone(ist, soll), missing: soll ? Math.max(0, soll - ist) : null };
   });
   const inquiryOpen = db.one(`SELECT COUNT(*) AS n FROM inquiries i WHERE i.event_id = ? AND i.status IN ('nicht_erreicht','whatsapp','unsicher')
     AND NOT EXISTS (SELECT 1 FROM registrations g WHERE g.event_id = i.event_id AND g.person_id = i.person_id AND g.status <> 'ungueltig')`, e.id).n;
@@ -343,20 +371,6 @@ function stats(e) {
   };
 }
 
-// Einsatz mit nur einer Schicht: Soll der Schicht = Total aus «Soll pro Funktion» (sofern dort etwas steht)
-function syncSingleShift(eventId, functionTargets) {
-  const total = targetTotal({ function_targets: functionTargets });
-  const shifts = shiftsOf(eventId);
-  if (total > 0 && shifts.length === 1 && shifts[0].target_count !== total) {
-    db.run('UPDATE shifts SET target_count = ? WHERE id = ?', total, shifts[0].id);
-  }
-}
-
-// Summe aller Soll-Werte pro Funktion
-function targetTotal(e) {
-  return Object.values(e.targets || functions.parseTargets(e.function_targets)).reduce((a, n) => a + n, 0);
-}
-
 function occupancyTone(ist, soll) {
   if (!soll) return 'gray';
   if (ist >= soll) return 'green';
@@ -371,5 +385,5 @@ function label(e) {
 module.exports = {
   get, list, create, update, setStatus, setShowInForm, addShift, updateShift, deleteShift, checklist, stats, span, lastEnd,
   shiftEnded, isInForm, openForForm, shiftsOf, extraDefs, assertEditable, occupancyTone, label, FIELD_LABELS, lastChange, parseJson,
-  fmtDateShort, targetTotal,
+  fmtDateShort, setShiftTargets,
 };

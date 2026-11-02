@@ -2,7 +2,6 @@
 // Rückmeldungen: Mitglieder × anstehende Einsätze (An / Ab / Unsicher / Offen)
 const db = require('../db');
 const externals = require('./externals');
-const { parseTargets } = require('./functions');
 const { today, addDays } = require('../lib/dates');
 const { rankOrder } = require('../lib/sorting');
 
@@ -60,9 +59,7 @@ function matrix({ team = '', period = '3m', sort = 'rang', includeDrafts = false
       shifts.get(sh.event_id).push(sh);
     }
     for (const e of evts) {
-      // Nur eine Schicht ohne Soll-Anzahl: Total aus «Soll pro Funktion»
-      const fnTotal = (shifts.get(e.id) || []).length === 1 ? Object.values(parseTargets(e.function_targets)).reduce((x, n) => x + n, 0) : 0;
-      e.soll = soll.get(e.id) || fnTotal || null;
+      e.soll = soll.get(e.id) || null;
       // Externe Abteilungen (nur Anzahl) pro Schicht; Summe wie beim Soll über alle Schichten
       e.externByShift = externals.countsByShift(e.id, shifts.get(e.id) || []);
       e.extern = Object.values(e.externByShift).reduce((a, n) => a + n, 0);

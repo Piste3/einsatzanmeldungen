@@ -288,7 +288,7 @@ router.get('/einsaetze/:id/teilnehmerliste', loadEvent, (req, res) => {
       subtitle: [
         [h.fmtDateWd(e.date), e.start_time ? `Antreten ${e.start_time}${e.start_place ? ` · ${e.start_place}` : ''}` : '', leader].filter(Boolean).join('  ·  '),
         `${registrations.PARTICIPANT_SCOPES[filters.umfang].label} · ${list.length} ${list.length === 1 ? 'Person' : 'Personen'}${extTotal ? ` + ${extTotal} extern = ${list.length + extTotal} total` : ''} · ${{ rang_auf: 'tiefster Rang zuerst', funktion: 'nach Funktion, dann Rang' }[filters.sort] || 'höchster Rang zuerst'}`,
-        ...(fnSummary.hasTargets || showFunction ? [`Funktionen (Ist/Soll, ganzer Einsatz): ${functions.line(fnSummary)}`] : []),
+        ...(showFunction ? [`Funktionen (Ist/Soll): ${functions.line(fnSummary)}`] : []),
       ],
       columns,
       rows: list.map((r, i) => columns.map((c) => c.value(r, i))),
@@ -424,7 +424,8 @@ router.get('/einsaetze/:id/schichten', loadEvent, (req, res) => {
     combos.push({ value: ids.join(','), label: e.shifts.filter((s) => ids.includes(s.id)).map((s) => (ids.length > 1 ? s.name.replace(/schicht$/i, '') : s.name)).join(' + ') });
   }
   combos.sort((a, b) => a.value.split(',').length - b.value.split(',').length);
-  res.render('pages/event', { title: `${e.name} · Schichten`, tab: 'schichten', stats, columns, unassigned, combos, overlaps: registrations.overlaps(e.id), regs, fnTotal: events.targetTotal(e) });
+  res.render('pages/event', { title: `${e.name} · Schichten`, tab: 'schichten', stats, columns, unassigned, combos, overlaps: registrations.overlaps(e.id), regs,
+    fnCols: functions.all().filter((f) => f.active || f.is_default || e.shifts.some((s) => s.targets[f.id])), fnSummary: functions.summary(e) });
 });
 
 router.post('/einsaetze/:id/schichten', loadEvent, (req, res) => {

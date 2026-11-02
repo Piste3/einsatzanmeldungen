@@ -98,7 +98,7 @@ router.get('/verwaltung/listen', (req, res) => {
     ranks: db.all('SELECT r.*, (SELECT COUNT(*) FROM persons p WHERE p.rank_id = r.id) AS used FROM ranks r ORDER BY sort, name'),
     teams: db.all('SELECT t.*, (SELECT COUNT(*) FROM person_teams pt WHERE pt.team_id = t.id) AS used FROM teams t ORDER BY sort, name'),
     externalUnits: db.all('SELECT u.*, (SELECT COUNT(DISTINCT x.event_id) FROM event_externals x WHERE x.unit_id = u.id) AS used FROM external_units u ORDER BY sort, name COLLATE NOCASE'),
-    functionList: db.all(`SELECT f.*, (SELECT COUNT(DISTINCT e.id) FROM events e WHERE json_extract(e.function_targets, '$."' || f.id || '"') IS NOT NULL
+    functionList: db.all(`SELECT f.*, (SELECT COUNT(DISTINCT e.id) FROM events e WHERE EXISTS (SELECT 1 FROM shifts s WHERE s.event_id = e.id AND json_extract(s.function_targets, '$."' || f.id || '"') IS NOT NULL)
         OR EXISTS (SELECT 1 FROM registrations g WHERE g.event_id = e.id AND g.function_id = f.id)
         OR EXISTS (SELECT 1 FROM event_externals x WHERE x.event_id = e.id AND x.function_id = f.id)) AS used
       FROM functions f ORDER BY sort, name COLLATE NOCASE`),
@@ -128,7 +128,7 @@ router.post('/verwaltung/listen/:kind', (req, res) => {
   const usedSql = {
     ranks: 'SELECT COUNT(*) AS n FROM persons WHERE rank_id = ?', teams: 'SELECT COUNT(*) AS n FROM person_teams WHERE team_id = ?', external_units: 'SELECT COUNT(*) AS n FROM event_externals WHERE unit_id = ?',
     functions: `SELECT (SELECT COUNT(*) FROM registrations WHERE function_id = ?1) + (SELECT COUNT(*) FROM event_externals WHERE function_id = ?1)
-      + (SELECT COUNT(*) FROM events WHERE json_extract(function_targets, '$."' || ?1 || '"') IS NOT NULL) + (SELECT COUNT(*) FROM functions WHERE id = ?1 AND is_default = 1) AS n`,
+      + (SELECT COUNT(*) FROM shifts WHERE json_extract(function_targets, '$."' || ?1 || '"') IS NOT NULL) + (SELECT COUNT(*) FROM functions WHERE id = ?1 AND is_default = 1) AS n`,
   }[table];
   const hasShort = table === 'ranks' || table === 'functions';
   if (!table) return res.redirect('/verwaltung/listen');

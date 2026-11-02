@@ -145,7 +145,7 @@ Die Liste zeigt alle Einsätze mit Datum, Antreten, Status, Besetzung und Einsat
 - **Tenue:** mit einem Klick eine Vorlage übernehmen, z. B. «Uniform orange + VD», und bei Bedarf anpassen.
 - **Beschreibung** ist für die Mitglieder im Formular sichtbar, die **interne Bemerkung** nur für die Aufgebotsstelle.
 - **Schichten:** Eine Schicht für den ganzen Einsatz wird automatisch angelegt. Weitere Schichten kommen nach dem Speichern dazu.
-- **Soll pro Funktion:** wie viele Einsatzleiter (EL), Sektorchefs (SC), Busfahrer (BF) und Einsatzteilnehmer (TN) es braucht. Leer lassen, was es nicht braucht. Das Total ist das Soll des Einsatzes. Siehe «Funktionen» unten.
+- **Schichten und Soll:** pro Schicht, wie viele Einsatzleiter (EL), Sektorchefs (SC), Busfahrer (BF) und Einsatzteilnehmer (TN) es braucht. Leer lassen, was es nicht braucht. Die Summe ist das Soll der Schicht. Siehe «Funktionen» unten.
 - **Anmeldeformular:** Anmeldefrage aus einer Vorlage wählen und Text und Hilfetext anpassen. Die Standard-Vorlage (Einstellungen › Vorlagen) ist bei neuen Einsätzen schon ausgewählt.
 - **Als Entwurf speichern** oder direkt **Veröffentlichen** – dann erscheint der Einsatz sofort im Anmeldeformular.
 
@@ -155,7 +155,7 @@ Die Liste zeigt alle Einsätze mit Datum, Antreten, Status, Besetzung und Einsat
 
 - **Kennzahlen:** neu eingegangen, zu prüfen, bestätigt und ohne Rückmeldung.
 - **Besetzung** pro Schicht mit Ist / Soll. Helfen externe Abteilungen mit, steht darunter z. B. «8 eigene + 6 extern».
-- **Funktionen:** Ist / Soll pro Funktion (EL, SC, BF, TN) und wer welche Funktion hat (siehe unten).
+- **Funktionen:** Ist / Soll pro Schicht und Funktion (EL, SC, BF, TN) und wer welche Funktion hat (siehe unten).
 - **Externe Abteilungen:** andere Abteilungen oder Vereine, die mit einer Anzahl Personen mithelfen (siehe unten).
 - **Angaben** des Einsatzes und wann das Aufgebot zuletzt exportiert wurde.
 - **Status:** Entwurf → Veröffentlicht → Abgeschlossen, oder jederzeit Abgesagt. Nach dem Abschluss sind die Daten schreibgeschützt; Änderungen sind dann nur noch durch einen Admin mit Begründung möglich. Bei einer Absage bleiben alle Daten erhalten.
@@ -175,11 +175,11 @@ Pro Einsatz legst du fest, wie viele es von jeder Funktion braucht, und teilst d
 | **BF** | Busfahrer |
 | **TN** | Einsatzteilnehmer (Standard) |
 
-![Einsatz bearbeiten › Soll pro Funktion](bilder/41-soll-pro-funktion.jpg)
+![Einsatz bearbeiten › Schichten und Soll](bilder/41-soll-pro-funktion.jpg)
 
-**Soll festlegen:** Beim Anlegen oder unter **Bearbeiten** in der Karte **Soll pro Funktion** die Anzahl pro Funktion eintragen, z. B. 1 EL, 2 SC, 1 BF, 12 TN. Leer oder 0 heisst: braucht es nicht.
+**Soll festlegen:** Das Soll gibt es **pro Schicht und Funktion**. Beim Anlegen oder unter **Bearbeiten** in der Karte **Schichten und Soll** steht eine Spalte pro Schicht; dort die Anzahl pro Funktion eintragen, z. B. Tagschicht 1 EL, 2 SC, 1 BF, 6 TN und Abendschicht 1 SC, 5 TN. Leer oder 0 heisst: braucht es nicht. Dasselbe geht im Reiter **Schichten** unter «Schichten verwalten» (eine Spalte pro Funktion), dort auch für eine neue Schicht.
 
-> **Soll der Schicht und Soll pro Funktion:** Das Soll der Schicht sagt, wie viele Personen eine Schicht insgesamt braucht; das Soll pro Funktion teilt das auf (z. B. 1 EL + 2 SC + 1 BF + 12 TN). Hat der Einsatz **nur eine Schicht**, ist ihr Soll immer das Total der Funktionen (hier 16) – es gibt also nur eine Zahl, und im Reiter «Schichten» ist das Feld gesperrt. Hat der Einsatz **mehrere Schichten**, gilt das Soll pro Funktion für den ganzen Einsatz, und das Soll jeder Schicht stellst du im Reiter «Schichten» separat ein, weil dieselbe Person in mehreren Schichten sein kann.
+Das **Soll der Schicht** ist immer die Summe davon (im Beispiel 10 und 6) – es gibt kein separates Feld mehr. Einsätze, die vorher nur eine Soll-Anzahl pro Schicht hatten, wurden beim Update übernommen: Die Zahl steht jetzt bei den Einsatzteilnehmern.
 
 ![Einsatz › Übersicht › Funktionen](bilder/42-funktionen.jpg)
 
@@ -193,10 +193,10 @@ Wer keine Funktion zugewiesen hat, zählt automatisch als **Einsatzteilnehmer (T
 
 Was die Karte **Funktionen** zeigt:
 
-- Pro Funktion **Ist / Soll** mit Balken: grün = genau voll, gelb/rot = es fehlen noch welche, orange = zu viele (z. B. «2 / 1 · 1 zu viel»). Oben rechts das Total.
-- Es zählen wie bei der Besetzung die Anmeldungen mit Status Neu, Rückfrage oder Bestätigt. Warteliste und Abmeldungen zählen nicht; Abgemeldete bekommen keine Funktion.
-- **Externe Abteilungen** zählen mit ihrer Anzahl Personen – standardmässig als Einsatzteilnehmer. Stellt eine Abteilung z. B. den Busfahrer, beim Erfassen der Abteilung **Funktion** auf «BF» stellen.
-- Die Funktion gilt für den **ganzen Einsatz**, nicht pro Schicht. Im Reiter «Schichten» steht das Kürzel (z. B. «SC») neben dem Namen.
+- Pro Schicht und Funktion **Ist / Soll** mit Balken: grün = genau voll, gelb/rot = es fehlen noch welche, orange = zu viele (z. B. «2 / 1 · 1 zu viel»). Rechts beim Schichtnamen das Total der Schicht. Bei mehreren Schichten stehen nur die Funktionen, die in dieser Schicht ein Soll haben oder besetzt sind.
+- Es zählen wie bei der Besetzung die Anmeldungen mit Status Neu, Rückfrage oder Bestätigt, die der Schicht zugeteilt sind. Warteliste und Abmeldungen zählen nicht; Abgemeldete bekommen keine Funktion.
+- Die Funktion einer **Person** gilt für den ganzen Einsatz: Wer als SC eingeteilt ist und in der Tag- und der Abendschicht arbeitet, zählt in beiden Schichten als SC. Im Reiter «Schichten» steht das Kürzel (z. B. «SC») neben dem Namen und unter jeder Schicht die Zeile Ist / Soll pro Funktion.
+- **Externe Abteilungen** zählen mit ihrer Anzahl Personen in ihren Schichten – standardmässig als Einsatzteilnehmer. Stellt eine Abteilung z. B. den Busfahrer, beim Erfassen der Abteilung **Funktion** auf «BF» stellen.
 
 Die Funktionen stehen auch auf der **Teilnehmerliste** (Spalte «Fkt.» bzw. «Funktion» und oben «Funktionen (Ist/Soll)»), auf der Seite des Mitglieds, in der Einsatzliste beim Export und in der Ansicht der Einsatzleiter. Jede Zuweisung steht im Verlauf.
 
@@ -243,7 +243,7 @@ Jede Änderung am Einsatz, an Anmeldungen und Anfragen steht hier mit Zeitpunkt 
 
 Die Teilnehmerliste zeigt auf einen Blick, wer kommt – mit **Rang, Name, Mobilnummer und Essenseinschränkungen**, der höchste Rang zuerst. Ein Klick auf **Teilnehmerliste** oben auf jeder Seite des Einsatzes öffnet sie sofort als **PDF in einem neuen Tab**. Von dort lässt sie sich drucken, speichern oder weiterschicken.
 
-- Sind für den Einsatz Funktionen festgelegt oder zugewiesen, zeigt eine Spalte **Funktion** das Kürzel (EL, SC, BF, TN) und oben steht «Funktionen (Ist/Soll)», z. B. «EL 1/1 · SC 2/2 · BF 1/1 · TN 8/12».
+- Werden beim Einsatz Funktionen ausser Einsatzteilnehmer verwendet, zeigt eine Spalte **Funktion** das Kürzel (EL, SC, BF, TN) und oben steht «Funktionen (Ist/Soll)», bei mehreren Schichten pro Schicht, z. B. «EL 1/1 · SC 2/2 · BF 1/1 · TN 8/12».
 - Unter der Liste steht die Zusammenfassung für die Küche, z. B. «2 vegetarisch · 1 Allergie · 7 ohne Einschränkung».
 - **Externe Abteilungen** stehen in einem eigenen Abschnitt unter den Personen, mit Anzahl, Schicht, Essenseinschränkungen, Kontakt und Bemerkung; ihre Essenseinschränkungen zählen in der Verpflegung mit. In Excel und CSV kommen sie als eigene Zeilen mit Rang «extern» und einer Spalte «Anzahl» ans Ende. Ist die Liste auf eine Schicht eingeschränkt, erscheinen nur die Abteilungen dieser Schicht.
 - Der kleine Pfeil **▾** neben dem Knopf bietet die Liste auch als **Excel** oder **CSV** an, mit Essenseinschränkung und Details in getrennten Spalten.
@@ -307,7 +307,7 @@ Jede Anmeldung landet automatisch beim richtigen Einsatz – egal ob sie über d
 
 - **Zähler pro Status** oben: ein Klick filtert die Liste.
 - **Sortierung:** «Rang: hoch → tief» (Standard), «Rang: tief → hoch», «Funktion, dann Rang» oder «neueste zuerst». Daneben das Suchfeld.
-- **Funktionen (Ist/Soll)** stehen über der Tabelle, sobald für den Einsatz ein Soll festgelegt ist.
+- **Funktionen (Ist/Soll)** stehen über der Tabelle (pro Schicht), sobald beim Einsatz EL, SC oder BF vorkommen.
 - **Spalte «Funktion»:** EL, SC, BF oder TN direkt umstellen (siehe «Funktionen» in Kapitel 5).
 - **Sammelaktionen:** mehrere Anmeldungen ankreuzen und gemeinsam bestätigen, den Status ändern, eine **Funktion zuweisen** oder exportieren.
 - **Bestätigen** direkt in der Zeile. Orange markierte Zeilen sind noch nicht bestätigt.
@@ -403,7 +403,8 @@ Die meisten Einsätze haben nur eine Schicht für alle. Dann gibt es nichts zu v
 
 ![Einsatz › Schichten mit zwei Schichten](bilder/13-schichten.jpg)
 
-- Jede Schicht ist eine Spalte mit Zeit und Besetzung (Ist / Soll). Grün heisst voll. Bei nur einer Schicht ist das Soll das Total aus «Soll pro Funktion»; ändern unter **Bearbeiten**.
+- Jede Schicht ist eine Spalte mit Zeit und Besetzung (Ist / Soll). Grün heisst voll. Darunter Ist / Soll pro Funktion, z. B. «EL 1/1 · SC 2/2 · TN 5/6».
+- **Schichten verwalten** (unten): Name, Zeit und das Soll pro Funktion (Spalten EL, SC, BF, TN). Die Spalte «Soll» zeigt die Summe.
 - **Noch keiner Schicht zugeteilt:** Anmeldungen ohne Schicht stehen oben und werden über «zuteilen …» eingeteilt.
 - **Umteilen** über das Auswahlfeld bei der Person. Eine Person kann auch mehreren Schichten zugeteilt sein («Tag + Abend»).
 - **+ Person aus Anmeldungen hinzufügen:** Name tippen und auswählen.
@@ -750,7 +751,7 @@ Im Einsatz oben auf **Teilnehmerliste** klicken – sie öffnet sich als PDF in 
 Ja. Er braucht ein Konto mit der Rolle «Einsatzleiter», und die Aufgebotsstelle gibt ihm den Einsatz in der Übersicht unter «Einsatzleiter-Zugriff» frei. Dann sieht er Angaben und Teilnehmerliste – nur lesen.
 
 **Wie lege ich fest, wie viele EL, SC, BF und Einsatzteilnehmer es braucht?**
-Einsatz **Bearbeiten** › Karte **Soll pro Funktion**. Zuweisen in der Übersicht (Karte «Funktionen») oder im Reiter «Anmeldungen» in der Spalte «Funktion». Wer nichts zugewiesen hat, ist Einsatzteilnehmer.
+Einsatz **Bearbeiten** › Karte **Schichten und Soll** (pro Schicht eine Spalte). Zuweisen in der Übersicht (Karte «Funktionen») oder im Reiter «Anmeldungen» in der Spalte «Funktion». Wer nichts zugewiesen hat, ist Einsatzteilnehmer.
 
 **Ist die Funktion EL dasselbe wie die Rolle «Einsatzleiter»?**
 Nein. Die Funktion EL ist die Einteilung am Einsatz. Die Rolle «Einsatzleiter» ist ein Benutzerkonto mit Lesezugriff. Hat jemand beides, schlägt die Übersicht vor, ihm den Einsatz freizugeben.

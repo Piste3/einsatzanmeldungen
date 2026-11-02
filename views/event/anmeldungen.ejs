@@ -18,9 +18,9 @@
   </div>
 </div>
 
-<% if (fnSummary.hasTargets || fnSummary.rows.some((f) => !f.is_default && f.ist)) { %>
+<% if (fnSummary.usesFunctions) { %>
   <div class="fn-line mb small"><span class="muted">Funktionen (Ist/Soll):</span>
-    <% for (const f of fnSummary.rows.filter((x) => x.soll || x.ist)) { %><span class="fn-chip tone-<%= f.tone %>" title="<%= f.name %>"><span class="fn-tag<%= f.is_default ? ' fn-default' : '' %>"><%= f.short %></span> <%= f.ist %>/<%= f.soll ?? '–' %></span><% } %>
+    <%- include('../partials/fn-line', { fnSummary }) %>
     <a class="link" href="/einsaetze/<%= event.id %>#funktionen">Übersicht →</a>
   </div>
 <% } %>

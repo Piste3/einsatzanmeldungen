@@ -44,19 +44,26 @@ function parseTargets(s) {
   return out;
 }
 
-// Formularfelder «fn_target_<id>» -> JSON (nur Werte > 0, nur bekannte Funktionen, sortiert nach Funktion)
-function cleanTargets(input) {
+// Formularfelder «<prefix><id>» (z. B. fn_target_3 oder fn_target_<schicht>_3) -> { id: Anzahl } (nur > 0).
+// null, wenn das Formular gar keine solchen Felder enthält.
+function readTargets(input, prefix = 'fn_target_') {
   const out = {};
+  let seen = false;
   for (const f of all()) {
-    const raw = String(input?.[`fn_target_${f.id}`] ?? '').trim();
+    const key = `${prefix}${f.id}`;
+    if (!input || !(key in input)) continue;
+    seen = true;
+    const raw = String(input[key] ?? '').trim();
     if (raw === '') continue;
     const n = Number(raw);
     if (!Number.isInteger(n) || n < 0) throw new ValidationError([`Soll für «${f.name}»: bitte eine ganze Zahl angeben.`]);
     if (n > MAX_TARGET) throw new ValidationError([`Soll für «${f.name}» ist zu gross.`]);
     if (n > 0) out[f.id] = n;
   }
-  return JSON.stringify(out);
+  return seen ? out : null;
 }
+
+const total = (targets) => Object.values(targets || {}).reduce((a, n) => a + n, 0);
 
 function tone(ist, soll) {
   if (!soll) return 'gray';
@@ -67,39 +74,51 @@ function tone(ist, soll) {
 }
 
 /**
- * Ist/Soll pro Funktion für einen Einsatz. Zählt alle Anmeldungen, die zur Besetzung zählen (neu, Rückfrage, bestätigt),
- * und externe Abteilungen mit ihrer Anzahl Personen. Angezeigt werden aktive Funktionen sowie alle mit Soll oder Ist.
+ * Ist/Soll pro Schicht und Funktion. Gezählt werden Anmeldungen, die zur Besetzung zählen (Neu, Rückfrage, Bestätigt)
+ * und dieser Schicht zugeteilt sind, sowie externe Abteilungen dieser Schicht mit ihrer Anzahl Personen.
+ * Die Funktion einer Person gilt für den ganzen Einsatz. Optional nur eine Schicht (shiftId).
  */
-function summary(event) {
+function summary(event, { shiftId = null } = {}) {
   const list = all();
   const map = new Map(list.map((f) => [f.id, f]));
   const def = defaultFn(list);
-  const targets = parseTargets(event.function_targets);
+  const allShifts = event.shifts || db.all('SELECT * FROM shifts WHERE event_id = ? ORDER BY sort, starts_at, id', event.id);
+  const multi = allShifts.length > 1;
+  const shifts = shiftId ? allShifts.filter((s) => s.id === Number(shiftId)) : allShifts;
   const ph = REG_COUNTING.map(() => '?').join(',');
-  const regs = db.all(`SELECT g.id, g.person_id, g.function_id, p.first_name, p.last_name, r.short AS rank_short
-    FROM registrations g JOIN persons p ON p.id = g.person_id LEFT JOIN ranks r ON r.id = p.rank_id
+  const regs = db.all(`SELECT g.id, g.person_id, g.function_id, a.shift_id, p.first_name, p.last_name, r.short AS rank_short
+    FROM registrations g JOIN shift_assignments a ON a.registration_id = g.id JOIN persons p ON p.id = g.person_id LEFT JOIN ranks r ON r.id = p.rank_id
     WHERE g.event_id = ? AND g.status IN (${ph}) ORDER BY r.sort IS NULL, r.sort DESC, p.last_name COLLATE NOCASE, p.first_name COLLATE NOCASE`, event.id, ...REG_COUNTING);
-  const exts = db.all(`SELECT x.id, x.person_count, x.function_id, u.name AS unit_name FROM event_externals x JOIN external_units u ON u.id = x.unit_id
-    WHERE x.event_id = ? ORDER BY u.sort, u.name COLLATE NOCASE`, event.id);
-  const rows = list.map((f) => {
-    const people = regs.filter((g) => of(g.function_id, map, def).id === f.id);
-    const units = exts.filter((x) => of(x.function_id, map, def).id === f.id);
-    const extern = units.reduce((a, x) => a + x.person_count, 0);
-    const ist = people.length + extern;
-    const soll = targets[f.id] || null;
-    return {
-      ...f, soll, ist, intern: people.length, extern, people, units, tone: tone(ist, soll),
-      missing: soll ? Math.max(0, soll - ist) : null, over: soll && ist > soll ? ist - soll : 0,
-    };
-  }).filter((r) => r.active || r.is_default || r.soll || r.ist);
-  const totalSoll = rows.reduce((a, r) => a + (r.soll || 0), 0);
-  const totalIst = rows.reduce((a, r) => a + r.ist, 0);
-  return { rows, totalSoll, totalIst, hasTargets: totalSoll > 0, def };
+  const exts = require('./externals').forEvent(event.id, allShifts);
+  const out = shifts.map((sh) => {
+    const targets = parseTargets(sh.function_targets);
+    const inShift = regs.filter((g) => g.shift_id === sh.id);
+    const units = exts.filter((x) => x.allShifts || x.shiftIds.includes(sh.id));
+    const rows = list.map((f) => {
+      const people = inShift.filter((g) => of(g.function_id, map, def).id === f.id);
+      const us = units.filter((x) => x.func.id === f.id);
+      const extern = us.reduce((a, x) => a + x.person_count, 0);
+      const ist = people.length + extern;
+      const soll = targets[f.id] || null;
+      return {
+        ...f, soll, ist, intern: people.length, extern, people, units: us, tone: tone(ist, soll),
+        missing: soll ? Math.max(0, soll - ist) : null, over: soll && ist > soll ? ist - soll : 0,
+      };
+    }).filter((r) => r.soll || r.ist || (!multi && (r.active || r.is_default)));
+    const totalSoll = total(targets);
+    return { id: sh.id, name: sh.name, starts_at: sh.starts_at, ends_at: sh.ends_at, rows, totalSoll, totalIst: rows.reduce((a, r) => a + r.ist, 0), hasTargets: totalSoll > 0 };
+  });
+  // «usesFunctions»: mehr als nur Einsatzteilnehmer – erst dann lohnen sich Spalte und Zeile «Funktion» in Listen
+  return {
+    shifts: out, multi: multi && !shiftId, hasTargets: out.some((x) => x.hasTargets), anyAssigned: out.some((x) => x.rows.some((r) => !r.is_default && r.ist)),
+    usesFunctions: out.some((x) => x.rows.some((r) => !r.is_default && (r.soll || r.ist))), def,
+  };
 }
 
-// Kurztext «EL 1/1 · SC 1/2 · …» für PDF, Exporte und Listen (nur Funktionen mit Soll oder Ist)
+// Kurztext «EL 1/1 · SC 1/2 · …» (bei mehreren Schichten mit Schichtnamen) für PDF, Exporte und Listen
 function line(sum) {
-  return sum.rows.filter((r) => r.soll || r.ist).map((r) => `${r.short} ${r.ist}/${r.soll ?? '–'}`).join(' · ');
+  const one = (x) => x.rows.filter((r) => r.soll || r.ist).map((r) => `${r.short} ${r.ist}/${r.soll ?? '–'}`).join(' · ') || '–';
+  return sum.shifts.map((x) => (sum.multi ? `${x.name}: ${one(x)}` : one(x))).join('  |  ');
 }
 
 // Funktion einer Anmeldung setzen (Standardfunktion wird als NULL gespeichert)
@@ -142,4 +161,4 @@ function bulkAssign(ids, functionId, user) {
   return { changed, errors };
 }
 
-module.exports = { all, byId, defaultFn, of, parseTargets, cleanTargets, summary, line, assign, bulkAssign, tone, INACTIVE_REG };
+module.exports = { all, byId, defaultFn, of, parseTargets, readTargets, total, summary, line, assign, bulkAssign, tone, INACTIVE_REG };

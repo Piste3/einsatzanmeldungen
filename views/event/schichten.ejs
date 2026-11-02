@@ -25,6 +25,7 @@
       <div class="card-head">
         <div><h2><%= col.name %></h2><span class="small muted"><%= h.fmtSpan(col.starts_at, col.ends_at) || 'Zeit offen' %><%= col.start_place ? ` · ${col.start_place}` : '' %></span></div>
         <div class="occ"><div class="occ-head"><span>Besetzung<%= col.extern ? ` · davon ${col.extern} extern` : '' %></span><strong><%= col.ist %> / <%= col.soll ?? '–' %><%= col.soll ? (col.ist >= col.soll ? ' · voll' : ` · ${col.missing} fehlen`) : '' %></strong></div><div class="bar <%= col.tone %>"><span style="width:<%= h.pct(col.ist, col.soll) %>%"></span></div></div>
+        <% const fx = fnSummary.shifts.find((x) => x.id === col.id); if (fx && fx.rows.some((r) => r.soll || (!r.is_default && r.ist))) { %><div class="fn-line small fn-line-shift"><% for (const f of fx.rows.filter((r) => r.soll || r.ist)) { %><span class="fn-chip tone-<%= f.tone %>" title="<%= f.name %>"><span class="fn-tag<%= f.is_default ? ' fn-default' : '' %>"><%= f.short %></span> <%= f.ist %>/<%= f.soll ?? '–' %></span><% } %></div><% } %>
       </div>
       <% if (!col.regs.length && !col.exts.length) { %><div class="empty">Noch niemand zugeteilt.</div><% } %>
       <% for (const r of col.regs) { const current = r.assigned.map((a) => a.id).join(','); %>
@@ -58,10 +59,10 @@
 </div>
 
 <div class="card mt no-print">
-  <div class="card-head"><h2>Schichten verwalten <span class="hint">Name, Zeit, Soll-Anzahl – meist höchstens drei</span></h2></div>
+  <div class="card-head"><h2>Schichten verwalten <span class="hint">Name, Zeit, Soll pro Funktion – das Soll der Schicht ist die Summe</span></h2></div>
   <div class="table-wrap">
     <table class="form-table">
-      <thead><tr><th>Name</th><th>Datum</th><th>Beginn</th><th>Ende</th><th>Soll</th><th>Antretensort (optional)</th><th>Interne Bemerkung</th><th></th></tr></thead>
+      <thead><tr><th>Name</th><th>Datum</th><th>Beginn</th><th>Ende</th><% for (const f of fnCols) { %><th class="fn-col" title="Soll <%= f.name %>"><span class="fn-tag<%= f.is_default ? ' fn-default' : '' %>"><%= f.short %></span></th><% } %><th title="Summe der Funktionen">Soll</th><th>Antretensort (optional)</th><th>Interne Bemerkung</th><th></th></tr></thead>
       <tbody>
       <% for (const s of event.shifts) { %>
         <tr>
@@ -69,7 +70,8 @@
           <td><input form="shift-<%= s.id %>" type="date" name="date" value="<%= (s.starts_at || event.date).slice(0, 10) %>"></td>
           <td><input form="shift-<%= s.id %>" type="time" name="start" value="<%= s.starts_at ? s.starts_at.slice(11, 16) : '' %>"></td>
           <td><input form="shift-<%= s.id %>" type="time" name="end" value="<%= s.ends_at ? s.ends_at.slice(11, 16) : '' %>"></td>
-          <td><% if (!multi && fnTotal) { %><input form="shift-<%= s.id %>" type="number" name="target_count" value="<%= fnTotal %>" style="width:70px" readonly title="Total aus «Soll pro Funktion» – ändern unter Bearbeiten"><% } else { %><input form="shift-<%= s.id %>" type="number" min="0" name="target_count" value="<%= s.target_count ?? '' %>" style="width:70px"><% } %></td>
+          <% for (const f of fnCols) { %><td class="fn-col"><input form="shift-<%= s.id %>" type="number" min="0" max="9999" name="fn_target_<%= f.id %>" value="<%= s.targets[f.id] ?? '' %>" placeholder="–" aria-label="Soll <%= f.short %>"></td><% } %>
+          <td class="nowrap"><strong><%= s.target_count ?? '–' %></strong></td>
           <td><input form="shift-<%= s.id %>" type="text" name="start_place" value="<%= s.start_place || '' %>" placeholder="wie Einsatz"></td>
           <td><input form="shift-<%= s.id %>" type="text" name="internal_note" value="<%= s.internal_note || '' %>"></td>
           <td class="nowrap">
@@ -83,7 +85,8 @@
           <td><input form="shift-new" type="date" name="date" value="<%= event.date %>"></td>
           <td><input form="shift-new" type="time" name="start"></td>
           <td><input form="shift-new" type="time" name="end"></td>
-          <td><input form="shift-new" type="number" min="0" name="target_count" style="width:70px"></td>
+          <% for (const f of fnCols) { %><td class="fn-col"><input form="shift-new" type="number" min="0" max="9999" name="fn_target_<%= f.id %>" placeholder="–" aria-label="Soll <%= f.short %>"></td><% } %>
+          <td></td>
           <td><input form="shift-new" type="text" name="start_place" placeholder="wie Einsatz"></td>
           <td><input form="shift-new" type="text" name="internal_note"></td>
           <td><form id="shift-new" method="post" action="/einsaetze/<%= event.id %>/schichten" class="inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-sm btn-primary" type="submit">+ Schicht hinzufügen</button></form></td>

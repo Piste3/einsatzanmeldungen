@@ -165,7 +165,7 @@ CREATE TABLE IF NOT EXISTS events (
   question_text TEXT,
   help_text TEXT,
   extra JSON NOT NULL DEFAULT '{}',
-  function_targets JSON NOT NULL DEFAULT '{}',  -- Soll pro Funktion: { "<functions.id>": Anzahl }
+  function_targets JSON NOT NULL DEFAULT '{}',  -- veraltet (früher Soll pro Funktion am Einsatz) – jetzt pro Schicht
   calendar_sent_at TEXT,       -- zuletzt Kalendertermin exportiert
   version INTEGER NOT NULL DEFAULT 1,
   created_at TEXT NOT NULL,
@@ -191,7 +191,8 @@ CREATE TABLE IF NOT EXISTS shifts (
   name TEXT NOT NULL,
   starts_at TEXT,              -- YYYY-MM-DDTHH:MM
   ends_at TEXT,
-  target_count INTEGER,
+  target_count INTEGER,         -- Soll der Schicht = Summe von function_targets (wird mitgeführt)
+  function_targets JSON NOT NULL DEFAULT '{}',  -- Soll pro Funktion in dieser Schicht: { "<functions.id>": Anzahl }
   start_place TEXT,            -- überschreibt Antretensort des Einsatzes
   internal_note TEXT,
   is_default INTEGER NOT NULL DEFAULT 0,

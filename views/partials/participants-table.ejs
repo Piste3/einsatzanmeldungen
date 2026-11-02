@@ -1,9 +1,9 @@
 <%# Teilnehmertabelle mit Verpflegungs-Zusammenfassung (Teilnehmerliste und Einsatzleiter-Ansicht) %>
 <div class="card participants">
   <div class="card-head"><h2><%= list.length %> <%= list.length === 1 ? 'Person' : 'Personen' %><%= extTotal ? ` + ${extTotal} extern` : '' %> <span class="hint"><%= scopes[filters.umfang].label %> · Stand <%= h.fmtDateTime(h.nowIso()) %></span></h2></div>
-  <% if (fnSummary.hasTargets || showFunction) { %>
-    <div class="card-body fn-line small"><span class="muted">Funktionen (Ist/Soll, ganzer Einsatz):</span>
-      <% for (const f of fnSummary.rows.filter((x) => x.soll || x.ist)) { %><span class="fn-chip tone-<%= f.tone %>" title="<%= f.name %>"><span class="fn-tag<%= f.is_default ? ' fn-default' : '' %>"><%= f.short %></span> <%= f.ist %>/<%= f.soll ?? '–' %></span><% } %>
+  <% if (showFunction) { %>
+    <div class="card-body fn-line small"><span class="muted">Funktionen (Ist/Soll):</span>
+      <%- include('fn-line', { fnSummary }) %>
     </div>
   <% } %>
   <div class="table-wrap">

@@ -385,7 +385,7 @@ test('Funktionen: Soll pro Einsatz festlegen, zuweisen, Ist/Soll und Teilnehmerl
   await users.create({ username: 'fkt', display_name: 'Fkt', role: 'aufgebotsstelle', password: 'Aufgebot-2026-f', must_change_password: false }, null);
   const auf = await login('fkt', 'Aufgebot-2026-f');
   const form = await (await get('/einsaetze/neu', auf.cookie)).text();
-  assert.match(form, /Soll pro Funktion/);
+  assert.match(form, /Schichten und Soll/);
   assert.match(form, new RegExp(`name="fn_target_${fn('BF')}"`));
   const csrf = form.match(/name="_csrf" value="([^"]+)"/)[1];
   const post = (path, fields) => fetch(`${base}${path}`, {
@@ -398,7 +398,8 @@ test('Funktionen: Soll pro Einsatz festlegen, zuweisen, Ist/Soll und Teilnehmerl
     [`fn_target_${fn('EL')}`, '1'], [`fn_target_${fn('SC')}`, '2'], [`fn_target_${fn('BF')}`, '1'], [`fn_target_${fn('TN')}`, '3']]);
   assert.equal(created.status, 302);
   const ev = Number(created.headers.get('location').match(/\/einsaetze\/(\d+)/)[1]);
-  assert.deepEqual(events.get(ev).targets, { [fn('EL')]: 1, [fn('SC')]: 2, [fn('BF')]: 1, [fn('TN')]: 3 });
+  assert.deepEqual(events.get(ev).shifts[0].targets, { [fn('EL')]: 1, [fn('SC')]: 2, [fn('BF')]: 1, [fn('TN')]: 3 });
+  assert.equal(events.get(ev).shifts[0].target_count, 7, 'Soll der Schicht = Summe der Funktionen');
   // ungültige Zahl wird abgelehnt
   assert.equal((await post('/einsaetze', [['name', 'X'], ['date', addDays(today(), 8)], [`fn_target_${fn('EL')}`, '-1']])).status, 400);
 
@@ -427,18 +428,36 @@ test('Funktionen: Soll pro Einsatz festlegen, zuweisen, Ist/Soll und Teilnehmerl
   await post(`/einsaetze/${ev}/externe`, [['unit_name', 'Carfahrer AG'], ['person_count', '1'], ['function_id', String(fn('BF'))]]);
 
   const sum = functions.summary(events.get(ev));
-  const row = (s) => sum.rows.find((r) => r.short === s);
+  const row = (s) => sum.shifts[0].rows.find((r) => r.short === s);
   assert.deepEqual(['EL', 'SC', 'BF', 'TN'].map((s) => [row(s).ist, row(s).soll]), [[1, 1], [1, 2], [2, 1], [3, 3]]);
   assert.equal(row('TN').extern, 2);
   assert.equal(row('BF').over, 1);
   assert.equal(functions.line(sum), 'EL 1/1 · SC 1/2 · BF 2/1 · TN 3/3');
-  // eine Schicht ohne eigene Soll-Anzahl: Total aus den Funktionen gilt als Soll
-  const st = events.stats(events.get(ev));
-  assert.equal(st.shifts[0].soll, 7);
-  assert.equal(events.get(ev).shifts[0].target_count, 7, 'Schicht-Soll = Total der Funktionen');
-  // Soll der einzigen Schicht lässt sich nicht abweichend setzen
-  events.updateShift(events.get(ev).shifts[0].id, { name: 'Ganzer Einsatz', target_count: 1 }, system);
+  assert.equal(events.stats(events.get(ev)).shifts[0].soll, 7);
+
+  // Zweite Schicht mit eigenem Soll pro Funktion (Reiter Schichten): 1 SC + 2 TN = 3
+  const sh1 = events.get(ev).shifts[0];
+  assert.equal((await post(`/einsaetze/${ev}/schichten`, [['name', 'Abend'], ['start', '18:00'], ['end', '22:00'], [`fn_target_${fn('SC')}`, '1'], [`fn_target_${fn('TN')}`, '2']])).status, 302);
+  const sh2 = events.get(ev).shifts[1];
+  assert.equal(sh2.target_count, 3);
+  // Soll pro Schicht und Funktion im Einsatzformular ändern
+  const edit = await (await get(`/einsaetze/${ev}/bearbeiten`, auf.cookie)).text();
+  assert.match(edit, new RegExp(`name="fn_target_${sh2.id}_${fn('SC')}"`));
+  const version = String(db.one('SELECT version FROM events WHERE id = ?', ev).version);
+  assert.equal((await post(`/einsaetze/${ev}/bearbeiten`, [['version', version], ['name', 'Fasnachtsumzug'], ['date', events.get(ev).date], ['start_time', '13:00'], ['end_time', '18:00'],
+    ...[['EL', '1'], ['SC', '2'], ['BF', '1'], ['TN', '3']].map(([k, v]) => [`fn_target_${sh1.id}_${fn(k)}`, v]),
+    ...[['EL', ''], ['SC', '1'], ['BF', ''], ['TN', '4']].map(([k, v]) => [`fn_target_${sh2.id}_${fn(k)}`, v])])).status, 302);
+  assert.equal(events.get(ev).shifts[1].target_count, 5);
   assert.equal(events.get(ev).shifts[0].target_count, 7);
+  // Marco ist nur in der Abendschicht: zählt dort als EL
+  registrations.setShifts(reg.marco, [sh2.id], system);
+  const two = functions.summary(events.get(ev));
+  assert.ok(two.multi);
+  // externe Abteilungen (2 TN + 1 BF) gelten für alle Schichten
+  assert.deepEqual(two.shifts.map((x) => [x.totalIst, x.totalSoll]), [[6, 7], [4, 5]]);
+  assert.match(functions.line(two), /^Ganzer Einsatz: EL 0\/1 · .*\|  Abend: EL 1\/– · SC 0\/1 · BF 1\/– · TN 2\/4$/);
+  registrations.setShifts(reg.marco, [sh1.id], system);
+  events.deleteShift(sh2.id, system);
 
   // Übersicht: Karte «Funktionen», Vorschlag für den Einsatzleiter-Zugriff (Konto der Person mit Funktion EL)
   await users.create({ username: 'marco2', display_name: 'Marco Leit', role: 'einsatzleiter', person_id: ids.marco, password: 'Kommando-Marco-2026', must_change_password: false }, null);
@@ -456,7 +475,7 @@ test('Funktionen: Soll pro Einsatz festlegen, zuweisen, Ist/Soll und Teilnehmerl
 
   // Teilnehmerliste: Spalte Funktion, Ist/Soll, Export
   const tl = await (await get(`/einsaetze/${ev}/teilnehmerliste?sort=funktion`, auf.cookie)).text();
-  assert.match(tl, /Funktionen \(Ist\/Soll, ganzer Einsatz\)/);
+  assert.match(tl, /Funktionen \(Ist\/Soll\)/);
   assert.ok(tl.indexOf('Marco Leit') < tl.indexOf('Tim Teil'));
   const csv = (await (await get(`/einsaetze/${ev}/teilnehmerliste?format=csv&sort=funktion`, auf.cookie)).text()).replace(/^﻿/, '').trim().split(/\r?\n/);
   assert.match(csv[0], /^Nr\.;Anzahl;Funktion;Rang;Nachname/);

@@ -1,5 +1,5 @@
 <%
-  // Karte «Funktionen»: Ist/Soll pro Funktion und wer welche Funktion hat.
+  // Karte «Funktionen»: Ist/Soll pro Schicht und Funktion und wer welche Funktion hat.
   // Erwartet: event, fnSummary; mit editable: assignable (Anmeldungen), functionOptions, csrfToken
   const fs = fnSummary;
   const back = `/einsaetze/${event.id}#funktionen`;
@@ -8,40 +8,46 @@
 %>
 <div class="card" id="funktionen">
   <div class="card-head">
-    <h2>Funktionen <span class="hint">ganzer Einsatz<%= fs.hasTargets ? '' : ' · noch kein Soll' %></span></h2>
-    <% if (fs.hasTargets) { %><strong class="small"><%= fs.totalIst %> / <%= fs.totalSoll %></strong><% } %>
+    <h2>Funktionen <span class="hint"><%= fs.multi ? 'pro Schicht' : 'Ist / Soll' %><%= fs.hasTargets ? '' : ' · noch kein Soll' %></span></h2>
     <% if (canEdit) { %><a class="small no-print" href="/einsaetze/<%= event.id %>/bearbeiten#funktionen"><%= fs.hasTargets ? 'Soll ändern' : 'Soll festlegen' %> →</a><% } %>
   </div>
   <div class="card-body">
-    <% for (const f of fs.rows) { %>
-      <div class="occ fn-occ" data-row-id="fn<%= f.id %>">
-        <div class="occ-head">
-          <span><span class="fn-tag<%= f.is_default ? ' fn-default' : '' %>"><%= f.short %></span> <strong><%= f.name %></strong><%= f.extern ? ` · davon ${f.extern} extern` : '' %></span>
-          <strong><%= f.ist %> / <%= f.soll ?? '–' %><%= f.soll ? (f.over ? ` · ${f.over} zu viel` : f.missing ? ` · ${f.missing} ${f.missing === 1 ? 'fehlt' : 'fehlen'}` : ' · voll') : '' %></strong>
-        </div>
-        <div class="bar <%= f.tone %>"><span style="width:<%= h.pct(f.ist, f.soll) %>%"></span></div>
-        <% if (!f.is_default && (f.people.length || f.units.length)) { %>
-          <div class="fn-people">
-            <% for (const g of f.people) { %>
-              <span class="fn-person"><%- person(g) %><% if (canEdit) { %><form method="post" action="/anmeldungen/<%= g.id %>/funktion" class="inline no-print"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="back" value="<%= back %>"><input type="hidden" name="function_id" value="<%= fs.def.id %>"><button type="submit" class="fn-remove" title="Funktion entfernen (wieder <%= fs.def.short %>)" aria-label="Funktion entfernen">✕</button></form><% } %></span>
+    <% for (const sh of fs.shifts) { %>
+      <div class="fn-shift">
+        <% if (fs.multi) { %><div class="fn-shift-head"><strong><%= sh.name %> <span class="muted small"><%= h.fmtSpan(sh.starts_at, sh.ends_at) || '' %></span></strong><strong class="small"><%= sh.totalIst %> / <%= sh.totalSoll || '–' %></strong></div>
+        <% } else if (sh.hasTargets) { %><div class="fn-shift-head"><span class="small muted">Total</span><strong class="small"><%= sh.totalIst %> / <%= sh.totalSoll %></strong></div><% } %>
+        <% if (!sh.rows.length) { %><div class="small muted">Kein Soll und noch niemand zugeteilt.</div><% } %>
+        <% for (const f of sh.rows) { %>
+          <div class="occ fn-occ" data-row-id="fn<%= sh.id %>-<%= f.id %>">
+            <div class="occ-head">
+              <span><span class="fn-tag<%= f.is_default ? ' fn-default' : '' %>"><%= f.short %></span> <strong><%= f.name %></strong><%= f.extern ? ` · davon ${f.extern} extern` : '' %></span>
+              <strong><%= f.ist %> / <%= f.soll ?? '–' %><%= f.soll ? (f.over ? ` · ${f.over} zu viel` : f.missing ? ` · ${f.missing} ${f.missing === 1 ? 'fehlt' : 'fehlen'}` : ' · voll') : '' %></strong>
+            </div>
+            <div class="bar <%= f.tone %>"><span style="width:<%= h.pct(f.ist, f.soll) %>%"></span></div>
+            <% if (!f.is_default && (f.people.length || f.units.length)) { %>
+              <div class="fn-people">
+                <% for (const g of f.people) { %>
+                  <span class="fn-person"><%- person(g) %><% if (canEdit) { %><form method="post" action="/anmeldungen/<%= g.id %>/funktion" class="inline no-print"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="back" value="<%= back %>"><input type="hidden" name="function_id" value="<%= fs.def.id %>"><button type="submit" class="fn-remove" title="Funktion entfernen (wieder <%= fs.def.short %>)" aria-label="Funktion entfernen">✕</button></form><% } %></span>
+                <% } %>
+                <% for (const x of f.units) { %><span class="fn-person"><span class="tag tag-blue tag-ext">extern</span> <%= x.unit_name %> · <%= x.person_count %></span><% } %>
+              </div>
+            <% } else if (f.is_default && f.ist) { %>
+              <div class="small muted"><%= f.intern %> <%= f.intern === 1 ? 'Person' : 'Personen' %> ohne andere Funktion<%= f.extern ? ` + ${f.extern} extern` : '' %></div>
             <% } %>
-            <% for (const x of f.units) { %><span class="fn-person"><span class="tag tag-blue tag-ext">extern</span> <%= x.unit_name %> · <%= x.person_count %></span><% } %>
+            <% if (canEdit && !f.is_default && f.active) { const addable = assignable.filter((r) => r.func.id !== f.id && r.assigned.some((a) => a.id === sh.id)); if (addable.length) { %>
+              <form method="post" action="" class="fn-add no-print">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="back" value="<%= back %>"><input type="hidden" name="function_id" value="<%= f.id %>">
+                <select data-add-select data-add-action="/anmeldungen/{id}/funktion" data-search aria-label="<%= f.name %> zuweisen">
+                  <option value="">+ <%= f.short %> zuweisen …</option>
+                  <% for (const r of addable) { %><option value="<%= r.id %>"><%= r.last_name %> <%= r.first_name %><%= r.rank_short ? ` (${r.rank_short})` : '' %> · jetzt <%= r.func.short %></option><% } %>
+                </select>
+              </form>
+            <% } } %>
           </div>
-        <% } else if (f.is_default && f.ist) { %>
-          <div class="small muted"><%= f.intern %> <%= f.intern === 1 ? 'Anmeldung' : 'Anmeldungen' %> ohne andere Funktion<%= f.extern ? ` + ${f.extern} extern` : '' %></div>
         <% } %>
-        <% if (canEdit && !f.is_default && f.active) { const addable = assignable.filter((r) => r.func.id !== f.id); if (addable.length) { %>
-          <form method="post" action="" class="fn-add no-print">
-            <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="back" value="<%= back %>"><input type="hidden" name="function_id" value="<%= f.id %>">
-            <select data-add-select data-add-action="/anmeldungen/{id}/funktion" data-search aria-label="<%= f.name %> zuweisen">
-              <option value="">+ <%= f.short %> zuweisen …</option>
-              <% for (const r of addable) { %><option value="<%= r.id %>"><%= r.last_name %> <%= r.first_name %><%= r.rank_short ? ` (${r.rank_short})` : '' %> · jetzt <%= r.func.short %></option><% } %>
-            </select>
-          </form>
-        <% } } %>
       </div>
     <% } %>
     <% if (canEdit && !assignable.length) { %><p class="small muted mt-s">Noch keine Anmeldungen – Funktionen kannst du zuweisen, sobald sich jemand angemeldet hat.</p><% } %>
-    <p class="small muted mt-s">Es zählen Anmeldungen mit Status Neu, Rückfrage oder Bestätigt sowie externe Abteilungen. Wer keine Funktion hat, zählt als <%= fs.def.name %>.</p>
+    <p class="small muted mt-s">Es zählen Anmeldungen mit Status Neu, Rückfrage oder Bestätigt, die der Schicht zugeteilt sind, sowie externe Abteilungen. Die Funktion einer Person gilt für alle ihre Schichten. Wer keine Funktion hat, zählt als <%= fs.def.name %>.</p>
   </div>
 </div>

@@ -27,6 +27,7 @@ const NEW_COLUMNS = {
   mail_outbox: [['body_html', 'TEXT']],
   event_externals: [['diets', "JSON NOT NULL DEFAULT '[]'"], ['function_id', 'INTEGER REFERENCES functions(id)']],
   events: [['function_targets', "JSON NOT NULL DEFAULT '{}'"]],
+  shifts: [['function_targets', "JSON NOT NULL DEFAULT '{}'"]],
   registrations: [['function_id', 'INTEGER REFERENCES functions(id)']],
 };
 

@@ -116,9 +116,9 @@ function participantView(e, query, user) {
   // Externe Abteilungen (nur Anzahl) – bei gewählter Schicht nur die, die in dieser Schicht helfen
   const exts = externals.forEvent(e.id, e.shifts).filter((x) => !shift || externals.coversShift(x, shift.id));
   const extTotal = exts.reduce((a, x) => a + x.person_count, 0);
-  const fnSummary = functions.summary(e);
+  const fnSummary = functions.summary(e, { shiftId: shift?.id });
   return {
-    fnSummary, showFunction: fnSummary.hasTargets || fnSummary.rows.some((r) => !r.is_default && r.ist), shift, filters, list, showShift: e.shifts.length > 1 && !shift, showStatus: filters.umfang !== 'bestaetigt', shiftOf,
+    fnSummary, showFunction: fnSummary.usesFunctions, shift, filters, list, showShift: e.shifts.length > 1 && !shift, showStatus: filters.umfang !== 'bestaetigt', shiftOf,
     exts, extTotal, extShift: (x) => externals.shiftLabel(x, e.shifts),
   };
 }
