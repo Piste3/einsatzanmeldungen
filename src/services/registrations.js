@@ -1,6 +1,7 @@
 'use strict';
 // Anmeldungen: Status, Zuordnung, Schichtzuteilung
 const db = require('../db');
+const externals = require('./externals');
 const audit = require('./audit');
 const live = require('../lib/live');
 const persons = require('./persons');
@@ -102,7 +103,13 @@ function participantView(e, query, user) {
   const list = participants(e.id, { scope: filters.umfang, shiftId: shift?.id, sort: filters.sort }, user);
   const shiftOf = (r) => (r.assigned.length ? r.assigned.map((a) => a.name).join(' + ')
     : r.wishes.length ? `Wunsch: ${e.shifts.filter((s) => r.wishes.includes(s.id)).map((s) => s.name).join(' + ')}` : 'noch keine');
-  return { shift, filters, list, showShift: e.shifts.length > 1 && !shift, showStatus: filters.umfang !== 'bestaetigt', shiftOf };
+  // Externe Abteilungen (nur Anzahl) – bei gewählter Schicht nur die, die in dieser Schicht helfen
+  const exts = externals.forEvent(e.id, e.shifts).filter((x) => !shift || externals.coversShift(x, shift.id));
+  const extTotal = exts.reduce((a, x) => a + x.person_count, 0);
+  return {
+    shift, filters, list, showShift: e.shifts.length > 1 && !shift, showStatus: filters.umfang !== 'bestaetigt', shiftOf,
+    exts, extTotal, extShift: (x) => externals.shiftLabel(x, e.shifts),
+  };
 }
 
 // Zusammenfassung der Essenseinschränkungen für die Küche: [[Bezeichnung, Anzahl]]

@@ -6,6 +6,7 @@ Webanwendung des Kadetten-Korps Basel für Einsätze, Anmeldungen, Nachfassen, S
 
 - **Cockpit** mit Kennzahlen, anstehenden Einsätzen, offenen Klärungen und letzter Aktivität
 - **Einsätze** mit Status (Entwurf, Veröffentlicht, Abgeschlossen, Abgesagt), Checkliste, Schichten, Anmeldungen, Anfragen, Formular-Einstellungen und Verlauf
+- **Externe Abteilungen** pro Einsatz bzw. Schicht nur mit Anzahl Personen (ohne Namen): zählen in der Besetzung mit und stehen auf der Teilnehmerliste
 - **Öffentliches Anmeldeformular** unter `/forms/anmeldung` zum Einbetten in ClubDesk (iFrame)
 - **Automatische Zuordnung** der Namen zu Personen (Umlaute, Akzente, vertauschte Namen, Aliasse). Unklare Fälle landen in den **Klärungen**, es werden nie automatisch Personen angelegt
 - **Rückmeldungen**: wer hat sich wofür angemeldet, wer ist offen

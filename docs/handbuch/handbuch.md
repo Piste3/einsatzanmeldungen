@@ -151,13 +151,34 @@ Die Liste zeigt alle Einsätze mit Datum, Antreten, Status, Besetzung und Einsat
 ![Einsatz › Übersicht](bilder/05-einsatz-uebersicht.jpg)
 
 - **Kennzahlen:** neu eingegangen, zu prüfen, bestätigt und ohne Rückmeldung.
-- **Besetzung** pro Schicht mit Ist / Soll.
+- **Besetzung** pro Schicht mit Ist / Soll. Helfen externe Abteilungen mit, steht darunter z. B. «8 eigene + 6 extern».
+- **Externe Abteilungen:** andere Abteilungen oder Vereine, die mit einer Anzahl Personen mithelfen (siehe unten).
 - **Angaben** des Einsatzes und wann das Aufgebot zuletzt exportiert wurde.
 - **Status:** Entwurf → Veröffentlicht → Abgeschlossen, oder jederzeit Abgesagt. Nach dem Abschluss sind die Daten schreibgeschützt; Änderungen sind dann nur noch durch einen Admin mit Begründung möglich. Bei einer Absage bleiben alle Daten erhalten.
 - **Im Formular anzeigen:** schaltet den Einsatz im Anmeldeformular ein oder aus, z. B. wenn er voll ist.
 - **Checkliste:** zeigt, welche Angaben noch fehlen.
 - **Einsatzleiter-Zugriff:** gibt den Einsatz für einen Einsatzleiter frei (siehe «Einsatzleiter freigeben» unten).
 - Oben gibt es **Kalendertermin**, **Drucken** bzw. **Export**, **Teilnehmerliste** und **Bearbeiten**.
+
+### Externe Abteilungen
+
+Manchmal helfen andere Abteilungen oder Vereine mit, z. B. die Feuerwehr oder ein Samariterverein. Von ihnen braucht es keine Namen, nur **welche Abteilung** und **wie viele Personen** kommen.
+
+![Einsatz › Übersicht › Externe Abteilungen](bilder/40-externe-abteilungen.jpg)
+
+- In der Übersicht des Einsatzes auf **+ Externe Abteilung hinzufügen** klicken.
+- **Abteilung:** aus der Liste wählen oder einen neuen Namen eintippen. Ein neuer Name wird automatisch in die Liste aufgenommen und beim nächsten Einsatz vorgeschlagen. Gross- und Kleinschreibung spielt keine Rolle.
+- **Anzahl Personen** eintragen.
+- **Schichten:** Hat der Einsatz mehrere Schichten, ankreuzen, in welchen die Abteilung mithilft. Sind alle angekreuzt, gilt sie für den ganzen Einsatz, auch für später hinzugefügte Schichten.
+- **Kontakt** (z. B. «Hptm Muster, 079 …») und **Bemerkung** sind freiwillig.
+- Mit **Bearbeiten** lassen sich die Angaben ändern oder die Abteilung **vom Einsatz entfernen**.
+
+Was die externen Personen bewirken:
+
+- Sie **zählen in der Besetzung mit** (Ist / Soll) – in der Übersicht, im Cockpit, in der Einsatzliste und unter «Schichten». Ist eine Schicht damit voll, erscheint der übliche Hinweis.
+- In den **Rückmeldungen** steht die Zahl zusätzlich, z. B. «9 + 6 ext. / 10».
+- Auf der **Teilnehmerliste** (Seite, PDF, Excel, CSV) stehen sie in einem eigenen Abschnitt mit Anzahl, Schicht, Kontakt und Bemerkung. Oben steht das Total, z. B. «11 Personen + 9 extern = 20 total». In der Verpflegung erscheinen sie als «9 extern (keine Angaben)».
+- Jede Änderung steht im Verlauf des Einsatzes.
 
 ### Reiter «Formular»
 
@@ -176,6 +197,7 @@ Jede Änderung am Einsatz, an Anmeldungen und Anfragen steht hier mit Zeitpunkt 
 Die Teilnehmerliste zeigt auf einen Blick, wer kommt – mit **Rang, Name, Mobilnummer und Essenseinschränkungen**, der höchste Rang zuerst. Ein Klick auf **Teilnehmerliste** oben auf jeder Seite des Einsatzes öffnet sie sofort als **PDF in einem neuen Tab**. Von dort lässt sie sich drucken, speichern oder weiterschicken.
 
 - Unter der Liste steht die Zusammenfassung für die Küche, z. B. «2 vegetarisch · 1 Allergie · 7 ohne Einschränkung».
+- **Externe Abteilungen** stehen in einem eigenen Abschnitt unter den Personen, mit Anzahl, Schicht, Kontakt und Bemerkung. In Excel und CSV kommen sie als eigene Zeilen mit Rang «extern» und einer Spalte «Anzahl» ans Ende. Ist die Liste auf eine Schicht eingeschränkt, erscheinen nur die Abteilungen dieser Schicht.
 - Der kleine Pfeil **▾** neben dem Knopf bietet die Liste auch als **Excel** oder **CSV** an, mit Essenseinschränkung und Details in getrennten Spalten.
 - **Auswahl anpassen …** (ebenfalls im Pfeil-Menü) zeigt die Liste in der App und lässt wählen:
   - **Wer steht drauf:** «Angemeldete» (neu, Rückfrage und bestätigt – wie die Besetzung), «Nur bestätigte» oder «Angemeldete + Warteliste». Abmeldungen, Absagen und ungültige Anmeldungen stehen nie drauf.
@@ -337,6 +359,7 @@ Die meisten Einsätze haben nur eine Schicht für alle. Dann gibt es nichts zu v
 - **+ Person aus Anmeldungen hinzufügen:** Name tippen und auswählen.
 - **Überschneidung:** Ist jemand zwei Schichten zugeteilt, die sich zeitlich überlappen, erscheint oben ein Hinweis. Er blockiert nichts.
 - Die Schichtwünsche aus dem Formular sind schon übernommen. Meldet sich eine eingeteilte Person ab, wird die Besetzung sofort angepasst.
+- **Externe Abteilungen** stehen am Ende der Spalte ihrer Schicht (blau, mit Anzahl Personen) und zählen zur Besetzung, z. B. «Besetzung · davon 6 extern». Erfasst und geändert werden sie in der Übersicht des Einsatzes.
 
 ## 11 · Rückmeldungen und Mitgliederseite
 
@@ -499,7 +522,9 @@ Konten anlegen, Rolle wählen (Admin, Aufgebotsstelle oder Einsatzleiter) und mi
 
 ![Einstellungen › Auswahllisten](bilder/24-auswahllisten.jpg)
 
-**Ränge** und **Mannschaften / Kader**. Die Reihenfolge der Ränge bestimmt die Sortierung: kleine Zahl = tiefer Rang, grosse Zahl = hoher Rang.
+**Ränge**, **Mannschaften / Kader** und **Externe Abteilungen**. Die Reihenfolge der Ränge bestimmt die Sortierung: kleine Zahl = tiefer Rang, grosse Zahl = hoher Rang.
+
+Die Liste **Externe Abteilungen** füllt sich auch von selbst, wenn bei einem Einsatz ein neuer Name eingetippt wird. Hier lassen sich Namen korrigieren (die Änderung gilt dann für alle Einsätze), die Reihenfolge festlegen und Abteilungen deaktivieren: Inaktive werden bei Einsätzen nicht mehr vorgeschlagen. Die Spalte «Einsätze» zeigt, bei wie vielen Einsätzen eine Abteilung erfasst ist.
 
 ![Einstellungen › Vorlagen](bilder/25-vorlagen.jpg)
 
@@ -507,7 +532,7 @@ Konten anlegen, Rolle wählen (Admin, Aufgebotsstelle oder Einsatzleiter) und mi
 
 Bei den Anmeldefragen legt die Spalte **Standard** fest, welche Vorlage bei jedem neuen Einsatz schon vorausgewählt ist, samt Fragetext und Hilfetext. Mit «keiner» ist nichts vorausgewählt.
 
-> **Speichern pro Abschnitt:** In Auswahllisten und Vorlagen hat jeder Abschnitt einen einzigen Speichern-Knopf. Mehrere Zeilen ändern, in der leeren Zeile etwas Neues eintragen, bei anderen «entfernen» ankreuzen – und dann einmal speichern. Geänderte Zeilen sind links orange markiert. Ränge oder Mannschaften, die noch verwendet werden, lassen sich nicht entfernen, nur deaktivieren.
+> **Speichern pro Abschnitt:** In Auswahllisten und Vorlagen hat jeder Abschnitt einen einzigen Speichern-Knopf. Mehrere Zeilen ändern, in der leeren Zeile etwas Neues eintragen, bei anderen «entfernen» ankreuzen – und dann einmal speichern. Geänderte Zeilen sind links orange markiert. Ränge, Mannschaften oder externe Abteilungen, die noch verwendet werden, lassen sich nicht entfernen, nur deaktivieren.
 
 ### Bestätigungsmail
 
@@ -671,6 +696,9 @@ Im Einsatz oben auf **Teilnehmerliste** klicken – sie öffnet sich als PDF in 
 
 **Kann der Einsatzleiter selbst sehen, wer kommt?**
 Ja. Er braucht ein Konto mit der Rolle «Einsatzleiter», und die Aufgebotsstelle gibt ihm den Einsatz in der Übersicht unter «Einsatzleiter-Zugriff» frei. Dann sieht er Angaben und Teilnehmerliste – nur lesen.
+
+**Eine andere Abteilung schickt Leute. Muss ich alle Namen erfassen?**
+Nein. In der Übersicht des Einsatzes unter **Externe Abteilungen** nur die Abteilung und die Anzahl Personen eintragen. Sie zählen in der Besetzung mit und stehen auf der Teilnehmerliste.
 
 **Funktioniert der Einsatzplaner auf dem Handy?**
 Ja. Er ist für den Computer gemacht, lässt sich aber auch auf Tablet und Handy bedienen – etwa um unterwegs einen Anruf zu erfassen.

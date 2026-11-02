@@ -1,6 +1,7 @@
 'use strict';
 // Rückmeldungen: Mitglieder × anstehende Einsätze (An / Ab / Unsicher / Offen)
 const db = require('../db');
+const externals = require('./externals');
 const { today, addDays } = require('../lib/dates');
 const { rankOrder } = require('../lib/sorting');
 
@@ -59,6 +60,9 @@ function matrix({ team = '', period = '3m', sort = 'rang', includeDrafts = false
     }
     for (const e of evts) {
       e.soll = soll.get(e.id) || null;
+      // Externe Abteilungen (nur Anzahl) pro Schicht; Summe wie beim Soll über alle Schichten
+      e.externByShift = externals.countsByShift(e.id, shifts.get(e.id) || []);
+      e.extern = Object.values(e.externByShift).reduce((a, n) => a + n, 0);
       // Nur bei mehreren Schichten eine Spalte pro Schicht
       e.shifts = (shifts.get(e.id) || []).length > 1 ? shifts.get(e.id) : [];
     }
@@ -66,7 +70,7 @@ function matrix({ team = '', period = '3m', sort = 'rang', includeDrafts = false
       if (!assigned.has(a.registration_id)) assigned.set(a.registration_id, new Set());
       assigned.get(a.registration_id).add(a.shift_id);
     }
-  } else for (const e of evts) e.shifts = [];
+  } else for (const e of evts) { e.shifts = []; e.externByShift = {}; e.extern = 0; }
   // Spalten: ein Einsatz oder eine Schicht eines Einsatzes
   const columns = evts.flatMap((e) => (e.shifts.length
     ? e.shifts.map((sh, i) => ({ event: e, shift: sh, first: i === 0, key: `${e.id}:${sh.id}` }))

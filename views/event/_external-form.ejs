@@ -1,0 +1,33 @@
+<%
+  // Formular für eine externe Abteilung (neu: x = null). Erwartet: event, unitOptions, csrfToken, back (optional)
+  const isNewExt = !x;
+  const multiShift = event.shifts.length > 1;
+  const fid = isNewExt ? 'ext-new' : `ext-${x.id}`;
+%>
+<form method="post" action="/einsaetze/<%= event.id %>/externe<%= isNewExt ? '' : `/${x.id}` %>" class="card-body ext-form" id="<%= fid %>">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <% if (typeof back !== 'undefined' && back) { %><input type="hidden" name="back" value="<%= back %>"><% } %>
+  <% if (event.status === 'abgeschlossen') { %><input type="hidden" name="reason" value="" data-reason><% } %>
+  <div class="fields fields-2">
+    <div class="field"><label for="<%= fid %>-unit">Abteilung <span class="req">*</span></label>
+      <input id="<%= fid %>-unit" type="text" name="unit_name" list="ext-units" required maxlength="120" value="<%= isNewExt ? '' : x.unit_name %>" placeholder="z. B. Feuerwehr Riehen" autocomplete="off">
+      <div class="field-hint">Aus der Liste wählen oder neuen Namen eintippen – er wird für das nächste Mal gespeichert.</div></div>
+    <div class="field"><label for="<%= fid %>-count">Anzahl Personen <span class="req">*</span></label>
+      <input id="<%= fid %>-count" type="number" name="person_count" min="1" max="9999" step="1" required value="<%= isNewExt ? '' : x.person_count %>" inputmode="numeric"></div>
+  </div>
+  <% if (multiShift) { %>
+    <div class="field"><label>Schichten</label>
+      <div class="row">
+        <% for (const s of event.shifts) { %><label class="check"><input type="checkbox" name="shift_ids" value="<%= s.id %>" <%= isNewExt || x.allShifts || x.shiftIds.includes(s.id) ? 'checked' : '' %>> <%= s.name %></label><% } %>
+      </div></div>
+  <% } %>
+  <div class="fields fields-2">
+    <div class="field"><label for="<%= fid %>-contact">Kontakt <span class="muted small">(optional)</span></label>
+      <input id="<%= fid %>-contact" type="text" name="contact" maxlength="500" value="<%= isNewExt ? '' : x.contact || '' %>" placeholder="z. B. Hptm Muster, 079 123 45 67"></div>
+    <div class="field"><label for="<%= fid %>-note">Bemerkung <span class="muted small">(optional)</span></label>
+      <input id="<%= fid %>-note" type="text" name="note" maxlength="500" value="<%= isNewExt ? '' : x.note || '' %>"></div>
+  </div>
+  <div class="row">
+    <button class="btn btn-sm btn-primary" type="submit"><%= isNewExt ? 'Hinzufügen' : 'Speichern' %></button>
+  </div>
+</form>

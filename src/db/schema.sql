@@ -187,6 +187,30 @@ CREATE TABLE IF NOT EXISTS shifts (
 );
 CREATE INDEX IF NOT EXISTS idx_shifts_event ON shifts(event_id);
 
+-- Externe Abteilungen (andere Vereine, Feuerwehr …): wiederverwendbare Liste
+CREATE TABLE IF NOT EXISTS external_units (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  sort INTEGER NOT NULL DEFAULT 0,
+  active INTEGER NOT NULL DEFAULT 1
+);
+
+-- Externe Abteilung an einem Einsatz: nur Anzahl Personen, keine Namen
+CREATE TABLE IF NOT EXISTS event_externals (
+  id INTEGER PRIMARY KEY,
+  event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+  unit_id INTEGER NOT NULL REFERENCES external_units(id),
+  person_count INTEGER NOT NULL CHECK (person_count > 0),
+  shift_ids JSON NOT NULL DEFAULT '[]',  -- leer = alle Schichten des Einsatzes
+  contact TEXT,                -- Ansprechperson der Abteilung (Name, Telefon)
+  note TEXT,
+  version INTEGER NOT NULL DEFAULT 1,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  updated_by INTEGER
+);
+CREATE INDEX IF NOT EXISTS idx_externals_event ON event_externals(event_id);
+
 -- Vom Server ausgegebene Formular-Aufrufe (einmalige Absende-ID + damals angezeigte Einsätze)
 CREATE TABLE IF NOT EXISTS form_tokens (
   uid TEXT PRIMARY KEY,

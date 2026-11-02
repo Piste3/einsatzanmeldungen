@@ -36,6 +36,7 @@
         <div class="occ">
           <div class="occ-head"><span><strong><%= sh.name %></strong> · <%= h.fmtSpan(sh.starts_at, sh.ends_at) || 'Zeit offen' %><%= sh.start_place ? ` · ${sh.start_place}` : '' %></span><strong><%= sh.ist %> / <%= sh.soll ?? '–' %></strong></div>
           <div class="bar <%= sh.tone %>"><span style="width:<%= h.pct(sh.ist, sh.soll) %>%"></span></div>
+          <% if (sh.extern) { %><div class="small muted ext-split"><%= sh.intern %> eigene + <%= sh.extern %> extern</div><% } %>
         </div>
       <% } %>
       <p class="small muted mt-s">Nur lesen. Änderungen und Rückfragen bitte an die Aufgebotsstelle.</p>

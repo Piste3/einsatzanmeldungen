@@ -82,7 +82,8 @@ const HEAD_BG = '0.95 0.96 0.97';
  *   title, subtitle: [string], landscape: bool,
  *   columns: [{ label, width (Anteil), fit (so breit wie der Inhalt), align: 'left'|'right' }],
  *   rows: [[string | { text, bold }]],
- *   after: [{ label, text }]   – Absätze unter der Tabelle (label fett),
+ *   sections: [{ title, columns, rows, empty }] – weitere Tabellen mit Zwischentitel,
+ *   after: [{ label, text }]   – Absätze unter den Tabellen (label fett),
  *   footer: string             – links unten auf jeder Seite (rechts: Seite x / y),
  *   empty: string              – Text, wenn die Tabelle leer ist
  * }
@@ -98,18 +99,21 @@ function tablePdf(opts) {
   const padY = 4.5;
   // Spalten mit fit: so breit wie der längste Eintrag; der Rest wird nach «width» verteilt
   const cellText = (v) => String(v && typeof v === 'object' ? v.text ?? '' : v ?? '');
-  const widths = opts.columns.map((c, i) => (c.fit
-    ? Math.max(textWidth(String(c.label || '').toUpperCase(), 7.5, true), ...opts.rows.map((r) => textWidth(cellText(r[i]), size, typeof r[i] === 'object' && Boolean(r[i]?.bold)))) + 2 * padX + 1
-    : null));
-  const free = usable - widths.reduce((s, w) => s + (w || 0), 0);
-  const total = opts.columns.reduce((s, c) => s + (c.fit ? 0 : c.width || 1), 0);
-  const cols = [];
-  let x = M;
-  opts.columns.forEach((c, i) => {
-    const w = widths[i] ?? (free * (c.width || 1)) / total;
-    cols.push({ ...c, x, w });
-    x += w;
-  });
+  const layout = (columns, rows) => {
+    const widths = columns.map((c, i) => (c.fit
+      ? Math.max(textWidth(String(c.label || '').toUpperCase(), 7.5, true), ...rows.map((r) => textWidth(cellText(r[i]), size, typeof r[i] === 'object' && Boolean(r[i]?.bold)))) + 2 * padX + 1
+      : null));
+    const free = usable - widths.reduce((s, w) => s + (w || 0), 0);
+    const total = columns.reduce((s, c) => s + (c.fit ? 0 : c.width || 1), 0);
+    const out = [];
+    let x = M;
+    columns.forEach((c, i) => {
+      const w = widths[i] ?? (free * (c.width || 1)) / total;
+      out.push({ ...c, x, w });
+      x += w;
+    });
+    return out;
+  };
 
   const pages = [];
   let ops;
@@ -121,7 +125,7 @@ function tablePdf(opts) {
   };
   const hline = (ly) => ops.push(`${LINE} RG 0.6 w ${num(M)} ${num(ly)} m ${num(W - M)} ${num(ly)} l S`);
 
-  const header = () => {
+  const header = (cols) => {
     const h = lh + 2 * padY;
     ops.push(`${HEAD_BG} rg ${num(M)} ${num(y - h)} ${num(usable)} ${num(h)} re f 0 g`);
     for (const c of cols) {
@@ -133,6 +137,34 @@ function tablePdf(opts) {
     hline(y);
   };
 
+  const table = (columns, rows, empty) => {
+    const cols = layout(columns, rows);
+    header(cols);
+    if (!rows.length && empty) {
+      text(empty, M + padX, y - padY - size * 0.85, { color: GRAY });
+      y -= lh + 2 * padY;
+      hline(y);
+    }
+    for (const row of rows) {
+      const cells = cols.map((c, i) => {
+        const v = row[i];
+        const cell = v && typeof v === 'object' ? v : { text: v ?? '' };
+        return { ...cell, lines: wrap(String(cell.text ?? ''), size, c.w - 2 * padX, Boolean(cell.bold)) };
+      });
+      const h = Math.max(...cells.map((c) => c.lines.length)) * lh + 2 * padY;
+      if (y - h < bottom) { newPage(); header(cols); }
+      cells.forEach((cell, i) => {
+        const c = cols[i];
+        cell.lines.forEach((line, k) => {
+          const tw = c.align === 'right' ? textWidth(line, size, cell.bold) : 0;
+          text(line, c.align === 'right' ? c.x + c.w - padX - tw : c.x + padX, y - padY - size * 0.85 - k * lh, { bold: cell.bold, color: cell.muted ? GRAY : null });
+        });
+      });
+      y -= h;
+      hline(y);
+    }
+  };
+
   newPage();
   // Titel und Untertitel
   for (const line of wrap(opts.title || '', 17, usable, true)) { text(line, M, y - 17, { bold: true, sz: 17 }); y -= 21; }
@@ -142,29 +174,15 @@ function tablePdf(opts) {
   }
   y -= 10;
 
-  header();
-  if (!opts.rows.length && opts.empty) {
-    text(opts.empty, M + padX, y - padY - size * 0.85, { color: GRAY });
-    y -= lh + 2 * padY;
-    hline(y);
-  }
-  for (const row of opts.rows) {
-    const cells = cols.map((c, i) => {
-      const v = row[i];
-      const cell = v && typeof v === 'object' ? v : { text: v ?? '' };
-      return { ...cell, lines: wrap(String(cell.text ?? ''), size, c.w - 2 * padX, Boolean(cell.bold)) };
-    });
-    const h = Math.max(...cells.map((c) => c.lines.length)) * lh + 2 * padY;
-    if (y - h < bottom) { newPage(); header(); }
-    cells.forEach((cell, i) => {
-      const c = cols[i];
-      cell.lines.forEach((line, k) => {
-        const tw = c.align === 'right' ? textWidth(line, size, cell.bold) : 0;
-        text(line, c.align === 'right' ? c.x + c.w - padX - tw : c.x + padX, y - padY - size * 0.85 - k * lh, { bold: cell.bold, color: cell.muted ? GRAY : null });
-      });
-    });
-    y -= h;
-    hline(y);
+  table(opts.columns, opts.rows, opts.empty);
+
+  // Weitere Tabellen mit Zwischentitel (z. B. externe Abteilungen)
+  for (const sec of opts.sections || []) {
+    y -= 14;
+    if (y - 12.5 - 3 * (lh + 2 * padY) < bottom) newPage();
+    text(sec.title, M, y - 11, { bold: true, sz: 11 });
+    y -= 18;
+    table(sec.columns, sec.rows, sec.empty);
   }
 
   // Absätze unter der Tabelle

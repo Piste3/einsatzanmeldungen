@@ -15,9 +15,11 @@
     return parts.join(' · ');
   };
   const shiftTime = (sh) => (sh.starts_at && sh.ends_at ? `${sh.starts_at.slice(11, 16)}–${sh.ends_at.slice(11, 16)}` : '');
-  const colFill = (col) => { const t = colTotals[col.key]; return col.shift && col.shift.target_count ? Math.min(100, Math.round((t.an / col.shift.target_count) * 100)) : null; };
+  const colExt = (col) => (col.shift ? col.event.externByShift[col.shift.id] || 0 : 0);
+  const colFill = (col) => { const t = colTotals[col.key]; return col.shift && col.shift.target_count ? Math.min(100, Math.round(((t.an + colExt(col)) / col.shift.target_count) * 100)) : null; };
+  const extTxt = (n) => (n ? ` + ${n} ext.` : '');
   const colTone = (col) => { const f = colFill(col); return f === null ? 'gray' : f >= 100 ? 'green' : f >= 60 ? 'yellow' : 'red'; };
-  const fill = (e) => (e.soll ? Math.min(100, Math.round((totals[e.id].an / e.soll) * 100)) : null);
+  const fill = (e) => (e.soll ? Math.min(100, Math.round(((totals[e.id].an + (e.extern || 0)) / e.soll) * 100)) : null);
   const tone = (e) => { const f = fill(e); return f === null ? 'gray' : f >= 100 ? 'green' : f >= 60 ? 'yellow' : 'red'; };
 %>
 <form class="filters fb-filters" method="get" data-autosubmit>
@@ -63,10 +65,10 @@
                 <% if (col.shift) { const ct = colTotals[col.key]; %>
                   <span class="sh"><%= col.shift.name %></span>
                   <span class="fill fill-<%= colTone(col) %>"><span style="width:<%= colFill(col) ?? 0 %>%"></span></span>
-                  <span class="num"><%= ct.an %><%= col.shift.target_count ? ` / ${col.shift.target_count}` : ' An' %><%= ct.schicht_offen ? ` · ${ct.schicht_offen} offen` : '' %></span>
+                  <span class="num"><%= ct.an %><%= extTxt(colExt(col)) %><%= col.shift.target_count ? ` / ${col.shift.target_count}` : ' An' %><%= ct.schicht_offen ? ` · ${ct.schicht_offen} offen` : '' %></span>
                 <% } else { %>
                   <span class="fill fill-<%= tone(e) %>"><span style="width:<%= fill(e) ?? 0 %>%"></span></span>
-                  <span class="num"><%= t.an %><%= e.soll ? ` / ${e.soll}` : ' An' %></span>
+                  <span class="num"><%= t.an %><%= extTxt(e.extern) %><%= e.soll ? ` / ${e.soll}` : ' An' %></span>
                 <% } %>
               </a>
             </th>
@@ -110,14 +112,14 @@
   <div class="card fb-card">
     <div class="card-head">
       <h2><a href="/einsaetze/<%= e.id %>"><%= e.name %></a> <span class="hint"><%= h.weekdayShort(e.date) %> <%= h.fmtDateShort(e.date) %><%= e.status === 'entwurf' ? ' · Entwurf' : '' %></span></h2>
-      <span class="num"><strong><%= t.an %></strong><%= e.soll ? ` / ${e.soll}` : '' %> An</span>
+      <span class="num"><strong><%= t.an %></strong><%= extTxt(e.extern) %><%= e.soll ? ` / ${e.soll}` : '' %> An</span>
     </div>
     <div class="card-body">
       <span class="fill fill-<%= tone(e) %> fill-wide"><span style="width:<%= fill(e) ?? 0 %>%"></span></span>
       <% if (perShift.length) { %>
         <div class="fb-shifts">
           <% for (const { sh, list } of perShift) { %>
-            <div class="fb-shift-row"><span class="sh-name"><%= sh.name %> <span class="muted small"><%= shiftTime(sh) %></span></span><span class="num"><strong><%= list.length %></strong><%= sh.target_count ? ` / ${sh.target_count}` : '' %></span></div>
+            <div class="fb-shift-row"><span class="sh-name"><%= sh.name %> <span class="muted small"><%= shiftTime(sh) %></span></span><span class="num"><strong><%= list.length %></strong><%= extTxt(e.externByShift[sh.id]) %><%= sh.target_count ? ` / ${sh.target_count}` : '' %></span></div>
             <div class="fb-names"><% for (const p of list) { %><a class="pill" href="/personen/<%= p.id %>"><%= p.first_name %> <%= p.last_name %></a><% } %><% if (!list.length) { %><span class="muted small">noch niemand</span><% } %></div>
           <% } %>
           <% if (noShift.length) { %><div class="fb-shift-row"><span class="sh-name">An, Schicht noch offen</span><a class="link small" href="/einsaetze/<%= e.id %>/schichten">zuteilen →</a></div>

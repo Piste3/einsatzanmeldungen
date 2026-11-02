@@ -5,6 +5,7 @@
 <% if (!multi) { %>
   <div class="callout mb">Dieser Einsatz hat eine Schicht. Jede Anmeldung gilt automatisch für diese Schicht – es gibt nichts zu verteilen.</div>
 <% } %>
+<p class="small muted no-print">Externe Abteilungen (nur mit Anzahl Personen) erfasst du in der <a class="link" href="/einsaetze/<%= event.id %>#externe">Übersicht</a>.</p>
 <% if (multi && unassigned.length) { %>
   <div class="card mb">
     <div class="card-head"><h2>Noch keiner Schicht zugeteilt <span class="hint"><%= unassigned.length %> Anmeldungen</span></h2></div>
@@ -23,9 +24,9 @@
     <div class="card">
       <div class="card-head">
         <div><h2><%= col.name %></h2><span class="small muted"><%= h.fmtSpan(col.starts_at, col.ends_at) || 'Zeit offen' %><%= col.start_place ? ` · ${col.start_place}` : '' %></span></div>
-        <div class="occ"><div class="occ-head"><span>Besetzung</span><strong><%= col.ist %> / <%= col.soll ?? '–' %><%= col.soll ? (col.ist >= col.soll ? ' · voll' : ` · ${col.missing} fehlen`) : '' %></strong></div><div class="bar <%= col.tone %>"><span style="width:<%= h.pct(col.ist, col.soll) %>%"></span></div></div>
+        <div class="occ"><div class="occ-head"><span>Besetzung<%= col.extern ? ` · davon ${col.extern} extern` : '' %></span><strong><%= col.ist %> / <%= col.soll ?? '–' %><%= col.soll ? (col.ist >= col.soll ? ' · voll' : ` · ${col.missing} fehlen`) : '' %></strong></div><div class="bar <%= col.tone %>"><span style="width:<%= h.pct(col.ist, col.soll) %>%"></span></div></div>
       </div>
-      <% if (!col.regs.length) { %><div class="empty">Noch niemand zugeteilt.</div><% } %>
+      <% if (!col.regs.length && !col.exts.length) { %><div class="empty">Noch niemand zugeteilt.</div><% } %>
       <% for (const r of col.regs) { const current = r.assigned.map((a) => a.id).join(','); %>
         <div class="shift-row <%= overlapNames.has(`${r.rank_short ? r.rank_short + ' ' : ''}${r.first_name} ${r.last_name}`) ? 'overlap' : '' %>" data-row-id="s<%= col.id %>-<%= r.id %>">
           <span class="name"><%- h.rank(r.rank_short) %><a href="/personen/<%= r.person_id %>"><%= r.first_name %> <%= r.last_name %></a></span>
@@ -38,6 +39,12 @@
                 <option value="">aus allen Schichten entfernen</option>
               </select></form>
           <% } %>
+        </div>
+      <% } %>
+      <% for (const x of col.exts) { %>
+        <div class="shift-row ext" data-row-id="x<%= col.id %>-<%= x.id %>">
+          <span class="name"><a href="/einsaetze/<%= event.id %>#externe"><strong><%= x.unit_name %></strong></a><%= x.contact ? ` · ${x.contact}` : '' %></span>
+          <span class="tag tag-blue tag-ext">extern · <%= h.plural(x.person_count, 'Person', 'Personen') %></span>
         </div>
       <% } %>
       <% const addable = regs.filter((r) => !assignedIds.has(r.id)); if (multi && addable.length) { %>

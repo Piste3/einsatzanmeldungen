@@ -2,13 +2,13 @@
 <%- include('../partials/topbar', { crumbs: [['Einstellungen'], ['Auswahllisten']], heading: 'Einstellungen', showSearch: false }) %>
 <%- include('_tabs') %>
 <div class="grid grid-2">
-  <% for (const [kind, label, rows] of [['raenge', 'Ränge', ranks], ['mannschaften', 'Mannschaften / Kader', teams]]) { %>
+  <% for (const [kind, label, rows] of [['raenge', 'Ränge', ranks], ['mannschaften', 'Mannschaften / Kader', teams], ['externe', 'Externe Abteilungen', externalUnits]]) { %>
   <form class="card" method="post" action="/verwaltung/listen/<%= kind %>" data-section>
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <div class="card-head"><h2><%= label %></h2></div>
     <div class="table-wrap">
       <table class="form-table">
-        <thead><tr><th>Name</th><% if (kind === 'raenge') { %><th>Kürzel</th><% } %><th>Reihenfolge</th><th>Aktiv</th><th>Personen</th><th>Entfernen</th></tr></thead>
+        <thead><tr><th>Name</th><% if (kind === 'raenge') { %><th>Kürzel</th><% } %><th>Reihenfolge</th><th>Aktiv</th><th><%= kind === 'externe' ? 'Einsätze' : 'Personen' %></th><th>Entfernen</th></tr></thead>
         <tbody>
         <% for (const r of rows) { %>
           <tr>
@@ -28,6 +28,7 @@
         </tbody>
       </table>
     </div>
+    <% if (kind === 'externe') { %><div class="card-body small muted">Andere Abteilungen oder Vereine, die bei Einsätzen mithelfen. Beim Einsatz kann man auch direkt einen neuen Namen eintippen – er landet dann hier. Inaktive Abteilungen werden beim Einsatz nicht mehr vorgeschlagen.</div><% } %>
     <% if (kind === 'raenge') { %><div class="card-body small muted">Die Reihenfolge bestimmt die Sortierung: kleine Zahl = tiefer Rang. Listen zeigen die Personen standardmässig vom höchsten zum tiefsten Rang.</div><% } %>
     <%- include('_section-foot') %>
   </form>

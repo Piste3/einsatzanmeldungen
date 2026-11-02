@@ -691,3 +691,23 @@ tr.changed td:first-child { box-shadow: inset 3px 0 0 var(--orange, #e8742a); }
 .plain-list li:first-child { border-top: 0; }
 .row.between { justify-content: space-between; flex-wrap: nowrap; }
 #einsatzleiter form.row select { flex: 1; min-width: 0; }
+
+/* Externe Abteilungen */
+.ext-split { margin-top: 4px; }
+.ext-row { border-bottom: 1px solid var(--border-soft); }
+.ext-row > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 9px 16px; font-size: 13px; }
+.ext-row > summary::-webkit-details-marker, .ext-add > summary::-webkit-details-marker { display: none; }
+.ext-row > summary .name { min-width: 0; }
+.ext-row > summary .tag, .shift-row .tag-ext { min-width: 0; }
+.ext-row > summary .ext-meta { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.ext-row[open] > summary { background: var(--surface-2); }
+.ext-row[open] > summary .btn { visibility: hidden; }
+.ext-row .ext-form { padding-bottom: 4px; }
+.ext-row .ext-delete { padding-top: 0; }
+.ext-add > summary { list-style: none; cursor: pointer; }
+.ext-add[open] > summary { display: none; }
+.shift-row.ext { background: var(--surface-2); }
+@media (max-width: 760px) { .ext-row > summary .ext-meta { flex-basis: 100%; } }
+.participants .ext-head { border-top: 1px solid var(--border); padding-bottom: 6px; }
+.participants .tag-ext { min-width: 0; }
+.shift-cols .occ-head { gap: 8px; }

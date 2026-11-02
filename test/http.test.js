@@ -277,3 +277,76 @@ test('Einsatzleiter: sieht nur freigegebene Einsätze, nur lesen', async () => {
   assert.equal((await post(`/einsaetze/${ev}/einsatzleiter/${leaderId}/entfernen`, auf.cookie, csrf)).status, 302);
   assert.equal((await get(`/einsaetze/${ev}`, leo.cookie)).status, 403);
 });
+
+test('Externe Abteilungen: mit Anzahl erfassen, zählen in der Besetzung, stehen auf der Teilnehmerliste', async () => {
+  const db = require('../src/db');
+  const { system } = require('./helpers');
+  const events = require('../src/services/events');
+  const { today, addDays } = require('../src/lib/dates');
+  const ev = events.create({ name: 'Basler Herbstlauf', date: addDays(today(), 4), start_time: '08:00', end_time: '12:00', target_count: 10 }, system);
+  events.addShift(ev, { name: 'Abend', start: '18:00', end: '22:00', target_count: 4 }, system);
+  const [tag, abend] = events.get(ev).shifts;
+
+  await users.create({ username: 'ext', display_name: 'Ext', role: 'aufgebotsstelle', password: 'Aufgebot-2026-e', must_change_password: false }, null);
+  const ext = await login('ext', 'Aufgebot-2026-e');
+  const page = await (await get(`/einsaetze/${ev}`, ext.cookie)).text();
+  assert.match(page, /Externe Abteilungen/);
+  const csrf = page.match(/name="_csrf" value="([^"]+)"/)[1];
+  const post = (path, fields) => fetch(`${base}${path}`, {
+    method: 'POST', redirect: 'manual', headers: { cookie: ext.cookie, 'content-type': 'application/x-www-form-urlencoded', referer: `${base}/einsaetze/${ev}` },
+    body: new URLSearchParams([['_csrf', csrf], ...fields]),
+  });
+
+  // neue Abteilung per Name (wird in die Liste aufgenommen), nur Tagschicht
+  assert.equal((await post(`/einsaetze/${ev}/externe`, [['unit_name', 'Feuerwehr Riehen'], ['person_count', '6'], ['shift_ids', String(tag.id)], ['contact', 'Hptm Muster 079 555 44 33']])).status, 302);
+  // gleicher Name anders geschrieben = gleiche Abteilung; alle Schichten
+  assert.equal((await post(`/einsaetze/${ev}/externe`, [['unit_name', 'feuerwehr riehen'], ['person_count', '2'], ['shift_ids', String(tag.id)], ['shift_ids', String(abend.id)]])).status, 302);
+  assert.equal(db.one('SELECT COUNT(*) AS n FROM external_units').n, 1);
+  // ungültig: keine Anzahl, keine Schicht
+  await post(`/einsaetze/${ev}/externe`, [['unit_name', 'Samariter'], ['person_count', '0'], ['shift_ids', String(tag.id)]]);
+  await post(`/einsaetze/${ev}/externe`, [['unit_name', 'Samariter'], ['person_count', '3']]);
+  assert.equal(db.one('SELECT COUNT(*) AS n FROM event_externals WHERE event_id = ?', ev).n, 2);
+  assert.equal(db.one('SELECT COUNT(*) AS n FROM external_units').n, 1, 'abgelehnte Eingaben legen keine Abteilung an');
+
+  let st = events.stats(events.get(ev));
+  assert.deepEqual(st.shifts.map((s) => [s.ist, s.extern]), [[8, 8], [2, 2]]);
+  assert.equal(JSON.parse(db.one('SELECT shift_ids FROM event_externals WHERE person_count = 2').shift_ids).length, 0, 'alle angekreuzt = ganzer Einsatz');
+
+  // ändern und Verlauf
+  const x = db.one('SELECT id FROM event_externals WHERE person_count = 6');
+  assert.equal((await post(`/einsaetze/${ev}/externe/${x.id}`, [['unit_name', 'Feuerwehr Riehen'], ['person_count', '7'], ['shift_ids', String(tag.id)], ['contact', 'Hptm Muster 079 555 44 33']])).status, 302);
+  st = events.stats(events.get(ev));
+  assert.equal(st.shifts[0].ist, 9);
+  assert.ok(db.one("SELECT 1 FROM audit_log WHERE event_id = ? AND entity_type = 'external' AND summary LIKE '%Anzahl 6 → 7%'", ev));
+
+  const html = await (await get(`/einsaetze/${ev}/teilnehmerliste`, ext.cookie)).text();
+  assert.match(html, /0 Personen \+ 9 extern/);
+  assert.match(html, /Feuerwehr Riehen/);
+  assert.match(html, /Hptm Muster 079 555 44 33/);
+  const abendHtml = await (await get(`/einsaetze/${ev}/teilnehmerliste?schicht=${abend.id}`, ext.cookie)).text();
+  assert.match(abendHtml, /0 Personen \+ 2 extern/);
+  const csv = (await (await get(`/einsaetze/${ev}/teilnehmerliste?format=csv`, ext.cookie)).text()).replace(/^﻿/, '').trim().split(/\r?\n/);
+  assert.match(csv[0], /^Nr\.;Anzahl;Rang;Nachname/);
+  assert.match(csv[1], /^;7;extern;Feuerwehr Riehen;;Hptm Muster 079 555 44 33/);
+  const pdf = Buffer.from(await (await get(`/einsaetze/${ev}/teilnehmerliste?format=pdf`, ext.cookie)).arrayBuffer());
+  assert.match(pdf.toString('latin1'), /^%PDF-1\.4/);
+  assert.equal((await get(`/einsaetze/${ev}/schichten`, ext.cookie)).status, 200);
+  assert.equal((await get('/rueckmeldungen', ext.cookie)).status, 200);
+  assert.equal((await get('/', ext.cookie)).status, 200);
+
+  // Schicht löschen: Auswahl wird bereinigt, Abteilung gilt dann für alle Schichten
+  events.deleteShift(tag.id, system);
+  st = events.stats(events.get(ev));
+  assert.deepEqual(st.shifts.map((s) => s.extern), [9]);
+
+  // Entfernen
+  assert.equal((await post(`/einsaetze/${ev}/externe/${x.id}/loeschen`, [])).status, 302);
+  assert.equal(db.one('SELECT COUNT(*) AS n FROM event_externals WHERE event_id = ?', ev).n, 1);
+
+  // Auswahlliste: nur Admin, verwendete Abteilung kann nicht entfernt werden
+  assert.equal((await get('/verwaltung/listen', ext.cookie)).status, 403);
+  const admin = await login('admin', 'Chef-Passwort-2026');
+  const lists = await (await get('/verwaltung/listen', admin.cookie)).text();
+  assert.match(lists, /Externe Abteilungen/);
+  assert.match(lists, /value="Feuerwehr Riehen"/);
+});

@@ -2,6 +2,7 @@
 // Einsätze und Schichten
 const db = require('../db');
 const audit = require('./audit');
+const externals = require('./externals');
 const live = require('../lib/live');
 const { nowIso, localNow, isYmd, isHm, addDays, fmtDate, fmtDateShort } = require('../lib/dates');
 const { EVENT_STATUS, REG_COUNTING } = require('../lib/labels');
@@ -273,6 +274,7 @@ function deleteShift(shiftId, user, { reason } = {}) {
   if (e.shifts.length <= 1) throw new ValidationError(['Ein Einsatz braucht mindestens eine Schicht.']);
   db.tx(() => {
     db.run('DELETE FROM shift_assignments WHERE shift_id = ?', shiftId);
+    externals.dropShift(e.id, shiftId);
     db.run('DELETE FROM shifts WHERE id = ?', shiftId);
   });
   audit.log({ entity: 'shift', entityId: shiftId, eventId: e.id, action: 'delete', summary: `${user.display_name} hat die Schicht «${shift.name}» bei «${e.name}» gelöscht`, user });
@@ -299,10 +301,14 @@ function checklist(e) {
 function stats(e) {
   const counts = Object.fromEntries(db.all('SELECT status, COUNT(*) AS n FROM registrations WHERE event_id = ? GROUP BY status', e.id).map((r) => [r.status, r.n]));
   const ph = REG_COUNTING.map(() => '?').join(',');
+  // Externe Abteilungen zählen mit ihrer Anzahl Personen zur Besetzung
+  const ext = externals.countsByShift(e.id, e.shifts);
   const shifts = e.shifts.map((s) => {
-    const ist = db.one(`SELECT COUNT(*) AS n FROM shift_assignments a JOIN registrations r ON r.id = a.registration_id
+    const intern = db.one(`SELECT COUNT(*) AS n FROM shift_assignments a JOIN registrations r ON r.id = a.registration_id
       WHERE a.shift_id = ? AND r.status IN (${ph})`, s.id, ...REG_COUNTING).n;
-    return { ...s, ist, soll: s.target_count, tone: occupancyTone(ist, s.target_count), missing: s.target_count ? Math.max(0, s.target_count - ist) : null };
+    const extern = ext[s.id] || 0;
+    const ist = intern + extern;
+    return { ...s, ist, intern, extern, soll: s.target_count, tone: occupancyTone(ist, s.target_count), missing: s.target_count ? Math.max(0, s.target_count - ist) : null };
   });
   const inquiryOpen = db.one(`SELECT COUNT(*) AS n FROM inquiries i WHERE i.event_id = ? AND i.status IN ('nicht_erreicht','whatsapp','unsicher')
     AND NOT EXISTS (SELECT 1 FROM registrations g WHERE g.event_id = i.event_id AND g.person_id = i.person_id AND g.status <> 'ungueltig')`, e.id).n;

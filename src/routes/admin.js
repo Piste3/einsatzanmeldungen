@@ -91,12 +91,13 @@ router.post('/verwaltung/benutzer/:id/entsperren', (req, res) => {
   res.redirect('/verwaltung/benutzer');
 });
 
-// ---- Auswahllisten: Ränge, Mannschaften ----
+// ---- Auswahllisten: Ränge, Mannschaften, externe Abteilungen ----
 router.get('/verwaltung/listen', (req, res) => {
   res.render('admin/lists', {
     title: 'Auswahllisten',
     ranks: db.all('SELECT r.*, (SELECT COUNT(*) FROM persons p WHERE p.rank_id = r.id) AS used FROM ranks r ORDER BY sort, name'),
     teams: db.all('SELECT t.*, (SELECT COUNT(*) FROM person_teams pt WHERE pt.team_id = t.id) AS used FROM teams t ORDER BY sort, name'),
+    externalUnits: db.all('SELECT u.*, (SELECT COUNT(DISTINCT x.event_id) FROM event_externals x WHERE x.unit_id = u.id) AS used FROM external_units u ORDER BY sort, name COLLATE NOCASE'),
   });
 });
 
@@ -119,7 +120,8 @@ function sectionRows(body) {
 
 router.post('/verwaltung/listen/:kind', (req, res) => {
   const kind = req.params.kind;
-  const table = { raenge: 'ranks', mannschaften: 'teams' }[kind];
+  const table = { raenge: 'ranks', mannschaften: 'teams', externe: 'external_units' }[kind];
+  const usedSql = { ranks: 'SELECT COUNT(*) AS n FROM persons WHERE rank_id = ?', teams: 'SELECT COUNT(*) AS n FROM person_teams WHERE team_id = ?', external_units: 'SELECT COUNT(*) AS n FROM event_externals WHERE unit_id = ?' }[table];
   if (!table) return res.redirect('/verwaltung/listen');
   const { existing, added } = sectionRows(req.body);
   const problems = [];
@@ -128,7 +130,7 @@ router.post('/verwaltung/listen/:kind', (req, res) => {
     for (const r of existing) {
       const name = String(r.name || '').trim();
       if (r.delete === '1') {
-        const used = table === 'ranks' ? db.one('SELECT COUNT(*) AS n FROM persons WHERE rank_id = ?', r.id).n : db.one('SELECT COUNT(*) AS n FROM person_teams WHERE team_id = ?', r.id).n;
+        const used = db.one(usedSql, r.id).n;
         if (used) { problems.push(`«${name}» wird noch verwendet – stattdessen deaktivieren.`); continue; }
         db.run(`DELETE FROM ${table} WHERE id = ?`, r.id);
         changes++;
@@ -139,18 +141,18 @@ router.post('/verwaltung/listen/:kind', (req, res) => {
       const active = r.active === '1' ? 1 : 0;
       const res2 = table === 'ranks'
         ? db.run('UPDATE ranks SET name = ?, short = ?, sort = ?, active = ? WHERE id = ? AND (name IS NOT ? OR short IS NOT ? OR sort IS NOT ? OR active IS NOT ?)', name, String(r.short || '').trim() || name, sort, active, r.id, name, String(r.short || '').trim() || name, sort, active)
-        : db.run('UPDATE teams SET name = ?, sort = ?, active = ? WHERE id = ? AND (name IS NOT ? OR sort IS NOT ? OR active IS NOT ?)', name, sort, active, r.id, name, sort, active);
+        : db.run(`UPDATE ${table} SET name = ?, sort = ?, active = ? WHERE id = ? AND (name IS NOT ? OR sort IS NOT ? OR active IS NOT ?)`, name, sort, active, r.id, name, sort, active);
       changes += Number(res2.changes);
     }
     for (const r of added) {
       const name = String(r.name).trim();
       const sort = Number(r.sort || 0) || (db.one(`SELECT max(sort) AS m FROM ${table}`).m || 0) + 1;
       if (table === 'ranks') db.run('INSERT INTO ranks (name, short, sort) VALUES (?, ?, ?)', name, String(r.short || '').trim() || name, sort);
-      else db.run('INSERT INTO teams (name, sort) VALUES (?, ?)', name, sort);
+      else db.run(`INSERT INTO ${table} (name, sort) VALUES (?, ?)`, name, sort);
       changes++;
     }
   });
-  if (changes) audit.log({ entity: 'settings', action: 'lists', summary: `${req.user.display_name} hat die Auswahlliste «${kind === 'raenge' ? 'Ränge' : 'Mannschaften'}» geändert`, user: req.user });
+  if (changes) audit.log({ entity: 'settings', action: 'lists', summary: `${req.user.display_name} hat die Auswahlliste «${{ raenge: 'Ränge', mannschaften: 'Mannschaften', externe: 'Externe Abteilungen' }[kind]}» geändert`, user: req.user });
   if (problems.length) flash(res, 'error', `${changes ? 'Gespeichert, aber: ' : ''}${problems.join(' ')}`);
   else flash(res, 'success', changes ? 'Gespeichert.' : 'Keine Änderungen.');
   res.redirect('/verwaltung/listen');

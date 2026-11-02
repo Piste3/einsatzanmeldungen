@@ -9,6 +9,7 @@ const calendar = require('../services/calendar');
 const audit = require('../services/audit');
 const persons = require('../services/persons');
 const leaders = require('../services/leaders');
+const externals = require('../services/externals');
 const { sendTable, wantsExport, contentDisposition } = require('../lib/export');
 const { flash } = require('../lib/view-helpers');
 const h = require('../lib/view-helpers');
@@ -147,6 +148,7 @@ router.get('/einsaetze/:id', loadEvent, (req, res) => {
     title: e.name, tab: 'uebersicht', stats: events.stats(e), checklist: events.checklist(e), inForm: events.isInForm(e),
     lastEnd: events.lastEnd(e), activity: audit.forEvent(e.id, 8), extraDefs: events.extraDefs(),
     leaderAccess: leaders.forEvent(e.id), leaderCandidates: leaders.candidates(e.id),
+    externals: externals.forEvent(e.id, e.shifts), unitOptions: externals.units({ activeOnly: true }),
   });
 });
 
@@ -161,6 +163,29 @@ router.post('/einsaetze/:id/einsatzleiter/:uid/entfernen', loadEvent, (req, res)
   leaders.revoke(req.event.id, Number(req.params.uid), req.user);
   flash(res, 'success', 'Freigabe entfernt.');
   res.redirect(`/einsaetze/${req.event.id}`);
+});
+
+// Externe Abteilungen am Einsatz: hinzufügen, ändern, entfernen
+const backToEvent = (req) => (/^\/einsaetze\/\d+(\/schichten)?$/.test(String(req.body.back || '')) ? req.body.back : `/einsaetze/${req.event.id}#externe`);
+router.post('/einsaetze/:id/externe', loadEvent, (req, res) => {
+  events.assertEditable(req.event, req.user, req.body.reason);
+  externals.add(req.event, req.body, req.user);
+  flash(res, 'success', 'Externe Abteilung hinzugefügt. Die Personen zählen jetzt in der Besetzung mit.');
+  res.redirect(backToEvent(req));
+});
+
+router.post('/einsaetze/:id/externe/:xid', loadEvent, (req, res) => {
+  events.assertEditable(req.event, req.user, req.body.reason);
+  externals.update(req.event, Number(req.params.xid), req.body, req.user);
+  flash(res, 'success', 'Externe Abteilung gespeichert.');
+  res.redirect(backToEvent(req));
+});
+
+router.post('/einsaetze/:id/externe/:xid/loeschen', loadEvent, (req, res) => {
+  events.assertEditable(req.event, req.user, req.body.reason);
+  externals.remove(req.event, Number(req.params.xid), req.user);
+  flash(res, 'success', 'Externe Abteilung entfernt.');
+  res.redirect(backToEvent(req));
 });
 
 // Reiter «Anmeldungen»
@@ -206,12 +231,12 @@ router.get('/einsaetze/:id/anmeldungen', loadEvent, (req, res) => {
 // Teilnehmerliste: wer kommt, mit Mobil und Essenseinschränkungen – zum Drucken (PDF), als Excel oder CSV
 router.get('/einsaetze/:id/teilnehmerliste', loadEvent, (req, res) => {
   const e = req.event;
-  const { shift, filters, list, showShift, showStatus, shiftOf } = registrations.participantView(e, req.query, req.user);
+  const { shift, filters, list, showShift, showStatus, shiftOf, exts, extTotal } = registrations.participantView(e, req.query, req.user);
   const format = req.query.format === 'pdf' ? 'pdf' : wantsExport(req);
   if (format) {
     audit.log({
       entity: 'event', entityId: e.id, eventId: e.id, action: 'export',
-      summary: `${req.user.display_name} hat die Teilnehmerliste${shift ? ` (${shift.name})` : ''} für «${e.name}» exportiert (${{ pdf: 'PDF', csv: 'CSV', xlsx: 'Excel' }[format]}, ${list.length} Personen)`,
+      summary: `${req.user.display_name} hat die Teilnehmerliste${shift ? ` (${shift.name})` : ''} für «${e.name}» exportiert (${{ pdf: 'PDF', csv: 'CSV', xlsx: 'Excel' }[format]}, ${list.length} Personen${extTotal ? ` + ${extTotal} extern` : ''})`,
       user: req.user,
     });
   }
@@ -228,17 +253,29 @@ router.get('/einsaetze/:id/teilnehmerliste', loadEvent, (req, res) => {
     ];
     if (showShift) columns.push({ label: 'Schicht', width: 1.5, value: shiftOf });
     if (showStatus) columns.push({ label: 'Status', fit: true, value: (r) => REG_STATUS[r.status].short });
+    const extColumns = [
+      { label: 'Abteilung', width: 2, value: (x) => ({ text: x.unit_name, bold: true }) },
+      { label: 'Personen', fit: true, align: 'right', value: (x) => ({ text: String(x.person_count), bold: true }) },
+      ...(showShift ? [{ label: 'Schicht', width: 1.3, value: (x) => externals.shiftLabel(x, e.shifts) }] : []),
+      { label: 'Kontakt', width: 1.8, value: (x) => x.contact || '–' },
+      { label: 'Bemerkung', width: 1.8, value: (x) => x.note || '' },
+    ];
     const pdf = tablePdf({
       title: `Teilnehmerliste · ${e.name}${shift ? ` · ${shift.name}` : ''}`,
       subtitle: [
         [h.fmtDateWd(e.date), e.start_time ? `Antreten ${e.start_time}${e.start_place ? ` · ${e.start_place}` : ''}` : '', leader].filter(Boolean).join('  ·  '),
-        `${registrations.PARTICIPANT_SCOPES[filters.umfang].label} · ${list.length} ${list.length === 1 ? 'Person' : 'Personen'} · ${filters.sort === 'rang_auf' ? 'tiefster Rang zuerst' : 'höchster Rang zuerst'}`,
+        `${registrations.PARTICIPANT_SCOPES[filters.umfang].label} · ${list.length} ${list.length === 1 ? 'Person' : 'Personen'}${extTotal ? ` + ${extTotal} extern = ${list.length + extTotal} total` : ''} · ${filters.sort === 'rang_auf' ? 'tiefster Rang zuerst' : 'höchster Rang zuerst'}`,
       ],
       columns,
       rows: list.map((r, i) => columns.map((c) => c.value(r, i))),
       empty: 'Noch niemand angemeldet.',
-      after: list.length ? [
-        { label: 'Verpflegung:', text: summary.map(([l, n]) => `${n} ${l}`).join(' · ') },
+      sections: exts.length ? [{
+        title: `Externe Abteilungen · ${extTotal} ${extTotal === 1 ? 'Person' : 'Personen'}`,
+        columns: extColumns,
+        rows: exts.map((x) => extColumns.map((c) => c.value(x))),
+      }] : [],
+      after: list.length || extTotal ? [
+        { label: 'Verpflegung:', text: [...summary.map(([l, n]) => `${n} ${l}`), ...(extTotal ? [`${extTotal} extern (keine Angaben)`] : [])].join(' · ') },
         ...(summary.some(([l]) => l === 'Hinweis vorhanden') ? [{ text: '«Hinweis vorhanden»: Nach dem Einsatz sieht die genaue Angabe nur noch ein Admin.', muted: true }] : []),
       ] : [],
       footer: `${settings.get('verein_name') || 'KKB'} · KKB-Einsatzplaner · Stand ${h.fmtDateTime(h.nowIso())}`,
@@ -260,11 +297,19 @@ router.get('/einsaetze/:id/teilnehmerliste', loadEvent, (req, res) => {
     ];
     if (showShift) cols.push({ label: 'Schicht', value: shiftOf });
     if (showStatus) cols.push({ label: 'Status', value: (r) => REG_STATUS[r.status].short });
-    return sendTable(res, format, baseName, cols, list);
+    if (!exts.length) return sendTable(res, format, baseName, cols, list);
+    // Externe Abteilungen als eigene Zeilen unten anhängen: Rang «extern», Name = Abteilung, Spalte «Anzahl»
+    cols.splice(1, 0, { label: 'Anzahl', value: (r) => (r.ext ? r.ext.person_count : 1) });
+    const extCols = {
+      'Nr.': () => '', Anzahl: (x) => x.person_count, Rang: () => 'extern', Nachname: (x) => x.unit_name, Vorname: () => '',
+      Mobil: (x) => x.contact || '', 'Essenseinschränkung': () => '', Details: (x) => x.note || '', Schicht: (x) => externals.shiftLabel(x, e.shifts), Status: () => '',
+    };
+    const wrapCols = cols.map((c) => ({ label: c.label, value: (r) => (r.ext ? extCols[c.label](r.ext) : c.value(r)) }));
+    return sendTable(res, format, baseName, wrapCols, [...list, ...exts.map((x) => ({ ext: x }))]);
   }
   res.render('pages/participants', {
     title: `${e.name} · Teilnehmerliste`, list, filters, shift, showShift, showStatus, shiftOf,
-    summary: registrations.dietSummary(list), scopes: registrations.PARTICIPANT_SCOPES,
+    summary: registrations.dietSummary(list), scopes: registrations.PARTICIPANT_SCOPES, exts, extTotal, extShift: (x) => externals.shiftLabel(x, e.shifts),
     unresolved: db.one("SELECT COUNT(*) AS n FROM registrations WHERE event_id = ? AND person_id IS NULL AND status = 'unsicher'", e.id).n,
   });
 });
@@ -343,7 +388,8 @@ router.get('/einsaetze/:id/schichten', loadEvent, (req, res) => {
   const e = req.event;
   const stats = events.stats(e);
   const regs = registrations.listForEvent(e.id).filter((r) => r.person_id && !['zurueckgezogen', 'abgesagt', 'ungueltig'].includes(r.status));
-  const columns = stats.shifts.map((s) => ({ ...s, regs: regs.filter((r) => r.assigned.some((a) => a.id === s.id)) }));
+  const exts = externals.forEvent(e.id, e.shifts);
+  const columns = stats.shifts.map((s) => ({ ...s, regs: regs.filter((r) => r.assigned.some((a) => a.id === s.id)), exts: exts.filter((x) => externals.coversShift(x, s.id)) }));
   const unassigned = regs.filter((r) => !r.assigned.length);
   // Auswahlfeld: alle Kombinationen der Schichten («Tag + Abend»)
   const combos = [];
