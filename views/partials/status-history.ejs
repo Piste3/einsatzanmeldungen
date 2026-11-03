@@ -1,7 +1,7 @@
 <%# Historie einer Person bei einem Einsatz, neueste zuerst (im Kontaktversuch-Fenster) %>
 <%
   const SYM = { an: '✓', ab: '✕', unsicher: '?', offen: '' };
-  const DSYM = { bestaetigt: '✓', warteliste: h.icon('clock', 'fb-ico'), whatsapp: h.icon('chat', 'fb-ico'), telefon: h.icon('phone', 'fb-ico'), rueckfrage: '!' };
+  const DSYM = { bestaetigt: '✓', warteliste: h.icon('clock', 'fb-ico'), whatsapp: h.icon('chat', 'fb-ico'), telefon: h.icon('phone', 'fb-ico'), muendlich: h.icon('voice', 'fb-ico'), rueckfrage: '!' };
   const cur = entries.findIndex((e) => e.state);
 %>
 <div class="hist-head">

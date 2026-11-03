@@ -114,7 +114,7 @@
     <div class="card-head"><h2>Anmeldung erfassen</h2></div>
     <div class="card-body">
       <div class="field"><label>Person</label><select name="person_id" required data-search><option value="">– wählen –</option><% for (const p of available) { %><option value="<%= p.id %>"><%= p.last_name %> <%= p.first_name %><%= p.rank_short ? ` (${p.rank_short})` : '' %></option><% } %></select></div>
-      <div class="field"><label>Quelle</label><select name="source"><option value="manuell">Manuell</option><option value="telefon">Telefon</option><option value="whatsapp">WhatsApp</option></select></div>
+      <div class="field"><label>Quelle</label><select name="source"><option value="manuell">Manuell</option><option value="telefon">Telefon</option><option value="whatsapp">WhatsApp</option><option value="muendlich">Mündlich</option></select></div>
       <% if (event.shifts.length > 1) { %><div class="field"><label>Schichten</label><% for (const s of event.shifts) { %><label class="check"><input type="checkbox" name="shift_ids" value="<%= s.id %>"> <%= s.name %> <span class="muted"><%= h.fmtShiftWhen(s, h.isMultiDay(event)) %></span></label><% } %></div><% } %>
       <div class="field"><label>Bemerkung</label><input type="text" name="remark"></div>
     </div>

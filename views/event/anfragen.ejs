@@ -60,7 +60,7 @@
             <% if (!r.attempts.length) { %><span class="muted">–</span><% } %>
             <div class="attempts">
               <% r.attempts.forEach((a, idx) => { const isLast = idx === r.attempts.length - 1; %>
-                <div class="attempt"><span class="ch <%= a.channel === 'whatsapp' ? 'wa' : '' %>"><%= h.labels.CHANNEL[a.channel].short %></span><%= h.fmtDateShort(a.contacted_at.slice(0, 10)) %> <%= a.contacted_at.slice(11, 16) %> · <%= a.sent_by_name %> · <%= resultText[a.result] %><%= a.note ? ` · «${a.note}»` : '' %>
+                <div class="attempt"><span class="ch <%= { whatsapp: 'wa', muendlich: 'md' }[a.channel] || '' %>"><%= h.labels.CHANNEL[a.channel].short %></span><%= h.fmtDateShort(a.contacted_at.slice(0, 10)) %> <%= a.contacted_at.slice(11, 16) %> · <%= a.sent_by_name %> · <%= resultText[a.result] %><%= a.note ? ` · «${a.note}»` : '' %>
                   <% if (isLast && !locked) { %><form method="post" action="<%= base %>/versuch/<%= a.id %>/loeschen" class="inline" data-confirm="<%= a.result === 'zugesagt' && r.registration_id ? 'Diesen Kontaktversuch zurücknehmen? Die daraus erstellte Anmeldung wird ebenfalls gelöscht.' : 'Diesen Kontaktversuch zurücknehmen?' %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="icon-btn" type="submit" title="Zurücknehmen (falsch erfasst)"><%- h.icon('undo') %></button></form><% } %>
                 </div>
               <% }) %>

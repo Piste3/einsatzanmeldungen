@@ -121,6 +121,8 @@ function addAttempt(eventId, personId, input, user) {
     // whatsapp als Ergebnis eines Telefonanrufs ergibt keinen Sinn -> Kanal entscheidet
     let status = result;
     if (result === 'whatsapp' && channel === 'telefon') status = 'nicht_erreicht';
+    // mündlich: «nicht erreicht» oder «Nachricht gesendet» gibt es nicht -> weiss es noch nicht
+    if (['whatsapp', 'nicht_erreicht'].includes(result) && channel === 'muendlich') status = 'unsicher';
     let registrationId = inq.registration_id;
     if (result === 'zugesagt' && !registrationId) {
       const existing = db.one("SELECT id FROM registrations WHERE event_id = ? AND person_id = ?", eventId, personId);
@@ -198,6 +200,7 @@ function removeAttempt(eventId, attemptId, user) {
     const prev = db.one('SELECT * FROM contact_attempts WHERE inquiry_id = ? ORDER BY contacted_at DESC, id DESC LIMIT 1', a.inquiry_id);
     let status = prev ? prev.result : 'offen';
     if (status === 'whatsapp' && prev.channel === 'telefon') status = 'nicht_erreicht';
+    if (['whatsapp', 'nicht_erreicht'].includes(status) && prev.channel === 'muendlich') status = 'unsicher';
     const inq = db.one('SELECT * FROM inquiries WHERE id = ?', a.inquiry_id);
     db.run('UPDATE inquiries SET status = ?, registration_id = ?, version = version + 1, updated_at = ?, updated_by = ? WHERE id = ?',
       status, status === 'zugesagt' ? inq.registration_id : (regRemoved ? null : inq.registration_id), nowIso(), user.id, a.inquiry_id);

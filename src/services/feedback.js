@@ -24,7 +24,7 @@ function detailOf(c) {
   if (state === 'an' && activeReg) return { bestaetigt: 'bestaetigt', warteliste: 'warteliste' }[activeReg.status] || null;
   if (state === 'unsicher') {
     if (activeReg) return activeReg.status === 'rueckfrage' ? 'rueckfrage' : null;
-    if (inq) return { whatsapp: 'whatsapp', nicht_erreicht: 'telefon' }[inq.status] || null;
+    if (inq) return { whatsapp: 'whatsapp', nicht_erreicht: 'telefon' }[inq.status] || (inq.status === 'unsicher' && inq.last_channel === 'muendlich' ? 'muendlich' : null);
   }
   return null;
 }
@@ -75,7 +75,7 @@ function matrix({ team = '', period = '3m', sort = 'rang', includeDrafts = false
   if (ids.length) {
     const ph = ids.map(() => '?').join(',');
     for (const r of db.all(`SELECT * FROM registrations WHERE event_id IN (${ph}) AND person_id IS NOT NULL`, ...ids)) regs.set(`${r.person_id}:${r.event_id}`, r);
-    for (const i of db.all(`SELECT * FROM inquiries WHERE event_id IN (${ph})`, ...ids)) inqs.set(`${i.person_id}:${i.event_id}`, i);
+    for (const i of db.all(`SELECT i.*, (SELECT a.channel FROM contact_attempts a WHERE a.inquiry_id = i.id ORDER BY a.contacted_at DESC, a.id DESC LIMIT 1) AS last_channel FROM inquiries i WHERE i.event_id IN (${ph})`, ...ids)) inqs.set(`${i.person_id}:${i.event_id}`, i);
     // Soll = Summe der Soll-Werte aller Schichten
     const soll = new Map(db.all(`SELECT event_id, SUM(target_count) AS n FROM shifts WHERE event_id IN (${ph}) GROUP BY event_id`, ...ids).map((r) => [r.event_id, r.n]));
     const shifts = new Map();

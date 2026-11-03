@@ -46,7 +46,7 @@
                   <div class="small muted"><%= h.fmtEventDate(it.event, 'short') %><%= it.reg ? ` · ${regLine(it.reg)}` : '' %></div>
                   <% if (key === 'ab' && it.reg) { %><div class="small muted">abgemeldet am <%= h.fmtDateShort(it.reg.updated_at.slice(0, 10)) %> · <%= h.labels.SOURCE[it.reg.source] %></div><% } %>
                   <% if (key === 'ab' && !it.reg && it.inq) { const last = it.inq.attempts.at(-1); %><div class="small muted">abgesagt<%= last ? ` am ${h.fmtDateShort(last.contacted_at.slice(0, 10))} per ${h.labels.CHANNEL[last.channel].label}` : '' %></div><% } %>
-                  <% if (it.inq && it.inq.attempts.length && key !== 'ab') { %><div class="attempts mt-s"><% for (const a of it.inq.attempts) { %><div class="attempt"><span class="ch <%= a.channel === 'whatsapp' ? 'wa' : '' %>"><%= h.labels.CHANNEL[a.channel].short %></span><%= h.fmtDateShort(a.contacted_at.slice(0, 10)) %> <%= a.contacted_at.slice(11, 16) %> · <%= a.sent_by_name %></div><% } %></div><% } %>
+                  <% if (it.inq && it.inq.attempts.length && key !== 'ab') { %><div class="attempts mt-s"><% for (const a of it.inq.attempts) { %><div class="attempt"><span class="ch <%= { whatsapp: 'wa', muendlich: 'md' }[a.channel] || '' %>"><%= h.labels.CHANNEL[a.channel].short %></span><%= h.fmtDateShort(a.contacted_at.slice(0, 10)) %> <%= a.contacted_at.slice(11, 16) %> · <%= a.sent_by_name %></div><% } %></div><% } %>
                 </div>
                 <div>
                   <% if (it.reg) { %><%- h.badge(h.labels.REG_STATUS[it.reg.status].short, h.labels.REG_STATUS[it.reg.status].tone) %><% } %>

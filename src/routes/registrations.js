@@ -96,7 +96,7 @@ router.post('/einsaetze/:id/anmeldungen', (req, res) => {
   const eventId = Number(req.params.id);
   const person = db.one('SELECT * FROM persons WHERE id = ?', Number(req.body.person_id));
   if (!person) throw new ValidationError(['Bitte eine Person wählen.']);
-  const source = ['manuell', 'telefon', 'whatsapp'].includes(req.body.source) ? req.body.source : 'manuell';
+  const source = ['manuell', 'telefon', 'whatsapp', 'muendlich'].includes(req.body.source) ? req.body.source : 'manuell';
   registrations.create({
     eventId, personId: person.id, enteredFirst: person.first_name, enteredLast: person.last_name, matchType: 'manuell', source,
     answer: 'ja', wishes: [].concat(req.body.shift_ids || []).map(Number), remark: String(req.body.remark || '').trim() || null, user: req.user,

@@ -79,7 +79,7 @@ function entryFromAudit(a) {
       const result = d.ergebnis;
       const sentBy = d.gesendet_von || actorOf(s);
       return {
-        ...base, by: sentBy, state: stateOfResult(result), detail: { whatsapp: 'whatsapp', nicht_erreicht: 'telefon' }[result] || null,
+        ...base, by: sentBy, state: stateOfResult(result), detail: d.kanal === 'muendlich' && !['zugesagt', 'abgesagt'].includes(result) ? 'muendlich' : ({ whatsapp: 'whatsapp', nicht_erreicht: 'telefon' }[result] || null),
         text: `${ch ? `${ch}: ` : ''}${ATTEMPT_RESULT[result] || result || 'Kontakt'}`,
         when: d.zeitpunkt || null,
         enteredBy: d.erfasst_von && d.erfasst_von !== sentBy ? d.erfasst_von : null,

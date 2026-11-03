@@ -311,3 +311,5 @@ td .sub, .cell-sub { font-size: 12px; margin-top: 1px; }
   #angaben dl.kv dt { font-size: 12px; }
   #angaben dl.kv dd { margin-bottom: 8px; }
 }
+
+.ch.md { background: var(--orange-soft); color: var(--orange-dark); }

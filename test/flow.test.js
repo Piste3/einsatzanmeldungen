@@ -285,3 +285,20 @@ test('Rückmeldungen: eigene Icons und Verlauf löschen', () => {
   assert.deepEqual(shown.map((a) => a.result), ['whatsapp']);
   assert.deepEqual(inquiries.listForEvent(offen).find((r) => r.person_id === chris).attempts.map((a) => a.result), ['whatsapp']);
 });
+
+test('Kontakt mündlich: eigener Kanal, eigenes Icon, Zusage als Quelle «Mündlich»', () => {
+  const { anna, offen } = setup();
+  const inquiries = require('../src/services/inquiries');
+  const feedback = require('../src/services/feedback');
+  const history = require('../src/services/history');
+  inquiries.addAttempt(offen, anna, { channel: 'muendlich', result: 'unsicher', note: 'im Training gefragt' }, system);
+  const cell = () => feedback.matrix({}).rows.find((r) => r.person.id === anna).eventCells.find((c) => c.eventId === offen);
+  assert.equal(cell().state, 'unsicher');
+  assert.equal(cell().detail, 'muendlich');
+  assert.equal(history.forPair(offen, anna)[0].text, 'Mündlich: Unsicher – weiss es noch nicht');
+  // «nicht erreicht» passt nicht zu mündlich -> unsicher
+  inquiries.addAttempt(offen, anna, { channel: 'muendlich', result: 'nicht_erreicht' }, system);
+  assert.equal(db.one('SELECT status FROM inquiries WHERE person_id = ?', anna).status, 'unsicher');
+  const r = inquiries.addAttempt(offen, anna, { channel: 'muendlich', result: 'zugesagt' }, system);
+  assert.equal(registrations.get(r.registrationId).source, 'muendlich');
+});

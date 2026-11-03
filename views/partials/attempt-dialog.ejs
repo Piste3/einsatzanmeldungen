@@ -12,6 +12,7 @@
         <div class="segmented">
           <input type="radio" name="channel" id="ch-tel" value="telefon" checked><label for="ch-tel">Telefon</label>
           <input type="radio" name="channel" id="ch-wa" value="whatsapp"><label for="ch-wa">WhatsApp</label>
+          <input type="radio" name="channel" id="ch-md" value="muendlich"><label for="ch-md">Mündlich</label>
         </div>
       </div>
       <div class="fields fields-2">
@@ -24,7 +25,7 @@
       </div>
       <div class="field"><label for="att-result">Ergebnis</label>
         <select id="att-result" name="result" required>
-          <option value="nicht_erreicht" data-ch="telefon">Nicht erreicht</option>
+          <option value="nicht_erreicht" data-ch="telefon whatsapp">Nicht erreicht</option>
           <option value="whatsapp" data-ch="whatsapp">Nachricht gesendet, Antwort offen</option>
           <option value="zugesagt">Zugesagt – Anmeldung erstellen</option>
           <option value="unsicher">Unsicher – weiss es noch nicht</option>

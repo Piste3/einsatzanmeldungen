@@ -6,7 +6,7 @@
 <%
   const SYM = { an: '✓', ab: '✕', unsicher: '?', offen: '', andere: '–', schicht_offen: '✓' };
   // eigenes Icon für den genaueren Stand (z. B. Nachricht gesendet, bestätigt)
-  const DSYM = { bestaetigt: '✓', warteliste: h.icon('clock', 'fb-ico'), whatsapp: h.icon('chat', 'fb-ico'), telefon: h.icon('phone', 'fb-ico'), rueckfrage: '!' };
+  const DSYM = { bestaetigt: '✓', warteliste: h.icon('clock', 'fb-ico'), whatsapp: h.icon('chat', 'fb-ico'), telefon: h.icon('phone', 'fb-ico'), muendlich: h.icon('voice', 'fb-ico'), rueckfrage: '!' };
   const sym = (c) => (c.detail ? DSYM[c.detail] : h.escapeHtml(SYM[c.state]));
   const stateLabel = (c) => (c.detail ? h.labels.FEEDBACK_DETAIL[c.detail].label : h.labels.FEEDBACK[c.state].label);
   // wer den Stand gesetzt hat und wann (letzter Historie-Eintrag)
@@ -52,7 +52,7 @@
     <a class="<%= filters.view === 'einsatz' ? 'active' : '' %>" href="<%= h.withQuery('/rueckmeldungen', query, { view: 'einsatz' }) %>">Pro Einsatz</a>
   </div>
   <div class="legend small">
-    <span class="fb fb-an">✓</span> An <span class="fb fb-an fb-d-bestaetigt">✓</span> Bestätigt <span class="fb fb-an fb-d-warteliste"><%- DSYM.warteliste %></span> Warteliste <span class="fb fb-ab">✕</span> Ab <span class="fb fb-unsicher fb-d-whatsapp"><%- DSYM.whatsapp %></span> Nachricht gesendet <span class="fb fb-unsicher fb-d-telefon"><%- DSYM.telefon %></span> Nicht erreicht <span class="fb fb-unsicher">?</span> Unsicher <span class="fb fb-unsicher fb-d-rueckfrage">!</span> Rückfrage <span class="fb fb-offen"></span> Offen<% if (columns.some((c) => c.shift)) { %> <span class="fb fb-schicht_offen">✓</span> An, Schicht offen <span class="fb fb-andere">–</span> Andere Schicht<% } %>
+    <span class="fb fb-an">✓</span> An <span class="fb fb-an fb-d-bestaetigt">✓</span> Bestätigt <span class="fb fb-an fb-d-warteliste"><%- DSYM.warteliste %></span> Warteliste <span class="fb fb-ab">✕</span> Ab <span class="fb fb-unsicher fb-d-whatsapp"><%- DSYM.whatsapp %></span> Nachricht gesendet <span class="fb fb-unsicher fb-d-telefon"><%- DSYM.telefon %></span> Nicht erreicht <span class="fb fb-unsicher fb-d-muendlich"><%- DSYM.muendlich %></span> Mündlich gefragt <span class="fb fb-unsicher">?</span> Unsicher <span class="fb fb-unsicher fb-d-rueckfrage">!</span> Rückfrage <span class="fb fb-offen"></span> Offen<% if (columns.some((c) => c.shift)) { %> <span class="fb fb-schicht_offen">✓</span> An, Schicht offen <span class="fb fb-andere">–</span> Andere Schicht<% } %>
     <span class="muted"> · <%= events.length %> Einsätze · <%= rows.length %><%= rows.length !== allCount ? ` von ${allCount}` : '' %> Mitglieder</span>
   </div>
 </div>

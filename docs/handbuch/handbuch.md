@@ -349,7 +349,7 @@ So geht's:
 
 Gross- und Kleinschreibung, Leerzeichen, Umlaute (ä/ae) und vertauschte Vor- und Nachnamen erkennt der Einsatzplaner selbst.
 
-## 11 · Nachfassen per Telefon und WhatsApp
+## 11 · Nachfassen per Telefon, WhatsApp oder mündlich
 
 Der Reiter **Anfragen** zeigt alle aktiven Mitglieder, die sich für diesen Einsatz noch nicht gemeldet haben, und alle, die schon angefragt wurden. Die Zahl im Reiter zeigt die offenen Nachfass-Fälle.
 
@@ -370,7 +370,7 @@ Weitere Hilfen im Reiter:
 
 ![Kontaktversuch erfassen](bilder/12-kontaktversuch.jpg)
 
-Oben im Fenster steht der **Verlauf** dieser Person für den Einsatz: alle Kontakte, Rückmeldungen und Statuswechsel mit Name und Zeit (mehr dazu in Kapitel 13). Darunter wählt man Kanal, Datum und Uhrzeit (vorausgefüllt mit jetzt), **Gesendet von** (vorausgefüllt mit dem eigenen Namen, änderbar), das Ergebnis und eine Notiz. Bei «Zugesagt» und einem Einsatz mit mehreren Schichten wählt man zusätzlich die Schichten.
+Oben im Fenster steht der **Verlauf** dieser Person für den Einsatz: alle Kontakte, Rückmeldungen und Statuswechsel mit Name und Zeit (mehr dazu in Kapitel 13). Darunter wählt man den Kanal **Telefon**, **WhatsApp** oder **Mündlich** (z. B. im Training oder am Einsatz direkt gefragt), Datum und Uhrzeit (vorausgefüllt mit jetzt), **Gesendet von** (vorausgefüllt mit dem eigenen Namen, änderbar), das Ergebnis und eine Notiz. Bei «Mündlich» gibt es nur die Ergebnisse Zugesagt, Unsicher und Abgesagt. Eine mündliche Zusage erstellt eine Anmeldung mit der Quelle «Mündlich». In den Listen steht der Kanal kurz als Tel, WA oder Mdl. Bei «Zugesagt» und einem Einsatz mit mehreren Schichten wählt man zusätzlich die Schichten.
 
 **Alles zurücksetzen:** Unten links im Fenster löscht **Alles zurücksetzen** für diese Person und diesen Einsatz alle Kontaktversuche, die Rückmeldung bzw. Anmeldung und die Schichtzuteilung. Die Person steht danach wieder als «Noch nicht angefragt» in der Liste. Vorher fragt der Einsatzplaner nach. Ein Formular-Eingang bleibt unter «Formulare» gespeichert. Bei Personen, die schon zugesagt haben oder selbst gemeldet sind, steht dafür in der Anfragen-Liste rechts das Symbol ↶. Einen einzelnen falsch erfassten Kontaktversuch nimmt man dagegen mit dem ↶ direkt neben dem Versuch zurück.
 
@@ -415,7 +415,7 @@ Die Seite **Rückmeldungen** beantwortet die wichtigste Frage der Aufgebotsstell
 
 - Mitglieder als Zeilen, Einsätze als Spalten. Kopfzeile und Namensspalte bleiben beim Scrollen stehen.
 - Im Spaltenkopf jedes Einsatzes steht die Besetzung als Balken, z. B. «11 / 16».
-- **Symbole:** ✓ An, ✕ Ab, ? Unsicher, leeres Feld = Offen. Dazu gibt es eigene Symbole für den genaueren Stand: ein grün gefülltes ✓ für eine bestätigte Anmeldung, eine Uhr für die Warteliste, eine blaue Sprechblase für «Nachricht gesendet, Antwort offen», ein gelbes Telefon für «angerufen, nicht erreicht» und ! für «Rückfrage nötig». Die Legende über der Tabelle erklärt alle Symbole. Das Symbol zeigt immer nur den neuesten Stand.
+- **Symbole:** ✓ An, ✕ Ab, ? Unsicher, leeres Feld = Offen. Dazu gibt es eigene Symbole für den genaueren Stand: ein grün gefülltes ✓ für eine bestätigte Anmeldung, eine Uhr für die Warteliste, eine blaue Sprechblase für «Nachricht gesendet, Antwort offen», ein gelbes Telefon für «angerufen, nicht erreicht», eine sprechende Person für «mündlich gefragt, weiss es noch nicht» und ! für «Rückfrage nötig». Die Legende über der Tabelle erklärt alle Symbole. Das Symbol zeigt immer nur den neuesten Stand.
 - **Wer hat das gesetzt?** Fährt man mit der Maus über ein Feld, steht dort der letzte Eintrag mit Name und Zeit, z. B. «Zuletzt: Anmeldung: Bestätigt – Lena Meier, heute 14:20 (4 Einträge im Verlauf)». Hat sich jemand selbst über das Formular gemeldet, steht «Person selbst».
 - Ein Klick auf ein Feld öffnet immer das Fenster für einen Kontaktversuch, auch bei ✓ oder ✕. Oben steht der aktuelle Stand (z. B. «An · Anmeldung: Bestätigt · Formular · gesetzt von Lena Meier, heute 14:20») mit einem Link zur Anmeldung. Darunter folgt der **Verlauf** (siehe unten). Dort lässt sich auch **«Unsicher – weiss es noch nicht»** eintragen oder mit **Alles zurücksetzen** neu beginnen. Erfasst man bei einer bestehenden Anmeldung «Abgesagt», wird sie als zurückgezogen markiert. «Zugesagt» macht eine zurückgezogene Anmeldung wieder aktiv.
 - Unten stehen pro Einsatz die Summen An · Ab · Unsicher · Offen.
@@ -458,6 +458,7 @@ Namenssuche, Zeitraum (nächste 2 Wochen bis nächstes Jahr), Mannschaft, «Nur 
 | Unsicher | «Weiss es noch nicht» |
 | Nachricht gesendet (Sprechblase) | Per WhatsApp angefragt, Antwort offen |
 | Nicht erreicht (Telefon) | Angerufen, aber nicht erreicht |
+| Mündlich gefragt (sprechende Person) | Mündlich angefragt, weiss es noch nicht |
 | Rückfrage (!) | Anmeldung mit offener Frage, z. B. nachträglich «Nein» im Formular |
 | Offen | Noch keine Rückmeldung und noch nicht angefragt |
 | Andere Schicht (–) | Angemeldet, aber für eine andere Schicht dieses Einsatzes |

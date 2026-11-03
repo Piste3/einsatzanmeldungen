@@ -26,7 +26,7 @@ const REG_COUNTING = ['neu', 'rueckfrage', 'bestaetigt'];
 const REG_ACTIVE = ['neu', 'unsicher', 'rueckfrage', 'warteliste', 'bestaetigt'];
 
 const SOURCE = {
-  formular: 'Formular', telefon: 'Telefon', whatsapp: 'WhatsApp', manuell: 'Manuell',
+  formular: 'Formular', telefon: 'Telefon', whatsapp: 'WhatsApp', muendlich: 'Mündlich', manuell: 'Manuell',
 };
 
 const MATCH_TYPE = {
@@ -56,7 +56,7 @@ const ATTEMPT_RESULT = {
   abgesagt: 'Abgesagt',
 };
 
-const CHANNEL = { telefon: { label: 'Telefon', short: 'Tel' }, whatsapp: { label: 'WhatsApp', short: 'WA' } };
+const CHANNEL = { telefon: { label: 'Telefon', short: 'Tel' }, whatsapp: { label: 'WhatsApp', short: 'WA' }, muendlich: { label: 'Mündlich', short: 'Mdl' } };
 
 // Genauere Symbole in der Rückmeldungen-Tabelle (innerhalb von An bzw. Unsicher)
 const FEEDBACK_DETAIL = {
@@ -65,6 +65,7 @@ const FEEDBACK_DETAIL = {
   whatsapp: { label: 'Nachricht gesendet, Antwort offen', state: 'unsicher' },
   telefon: { label: 'Angerufen, nicht erreicht', state: 'unsicher' },
   rueckfrage: { label: 'Rückfrage nötig', state: 'unsicher' },
+  muendlich: { label: 'Mündlich gefragt, weiss es noch nicht', state: 'unsicher' },
 };
 
 const FEEDBACK = {

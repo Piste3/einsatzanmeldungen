@@ -104,7 +104,12 @@
     }
     if (t.matches('input[name=channel]')) {
       const res = t.form.querySelector('select[name=result]');
-      if (res && ['nicht_erreicht', 'whatsapp'].includes(res.value)) res.value = t.value === 'whatsapp' ? 'whatsapp' : 'nicht_erreicht';
+      if (res) {
+        // Ergebnisse, die zum Kanal nicht passen, ausblenden (mündlich: kein «nicht erreicht», keine Nachricht)
+        for (const o of res.options) { if (o.dataset.ch) { o.hidden = !o.dataset.ch.split(' ').includes(t.value); o.disabled = o.hidden; } }
+        if (t.value === 'muendlich' && ['nicht_erreicht', 'whatsapp'].includes(res.value)) res.value = 'unsicher';
+        else if (['nicht_erreicht', 'whatsapp'].includes(res.value)) res.value = t.value === 'whatsapp' ? 'whatsapp' : 'nicht_erreicht';
+      }
     }
   });
 

@@ -42,6 +42,9 @@ function migrate(d) {
   widenCheck(d, 'inquiries', "'unsicher'", "'nicht_erreicht','whatsapp')", "'nicht_erreicht','whatsapp','unsicher')");
   // Rolle «Einsatzleiter» erlauben
   widenCheck(d, 'users', "'einsatzleiter'", "('admin','aufgebotsstelle')", "('admin','aufgebotsstelle','einsatzleiter')");
+  // Kanal «mündlich» für Kontaktversuche und als Quelle einer Anmeldung
+  widenCheck(d, 'contact_attempts', "'muendlich'", "('telefon','whatsapp')", "('telefon','whatsapp','muendlich')");
+  widenCheck(d, 'registrations', "'muendlich'", "('formular','telefon','whatsapp','manuell')", "('formular','telefon','whatsapp','muendlich','manuell')");
   // Einsatzdatum freiwillig (Schichten an verschiedenen Tagen)
   rebuild(d, 'events', (sql) => /\bdate TEXT NOT NULL/.test(sql), (sql) => sql.replace(/\bdate TEXT NOT NULL/, 'date TEXT'));
 }

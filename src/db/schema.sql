@@ -295,7 +295,7 @@ CREATE TABLE IF NOT EXISTS registrations (
   entered_last_name TEXT,
   match_type TEXT,             -- auto, alias, manuell
   match_info TEXT,             -- z. B. «2 Personen mit diesem Namen»
-  source TEXT NOT NULL CHECK (source IN ('formular','telefon','whatsapp','manuell')),
+  source TEXT NOT NULL CHECK (source IN ('formular','telefon','whatsapp','muendlich','manuell')),
   submission_id INTEGER REFERENCES form_submissions(id),
   answer TEXT,                 -- ja / nein
   shift_wishes JSON NOT NULL DEFAULT '[]',
@@ -338,7 +338,7 @@ CREATE TABLE IF NOT EXISTS inquiries (
 CREATE TABLE IF NOT EXISTS contact_attempts (
   id INTEGER PRIMARY KEY,
   inquiry_id INTEGER NOT NULL REFERENCES inquiries(id) ON DELETE CASCADE,
-  channel TEXT NOT NULL CHECK (channel IN ('telefon','whatsapp')),
+  channel TEXT NOT NULL CHECK (channel IN ('telefon','whatsapp','muendlich')),
   contacted_at TEXT NOT NULL,  -- YYYY-MM-DDTHH:MM lokal
   sent_by_user_id INTEGER REFERENCES users(id),
   sent_by_name TEXT NOT NULL,
