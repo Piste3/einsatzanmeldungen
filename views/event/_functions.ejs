@@ -14,7 +14,7 @@
   <div class="card-body">
     <% for (const sh of fs.shifts) { %>
       <div class="fn-shift">
-        <% if (fs.multi) { %><div class="fn-shift-head"><strong><%= sh.name %> <span class="muted small"><%= h.fmtSpan(sh.starts_at, sh.ends_at) || '' %></span></strong><strong class="small"><%= sh.totalIst %> / <%= sh.totalSoll || '–' %></strong></div>
+        <% if (fs.multi) { %><div class="fn-shift-head"><strong><%= sh.name %> <span class="muted small"><%= h.fmtShiftWhen(sh, h.isMultiDay(event)) || '' %></span></strong><strong class="small"><%= sh.totalIst %> / <%= sh.totalSoll || '–' %></strong></div>
         <% } else if (sh.hasTargets) { %><div class="fn-shift-head"><span class="small muted">Total</span><strong class="small"><%= sh.totalIst %> / <%= sh.totalSoll %></strong></div><% } %>
         <% if (!sh.rows.length) { %><div class="small muted">Kein Soll und noch niemand zugeteilt.</div><% } %>
         <% for (const f of sh.rows) { %>

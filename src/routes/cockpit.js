@@ -31,12 +31,12 @@ router.get('/suche', (req, res) => {
       WHERE lower(p.first_name || ' ' || p.last_name) LIKE ? OR lower(p.last_name || ' ' || p.first_name) LIKE ?
          OR EXISTS (SELECT 1 FROM person_aliases a WHERE a.person_id = p.id AND lower(a.first_name || ' ' || a.last_name) LIKE ?)
       ORDER BY p.status, p.last_name LIMIT 30`, like, like, like);
-    evts = db.all('SELECT * FROM events WHERE lower(name) LIKE ? ORDER BY date DESC LIMIT 30', like);
-    regs = db.all(`SELECT g.*, e.name AS event_name, e.date AS event_date, p.first_name, p.last_name FROM registrations g
+    evts = db.all('SELECT * FROM events WHERE lower(name) LIKE ? ORDER BY date_from DESC LIMIT 30', like);
+    regs = db.all(`SELECT g.*, e.name AS event_name, e.date_from AS event_date, e.date_to AS event_date_to, p.first_name, p.last_name FROM registrations g
       JOIN events e ON e.id = g.event_id LEFT JOIN persons p ON p.id = g.person_id
       WHERE lower(coalesce(g.entered_first_name,'') || ' ' || coalesce(g.entered_last_name,'')) LIKE ?
          OR lower(coalesce(p.first_name,'') || ' ' || coalesce(p.last_name,'')) LIKE ?
-      ORDER BY e.date DESC LIMIT 50`, like, like);
+      ORDER BY e.date_from DESC LIMIT 50`, like, like);
   }
   // Ein einziger Treffer -> direkt öffnen
   if (req.query.go && people.length + evts.length === 1 && !regs.length) {

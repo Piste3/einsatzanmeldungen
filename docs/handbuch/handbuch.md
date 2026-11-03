@@ -22,7 +22,7 @@ Ein Einsatz mit rund 15 Kadettinnen und Kadetten bedeutet viel Kleinarbeit: Anme
 
 Jeder Einsatz durchläuft dieselben Schritte. Die Mitglieder sehen davon nur einen: das Anmeldeformular auf unserer ClubDesk-Seite.
 
-1. **Einsatz anlegen** – Name und Datum genügen für den Anfang, das Soll pro Funktion kommt dazu (Kapitel 5 und 6). Helfen andere Abteilungen mit, nur deren Anzahl erfassen (Kapitel 7).
+1. **Einsatz anlegen** – der Name genügt für den Anfang, das Soll pro Funktion kommt dazu (Kapitel 5 und 6). Helfen andere Abteilungen mit, nur deren Anzahl erfassen (Kapitel 7).
 2. **Veröffentlichen** – der Einsatz erscheint sofort im Anmeldeformular.
 3. **Mitglieder melden sich an** – über das Formular, mit Vor- und Nachname (Kapitel 8).
 4. **Zuordnen** – der Einsatzplaner erkennt die Person. Was nicht eindeutig ist, landet in den Klärungen (Kapitel 10).
@@ -116,15 +116,16 @@ Das Cockpit beantwortet jeden Tag die Frage: Was ist zu tun?
 
 ![Einsätze](bilder/03-einsaetze.jpg)
 
-Die Liste zeigt alle Einsätze mit Datum, Antreten, Status, Besetzung und Einsatzleitung. Oben lässt sich nach Status, Zeitraum und Name filtern.
+Die Liste zeigt alle Einsätze mit Datum, Antreten, Status, Besetzung und Einsatzleitung. Oben lässt sich nach Status, Zeitraum und Name filtern. Ein Einsatz über mehrere Tage steht mit seinem Zeitraum in der Liste, z. B. «Sa 02.01. – So 03.01.2027», und wird bei jedem Zeitraum-Filter gefunden, der einen seiner Tage trifft.
 
 ### Neuer Einsatz
 
-Über **+ Neuer Einsatz** öffnet sich das Formular. Nur Name und Datum sind Pflicht – alles andere darf später ergänzt werden.
+Über **+ Neuer Einsatz** öffnet sich das Formular. Nur der Name ist Pflicht – alles andere darf später ergänzt werden.
 
 ![Einsätze › Neuer Einsatz](bilder/04-einsatz-neu.jpg)
 
 - **Grunddaten:** Name, Datum, Beginn (Antreten) und Ende (Abtreten), Antretens- und Abtretensort. Bleibt der Abtretensort leer, gilt der Antretensort.
+- **Datum leer lassen** bei Einsätzen über mehrere Tage, z. B. Aufbau am Samstag und Festbetrieb am Sonntag. Nach dem Speichern öffnet sich der Reiter «Schichten», und jede Schicht bekommt dort ihren eigenen Tag (siehe «Schichten an verschiedenen Tagen» unten).
 - **Einsatzleitung:** aus den Personen wählen (tippen zum Suchen). Rang und Telefonnummer kommen so automatisch ins Aufgebot.
 - **Tenue:** mit einem Klick eine Vorlage übernehmen, z. B. «Uniform orange + VD», und bei Bedarf anpassen.
 - **Beschreibung** ist für die Mitglieder im Formular sichtbar, die **interne Bemerkung** nur für die Aufgebotsstelle.
@@ -132,6 +133,20 @@ Die Liste zeigt alle Einsätze mit Datum, Antreten, Status, Besetzung und Einsat
 - **Schichten und Soll:** pro Schicht, wie viele Einsatzleiter (EL), Sektorchefs (SC), Busfahrer (BF) und Einsatzteilnehmer (TN) es braucht. Leer lassen, was es nicht braucht. Die Summe ist das Soll der Schicht (Kapitel 6).
 - **Anmeldeformular:** Anmeldefrage aus einer Vorlage wählen und Text und Hilfetext anpassen. Die Standard-Vorlage (Einstellungen › Vorlagen) ist bei neuen Einsätzen schon ausgewählt.
 - **Als Entwurf speichern** oder direkt **Veröffentlichen** – dann erscheint der Einsatz sofort im Anmeldeformular.
+
+### Schichten an verschiedenen Tagen
+
+Dauert ein Einsatz mehrere Tage, bleibt das Feld **Datum** leer. Die Tage stehen dann bei den Schichten.
+
+1. Einsatz mit Name (und bei Bedarf Antretensort, Tenue …) anlegen, Datum leer lassen, **Als Entwurf speichern**.
+2. Im Reiter **Schichten** unter «Schichten verwalten» der ersten Schicht Name, Tag und Zeit geben. In der untersten Zeile die nächste Schicht mit ihrem Tag eintragen, dann einmal **Speichern**.
+3. **Veröffentlichen.** Ein Einsatz ganz ohne Datum, also weder beim Einsatz noch bei einer Schicht, lässt sich noch nicht veröffentlichen.
+
+![Schichten an verschiedenen Tagen](bilder/44-schichten-mehrtaegig.jpg)
+
+Aus den Schichten ergibt sich der Zeitraum des Einsatzes. Er steht überall dort, wo sonst das Datum steht: in der Einsatzliste, im Cockpit, in den Rückmeldungen (Filter wie «nächste 3 Monate» eingeschlossen), auf der Teilnehmerliste, im Anmeldeformular und im Baustein `{einsatz.datum}` von Kalendertermin und Bestätigungsmail. Bei den Schichten steht dann jeweils der Tag vor der Zeit, z. B. «Sa 02.01. 10:00–18:00». Die Übersicht zeigt beim Datum «aus den Schichten».
+
+> **Gut zu wissen:** Ein Datum beim Einsatz bleibt möglich und ist bei eintägigen Einsätzen weiterhin der einfachste Weg. Bestehende Einsätze ändern sich nicht. Ein Einsatz, der noch gar kein Datum hat, steht im Cockpit mit dem Hinweis «hat noch kein Datum».
 
 ### Die Übersicht eines Einsatzes
 
@@ -247,7 +262,8 @@ Es gibt ein einziges, gemeinsames Anmeldeformular für alle Einsätze. Es ist ei
 ![Das Anmeldeformular auf dem Handy](bilder/33-formular-handy.jpg)
 
 - **Vor- und Nachname** – mehr braucht es nicht. Ein Konto ist nicht nötig.
-- Pro Einsatz stehen Datum, **Antreten** und **Abtreten** (jeweils Zeit und Ort) sowie das **Tenue**.
+- Pro Einsatz stehen Datum (bei mehreren Tagen der Zeitraum), **Antreten** und **Abtreten** (jeweils Zeit und Ort) sowie das **Tenue**.
+- **Mehrere Tage:** Liegen die Schichten an verschiedenen Tagen, steht bei jeder Schicht ihr Tag, z. B. «Sa 02.01. 10:00–18:00».
 - **Mehrere Schichten:** die gewünschten Schichten ankreuzen.
 - **Eine Schicht:** «Ja, ich bin dabei» antippen. Wer nicht kann, lässt den Einsatz einfach leer.
 - Eine **Bemerkung** ist pro Einsatz möglich.
@@ -377,10 +393,11 @@ Die meisten Einsätze haben nur eine Schicht für alle. Dann gibt es nichts zu v
 ![Einsatz › Schichten mit zwei Schichten](bilder/13-schichten.jpg)
 
 - Jede Schicht ist eine Spalte mit Zeit und Besetzung (Ist / Soll). Grün heisst voll. Darunter Ist / Soll pro Funktion, z. B. «EL 1/1 · SC 2/2 · TN 5/6».
-- **Schichten verwalten** (unten): Name, Zeit und das Soll pro Funktion (Spalten EL, SC, BF, TN). Die Spalte «Soll» zeigt die Summe und rechnet beim Tippen mit. Die Tabelle hat **einen einzigen Speichern-Knopf** unten rechts: mehrere Schichten ändern, bei Bedarf in der untersten Zeile eine neue Schicht eintragen, dann einmal **Speichern**. Geänderte Zeilen sind links orange markiert, und der Fuss der Tabelle zeigt «Ungespeicherte Änderungen». **+ Hinzufügen** in der neuen Zeile speichert ebenfalls alles auf einmal. **Löschen** wirkt sofort pro Zeile (mit Rückfrage). Ist eine Zeile ungültig, z. B. eine angefangene neue Schicht ohne Namen, wird nichts gespeichert.
+- **Schichten verwalten** (unten): Name, Tag, Zeit und das Soll pro Funktion (Spalten EL, SC, BF, TN). Die Spalte «Soll» zeigt die Summe und rechnet beim Tippen mit. Die Tabelle hat **einen einzigen Speichern-Knopf** unten rechts: mehrere Schichten ändern, bei Bedarf in der untersten Zeile eine neue Schicht eintragen, dann einmal **Speichern**. Geänderte Zeilen sind links orange markiert, und der Fuss der Tabelle zeigt «Ungespeicherte Änderungen». **+ Hinzufügen** in der neuen Zeile speichert ebenfalls alles auf einmal. **Löschen** wirkt sofort pro Zeile (mit Rückfrage). Ist eine Zeile ungültig, z. B. eine angefangene neue Schicht ohne Namen, wird nichts gespeichert.
 - **Noch keiner Schicht zugeteilt:** Anmeldungen ohne Schicht stehen oben und werden über «zuteilen …» eingeteilt.
 - **Umteilen** über das Auswahlfeld bei der Person. Eine Person kann auch mehreren Schichten zugeteilt sein («Tag + Abend»).
 - **+ Person aus Anmeldungen hinzufügen:** Name tippen und auswählen.
+- **Schichten an verschiedenen Tagen:** Jede Schicht hat ihr eigenes Datum. Hat der Einsatz kein eigenes Datum, ist es bei jeder Schicht einzutragen (Kapitel 5, «Schichten an verschiedenen Tagen»).
 - **Überschneidung:** Ist jemand zwei Schichten zugeteilt, die sich zeitlich überlappen, erscheint oben ein Hinweis. Er blockiert nichts.
 - Die Schichtwünsche aus dem Formular sind schon übernommen. Meldet sich eine eingeteilte Person ab, wird die Besetzung sofort angepasst.
 - **Externe Abteilungen** stehen am Ende der Spalte ihrer Schicht (Markierung «extern», mit Anzahl Personen) und zählen zur Besetzung, z. B. «Besetzung · davon 6 extern». Erfasst und geändert werden sie in der Übersicht des Einsatzes.
@@ -521,7 +538,7 @@ Ist ein Einsatz besetzt, erstellt die Aufgebotsstelle das Aufgebot mit einem Kli
 2. Bei mehreren Schichten wählen: ein Termin für den ganzen Einsatz, ein Termin pro Schicht oder nur eine bestimmte Schicht.
 3. Die Datei öffnen oder weiterleiten.
 
-- **Termin von – bis** entspricht Antreten bis Abtreten.
+- **Termin von – bis** entspricht Antreten bis Abtreten. Bei Schichten an verschiedenen Tagen reicht ein Termin für den ganzen Einsatz vom Beginn der ersten bis zum Ende der letzten Schicht. Meist passt dann «ein Termin pro Schicht» besser.
 - **Teilnehmende:** Alle **bestätigten** Personen mit E-Mail-Adresse werden als Kalender-Teilnehmende eingetragen.
 - **Aktualisieren statt verdoppeln:** Ändert sich etwas und man exportiert erneut, aktualisiert der Kalender den bestehenden Termin.
 
@@ -824,6 +841,9 @@ In den Rückmeldungen oder bei den Anfragen einen Kontaktversuch mit dem Ergebni
 
 **Können mehrere Personen gleichzeitig arbeiten?**
 Ja. Alle sehen live denselben Stand. Bearbeiten zwei Personen denselben Eintrag, zeigt der Einsatzplaner beide Stände an, und niemand überschreibt den anderen unbemerkt.
+
+**Mein Einsatz dauert zwei Tage. Wie erfasse ich das?**
+Beim Einsatz das Datum leer lassen und im Reiter «Schichten» jeder Schicht ihren Tag geben (Kapitel 5, «Schichten an verschiedenen Tagen»). Der Zeitraum, z. B. «Sa 02.01. – So 03.01.2027», ergibt sich daraus von selbst.
 
 **Kann ich die Listen ausdrucken oder nach Excel exportieren?**
 Ja. Jede Liste lässt sich drucken und als Excel- oder CSV-Datei exportieren, genau mit den eingestellten Filtern.

@@ -9,7 +9,8 @@ const mailer = require('../lib/mailer');
 const { render } = require('../lib/template');
 const { renderTemplate } = require('../lib/html');
 const { buildCalendar } = require('../lib/ics');
-const { nowIso, fmtDateLong, fmtDateShort, fmtDate } = require('../lib/dates');
+const { nowIso, fmtDateLong, fmtRange } = require('../lib/dates');
+const { ValidationError } = require('./errors');
 const { BY_RANK } = require('../lib/sorting');
 
 // Bausteine, gruppiert wie in den Einstellungen angezeigt
@@ -61,14 +62,18 @@ function context(event, shift, user, extra = {}) {
   const leaderName = event.leader_person_id ? `${event.leader_rank ? `${event.leader_rank} ` : ''}${event.leader_first} ${event.leader_last}` : '';
   // Bei nur einer (Standard-)Schicht bleibt der Schichtname leer
   const onlyDefault = event.shifts.length === 1;
+  // Datum: Tag der Schicht; für den ganzen Einsatz bei Schichten an verschiedenen Tagen der Zeitraum (07.11.–08.11.2026)
+  const shiftDay = shift?.starts_at?.slice(0, 10);
+  const from = event.date_from || event.date;
+  const days = shiftDay ? [shiftDay, shiftDay] : from ? [from, event.date_to || from] : null;
   const values = {
     'einsatz.name': event.name,
-    'einsatz.datum': fmtDate(event.date),
-    'einsatz.datum_kurz': fmtDateShort(event.date),
+    'einsatz.datum': days ? fmtRange(days[0], days[1]) : '',
+    'einsatz.datum_kurz': days ? fmtRange(days[0], days[1], 'dm') : '',
     'einsatz.beschreibung': event.description || '',
     'einsatz.tenue': event.tenue || '',
     'schicht.name': shift ? (onlyDefault ? '' : shift.name) : (onlyDefault ? '' : 'Ganzer Einsatz'),
-    'antreten.datum': start ? fmtDateLong(start.slice(0, 10)) : fmtDateLong(event.date),
+    'antreten.datum': start ? fmtDateLong(start.slice(0, 10)) : fmtDateLong(event.date || event.date_from),
     'antreten.zeit': start ? start.slice(11, 16) : '',
     'antreten.ort': startPlace,
     'abtreten.datum': end ? fmtDateLong(end.slice(0, 10)) : '',
@@ -131,6 +136,8 @@ function sequenceFor(uid, content) {
 /** scope: 'event' (ein Termin) | 'shifts' (je Schicht ein Termin) | 'shift' (eine Schicht) */
 function exportIcs(eventId, { scope = 'event', shiftId = null } = {}, user) {
   const event = events.get(eventId);
+  const day = event.date || event.date_from;
+  if (!day) throw new ValidationError(['Der Einsatz hat noch kein Datum. Bitte beim Einsatz oder bei den Schichten ein Datum eintragen.']);
   const tpl = settings.get('calendar');
   let targets = [null];
   if (scope === 'shift' && event.shifts.length > 1) targets = event.shifts.filter((s) => s.id === Number(shiftId));
@@ -148,7 +155,7 @@ function exportIcs(eventId, { scope = 'event', shiftId = null } = {}, user) {
     return {
       uid, sequence, summary: r.summary, location: r.location,
       description: htmlInDescription ? r.descriptionHtml : r.description, descriptionHtml: r.descriptionHtml,
-      start: r.start || `${event.date}T00:00`, end: r.end || r.start || `${event.date}T23:59`, allDay: !r.start,
+      start: r.start || `${day}T00:00`, end: r.end || r.start || `${event.date_to || day}T23:59`, allDay: !r.start,
       organizer: { name: settings.get('verein_name'), email: settings.get('aufgebot_email') },
       attendees, reminderMinutes: Number(tpl.reminder_minutes) || 0,
     };
@@ -158,7 +165,7 @@ function exportIcs(eventId, { scope = 'event', shiftId = null } = {}, user) {
     entity: 'event', entityId: eventId, eventId, action: 'calendar',
     summary: `${user.display_name} hat den Kalendertermin für «${event.name}» exportiert${entries.length > 1 ? ` (${entries.length} Termine)` : ''}`, user,
   });
-  const file = `${event.name}_${event.date}${scope === 'shift' && targets[0] ? `_${targets[0].name}` : ''}.ics`;
+  const file = `${event.name}_${day}${scope === 'shift' && targets[0] ? `_${targets[0].name}` : ''}.ics`;
   return { ics: buildCalendar(entries, { method: 'PUBLISH' }), file };
 }
 

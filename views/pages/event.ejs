@@ -4,7 +4,7 @@
   const inFormNow = typeof inForm !== 'undefined' ? inForm : null;
   const badgesHtml = h.eventBadge(e.status) + ' ' + (e.status === 'veroeffentlicht' && e.show_in_form ? h.badge('im Formular', 'orange') : '');
   const leader = e.leader_person_id ? `${e.leader_rank ? `<span class="rank">${h.escapeHtml(e.leader_rank)}</span>` : ''}${h.escapeHtml(e.leader_first + ' ' + e.leader_last)}` : '–';
-  const sub = `<strong>${h.fmtDateWd(e.date)}</strong><span>Antreten ${h.escapeHtml(e.start_time || '–')}${e.start_place ? ' · ' + h.escapeHtml(e.start_place) : ''}</span><span>Leitung ${leader}</span>`;
+  const sub = `<strong>${h.fmtEventDate(e, 'wd')}</strong><span>Antreten ${h.escapeHtml(e.start_time || '–')}${e.start_place ? ' · ' + h.escapeHtml(e.start_place) : ''}</span><span>Leitung ${leader}</span>`;
   const exportTabs = { anmeldungen: 1, anfragen: 1, verlauf: 1 };
   const base = `/einsaetze/${e.id}`;
   let cal;

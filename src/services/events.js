@@ -5,7 +5,7 @@ const audit = require('./audit');
 const externals = require('./externals');
 const functions = require('./functions');
 const live = require('../lib/live');
-const { nowIso, localNow, isYmd, isHm, addDays, fmtDate, fmtDateShort } = require('../lib/dates');
+const { nowIso, localNow, isYmd, isHm, addDays, fmtDateShort, fmtEventDate, isMultiDay } = require('../lib/dates');
 const { EVENT_STATUS, REG_COUNTING } = require('../lib/labels');
 const { ConflictError, ValidationError, ReadOnlyError } = require('./errors');
 
@@ -53,17 +53,23 @@ function targetsFromInput(input, prefix = 'fn_target_') {
   return input && input.target_count !== undefined ? {} : null;
 }
 
-function list({ status = '', from = '', to = '', q = '' } = {}) {
+// Reihenfolge nach erstem Tag; Einsätze ganz ohne Datum zuletzt
+const ORDER = 'e.date_from IS NULL, e.date_from, e.start_time, e.id';
+
+// Zeitraum-Filter: der Einsatz überschneidet sich mit [from, to]; undated = auch Einsätze ohne Datum
+function list({ status = '', from = '', to = '', q = '', undated = false } = {}) {
   const where = [];
   const params = [];
   if (status === 'aktiv') where.push("e.status IN ('entwurf','veroeffentlicht')");
   else if (status && EVENT_STATUS[status]) { where.push('e.status = ?'); params.push(status); }
-  if (from && isYmd(from)) { where.push('e.date >= ?'); params.push(from); }
-  if (to && isYmd(to)) { where.push('e.date <= ?'); params.push(to); }
+  const range = [];
+  if (from && isYmd(from)) { range.push('e.date_to >= ?'); params.push(from); }
+  if (to && isYmd(to)) { range.push('e.date_from <= ?'); params.push(to); }
+  if (range.length) where.push(undated ? `(e.date_from IS NULL OR (${range.join(' AND ')}))` : range.join(' AND '));
   if (q) { where.push('lower(e.name) LIKE ?'); params.push(`%${q.toLowerCase()}%`); }
   const rows = db.all(`SELECT e.*, p.first_name AS leader_first, p.last_name AS leader_last, r.short AS leader_rank
     FROM events e LEFT JOIN persons p ON p.id = e.leader_person_id LEFT JOIN ranks r ON r.id = p.rank_id
-    ${where.length ? `WHERE ${where.join(' AND ')}` : ''} ORDER BY e.date, e.start_time, e.id`, ...params);
+    ${where.length ? `WHERE ${where.join(' AND ')}` : ''} ORDER BY ${ORDER}`, ...params);
   for (const e of rows) {
     e.extra = parseJson(e.extra, {});
     e.shifts = shiftsOf(e.id);
@@ -80,22 +86,32 @@ function span(date, start, end) {
   return { starts_at: s, ends_at: e };
 }
 
-// Ende der letzten Schicht (Einsatz ohne Schichten/Zeiten: Einsatzende bzw. Tagesende)
+// Letzter Tag eines Einsatzes (Einsatzdatum oder späteste Schicht)
+function lastDay(event) {
+  return event.date_to || event.date || event.date_from || null;
+}
+
+// Ende der letzten Schicht (Einsatz ohne Schichten/Zeiten: Einsatzende bzw. Tagesende; ganz ohne Datum: null)
 function lastEnd(event, shifts = event.shifts || shiftsOf(event.id)) {
   const ends = shifts.map((s) => s.ends_at || (s.starts_at ? `${s.starts_at.slice(0, 10)}T23:59` : null)).filter(Boolean);
   if (ends.length) return ends.sort().at(-1);
   const sp = span(event.date, event.start_time, event.end_time);
-  return sp.ends_at || `${event.date}T23:59`;
+  const day = lastDay(event);
+  return sp.ends_at || (day ? `${day}T23:59` : null);
 }
 
 function shiftEnded(shift, event, now = localNow()) {
-  const end = shift.ends_at || (shift.starts_at ? `${shift.starts_at.slice(0, 10)}T23:59` : `${event.date}T23:59`);
-  return end <= now;
+  const day = lastDay(event);
+  const end = shift.ends_at || (shift.starts_at ? `${shift.starts_at.slice(0, 10)}T23:59` : day ? `${day}T23:59` : null);
+  return Boolean(end) && end <= now;
 }
 
+// Ohne jedes Datum erscheint ein Einsatz nicht im Formular
 function isInForm(event, now = localNow()) {
-  return event.status === 'veroeffentlicht' && Boolean(event.show_in_form) && lastEnd(event) > now;
+  const end = lastEnd(event);
+  return event.status === 'veroeffentlicht' && Boolean(event.show_in_form) && Boolean(end) && end > now;
 }
+
 
 // Alle Einsätze, die im Formular erscheinen – sortiert nach Datum, nur noch nicht vorbei Schichten
 function openForForm(now = localNow()) {
@@ -134,7 +150,7 @@ function clean(input, extraDefs) {
   };
   const errors = [];
   if (!data.name) errors.push('Name des Einsatzes fehlt.');
-  if (!data.date || !isYmd(data.date)) errors.push('Datum fehlt oder ist ungültig.');
+  if (data.date && !isYmd(data.date)) errors.push('Datum ist ungültig.');
   if (data.start_time && !isHm(data.start_time)) errors.push('Beginn muss als HH:MM angegeben werden.');
   if (data.end_time && !isHm(data.end_time)) errors.push('Ende muss als HH:MM angegeben werden.');
   if (errors.length) throw new ValidationError(errors);
@@ -191,8 +207,9 @@ function update(id, input, expectedVersion, user, { reason } = {}) {
       ...FIELDS.map((f) => data[f]), nowIso(), user.id, id,
     );
     // Standardschicht folgt den Einsatzzeiten, solange es die einzige Schicht ist
+    // (ohne Einsatzdatum bleibt sie an ihrem bisherigen Tag)
     if (before.shifts.length === 1 && before.shifts[0].is_default) {
-      const sp = span(data.date, data.start_time, data.end_time);
+      const sp = span(data.date || before.shifts[0].starts_at?.slice(0, 10), data.start_time, data.end_time);
       db.run('UPDATE shifts SET starts_at = ?, ends_at = ? WHERE id = ?', sp.starts_at, sp.ends_at, before.shifts[0].id);
     }
     let targetsChanged = false;
@@ -236,6 +253,9 @@ function setStatus(id, status, user, { reason } = {}) {
   else if (!TRANSITIONS[status].includes(e.status)) {
     throw new ValidationError([`Wechsel von «${EVENT_STATUS[e.status].label}» zu «${EVENT_STATUS[status].label}» ist nicht möglich.`]);
   }
+  if (status === 'veroeffentlicht' && !e.date_from) {
+    throw new ValidationError(['Der Einsatz hat noch kein Datum. Bitte beim Einsatz ein Datum eintragen oder den Schichten ein Datum geben.']);
+  }
   // Beim Veröffentlichen automatisch ins Formular, bei Absage/Abschluss heraus
   const showInForm = status === 'veroeffentlicht' ? 1 : 0;
   const info = db.run('UPDATE events SET status = ?, show_in_form = ?, version = version + 1, updated_at = ?, updated_by = ? WHERE id = ? AND status = ?',
@@ -268,6 +288,7 @@ function cleanShift(event, input) {
   if (!name) throw new ValidationError(['Name der Schicht fehlt.']);
   if (input.start && !isHm(input.start)) throw new ValidationError(['Beginn als HH:MM angeben.']);
   if (input.end && !isHm(input.end)) throw new ValidationError(['Ende als HH:MM angeben.']);
+  if (!date && (input.start || input.end)) throw new ValidationError(['Datum fehlt (der Einsatz hat kein eigenes Datum).']);
   const sp = span(date, input.start, input.end);
   return {
     name, starts_at: sp.starts_at, ends_at: sp.ends_at,
@@ -380,7 +401,7 @@ function deleteShift(shiftId, user, { reason } = {}) {
 // Was fehlt noch? (Checkliste in der Übersicht)
 function checklist(e) {
   const items = [
-    { label: 'Name und Datum', done: Boolean(e.name && e.date) },
+    { label: 'Name und Datum (Einsatz oder Schichten)', done: Boolean(e.name && e.date_from) },
     { label: 'Antreten (Zeit und Ort)', done: Boolean(e.start_time && e.start_place) },
     { label: 'Abtreten (Zeit)', done: Boolean(e.end_time) },
     { label: 'Einsatzleitung', done: Boolean(e.leader_person_id) },
@@ -435,12 +456,17 @@ function occupancyTone(ist, soll) {
   return 'red';
 }
 
+// Datum oder Zeitraum für Listen und Mails: 07.11.2026 bzw. 07.11.–09.11.2026; ohne Datum «Datum offen»
+function dateRange(e) {
+  return fmtEventDate(e);
+}
+
 function label(e) {
-  return `${e.name} (${fmtDate(e.date)})`;
+  return `${e.name} (${dateRange(e)})`;
 }
 
 module.exports = {
-  get, list, create, update, setStatus, setShowInForm, addShift, updateShift, saveShifts, deleteShift, checklist, stats, span, lastEnd,
+  get, list, create, update, isMultiDay, lastDay, dateRange, ORDER, setStatus, setShowInForm, addShift, updateShift, saveShifts, deleteShift, checklist, stats, span, lastEnd,
   shiftEnded, isInForm, openForForm, shiftsOf, extraDefs, assertEditable, occupancyTone, label, FIELD_LABELS, lastChange, parseJson,
   fmtDateShort, setShiftTargets,
 };

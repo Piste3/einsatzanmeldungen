@@ -15,7 +15,7 @@
       <div class="card-body">
         <% for (const sh of s.shifts) { %>
           <div class="occ">
-            <div class="occ-head"><span><strong><%= sh.name %></strong> · <%= h.fmtSpan(sh.starts_at, sh.ends_at) || 'Zeit offen' %></span><strong><%= sh.ist %> / <%= sh.soll ?? '–' %><%= sh.missing ? ` · ${sh.missing} fehlen` : (sh.soll && sh.ist >= sh.soll ? ' · voll' : '') %></strong></div>
+            <div class="occ-head"><span><strong><%= sh.name %></strong> · <%= h.fmtShiftWhen(sh, h.isMultiDay(event)) || 'Zeit offen' %></span><strong><%= sh.ist %> / <%= sh.soll ?? '–' %><%= sh.missing ? ` · ${sh.missing} fehlen` : (sh.soll && sh.ist >= sh.soll ? ' · voll' : '') %></strong></div>
             <div class="bar <%= sh.tone %>"><span style="width:<%= h.pct(sh.ist, sh.soll) %>%"></span></div>
             <% if (sh.extern) { %><div class="small muted ext-split"><%= sh.intern %> eigene + <%= sh.extern %> extern</div><% } %>
           </div>
@@ -53,7 +53,7 @@
       <div class="card-head"><h2>Angaben</h2></div>
       <div class="card-body">
         <dl class="kv left">
-          <dt>Datum</dt><dd><%= h.fmtDateLong(event.date) %></dd>
+          <dt>Datum</dt><dd><% if (event.date_from) { %><%= h.fmtEventDate(event, 'long') %><% if (!event.date) { %> <span class="muted small">· aus den Schichten</span><% } %><% } else { %><span class="muted">offen – Datum beim Einsatz oder bei den <a class="link" href="/einsaetze/<%= event.id %>/schichten">Schichten</a> eintragen</span><% } %></dd>
           <dt>Antreten</dt><dd><%= event.start_time || '–' %><%= event.start_place ? ` · ${event.start_place}` : '' %></dd>
           <dt>Abtreten</dt><dd><%= event.end_time || '–' %><%= (event.end_place || event.start_place) ? ` · ${event.end_place || event.start_place}` : '' %></dd>
           <dt>Einsatzleitung</dt><dd><%= event.leader_last ? `${event.leader_rank || ''} ${event.leader_first} ${event.leader_last}`.trim() + (event.leader_mobile ? ` (${event.leader_mobile})` : '') : '–' %></dd>

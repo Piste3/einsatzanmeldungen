@@ -3,7 +3,7 @@
   const e = event;
   const base = `/einsaetze/${e.id}`;
   const leader = e.leader_person_id ? `${e.leader_rank ? `<span class="rank">${h.escapeHtml(e.leader_rank)}</span>` : ''}${h.escapeHtml(e.leader_first + ' ' + e.leader_last)}` : '–';
-  const sub = `<strong>${h.fmtDateWd(e.date)}</strong><span>Antreten ${h.escapeHtml(e.start_time || '–')}${e.start_place ? ' · ' + h.escapeHtml(e.start_place) : ''}</span><span>Leitung ${leader}</span>`;
+  const sub = `<strong>${h.fmtEventDate(e, 'wd')}</strong><span>Antreten ${h.escapeHtml(e.start_time || '–')}${e.start_place ? ' · ' + h.escapeHtml(e.start_place) : ''}</span><span>Leitung ${leader}</span>`;
   const q = { umfang: filters.umfang !== 'angemeldet' ? filters.umfang : undefined, schicht: filters.schicht || undefined, sort: filters.sort !== 'rang' ? filters.sort : undefined };
   const exportUrl = (format) => h.escapeHtml(h.withQuery(`${base}/teilnehmerliste`, q, { format }));
 %>
@@ -19,7 +19,7 @@
     <div class="card-head"><h2>Angaben</h2></div>
     <div class="card-body">
       <dl class="kv left">
-        <dt>Datum</dt><dd><%= h.fmtDateLong(e.date) %></dd>
+        <dt>Datum</dt><dd><%= h.fmtEventDate(e, 'long') %></dd>
         <dt>Antreten</dt><dd><%= e.start_time || '–' %><%= e.start_place ? ` · ${e.start_place}` : '' %></dd>
         <dt>Abtreten</dt><dd><%= e.end_time || '–' %><%= (e.end_place || e.start_place) ? ` · ${e.end_place || e.start_place}` : '' %></dd>
         <dt>Einsatzleitung</dt><dd><%= e.leader_last ? `${e.leader_rank || ''} ${e.leader_first} ${e.leader_last}`.trim() + (e.leader_mobile ? ` (${e.leader_mobile})` : '') : '–' %></dd>
@@ -34,7 +34,7 @@
     <div class="card-body">
       <% for (const sh of shifts) { %>
         <div class="occ">
-          <div class="occ-head"><span><strong><%= sh.name %></strong> · <%= h.fmtSpan(sh.starts_at, sh.ends_at) || 'Zeit offen' %><%= sh.start_place ? ` · ${sh.start_place}` : '' %></span><strong><%= sh.ist %> / <%= sh.soll ?? '–' %></strong></div>
+          <div class="occ-head"><span><strong><%= sh.name %></strong> · <%= h.fmtShiftWhen(sh, h.isMultiDay(e)) || 'Zeit offen' %><%= sh.start_place ? ` · ${sh.start_place}` : '' %></span><strong><%= sh.ist %> / <%= sh.soll ?? '–' %></strong></div>
           <div class="bar <%= sh.tone %>"><span style="width:<%= h.pct(sh.ist, sh.soll) %>%"></span></div>
           <% if (sh.extern) { %><div class="small muted ext-split"><%= sh.intern %> eigene + <%= sh.extern %> extern</div><% } %>
         </div>

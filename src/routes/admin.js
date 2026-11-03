@@ -302,8 +302,8 @@ router.post('/verwaltung/server/testmail', async (req, res, next) => {
 function previewEvent(id) {
   const chosen = id ? events.get(Number(id)) : null;
   if (chosen) return chosen;
-  const next = db.one("SELECT id FROM events WHERE status IN ('veroeffentlicht','entwurf') AND date >= ? ORDER BY date LIMIT 1", today())
-    || db.one('SELECT id FROM events ORDER BY date DESC LIMIT 1');
+  const next = db.one("SELECT id FROM events WHERE status IN ('veroeffentlicht','entwurf') AND date_to >= ? ORDER BY date_from LIMIT 1", today())
+    || db.one('SELECT id FROM events ORDER BY date_from DESC LIMIT 1');
   return next ? events.get(next.id) : null;
 }
 
@@ -313,7 +313,7 @@ router.get('/verwaltung/kalendertermin', (req, res) => {
   const preview = e ? calendar.renderEntry(e, e.shifts.length > 1 ? e.shifts[0] : null, req.user, tpl) : null;
   res.render('admin/calendar', {
     title: 'Kalendertermin', tpl, groups: calendar.blockGroups(), preview, previewEvent: e,
-    eventOptions: db.all('SELECT id, name, date FROM events ORDER BY date DESC LIMIT 50'),
+    eventOptions: db.all('SELECT id, name, date, date_from, date_to FROM events ORDER BY date_from DESC LIMIT 50'),
   });
 });
 
@@ -331,7 +331,7 @@ router.post('/verwaltung/kalendertermin', (req, res) => {
     const preview = e ? calendar.renderEntry(e, e.shifts.length > 1 ? e.shifts[0] : null, req.user, tpl) : null;
     return res.render('admin/calendar', {
       title: 'Kalendertermin', tpl, groups: calendar.blockGroups(), preview, previewEvent: e,
-      eventOptions: db.all('SELECT id, name, date FROM events ORDER BY date DESC LIMIT 50'), unsaved: true,
+      eventOptions: db.all('SELECT id, name, date, date_from, date_to FROM events ORDER BY date_from DESC LIMIT 50'), unsaved: true,
     });
   }
   settings.set('calendar', tpl);
@@ -359,7 +359,7 @@ function confirmationPage(req, res, conf, extra = {}) {
   res.render('admin/confirmation', {
     title: 'Bestätigungsmail', conf, groups, preview, previewEvent: e, smtp: mailer.isConfigured(),
     testTo: req.body?.test_to || req.user.email || '',
-    eventOptions: db.all('SELECT id, name, date FROM events ORDER BY date DESC LIMIT 50'), ...extra,
+    eventOptions: db.all('SELECT id, name, date, date_from, date_to FROM events ORDER BY date_from DESC LIMIT 50'), ...extra,
   });
 }
 

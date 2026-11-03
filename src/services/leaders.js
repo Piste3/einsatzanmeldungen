@@ -38,7 +38,7 @@ function eventsFor(userId) {
   return db.all(`SELECT e.*, p.first_name AS leader_first, p.last_name AS leader_last, r.short AS leader_rank, l.granted_at
     FROM event_leaders l JOIN events e ON e.id = l.event_id
     LEFT JOIN persons p ON p.id = e.leader_person_id LEFT JOIN ranks r ON r.id = p.rank_id
-    WHERE l.user_id = ? ORDER BY e.date, e.start_time, e.id`, userId);
+    WHERE l.user_id = ? ORDER BY e.date_from IS NULL, e.date_from, e.start_time, e.id`, userId);
 }
 
 function grant(eventId, userId, actor) {

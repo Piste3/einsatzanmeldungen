@@ -65,7 +65,7 @@ function listForEvent(eventId, { status = '', team = '', q = '', sort = 'rang' }
 }
 
 function forPerson(personId) {
-  const rows = db.all(`SELECT i.*, e.name AS event_name, e.date AS event_date FROM inquiries i JOIN events e ON e.id = i.event_id WHERE i.person_id = ?`, personId);
+  const rows = db.all(`SELECT i.*, e.name AS event_name, e.date_from AS event_date, e.date_to AS event_date_to FROM inquiries i JOIN events e ON e.id = i.event_id WHERE i.person_id = ?`, personId);
   const attempts = attemptsFor(rows.map((r) => r.id));
   for (const r of rows) r.attempts = attempts.get(r.id) || [];
   return rows;

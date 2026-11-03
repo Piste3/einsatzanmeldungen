@@ -13,7 +13,7 @@
   <input type="hidden" name="event_ids" value="<%= e.id %>" <%= disabled ? 'disabled' : '' %>>
   <div class="ev-head">
     <legend class="ev-name"><%= e.name %></legend>
-    <span class="date-pill"><%= h.weekdayShort(e.date) %> <%= h.fmtDateShort(e.date) %></span>
+    <span class="date-pill"><%= h.fmtEventDate(e, 'short') %></span>
   </div>
   <% for (const [ico, line] of meta) { %><div class="ev-meta"><%- h.icon(ico, 'ev-icon') %><span><%= line %></span></div><% } %>
   <% if (e.description) { %><div class="ev-desc"><%= e.description %></div><% } %>
@@ -21,7 +21,7 @@
   <% if (e.help_text) { %><div class="ev-help"><%= e.help_text %></div><% } %>
   <% if (multi) { %>
     <% for (const s of e.openShifts) { %>
-      <label class="opt"><input type="checkbox" name="shifts_<%= e.id %>" value="<%= s.id %>" <%= chosen.includes(s.id) ? 'checked' : '' %> <%= disabled ? 'disabled' : '' %> data-shift-check> <span><%= s.name %></span> <span class="time"><%= h.fmtSpan(s.starts_at, s.ends_at) %><%= s.starts_at && s.starts_at.slice(0, 10) !== e.date ? ` (${h.fmtDateShort(s.starts_at.slice(0, 10))})` : '' %></span></label>
+      <label class="opt"><input type="checkbox" name="shifts_<%= e.id %>" value="<%= s.id %>" <%= chosen.includes(s.id) ? 'checked' : '' %> <%= disabled ? 'disabled' : '' %> data-shift-check> <span><%= s.name %></span> <span class="time"><%= h.fmtShiftWhen(s, h.isMultiDay(e)) %></span></label>
     <% } %>
   <% } else { %>
     <div class="yesno">

@@ -8,7 +8,7 @@
       <% if (!list.length) { %><tr><td colspan="7" class="empty"><%= emptyText %></td></tr><% } %>
       <% for (const e of list) { %>
         <tr data-row-id="ev<%= e.id %>">
-          <td class="nowrap"><%= h.fmtDateWd(e.date) %></td>
+          <td class="nowrap"><%= h.fmtEventDate(e, 'wd') %></td>
           <td><a href="/einsaetze/<%= e.id %>"><strong><%= e.name %></strong></a></td>
           <td><%= [e.start_time, e.start_place].filter(Boolean).join(' · ') || '–' %></td>
           <td><%- h.eventBadge(e.status) %></td>

@@ -8,7 +8,7 @@ const events = require('./events');
 const matching = require('./matching');
 const registrations = require('./registrations');
 const settings = require('./settings');
-const { nowIso, localNow, fmtDateShort, fmtSpan } = require('../lib/dates');
+const { nowIso, localNow, fmtRange, fmtShiftWhen, isMultiDay } = require('../lib/dates');
 
 const TOKEN_TTL_DAYS = 14;
 
@@ -56,12 +56,13 @@ function receive(body, { ip, userAgent }) {
     answers.push({
       event_id: eventId,
       event_name: e?.name || null,
-      event_date: e?.date || null,
+      event_date: e?.date_from || e?.date || null,
+      event_date_to: e?.date_to || null,
       question: e ? (e.question_text || null) : null,
       answer: shifts.length ? 'ja' : answer,
       shifts: shifts.map((sid) => {
         const s = e?.shifts.find((x) => x.id === sid);
-        return { id: sid, name: s?.name || null, zeit: s ? fmtSpan(s.starts_at, s.ends_at) : null };
+        return { id: sid, name: s?.name || null, zeit: s ? fmtShiftWhen(s, isMultiDay(e)) : null };
       }),
       remark: remark || null,
     });
@@ -203,7 +204,7 @@ function confirmationList(sub) {
   const payload = JSON.parse(sub.payload);
   return payload.answers.map((a) => ({
     name: a.event_name,
-    date: a.event_date ? fmtDateShort(a.event_date) : '',
+    date: a.event_date ? fmtRange(a.event_date, a.event_date_to, 'dm') : '',
     detail: a.answer === 'nein' ? 'Nein' : a.shifts.length ? a.shifts.map((s) => s.name).join(', ') : 'Ja',
     answer: a.answer,
   }));

@@ -1,8 +1,10 @@
-<% const multi = event.shifts.length > 1; const back = `/einsaetze/${event.id}/schichten`; const overlapNames = new Set(overlaps.map((o) => o.person)); %>
+<% const multi = event.shifts.length > 1; const multiDay = h.isMultiDay(event); const back = `/einsaetze/${event.id}/schichten`; const overlapNames = new Set(overlaps.map((o) => o.person)); %>
 <% for (const o of overlaps) { %>
   <div class="hint-bar"><span class="tag tag-yellow">Hinweis</span><span><strong><%= o.person %></strong> ist beiden Schichten zugeteilt (<%= o.shifts.join(', ') %>) – die Schichten überschneiden sich von <%= o.from %> bis <%= o.to %>.</span></div>
 <% } %>
-<% if (!multi) { %>
+<% if (!event.date_from) { %>
+  <div class="callout mb">Dieser Einsatz hat noch kein Datum. Trage unten bei jeder Schicht ihren Tag ein. In der untersten Zeile kommt eine weitere Schicht dazu, auch an einem anderen Tag.</div>
+<% } else if (!multi) { %>
   <div class="callout mb">Dieser Einsatz hat eine Schicht. Jede Anmeldung gilt automatisch für diese Schicht – es gibt nichts zu verteilen.</div>
 <% } %>
 <p class="small muted no-print">Externe Abteilungen (nur mit Anzahl Personen) erfasst du in der <a class="link" href="/einsaetze/<%= event.id %>#externe">Übersicht</a>.</p>
@@ -23,7 +25,7 @@
   <% for (const col of columns) { const assignedIds = new Set(col.regs.map((r) => r.id)); %>
     <div class="card">
       <div class="card-head">
-        <div><h2><%= col.name %></h2><span class="small muted"><%= h.fmtSpan(col.starts_at, col.ends_at) || 'Zeit offen' %><%= col.start_place ? ` · ${col.start_place}` : '' %></span></div>
+        <div><h2><%= col.name %></h2><span class="small muted"><%= h.fmtShiftWhen(col, multiDay) || 'Zeit offen' %><%= col.start_place ? ` · ${col.start_place}` : '' %></span></div>
         <div class="occ"><div class="occ-head"><span>Besetzung<%= col.extern ? ` · davon ${col.extern} extern` : '' %></span><strong><%= col.ist %> / <%= col.soll ?? '–' %><%= col.soll ? (col.ist >= col.soll ? ' · voll' : ` · ${col.missing} fehlen`) : '' %></strong></div><div class="bar <%= col.tone %>"><span style="width:<%= h.pct(col.ist, col.soll) %>%"></span></div></div>
         <% const fx = fnSummary.shifts.find((x) => x.id === col.id); if (fx && fx.rows.some((r) => r.soll || (!r.is_default && r.ist))) { %><div class="fn-line small fn-line-shift"><% for (const f of fx.rows.filter((r) => r.soll || r.ist)) { %><span class="fn-chip tone-<%= f.tone %>" title="<%= f.name %>"><span class="fn-tag<%= f.is_default ? ' fn-default' : '' %>"><%= f.short %></span> <%= f.ist %>/<%= f.soll ?? '–' %></span><% } %></div><% } %>
       </div>
@@ -62,7 +64,7 @@
 <form class="card mt no-print" method="post" action="/einsaetze/<%= event.id %>/schichten/speichern" id="shifts-form" data-section>
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   <% if (closed) { %><input type="hidden" name="reason" value="" data-reason><% } %>
-  <div class="card-head"><h2>Schichten verwalten <span class="hint">Name, Zeit, Soll pro Funktion – das Soll der Schicht ist die Summe</span></h2></div>
+  <div class="card-head"><h2>Schichten verwalten <span class="hint">Name, Tag, Zeit, Soll pro Funktion – das Soll der Schicht ist die Summe</span></h2></div>
   <div class="table-wrap">
     <table class="form-table">
       <thead><tr><th>Name</th><th>Datum</th><th>Beginn</th><th>Ende</th><% for (const f of fnCols) { %><th class="fn-col" title="Soll <%= f.name %>"><span class="fn-tag<%= f.is_default ? ' fn-default' : '' %>"><%= f.short %></span></th><% } %><th class="fn-col" title="Summe der Funktionen">Soll</th><th>Antretensort (optional)</th><th>Interne Bemerkung</th><th></th></tr></thead>
@@ -70,7 +72,7 @@
       <% for (const s of event.shifts) { const k = `__${s.id}`; %>
         <tr data-soll-row>
           <td><input type="text" name="name<%= k %>" value="<%= s.name %>" required aria-label="Name"></td>
-          <td><input type="date" name="date<%= k %>" value="<%= (s.starts_at || event.date).slice(0, 10) %>" aria-label="Datum"></td>
+          <td><input type="date" name="date<%= k %>" value="<%= (s.starts_at || event.date || '').slice(0, 10) %>" aria-label="Datum"></td>
           <td><input type="time" name="start<%= k %>" value="<%= s.starts_at ? s.starts_at.slice(11, 16) : '' %>" aria-label="Beginn"></td>
           <td><input type="time" name="end<%= k %>" value="<%= s.ends_at ? s.ends_at.slice(11, 16) : '' %>" aria-label="Ende"></td>
           <% for (const f of fnCols) { %><td class="fn-col"><input type="number" min="0" max="9999" name="fn_target_<%= f.id %><%= k %>" value="<%= s.targets[f.id] ?? '' %>" placeholder="–" aria-label="Soll <%= f.short %>" data-soll-part></td><% } %>
@@ -82,7 +84,7 @@
       <% } %>
         <tr class="new-row" data-soll-row data-new-shift>
           <td><input type="text" name="name__neu" placeholder="+ Neue Schicht" aria-label="Name der neuen Schicht"></td>
-          <td><input type="date" name="date__neu" value="<%= event.date %>" aria-label="Datum der neuen Schicht"></td>
+          <td><input type="date" name="date__neu" value="<%= event.date || event.date_to || '' %>" aria-label="Datum der neuen Schicht"></td>
           <td><input type="time" name="start__neu" aria-label="Beginn der neuen Schicht"></td>
           <td><input type="time" name="end__neu" aria-label="Ende der neuen Schicht"></td>
           <% for (const f of fnCols) { %><td class="fn-col"><input type="number" min="0" max="9999" name="fn_target_<%= f.id %>__neu" placeholder="–" aria-label="Soll <%= f.short %>" data-soll-part></td><% } %>

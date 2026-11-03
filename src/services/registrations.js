@@ -15,7 +15,7 @@ const { rankOrder } = require('../lib/sorting');
 const SELECT = `
   SELECT g.*, p.first_name, p.last_name, p.email, p.mobile, p.birth_date, p.birth_year, r.short AS rank_short,
     (SELECT group_concat(t.name, ', ') FROM person_teams pt JOIN teams t ON t.id = pt.team_id WHERE pt.person_id = p.id) AS teams,
-    e.name AS event_name, e.date AS event_date, e.status AS event_status
+    e.name AS event_name, e.date_from AS event_date, e.date_to AS event_date_to, e.status AS event_status
   FROM registrations g
   JOIN events e ON e.id = g.event_id
   LEFT JOIN persons p ON p.id = g.person_id
@@ -135,7 +135,7 @@ function dietSummary(list, exts = []) {
 }
 
 function listForPerson(personId) {
-  return hydrate(db.all(`${SELECT} WHERE g.person_id = ? ORDER BY e.date DESC`, personId));
+  return hydrate(db.all(`${SELECT} WHERE g.person_id = ? ORDER BY e.date_from DESC`, personId));
 }
 
 function unresolved() {

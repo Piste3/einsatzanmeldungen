@@ -159,7 +159,52 @@ function fmtSpan(startLocal, endLocal) {
   return `${s}–${e}`;
 }
 
+// Zeitraum zweier Tage in einer der Schreibweisen:
+// date 07.11.–09.11.2026 · dm 07.11.–09.11. · wd Sa 07.11.–Mo 09.11.2026 · short Sa 07.11.–Mo 09.11. · long Samstag, 7. – Montag, 9. November 2026
+function fmtRange(from, to, style = 'date') {
+  if (!from) return '';
+  if (!to || to === from) {
+    if (style === 'wd') return fmtDateWd(from);
+    if (style === 'short') return `${weekdayShort(from)} ${fmtDateShort(from)}`;
+    if (style === 'long') return fmtDateLong(from);
+    if (style === 'dm') return fmtDateShort(from);
+    return fmtDate(from);
+  }
+  if (style === 'dm') return `${fmtDateShort(from)}–${fmtDateShort(to)}`;
+  const sameYear = from.slice(0, 4) === to.slice(0, 4);
+  if (style === 'wd') return `${weekdayShort(from)} ${sameYear ? fmtDateShort(from) : fmtDate(from)} – ${fmtDateWd(to)}`;
+  if (style === 'short') return `${weekdayShort(from)} ${fmtDateShort(from)} – ${weekdayShort(to)} ${fmtDateShort(to)}`;
+  if (style === 'long') {
+    const a = parseYmd(from);
+    const b = parseYmd(to);
+    const left = sameYear && a.m === b.m ? `${WEEKDAYS[a.weekday]}, ${a.d}.` : sameYear ? `${WEEKDAYS[a.weekday]}, ${a.d}. ${MONTHS[a.m - 1]}` : fmtDateLong(from);
+    return `${left} – ${fmtDateLong(to)}`;
+  }
+  return `${sameYear ? fmtDateShort(from) : fmtDate(from)}–${fmtDate(to)}`;
+}
+
+// Datum eines Einsatzes: eigenes Datum bzw. Zeitraum seiner Schichten (date_from/date_to); sonst «Datum offen»
+function fmtEventDate(e, style = 'date') {
+  const from = e?.date_from || e?.date;
+  if (!from) return 'Datum offen';
+  return fmtRange(from, e.date_to || from, style);
+}
+
+// Mehrtägig: Einsatzdatum und Schichten liegen nicht alle am selben Tag
+function isMultiDay(e) {
+  return Boolean(e?.date_from && e.date_to && e.date_from !== e.date_to);
+}
+
+// Schichtzeit; bei mehrtägigen Einsätzen mit Tag davor: «Sa 07.11. 13:30–19:30»
+function fmtShiftWhen(shift, multiDay = false) {
+  const span = fmtSpan(shift?.starts_at, shift?.ends_at);
+  if (!multiDay || !shift?.starts_at) return span;
+  const day = shift.starts_at.slice(0, 10);
+  return `${weekdayShort(day)} ${fmtDateShort(day)}${span ? ` ${span}` : ''}`;
+}
+
 module.exports = {
+  fmtRange, fmtEventDate, fmtShiftWhen, isMultiDay,
   TZ, WEEKDAYS, MONTHS, nowIso, toLocal, localNow, today, isYmd, isHm, fmtDate, fmtDateShort, fmtDateWd,
   weekdayShort, fmtDateLong, fmtDateTime, fmtLocal, fmtRelative, addDays, daysBetween, daysUntil, fmtDaysUntil,
   ageAt, birthYear, parseDateInput, fmtSpan,

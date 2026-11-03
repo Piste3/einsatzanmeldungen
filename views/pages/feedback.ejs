@@ -18,6 +18,8 @@
     return parts.join(' · ');
   };
   const shiftTime = (sh) => (sh.starts_at && sh.ends_at ? `${sh.starts_at.slice(11, 16)}–${sh.ends_at.slice(11, 16)}` : '');
+  // Kopf: bei Schichten an verschiedenen Tagen steht über jeder Schichtspalte ihr Tag, sonst das Einsatzdatum
+  const colDate = (col) => (col.shift && col.shift.starts_at && h.isMultiDay(col.event) ? h.fmtRange(col.shift.starts_at.slice(0, 10), null, 'short') : h.fmtEventDate(col.event, 'short'));
   const colExt = (col) => (col.shift ? col.event.externByShift[col.shift.id] || 0 : 0);
   const colFill = (col) => { const t = colTotals[col.key]; return col.shift && col.shift.target_count ? Math.min(100, Math.round(((t.an + colExt(col)) / col.shift.target_count) * 100)) : null; };
   const extTxt = (n) => (n ? ` + ${n} ext.` : '');
@@ -61,12 +63,12 @@
         <tr>
           <th class="fb-name">Mitglied</th>
           <% for (const col of columns) { const e = col.event; const t = totals[e.id]; %>
-            <th class="fb-ev <%= col.shift ? 'fb-shift' : '' %> <%= col.first ? 'fb-first' : '' %>" title="<%= e.name %> · <%= h.weekdayShort(e.date) %> <%= h.fmtDateShort(e.date) %><%= col.shift ? ` · ${col.shift.name} ${shiftTime(col.shift)}` : '' %>">
+            <th class="fb-ev <%= col.shift ? 'fb-shift' : '' %> <%= col.first ? 'fb-first' : '' %>" title="<%= e.name %> · <%= colDate(col) %><%= col.shift ? ` · ${col.shift.name} ${shiftTime(col.shift)}` : '' %>">
               <a href="/einsaetze/<%= e.id %><%= col.shift ? '/schichten' : '' %>">
-                <span class="dt"><%= h.weekdayShort(e.date) %> <%= h.fmtDateShort(e.date) %></span>
+                <span class="dt"><%= h.fmtEventDate(e, 'short') %></span>
                 <span class="ev"><%= e.name %></span>
                 <% if (col.shift) { const ct = colTotals[col.key]; %>
-                  <span class="sh"><%= col.shift.name %></span>
+                  <span class="sh"><%= col.shift.name %><% if (h.isMultiDay(e) && col.shift.starts_at) { %><span class="sh-day"><%= colDate(col) %></span><% } %></span>
                   <span class="fill fill-<%= colTone(col) %>"><span style="width:<%= colFill(col) ?? 0 %>%"></span></span>
                   <span class="num"><%= ct.an %><%= extTxt(colExt(col)) %><%= col.shift.target_count ? ` / ${col.shift.target_count}` : ' An' %><%= ct.schicht_offen ? ` · ${ct.schicht_offen} offen` : '' %></span>
                 <% } else { %>
@@ -114,7 +116,7 @@
   %>
   <div class="card fb-card">
     <div class="card-head">
-      <h2><a href="/einsaetze/<%= e.id %>"><%= e.name %></a> <span class="hint"><%= h.weekdayShort(e.date) %> <%= h.fmtDateShort(e.date) %><%= e.status === 'entwurf' ? ' · Entwurf' : '' %></span></h2>
+      <h2><a href="/einsaetze/<%= e.id %>"><%= e.name %></a> <span class="hint"><%= h.fmtEventDate(e, 'short') %><%= e.status === 'entwurf' ? ' · Entwurf' : '' %></span></h2>
       <span class="num"><strong><%= t.an %></strong><%= extTxt(e.extern) %><%= e.soll ? ` / ${e.soll}` : '' %> An</span>
     </div>
     <div class="card-body">
@@ -122,7 +124,7 @@
       <% if (perShift.length) { %>
         <div class="fb-shifts">
           <% for (const { sh, list } of perShift) { %>
-            <div class="fb-shift-row"><span class="sh-name"><%= sh.name %> <span class="muted small"><%= shiftTime(sh) %></span></span><span class="num"><strong><%= list.length %></strong><%= extTxt(e.externByShift[sh.id]) %><%= sh.target_count ? ` / ${sh.target_count}` : '' %></span></div>
+            <div class="fb-shift-row"><span class="sh-name"><%= sh.name %> <span class="muted small"><%= h.fmtShiftWhen(sh, h.isMultiDay(e)) %></span></span><span class="num"><strong><%= list.length %></strong><%= extTxt(e.externByShift[sh.id]) %><%= sh.target_count ? ` / ${sh.target_count}` : '' %></span></div>
             <div class="fb-names"><% for (const p of list) { %><a class="pill" href="/personen/<%= p.id %>"><%= p.first_name %> <%= p.last_name %></a><% } %><% if (!list.length) { %><span class="muted small">noch niemand</span><% } %></div>
           <% } %>
           <% if (noShift.length) { %><div class="fb-shift-row"><span class="sh-name">An, Schicht noch offen</span><a class="link small" href="/einsaetze/<%= e.id %>/schichten">zuteilen →</a></div>

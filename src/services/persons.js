@@ -163,7 +163,7 @@ function canSeeDiet(user, personId) {
   const leader = user?.role === 'einsatzleiter';
   return Boolean(db.one(
     `SELECT 1 FROM registrations r JOIN events e ON e.id = r.event_id
-     WHERE r.person_id = ? AND r.status IN ('neu','rueckfrage','warteliste','bestaetigt') AND e.date >= ? AND e.status IN ('entwurf','veroeffentlicht')
+     WHERE r.person_id = ? AND r.status IN ('neu','rueckfrage','warteliste','bestaetigt') AND (e.date_to >= ? OR e.date_from IS NULL) AND e.status IN ('entwurf','veroeffentlicht')
      ${leader ? 'AND EXISTS (SELECT 1 FROM event_leaders l WHERE l.event_id = e.id AND l.user_id = ?)' : ''} LIMIT 1`,
     personId, today(), ...(leader ? [user.id] : []),
   ));

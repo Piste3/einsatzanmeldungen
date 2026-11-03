@@ -43,7 +43,7 @@ Gibt dir die Aufgebotsstelle einen weiteren Einsatz frei, erscheint er sofort in
 
 **Oben** stehen Datum, Antreten und die Einsatzleitung, rechts die Knöpfe für die Teilnehmerliste. Ein Hinweis zeigt, wenn der Einsatz noch ein **Entwurf** ist (Angaben können sich noch ändern) oder **abgesagt** wurde.
 
-**Angaben:** Datum, Antreten und Abtreten mit Ort, Einsatzleitung mit Mobilnummer, Tenue und Beschreibung.
+**Angaben:** Datum, Antreten und Abtreten mit Ort, Einsatzleitung mit Mobilnummer, Tenue und Beschreibung. Dauert ein Einsatz mehrere Tage, steht beim Datum der Zeitraum, z. B. «Samstag, 2. – Sonntag, 3. Januar 2027», und bei jeder Schicht ihr Tag.
 
 **Schichten:** Pro Schicht die Zeit und die Besetzung, z. B. «8 / 10» – 8 Personen eingeteilt, 10 gebraucht. Der Balken ist grün, wenn die Schicht voll ist, gelb ab der Hälfte und rot darunter. Kommen Leute einer anderen Abteilung, steht darunter z. B. «6 eigene + 4 extern».
 

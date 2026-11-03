@@ -23,7 +23,7 @@
       <% if (!list.length) { %><tr><td colspan="8" class="empty">Keine Einsätze gefunden.</td></tr><% } %>
       <% for (const e of list) { %>
         <tr data-row-id="ev<%= e.id %>">
-          <td class="nowrap"><%= h.fmtDateWd(e.date) %></td>
+          <td class="nowrap"><%= h.fmtEventDate(e, 'wd') %></td>
           <td><a href="/einsaetze/<%= e.id %>"><strong><%= e.name %></strong></a><% if (e.inForm) { %> <%- h.badge('im Formular', 'green') %><% } %></td>
           <td><%= [e.start_time, e.start_place].filter(Boolean).join(' · ') || '–' %></td>
           <td><%- h.eventBadge(e.status) %></td>

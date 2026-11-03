@@ -132,19 +132,19 @@ router.get('/personen/:id', (req, res) => {
     groups[c.state].push({ event: e, reg, inq });
   }
   // Anmeldungen bei Entwürfen trotzdem zeigen
-  for (const reg of regs.filter((r) => r.event_date >= today() && !upcoming.some((e) => e.id === r.event_id) && ['entwurf', 'veroeffentlicht'].includes(r.event_status))) {
+  for (const reg of regs.filter((r) => (r.event_date_to || '9999') >= today() && !upcoming.some((e) => e.id === r.event_id) && ['entwurf', 'veroeffentlicht'].includes(r.event_status))) {
     const c = feedback.cellState(reg, inqs.find((i) => i.event_id === reg.event_id));
-    groups[c.state].push({ event: { id: reg.event_id, name: reg.event_name, date: reg.event_date }, reg, inq: null });
+    groups[c.state].push({ event: { id: reg.event_id, name: reg.event_name, date_from: reg.event_date, date_to: reg.event_date_to }, reg, inq: null });
   }
-  const past = regs.filter((r) => r.event_date < today() || ['abgeschlossen', 'abgesagt'].includes(r.event_status));
+  const past = regs.filter((r) => (r.event_date_to && r.event_date_to < today()) || ['abgeschlossen', 'abgesagt'].includes(r.event_status));
   const format = wantsExport(req);
   if (format) {
     const rows = [
       ...Object.entries(groups).flatMap(([state, items]) => items.map((i) => ({ ...i, state }))),
-      ...past.map((reg) => ({ event: { name: reg.event_name, date: reg.event_date }, reg, state: 'frueher' })),
+      ...past.map((reg) => ({ event: { name: reg.event_name, date_from: reg.event_date, date_to: reg.event_date_to }, reg, state: 'frueher' })),
     ];
     return sendTable(res, format, `${p.first_name} ${p.last_name}`, [
-      { label: 'Datum', value: (r) => h.fmtDate(r.event.date) },
+      { label: 'Datum', value: (r) => h.fmtEventDate(r.event) },
       { label: 'Einsatz', value: (r) => r.event.name },
       { label: 'Rückmeldung', value: (r) => (r.state === 'frueher' ? 'Früherer Einsatz' : FEEDBACK[r.state].label) },
       { label: 'Status', value: (r) => (r.reg ? REG_STATUS[r.reg.status].label : r.inq ? h.labels.INQUIRY_STATUS[r.inq.status].label : '') },

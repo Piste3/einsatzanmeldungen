@@ -150,7 +150,7 @@ CREATE TABLE IF NOT EXISTS extra_fields (
 CREATE TABLE IF NOT EXISTS events (
   id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,
-  date TEXT NOT NULL,          -- YYYY-MM-DD
+  date TEXT,                   -- YYYY-MM-DD, freiwillig (leer = Schichten an verschiedenen Tagen)
   description TEXT,            -- für Mitglieder sichtbar
   start_time TEXT,             -- HH:MM Antreten
   end_time TEXT,               -- HH:MM Abtreten
@@ -167,6 +167,8 @@ CREATE TABLE IF NOT EXISTS events (
   extra JSON NOT NULL DEFAULT '{}',
   function_targets JSON NOT NULL DEFAULT '{}',  -- veraltet (früher Soll pro Funktion am Einsatz) – jetzt pro Schicht
   calendar_sent_at TEXT,       -- zuletzt Kalendertermin exportiert
+  date_from TEXT,              -- erster Tag (Einsatzdatum und Schichten) – wird per Trigger nachgeführt
+  date_to TEXT,                -- letzter Tag (Einsatzdatum und Schichtbeginne)
   version INTEGER NOT NULL DEFAULT 1,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL,
@@ -174,6 +176,7 @@ CREATE TABLE IF NOT EXISTS events (
   updated_by INTEGER
 );
 CREATE INDEX IF NOT EXISTS idx_events_date ON events(date);
+CREATE INDEX IF NOT EXISTS idx_events_date_from ON events(date_from);
 
 -- Freigabe einzelner Einsätze für Konten mit der Rolle «Einsatzleiter» (nur lesen: Angaben + Teilnehmer)
 CREATE TABLE IF NOT EXISTS event_leaders (
@@ -200,6 +203,36 @@ CREATE TABLE IF NOT EXISTS shifts (
   version INTEGER NOT NULL DEFAULT 1
 );
 CREATE INDEX IF NOT EXISTS idx_shifts_event ON shifts(event_id);
+
+-- Zeitraum eines Einsatzes (date_from/date_to) aus Einsatzdatum und Schichtbeginnen ableiten.
+-- So funktionieren Sortierung und Filter auch, wenn der Einsatz kein eigenes Datum hat.
+CREATE TRIGGER IF NOT EXISTS trg_shifts_ins_dates AFTER INSERT ON shifts BEGIN
+  UPDATE events SET
+    date_from = (SELECT min(d) FROM (SELECT events.date AS d UNION ALL SELECT substr(starts_at, 1, 10) FROM shifts WHERE event_id = events.id)),
+    date_to = (SELECT max(d) FROM (SELECT events.date AS d UNION ALL SELECT substr(starts_at, 1, 10) FROM shifts WHERE event_id = events.id))
+  WHERE id = NEW.event_id;
+END;
+CREATE TRIGGER IF NOT EXISTS trg_shifts_upd_dates AFTER UPDATE OF starts_at, event_id ON shifts BEGIN
+  UPDATE events SET
+    date_from = (SELECT min(d) FROM (SELECT events.date AS d UNION ALL SELECT substr(starts_at, 1, 10) FROM shifts WHERE event_id = events.id)),
+    date_to = (SELECT max(d) FROM (SELECT events.date AS d UNION ALL SELECT substr(starts_at, 1, 10) FROM shifts WHERE event_id = events.id))
+  WHERE id IN (NEW.event_id, OLD.event_id);
+END;
+CREATE TRIGGER IF NOT EXISTS trg_shifts_del_dates AFTER DELETE ON shifts BEGIN
+  UPDATE events SET
+    date_from = (SELECT min(d) FROM (SELECT events.date AS d UNION ALL SELECT substr(starts_at, 1, 10) FROM shifts WHERE event_id = events.id)),
+    date_to = (SELECT max(d) FROM (SELECT events.date AS d UNION ALL SELECT substr(starts_at, 1, 10) FROM shifts WHERE event_id = events.id))
+  WHERE id = OLD.event_id;
+END;
+CREATE TRIGGER IF NOT EXISTS trg_events_dates AFTER INSERT ON events BEGIN
+  UPDATE events SET date_from = NEW.date, date_to = NEW.date WHERE id = NEW.id;
+END;
+CREATE TRIGGER IF NOT EXISTS trg_events_upd_dates AFTER UPDATE OF date ON events BEGIN
+  UPDATE events SET
+    date_from = (SELECT min(d) FROM (SELECT NEW.date AS d UNION ALL SELECT substr(starts_at, 1, 10) FROM shifts WHERE event_id = NEW.id)),
+    date_to = (SELECT max(d) FROM (SELECT NEW.date AS d UNION ALL SELECT substr(starts_at, 1, 10) FROM shifts WHERE event_id = NEW.id))
+  WHERE id = NEW.id;
+END;
 
 -- Externe Abteilungen (andere Vereine, Feuerwehr …): wiederverwendbare Liste
 CREATE TABLE IF NOT EXISTS external_units (

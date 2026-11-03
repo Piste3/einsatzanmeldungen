@@ -43,7 +43,7 @@
               <div class="ev-item">
                 <div>
                   <a href="/einsaetze/<%= it.event.id %>"><strong><%= it.event.name %></strong></a>
-                  <div class="small muted"><%= h.weekdayShort(it.event.date) %> <%= h.fmtDateShort(it.event.date) %><%= it.reg ? ` · ${regLine(it.reg)}` : '' %></div>
+                  <div class="small muted"><%= h.fmtEventDate(it.event, 'short') %><%= it.reg ? ` · ${regLine(it.reg)}` : '' %></div>
                   <% if (key === 'ab' && it.reg) { %><div class="small muted">abgemeldet am <%= h.fmtDateShort(it.reg.updated_at.slice(0, 10)) %> · <%= h.labels.SOURCE[it.reg.source] %></div><% } %>
                   <% if (key === 'ab' && !it.reg && it.inq) { const last = it.inq.attempts.at(-1); %><div class="small muted">abgesagt<%= last ? ` am ${h.fmtDateShort(last.contacted_at.slice(0, 10))} per ${h.labels.CHANNEL[last.channel].label}` : '' %></div><% } %>
                   <% if (it.inq && it.inq.attempts.length && key !== 'ab') { %><div class="attempts mt-s"><% for (const a of it.inq.attempts) { %><div class="attempt"><span class="ch <%= a.channel === 'whatsapp' ? 'wa' : '' %>"><%= h.labels.CHANNEL[a.channel].short %></span><%= h.fmtDateShort(a.contacted_at.slice(0, 10)) %> <%= a.contacted_at.slice(11, 16) %> · <%= a.sent_by_name %></div><% } %></div><% } %>
@@ -65,7 +65,7 @@
           <thead><tr><th>Datum</th><th>Einsatz</th><th>Schicht</th><th>Quelle</th><th>Status</th></tr></thead>
           <tbody>
           <% if (!past.length) { %><tr><td colspan="5" class="empty">Keine früheren Einsätze.</td></tr><% } %>
-          <% for (const r of past) { %><tr><td><%= h.fmtDate(r.event_date) %></td><td><a href="/einsaetze/<%= r.event_id %>"><%= r.event_name %></a></td><td><%= r.assigned.map((a) => a.name).join(', ') || '–' %></td><td><%= h.labels.SOURCE[r.source] %></td><td><%- h.regBadge(r.status) %></td></tr><% } %>
+          <% for (const r of past) { %><tr><td><%= h.fmtRange(r.event_date, r.event_date_to) || 'Datum offen' %></td><td><a href="/einsaetze/<%= r.event_id %>"><%= r.event_name %></a></td><td><%= r.assigned.map((a) => a.name).join(', ') || '–' %></td><td><%= h.labels.SOURCE[r.source] %></td><td><%- h.regBadge(r.status) %></td></tr><% } %>
           </tbody>
         </table>
       </div>

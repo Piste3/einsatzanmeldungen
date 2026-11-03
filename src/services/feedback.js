@@ -3,7 +3,7 @@
 const db = require('../db');
 const externals = require('./externals');
 const history = require('./history');
-const { today, addDays } = require('../lib/dates');
+const { today, addDays, isMultiDay, fmtShiftWhen } = require('../lib/dates');
 const { rankOrder } = require('../lib/sorting');
 
 const PERIODS = {
@@ -31,7 +31,8 @@ function cellState(reg, inq) {
 
 function upcomingEvents(period = '3m') {
   const days = PERIODS[period]?.days || PERIODS['3m'].days;
-  return db.all(`SELECT * FROM events WHERE status IN ('veroeffentlicht','entwurf') AND date >= ? AND date <= ? ORDER BY date, start_time, id`,
+  // Mehrtägige Einsätze zählen, solange ihr letzter Tag nicht vorbei ist
+  return db.all(`SELECT * FROM events WHERE status IN ('veroeffentlicht','entwurf') AND date_to >= ? AND date_from <= ? ORDER BY date_from, start_time, id`,
     today(), addDays(today(), days));
 }
 
@@ -126,8 +127,11 @@ function shiftChoices(eventIds) {
   const ids = (eventIds || upcomingEvents('12m').map((e) => e.id)).map(Number).filter(Boolean);
   if (!ids.length) return {};
   const out = {};
-  for (const sh of db.all(`SELECT id, event_id, name, starts_at, ends_at FROM shifts WHERE event_id IN (${ids.map(() => '?').join(',')}) ORDER BY sort, starts_at, id`, ...ids)) {
-    (out[sh.event_id] ||= []).push({ id: sh.id, name: sh.name, time: sh.starts_at && sh.ends_at ? `${sh.starts_at.slice(11, 16)}–${sh.ends_at.slice(11, 16)}` : '' });
+  const ph = ids.map(() => '?').join(',');
+  // Bei Schichten an verschiedenen Tagen steht der Tag vor der Zeit
+  const multi = new Set(db.all(`SELECT id, date_from, date_to FROM events WHERE id IN (${ph})`, ...ids).filter(isMultiDay).map((e) => e.id));
+  for (const sh of db.all(`SELECT id, event_id, name, starts_at, ends_at FROM shifts WHERE event_id IN (${ph}) ORDER BY sort, starts_at, id`, ...ids)) {
+    (out[sh.event_id] ||= []).push({ id: sh.id, name: sh.name, time: fmtShiftWhen(sh, multi.has(sh.event_id)) });
   }
   for (const k of Object.keys(out)) if (out[k].length < 2) delete out[k];
   return out;

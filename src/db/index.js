@@ -13,6 +13,7 @@ function open(file) {
   db.exec('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;');
   migrate(db);
   db.exec(fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8'));
+  refreshEventDates(db);
   return db;
 }
 
@@ -26,7 +27,7 @@ const NEW_COLUMNS = {
   ],
   mail_outbox: [['body_html', 'TEXT']],
   event_externals: [['diets', "JSON NOT NULL DEFAULT '[]'"], ['function_id', 'INTEGER REFERENCES functions(id)']],
-  events: [['function_targets', "JSON NOT NULL DEFAULT '{}'"]],
+  events: [['function_targets', "JSON NOT NULL DEFAULT '{}'"], ['date_from', 'TEXT'], ['date_to', 'TEXT']],
   shifts: [['function_targets', "JSON NOT NULL DEFAULT '{}'"]],
   registrations: [['function_id', 'INTEGER REFERENCES functions(id)']],
 };
@@ -41,18 +42,33 @@ function migrate(d) {
   widenCheck(d, 'inquiries', "'unsicher'", "'nicht_erreicht','whatsapp')", "'nicht_erreicht','whatsapp','unsicher')");
   // Rolle «Einsatzleiter» erlauben
   widenCheck(d, 'users', "'einsatzleiter'", "('admin','aufgebotsstelle')", "('admin','aufgebotsstelle','einsatzleiter')");
+  // Einsatzdatum freiwillig (Schichten an verschiedenen Tagen)
+  rebuild(d, 'events', (sql) => /\bdate TEXT NOT NULL/.test(sql), (sql) => sql.replace(/\bdate TEXT NOT NULL/, 'date TEXT'));
+}
+
+// Zeitraum aller Einsätze (date_from/date_to) aus Einsatzdatum und Schichtbeginnen nachrechnen.
+// Danach halten die Trigger aus schema.sql die Werte aktuell.
+function refreshEventDates(d) {
+  d.exec(`UPDATE events SET
+    date_from = (SELECT min(x) FROM (SELECT events.date AS x UNION ALL SELECT substr(starts_at, 1, 10) FROM shifts WHERE event_id = events.id)),
+    date_to = (SELECT max(x) FROM (SELECT events.date AS x UNION ALL SELECT substr(starts_at, 1, 10) FROM shifts WHERE event_id = events.id))`);
 }
 
 // Erlaubte Werte einer CHECK-Bedingung erweitern: Tabelle mit gleicher Spaltenfolge neu aufbauen
 function widenCheck(d, table, marker, from, to) {
+  rebuild(d, table, (sql) => !sql.includes(marker), (sql) => sql.replace(from, to));
+}
+
+// Tabelle mit gleicher Spaltenfolge und geänderter Definition neu aufbauen (SQLite kann Spalten nicht ändern)
+function rebuild(d, table, needed, transform) {
   const row = d.prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = ?").get(table);
-  if (!row || row.sql.includes(marker)) return;
+  if (!row || !needed(row.sql)) return;
   d.exec('PRAGMA foreign_keys = OFF');
   // Verweise anderer Tabellen (z. B. sessions -> users) beim Umbenennen nicht umschreiben
   d.exec('PRAGMA legacy_alter_table = ON');
   try {
     d.exec('BEGIN');
-    d.exec(`CREATE TABLE ${table}_neu ${row.sql.slice(row.sql.indexOf('(')).replace(from, to)}`);
+    d.exec(`CREATE TABLE ${table}_neu ${transform(row.sql.slice(row.sql.indexOf('(')))}`);
     d.exec(`INSERT INTO ${table}_neu SELECT * FROM ${table}; DROP TABLE ${table}; ALTER TABLE ${table}_neu RENAME TO ${table}; COMMIT`);
   } catch (err) {
     d.exec('ROLLBACK');

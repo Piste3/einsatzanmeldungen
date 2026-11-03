@@ -29,7 +29,7 @@
   <div class="kpi">
     <div class="label">Nächster Einsatz</div>
     <% if (kpis.next) { %>
-      <div class="value words"><%= h.fmtDaysUntil(kpis.next.date) %></div>
+      <div class="value words"><%= h.fmtDaysUntil(kpis.next.date_from < h.today() ? h.today() : kpis.next.date_from) %></div>
       <div class="sub"><a href="/einsaetze/<%= kpis.next.id %>"><%= kpis.next.name %></a></div>
     <% } else { %>
       <div class="value">–</div><div class="sub">kein Einsatz geplant</div>
@@ -51,7 +51,7 @@
           <% for (const r of unconfirmed) { %>
             <tr data-row-id="u<%= r.id %>-<%= r.status %>">
               <td><%- h.rank(r.rank_short) %><a class="nowrap" href="/personen/<%= r.person_id %>"><strong><%= r.first_name %> <%= r.last_name %></strong></a><% if (r.remark) { %><span class="sub">«<%= r.remark %>»</span><% } %></td>
-              <td><a href="/einsaetze/<%= r.event_id %>/anmeldungen?q=<%= encodeURIComponent(r.last_name) %>"><%= r.event_name %></a><span class="sub"><%= h.fmtDateWd(r.event_date) %><%= r.event_status === 'entwurf' ? ' · Entwurf' : '' %><%= r.shifts ? ` · ${r.shifts}` : '' %></span></td>
+              <td><a href="/einsaetze/<%= r.event_id %>/anmeldungen?q=<%= encodeURIComponent(r.last_name) %>"><%= r.event_name %></a><span class="sub"><%= h.fmtRange(r.event_date, r.event_date_to, 'wd') || 'Datum offen' %><%= r.event_status === 'entwurf' ? ' · Entwurf' : '' %><%= r.shifts ? ` · ${r.shifts}` : '' %></span></td>
               <td class="nowrap"><%= h.labels.SOURCE[r.source] %><span class="sub"><%= h.fmtRelative(r.registered_at) %></span></td>
               <td><%- h.regBadge(r.status) %></td>
               <td class="actions-col right nowrap">
@@ -77,7 +77,7 @@
             <tr data-row-id="ev<%= e.id %>">
               <td>
                 <a href="/einsaetze/<%= e.id %>"><strong><%= e.name %></strong></a>
-                <span class="sub"><%= h.fmtDateWd(e.date) %> · <%= h.plural(e.shifts.length, 'Schicht', 'Schichten') %></span>
+                <span class="sub"><%= h.fmtEventDate(e, 'wd') %> · <%= h.plural(e.shifts.length, 'Schicht', 'Schichten') %></span>
                 <div class="mt-s"><% if (e.status === 'entwurf') { %><%- h.badge('Entwurf', 'gray') %><% } else if (e.inForm) { %><%- h.badge('im Formular', 'green') %><% } else { %><%- h.badge('nicht im Formular', 'gray') %><% } %></div>
               </td>
               <td>

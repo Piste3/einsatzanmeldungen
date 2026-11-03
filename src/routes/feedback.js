@@ -22,7 +22,7 @@ router.get('/rueckmeldungen', (req, res) => {
       { label: 'Vorname', value: (r) => r.person.first_name },
       { label: 'Nachname', value: (r) => r.person.last_name },
       { label: 'Mannschaft', value: (r) => r.person.teams || '' },
-      ...data.columns.map((c, i) => ({ label: `${c.event.name} (${h.fmtDateShort(c.event.date)})${c.shift ? ` – ${c.shift.name}` : ''}`, value: (r) => FEEDBACK[r.cells[i].state].label })),
+      ...data.columns.map((c, i) => ({ label: `${c.event.name} (${h.fmtEventDate(c.event, 'dm')})${c.shift ? ` – ${c.shift.name}` : ''}`, value: (r) => FEEDBACK[r.cells[i].state].label })),
     ];
     return sendTable(res, format, 'Rückmeldungen', cols, data.rows);
   }

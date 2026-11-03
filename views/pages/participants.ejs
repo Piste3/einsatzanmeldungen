@@ -3,7 +3,7 @@
   const e = event;
   const base = `/einsaetze/${e.id}/teilnehmerliste`;
   const leader = e.leader_person_id ? `${e.leader_rank ? `${h.escapeHtml(e.leader_rank)} ` : ''}${h.escapeHtml(e.leader_first + ' ' + e.leader_last)}` : '–';
-  const sub = `<strong>${h.escapeHtml(e.name)}</strong><span>${h.fmtDateWd(e.date)}</span><span>Antreten ${h.escapeHtml(e.start_time || '–')}${e.start_place ? ' · ' + h.escapeHtml(e.start_place) : ''}</span><span>Leitung ${leader}</span>`;
+  const sub = `<strong>${h.escapeHtml(e.name)}</strong><span>${h.fmtEventDate(e, 'wd')}</span><span>Antreten ${h.escapeHtml(e.start_time || '–')}${e.start_place ? ' · ' + h.escapeHtml(e.start_place) : ''}</span><span>Leitung ${leader}</span>`;
   const q = { umfang: filters.umfang !== 'angemeldet' ? filters.umfang : undefined, schicht: filters.schicht || undefined, sort: filters.sort !== 'rang' ? filters.sort : undefined };
   const exportUrl = (format) => h.escapeHtml(h.withQuery(base, q, { format }));
 %>
@@ -20,7 +20,7 @@
   <% if (e.shifts.length > 1) { %>
     <select name="schicht" aria-label="Schicht">
       <option value="">Alle Schichten</option>
-      <% for (const s of e.shifts) { %><option value="<%= s.id %>" <%= filters.schicht === s.id ? 'selected' : '' %>>Nur <%= s.name %></option><% } %>
+      <% for (const s of e.shifts) { %><option value="<%= s.id %>" <%= filters.schicht === s.id ? 'selected' : '' %>>Nur <%= s.name %><%= h.isMultiDay(e) && s.starts_at ? ` (${h.fmtShiftWhen(s, true)})` : '' %></option><% } %>
     </select>
   <% } %>
   <select name="sort" aria-label="Sortierung">

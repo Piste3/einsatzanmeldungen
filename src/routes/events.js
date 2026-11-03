@@ -55,7 +55,7 @@ router.get('/einsaetze', (req, res) => {
   if (format) {
     return sendTable(res, format, 'Einsätze', [
       { label: 'Einsatz', value: (e) => e.name },
-      { label: 'Datum', value: (e) => h.fmtDate(e.date) },
+      { label: 'Datum', value: (e) => h.fmtEventDate(e) },
       { label: 'Antreten', value: (e) => [e.start_time, e.start_place].filter(Boolean).join(' · ') },
       { label: 'Abtreten', value: (e) => e.end_time || '' },
       { label: 'Status', value: (e) => h.labels.EVENT_STATUS[e.status].label },
@@ -80,6 +80,11 @@ router.get('/einsaetze/neu', (req, res) => {
 router.post('/einsaetze', (req, res, next) => {
   try {
     const id = events.create(req.body, req.user);
+    // Ohne Datum: erst die Schichten mit ihren Tagen erfassen, dann veröffentlichen
+    if (!req.body.date) {
+      flash(res, 'success', 'Einsatz als Entwurf gespeichert. Er hat noch kein Datum: Erfasse jetzt die Schichten mit ihrem Tag und veröffentliche ihn danach.');
+      return res.redirect(`/einsaetze/${id}/schichten`);
+    }
     if (req.body.action === 'publish') events.setStatus(id, 'veroeffentlicht', req.user);
     flash(res, 'success', req.body.action === 'publish' ? 'Einsatz angelegt und veröffentlicht. Er erscheint jetzt im Anmeldeformular.' : 'Einsatz als Entwurf gespeichert.');
     res.redirect(`/einsaetze/${id}`);
@@ -104,7 +109,15 @@ router.get('/einsaetze/:id/bearbeiten', loadEvent, (req, res) => {
 router.post('/einsaetze/:id/bearbeiten', loadEvent, (req, res, next) => {
   try {
     events.update(req.event.id, req.body, req.body.version, req.user, { reason: req.body.reason });
-    if (req.body.action === 'publish' && req.event.status === 'entwurf') events.setStatus(req.event.id, 'veroeffentlicht', req.user);
+    if (req.body.action === 'publish' && req.event.status === 'entwurf') {
+      try {
+        events.setStatus(req.event.id, 'veroeffentlicht', req.user);
+      } catch (err) {
+        if (!(err instanceof ValidationError)) throw err;
+        flash(res, 'error', `Gespeichert, aber noch nicht veröffentlicht: ${err.messages.join(' ')}`);
+        return res.redirect(`/einsaetze/${req.event.id}/schichten`);
+      }
+    }
     flash(res, 'success', 'Einsatz gespeichert.');
     res.redirect(`/einsaetze/${req.event.id}`);
   } catch (err) {
@@ -286,7 +299,7 @@ router.get('/einsaetze/:id/teilnehmerliste', loadEvent, (req, res) => {
     const pdf = tablePdf({
       title: `Teilnehmerliste · ${e.name}${shift ? ` · ${shift.name}` : ''}`,
       subtitle: [
-        [h.fmtDateWd(e.date), e.start_time ? `Antreten ${e.start_time}${e.start_place ? ` · ${e.start_place}` : ''}` : '', leader].filter(Boolean).join('  ·  '),
+        [shift && h.isMultiDay(e) ? h.fmtShiftWhen(shift, true) : h.fmtEventDate(e, 'wd'), e.start_time ? `Antreten ${e.start_time}${e.start_place ? ` · ${e.start_place}` : ''}` : '', leader].filter(Boolean).join('  ·  '),
         `${registrations.PARTICIPANT_SCOPES[filters.umfang].label} · ${list.length} ${list.length === 1 ? 'Person' : 'Personen'}${extTotal ? ` + ${extTotal} extern = ${list.length + extTotal} total` : ''} · ${{ rang_ab: 'höchster Rang zuerst', funktion: 'nach Funktion, dann Rang' }[filters.sort] || 'tiefster Rang zuerst'}`,
         ...(showFunction ? [`Funktionen (Ist/Soll): ${functions.line(fnSummary)}`] : []),
       ],

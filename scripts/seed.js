@@ -9,7 +9,7 @@ const registrations = require('../src/services/registrations');
 const inquiries = require('../src/services/inquiries');
 const users = require('../src/services/users');
 const submissions = require('../src/services/submissions');
-const { today, addDays } = require('../src/lib/dates');
+const { today, addDays, weekdayShort } = require('../src/lib/dates');
 
 (async () => {
   db.open();
@@ -71,6 +71,13 @@ const { today, addDays } = require('../src/lib/dates');
   const markt = events.create({ name: 'Weihnachtsmarkt Münsterplatz', date: addDays(today(), 46), start_time: '16:00', end_time: '21:00', start_place: 'Münsterplatz', target_count: 12 }, lena);
   events.setStatus(markt, 'veroeffentlicht', lena);
   events.create({ name: 'Neujahrsapéro Rathaus', date: addDays(today(), 74), start_time: '10:00', end_time: '14:00', target_count: 8 }, lena);
+  // Zweitägig: kein Einsatzdatum, jede Schicht hat ihren eigenen Tag
+  const fest = events.create({ name: 'Kasernenfest', start_place: 'Kasernenhof, Klybeckstrasse 1b', tenue, target_count: 0 }, lena);
+  let sat = addDays(today(), 56);
+  while (weekdayShort(sat) !== 'Sa') sat = addDays(sat, 1);
+  events.saveShifts(fest, { [events.shiftsOf(fest)[0].id]: { name: 'Festbetrieb', date: sat, start: '10:00', end: '18:00', ...fnTargets({ SC: 1, TN: 8 }) } },
+    { name: 'Abbau', date: addDays(sat, 1), start: '11:00', end: '17:00', ...fnTargets({ SC: 1, TN: 6 }) }, lena);
+  events.setStatus(fest, 'veroeffentlicht', lena);
 
   const [tag, abend] = events.shiftsOf(messe);
   const reg = (name, eventId, source, wishes, status) => {

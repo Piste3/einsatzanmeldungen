@@ -23,11 +23,12 @@
 <div class="grid grid-main">
   <div class="stack">
   <div class="card">
-    <div class="card-head"><h2>Grunddaten <span class="hint">Nur Name und Datum sind Pflicht – alles andere kann später ergänzt werden.</span></h2></div>
+    <div class="card-head"><h2>Grunddaten <span class="hint">Nur der Name ist Pflicht – alles andere kann später ergänzt werden.</span></h2></div>
     <div class="card-body">
       <div class="fields fields-2">
         <div class="field"><label for="name">Name des Einsatzes <span class="req">*</span></label><input id="name" name="name" type="text" required value="<%= e.name || '' %>" autofocus></div>
-        <div class="field"><label for="date">Datum <span class="req">*</span></label><input id="date" name="date" type="date" required value="<%= e.date || '' %>"></div>
+        <div class="field"><label for="date">Datum</label><input id="date" name="date" type="date" value="<%= e.date || '' %>" aria-describedby="date-hint">
+          <div class="small muted mt-s" id="date-hint">Leer lassen, wenn die Schichten an verschiedenen Tagen sind. Dann bekommt jede Schicht ihr eigenes Datum.</div></div>
       </div>
       <div class="fields fields-3e">
         <div class="field"><label for="start_time">Beginn (Antreten)</label><input id="start_time" name="start_time" type="time" value="<%= e.start_time || '' %>"></div>
@@ -78,7 +79,7 @@
       <div class="table-wrap">
         <table class="form-table fn-grid" data-fn-grid>
           <thead>
-            <tr><th>Funktion</th><% for (const c of cols) { %><th class="fn-cell"><%= c.name %><% if (c.starts_at) { %><span class="sub muted"><%= h.fmtSpan(c.starts_at, c.ends_at) %></span><% } %></th><% } %></tr>
+            <tr><th>Funktion</th><% for (const c of cols) { %><th class="fn-cell"><%= c.name %><% if (c.starts_at) { %><span class="sub muted"><%= h.fmtShiftWhen(c, h.isMultiDay(e)) %></span><% } %></th><% } %></tr>
           </thead>
           <tbody>
           <% for (const f of shownFns) { %>

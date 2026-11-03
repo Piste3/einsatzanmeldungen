@@ -36,8 +36,9 @@ router.get('/', (req, res) => {
     bestaetigt: db.one("SELECT COUNT(*) AS n FROM registrations WHERE event_id = ? AND person_id IS NOT NULL AND status = 'bestaetigt'", e.id).n,
   }));
   const t = today();
-  const upcoming = list.filter((e) => e.date >= t);
-  const past = list.filter((e) => e.date < t).reverse();
+  // Ohne Datum (noch in Planung) zählt ein Einsatz als anstehend
+  const upcoming = list.filter((e) => !e.date_to || e.date_to >= t);
+  const past = list.filter((e) => e.date_to && e.date_to < t).reverse();
   res.render('leader/home', {
     title: 'Meine Einsätze', upcoming, past,
     liveTopics: [`leader:${req.user.id}`, ...upcoming.slice(0, 19).map((e) => `event:${e.id}`)],
