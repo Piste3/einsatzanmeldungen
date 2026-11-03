@@ -412,7 +412,7 @@ Die Seite **Rückmeldungen** beantwortet die wichtigste Frage der Aufgebotsstell
 
 - Mitglieder als Zeilen, Einsätze als Spalten. Kopfzeile und Namensspalte bleiben beim Scrollen stehen.
 - Im Spaltenkopf jedes Einsatzes steht die Besetzung als Balken, z. B. «11 / 16».
-- **Symbole:** ✓ An, ✕ Ab, ? Unsicher, leeres Feld = Offen. Das Symbol zeigt immer nur den neuesten Stand.
+- **Symbole:** ✓ An, ✕ Ab, ? Unsicher, leeres Feld = Offen. Dazu gibt es eigene Symbole für den genaueren Stand: ein grün gefülltes ✓ für eine bestätigte Anmeldung, eine Uhr für die Warteliste, eine blaue Sprechblase für «Nachricht gesendet, Antwort offen», ein gelbes Telefon für «angerufen, nicht erreicht» und ! für «Rückfrage nötig». Die Legende über der Tabelle erklärt alle Symbole. Das Symbol zeigt immer nur den neuesten Stand.
 - **Wer hat das gesetzt?** Fährt man mit der Maus über ein Feld, steht dort der letzte Eintrag mit Name und Zeit, z. B. «Zuletzt: Anmeldung: Bestätigt – Lena Meier, heute 14:20 (4 Einträge im Verlauf)». Hat sich jemand selbst über das Formular gemeldet, steht «Person selbst».
 - Ein Klick auf ein Feld öffnet immer das Fenster für einen Kontaktversuch, auch bei ✓ oder ✕. Oben steht der aktuelle Stand (z. B. «An · Anmeldung: Bestätigt · Formular · gesetzt von Lena Meier, heute 14:20») mit einem Link zur Anmeldung. Darunter folgt der **Verlauf** (siehe unten). Dort lässt sich auch **«Unsicher – weiss es noch nicht»** eintragen oder mit **Alles zurücksetzen** neu beginnen. Erfasst man bei einer bestehenden Anmeldung «Abgesagt», wird sie als zurückgezogen markiert. «Zugesagt» macht eine zurückgezogene Anmeldung wieder aktiv.
 - Unten stehen pro Einsatz die Summen An · Ab · Unsicher · Offen.
@@ -430,7 +430,10 @@ Der Verlauf sammelt alles, was bei dieser Person für diesen Einsatz passiert is
 - jeder Statuswechsel der Anmeldung (bestätigt, Warteliste, Rückfrage, zurückgezogen …) und jede Änderung der Schicht
 - verschickte Bestätigungsmails, Zurücknehmen eines Kontaktversuchs und «Alles zurücksetzen»
 
-Das Symbol links entspricht dem Stand nach diesem Eintrag. Ein Punkt bedeutet, dass der Eintrag den Stand nicht verändert hat, z. B. bei einer Mail. Der Eintrag, der den aktuellen Stand gesetzt hat, ist mit **aktueller Stand** markiert. Ein nachträglich erfasster Kontaktversuch steht beim Zeitpunkt, an dem angerufen oder geschrieben wurde. Der Verlauf enthält auch alles, was vor dieser Funktion erfasst wurde. Derselbe Verlauf erscheint beim Erfassen unter Einsatz › Anfragen und auf der Seite eines Mitglieds.
+Das Symbol links entspricht dem Stand nach diesem Eintrag. Ein Punkt bedeutet, dass der Eintrag den Stand nicht verändert hat, z. B. bei einer Mail. Der Eintrag, der den aktuellen Stand gesetzt hat, ist mit **aktueller Stand** markiert. Ein nachträglich erfasster Kontaktversuch steht beim Zeitpunkt, an dem angerufen oder geschrieben wurde. Der Verlauf enthält auch alles, was vor dieser Funktion erfasst wurde.
+
+**Verlauf löschen:** Mit dem Knopf **Verlauf löschen** oben rechts im Verlauf werden alle Einträge dieser Person für diesen Einsatz ausgeblendet. Vorher fragt der Einsatzplaner nach. Rückmeldung, Anmeldung und Schichten bleiben dabei unverändert, und auch das Symbol in der Tabelle bleibt gleich. Danach steht im Fenster, wer den Verlauf wann gelöscht hat, und neue Einträge erscheinen wieder wie gewohnt. Im Reiter «Verlauf» des Einsatzes bleibt das Löschen vermerkt. Soll auch der Stand selbst weg, nimmt man **Alles zurücksetzen**: Das löscht Kontaktversuche, Rückmeldung und Schichtzuteilung, lässt den Verlauf aber stehen. Für einen ganz neuen Anfang klickt man beides.
+ Derselbe Verlauf erscheint beim Erfassen unter Einsatz › Anfragen und auf der Seite eines Mitglieds.
 
 ### Ansicht «Pro Einsatz»
 
@@ -446,7 +449,12 @@ Namenssuche, Zeitraum (nächste 2 Wochen bis nächstes Jahr), Mannschaft, «Nur 
 |---|---|
 | An | Angemeldet – über das Formular, telefonisch oder per WhatsApp |
 | Ab | Abgesagt oder wieder abgemeldet |
-| Unsicher | Nicht erreicht, WhatsApp ohne Antwort, «weiss es noch nicht» oder Anmeldung mit offener Frage |
+| Bestätigt (grün gefülltes ✓) | Anmeldung ist von der Aufgebotsstelle bestätigt |
+| Warteliste (Uhr) | Angemeldet, steht aber auf der Warteliste |
+| Unsicher | «Weiss es noch nicht» |
+| Nachricht gesendet (Sprechblase) | Per WhatsApp angefragt, Antwort offen |
+| Nicht erreicht (Telefon) | Angerufen, aber nicht erreicht |
+| Rückfrage (!) | Anmeldung mit offener Frage, z. B. nachträglich «Nein» im Formular |
 | Offen | Noch keine Rückmeldung und noch nicht angefragt |
 | Andere Schicht (–) | Angemeldet, aber für eine andere Schicht dieses Einsatzes |
 | An, Schicht offen (gestricheltes ✓) | Zugesagt, Schicht noch nicht festgelegt |

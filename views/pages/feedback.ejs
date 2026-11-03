@@ -5,13 +5,17 @@
 }) %>
 <%
   const SYM = { an: '✓', ab: '✕', unsicher: '?', offen: '', andere: '–', schicht_offen: '✓' };
+  // eigenes Icon für den genaueren Stand (z. B. Nachricht gesendet, bestätigt)
+  const DSYM = { bestaetigt: '✓', warteliste: h.icon('clock', 'fb-ico'), whatsapp: h.icon('chat', 'fb-ico'), telefon: h.icon('phone', 'fb-ico'), rueckfrage: '!' };
+  const sym = (c) => (c.detail ? DSYM[c.detail] : h.escapeHtml(SYM[c.state]));
+  const stateLabel = (c) => (c.detail ? h.labels.FEEDBACK_DETAIL[c.detail].label : h.labels.FEEDBACK[c.state].label);
   // wer den Stand gesetzt hat und wann (letzter Historie-Eintrag)
   const setBy = (c) => (c.last ? `${c.last.by}, ${c.last.atShort}` : '');
-  const cellTitle = (c, col, p) => `${p.first_name} ${p.last_name} · ${col.event.name}${col.shift ? ` · ${col.shift.name}` : ''}: ${h.labels.FEEDBACK[c.state].label}${c.last ? `\nZuletzt: ${c.last.text} – ${setBy(c)}${c.last.count > 1 ? ` (${c.last.count} Einträge im Verlauf)` : ''}` : ''}\nKlicken für Verlauf und Kontaktversuch`;
+  const cellTitle = (c, col, p) => `${p.first_name} ${p.last_name} · ${col.event.name}${col.shift ? ` · ${col.shift.name}` : ''}: ${stateLabel(c)}${c.last ? `\nZuletzt: ${c.last.text} – ${setBy(c)}${c.last.count > 1 ? ` (${c.last.count} Einträge im Verlauf)` : ''}` : ''}\nKlicken für Verlauf und Kontaktversuch`;
   // aktueller Stand für das Kontaktversuch-Fenster
   const currentText = (c, col) => {
     if (c.state === 'offen' && !c.inq) return '';
-    const parts = [h.labels.FEEDBACK[c.state].label];
+    const parts = [stateLabel(c)];
     if (c.reg) parts.push(`Anmeldung: ${h.labels.REG_STATUS[c.reg.status].short} · ${h.labels.SOURCE[c.reg.source]}`);
     if (c.inq) parts.push(`Anfrage: ${(h.labels.INQUIRY_ROW[c.inq.status] || h.labels.INQUIRY_STATUS[c.inq.status]).label}`);
     if (c.last) parts.push(`gesetzt von ${setBy(c)}`);
@@ -48,7 +52,7 @@
     <a class="<%= filters.view === 'einsatz' ? 'active' : '' %>" href="<%= h.withQuery('/rueckmeldungen', query, { view: 'einsatz' }) %>">Pro Einsatz</a>
   </div>
   <div class="legend small">
-    <span class="fb fb-an">✓</span> An <span class="fb fb-ab">✕</span> Ab <span class="fb fb-unsicher">?</span> Unsicher <span class="fb fb-offen"></span> Offen<% if (columns.some((c) => c.shift)) { %> <span class="fb fb-schicht_offen">✓</span> An, Schicht offen <span class="fb fb-andere">–</span> Andere Schicht<% } %>
+    <span class="fb fb-an">✓</span> An <span class="fb fb-an fb-d-bestaetigt">✓</span> Bestätigt <span class="fb fb-an fb-d-warteliste"><%- DSYM.warteliste %></span> Warteliste <span class="fb fb-ab">✕</span> Ab <span class="fb fb-unsicher fb-d-whatsapp"><%- DSYM.whatsapp %></span> Nachricht gesendet <span class="fb fb-unsicher fb-d-telefon"><%- DSYM.telefon %></span> Nicht erreicht <span class="fb fb-unsicher">?</span> Unsicher <span class="fb fb-unsicher fb-d-rueckfrage">!</span> Rückfrage <span class="fb fb-offen"></span> Offen<% if (columns.some((c) => c.shift)) { %> <span class="fb fb-schicht_offen">✓</span> An, Schicht offen <span class="fb fb-andere">–</span> Andere Schicht<% } %>
     <span class="muted"> · <%= events.length %> Einsätze · <%= rows.length %><%= rows.length !== allCount ? ` von ${allCount}` : '' %> Mitglieder</span>
   </div>
 </div>
@@ -87,7 +91,7 @@
           <td class="fb-name"><%- h.rank(p.rank_short) %><a href="/personen/<%= p.id %>"><strong><%= p.first_name %> <%= p.last_name %></strong></a><% if (p.teams) { %><span class="sub"><%= p.teams %></span><% } %></td>
           <% row.cells.forEach((c, i) => { const col = columns[i]; const e = col.event; %>
             <td class="fb-cell <%= col.first ? 'fb-first' : '' %>">
-              <button type="button" class="fb fb-<%= c.state %>" data-open-dialog="attempt" data-person="<%= p.id %>" data-event="<%= c.eventId %>" data-shift="<%= c.shiftId || '' %>" data-who="<%= `${p.first_name} ${p.last_name} · ${e.name}${col.shift ? ` · ${col.shift.name}` : ''}` %>" data-current="<%= currentText(c, col) %>"<% if (c.reg) { %> data-current-link="/einsaetze/<%= c.eventId %>/<%= ['andere', 'schicht_offen'].includes(c.state) ? 'schichten' : `anmeldungen?q=${encodeURIComponent(p.last_name)}` %>"<% } %> title="<%= cellTitle(c, col, p) %>"><%= SYM[c.state] %></button>
+              <button type="button" class="fb fb-<%= c.state %><%= c.detail ? ` fb-d-${c.detail}` : '' %>" data-open-dialog="attempt" data-person="<%= p.id %>" data-event="<%= c.eventId %>" data-shift="<%= c.shiftId || '' %>" data-who="<%= `${p.first_name} ${p.last_name} · ${e.name}${col.shift ? ` · ${col.shift.name}` : ''}` %>" data-current="<%= currentText(c, col) %>"<% if (c.reg) { %> data-current-link="/einsaetze/<%= c.eventId %>/<%= ['andere', 'schicht_offen'].includes(c.state) ? 'schichten' : `anmeldungen?q=${encodeURIComponent(p.last_name)}` %>"<% } %> title="<%= cellTitle(c, col, p) %>"><%- sym(c) %></button>
             </td>
           <% }) %>
         </tr>

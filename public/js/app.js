@@ -658,7 +658,7 @@
     const who = (inDialog ? (dlg.querySelector('[data-who]') || {}).textContent : b.dataset.who) || 'diese Person';
     const ok = await uiDialog({
       title: 'Alles zurücksetzen?',
-      message: `${who}\n\nAlle Kontaktversuche, die Rückmeldung bzw. Anmeldung und die Schichtzuteilung für diesen Einsatz werden gelöscht. Die Person gilt danach wieder als offen. Ein Formular-Eingang bleibt unter «Formulare» gespeichert.`,
+      message: `${who}\n\nAlle Kontaktversuche, die Rückmeldung bzw. Anmeldung und die Schichtzuteilung für diesen Einsatz werden gelöscht. Die Person gilt danach wieder als offen. Ein Formular-Eingang bleibt unter «Formulare» gespeichert, der Verlauf bleibt sichtbar (löschen mit «Verlauf löschen»).`,
       ok: 'Zurücksetzen', danger: true,
     });
     if (!ok) return;
@@ -669,6 +669,30 @@
     }
     document.body.append(f);
     if (dlg.open) dlg.close();
+    f.submit();
+  });
+  // Kontaktversuch-Fenster: nur den Verlauf dieser Person bei diesem Einsatz leeren
+  document.addEventListener('click', async (ev) => {
+    const b = ev.target.closest('[data-clear-history]');
+    if (!b) return;
+    const dlg = b.closest('dialog');
+    const form = dlg && dlg.querySelector('form');
+    const who = (dlg && (dlg.querySelector('[data-who]') || {}).textContent) || 'diese Person';
+    const ok = await uiDialog({
+      title: 'Verlauf löschen?',
+      message: `${who}\n\nAlle Einträge im Verlauf werden ausgeblendet. Die Rückmeldung, die Anmeldung und die Schichten bleiben, wie sie sind. Im Verlauf des Einsatzes bleibt vermerkt, wer den Verlauf gelöscht hat.`,
+      ok: 'Verlauf löschen', danger: true,
+    });
+    if (!ok) return;
+    const f = document.createElement('form');
+    f.method = 'post'; f.action = '/rueckmeldungen/verlauf/loeschen';
+    const csrf = (form && form.querySelector('[name=_csrf]') || {}).value || '';
+    const back = (form && form.querySelector('[name=back]') || {}).value || location.pathname + location.search;
+    for (const [n, v] of [['_csrf', csrf], ['person_id', b.dataset.person], ['event_id', b.dataset.event], ['back', back]]) {
+      const i = document.createElement('input'); i.type = 'hidden'; i.name = n; i.value = v; f.append(i);
+    }
+    document.body.append(f);
+    if (dlg && dlg.open) dlg.close();
     f.submit();
   });
   function toggleShiftField(dlg) {

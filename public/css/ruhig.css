@@ -257,3 +257,15 @@ td .sub, .cell-sub { font-size: 12px; margin-top: 1px; }
 .hist-note { color: var(--text-2); font-size: 12px; overflow-wrap: anywhere; }
 .hist-now { font-size: 11px; color: var(--muted); border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; margin-left: 4px; white-space: nowrap; }
 .hist-latest .hist-text { font-weight: 600; }
+
+/* Rückmeldungen: eigene Icons für den genaueren Stand */
+.fb .fb-ico { width: 14px; height: 14px; stroke-width: 2.2; }
+.legend .fb .fb-ico, .hist-row .fb .fb-ico { width: 11px; height: 11px; }
+.fb-d-bestaetigt { background: var(--green); color: #fff; }
+.fb-d-warteliste { color: var(--green); }
+.fb-d-whatsapp { background: var(--blue-bg); color: var(--blue); }
+.fb-d-rueckfrage { font-weight: 800; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .fb-d-bestaetigt { color: #0c0c0d; } }
+:root[data-theme="dark"] .fb-d-bestaetigt { color: #0c0c0d; }
+.hist-head .hist-clear { margin-left: auto; min-height: 0; padding: 2px 8px; font-size: 12px; }
+.hist-cleared { margin-top: 6px; }

@@ -14,8 +14,29 @@ const PERIODS = {
   '12m': { label: 'nächstes Jahr', days: 366 },
 };
 
+/**
+ * Genaueres Symbol innerhalb eines Zustands (eigene Icons in der Tabelle):
+ * an → bestaetigt / warteliste, unsicher → whatsapp (Nachricht gesendet) / telefon (nicht erreicht) / rueckfrage
+ */
+function detailOf(c) {
+  const { state, reg, inq } = c;
+  const activeReg = reg && reg.status !== 'ungueltig' ? reg : null;
+  if (state === 'an' && activeReg) return { bestaetigt: 'bestaetigt', warteliste: 'warteliste' }[activeReg.status] || null;
+  if (state === 'unsicher') {
+    if (activeReg) return activeReg.status === 'rueckfrage' ? 'rueckfrage' : null;
+    if (inq) return { whatsapp: 'whatsapp', nicht_erreicht: 'telefon' }[inq.status] || null;
+  }
+  return null;
+}
+
 /** Zustand einer Person für einen Einsatz aus Anmeldung und Anfrage ableiten */
 function cellState(reg, inq) {
+  const c = baseState(reg, inq);
+  c.detail = detailOf(c);
+  return c;
+}
+
+function baseState(reg, inq) {
   if (reg && reg.status !== 'ungueltig') {
     if (['zurueckgezogen', 'abgesagt'].includes(reg.status)) return { state: 'ab', reg, inq };
     if (['rueckfrage', 'unsicher'].includes(reg.status)) return { state: 'unsicher', reg, inq };
@@ -104,7 +125,7 @@ function matrix({ team = '', period = '3m', sort = 'rang', includeDrafts = false
         state = !mine.size ? 'schicht_offen' : mine.has(col.shift.id) ? 'an' : 'andere';
       }
       colTotals[col.key][state]++;
-      return { ...base, state, shiftId: col.shift?.id || null };
+      return { ...base, state, detail: state === base.state ? base.detail : null, shiftId: col.shift?.id || null };
     });
     return { person: p, cells, eventCells, openCount: eventCells.filter((c) => c.state === 'offen').length };
   });

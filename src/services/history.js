@@ -3,6 +3,9 @@
 // mit wer und wann. Quelle ist das Protokoll (audit_log) plus die verschickten Bestätigungsmails,
 // damit auch alles einfliesst, was schon vor dieser Ansicht erfasst wurde.
 const db = require('../db');
+const audit = require('./audit');
+const live = require('../lib/live');
+const { ValidationError } = require('./errors');
 const { SOURCE, CHANNEL, REG_STATUS, INQUIRY_STATUS, ATTEMPT_RESULT } = require('../lib/labels');
 const { fmtDateTime, fmtRelative, toLocal } = require('../lib/dates');
 
@@ -57,7 +60,7 @@ function entryFromAudit(a) {
     }
     case 'registration:status': {
       const to = d.status?.neu;
-      return { ...base, state: stateOfReg(to), text: to ? `Anmeldung: ${REG_STATUS[to]?.label || to}` : s };
+      return { ...base, state: stateOfReg(to), detail: { bestaetigt: 'bestaetigt', warteliste: 'warteliste', rueckfrage: 'rueckfrage' }[to] || null, text: to ? `Anmeldung: ${REG_STATUS[to]?.label || to}` : s };
     }
     case 'registration:assign':
       return { ...base, state: null, text: d.vorher ? `Anmeldung von ${d.vorher} hierher umgehängt` : 'Formular-Anmeldung dieser Person zugeordnet' };
@@ -76,7 +79,7 @@ function entryFromAudit(a) {
       const result = d.ergebnis;
       const sentBy = d.gesendet_von || actorOf(s);
       return {
-        ...base, by: sentBy, state: stateOfResult(result),
+        ...base, by: sentBy, state: stateOfResult(result), detail: { whatsapp: 'whatsapp', nicht_erreicht: 'telefon' }[result] || null,
         text: `${ch ? `${ch}: ` : ''}${ATTEMPT_RESULT[result] || result || 'Kontakt'}`,
         when: d.zeitpunkt || null,
         enteredBy: d.erfasst_von && d.erfasst_von !== sentBy ? d.erfasst_von : null,
@@ -124,15 +127,42 @@ function finish(list) {
 }
 
 const RELEVANT = "a.entity_type IN ('registration','inquiry')";
+const CLEAR = 'history_clear';
 
-/** Komplette Historie einer Person bei einem Einsatz, neueste zuerst */
+/** Komplette Historie einer Person bei einem Einsatz, neueste zuerst (nach dem letzten «Verlauf löschen») */
 function forPair(eventId, personId) {
   const regIds = db.all('SELECT id FROM registrations WHERE event_id = ? AND person_id = ?', eventId, personId).map((r) => r.id);
   const ph = regIds.map(() => '?').join(',');
-  const audits = db.all(`SELECT a.* FROM audit_log a WHERE ${RELEVANT} AND a.event_id = ? AND (a.person_id = ?${regIds.length ? ` OR (a.entity_type = 'registration' AND a.entity_id IN (${ph}))` : ''})
+  let audits = db.all(`SELECT a.* FROM audit_log a WHERE ${RELEVANT} AND a.event_id = ? AND (a.person_id = ?${regIds.length ? ` OR (a.entity_type = 'registration' AND a.entity_id IN (${ph}))` : ''})
     ORDER BY a.id`, eventId, personId, ...regIds);
-  const mails = regIds.length ? db.all(`SELECT * FROM mail_outbox WHERE registration_id IN (${ph}) ORDER BY id`, ...regIds) : [];
-  return finish([...dropEchoes(audits.map(entryFromAudit)), ...mails.map(entryFromMail)]);
+  let mails = regIds.length ? db.all(`SELECT * FROM mail_outbox WHERE registration_id IN (${ph}) ORDER BY id`, ...regIds) : [];
+  const clearIdx = audits.map((a) => a.action).lastIndexOf(CLEAR);
+  const cleared = clearIdx >= 0 ? audits[clearIdx] : null;
+  if (cleared) {
+    audits = audits.slice(clearIdx + 1);
+    mails = mails.filter((m) => m.created_at > cleared.created_at);
+  }
+  const list = finish([...dropEchoes(audits.filter((a) => a.action !== CLEAR).map(entryFromAudit)), ...mails.map(entryFromMail)]);
+  list.cleared = cleared ? { by: cleared.user_name || 'System', atText: fmtDateTime(cleared.created_at) } : null;
+  return list;
+}
+
+/**
+ * Verlauf einer Person bei einem Einsatz leeren. Rückmeldung, Anmeldung und Kontaktversuche bleiben unverändert
+ * (dafür gibt es «Alles zurücksetzen»). Im Protokoll des Einsatzes bleibt festgehalten, wer den Verlauf wann geleert hat.
+ */
+function clear(eventId, personId, user) {
+  const event = db.one('SELECT id, name FROM events WHERE id = ?', eventId);
+  const person = db.one('SELECT id, first_name, last_name FROM persons WHERE id = ?', personId);
+  if (!event || !person) throw new ValidationError(['Einsatz oder Person nicht gefunden.']);
+  const n = forPair(eventId, personId).length;
+  audit.log({
+    entity: 'inquiry', eventId, personId, action: CLEAR,
+    summary: `${user.display_name} hat den Verlauf von ${person.first_name} ${person.last_name} geleert (${n} Einträge) · ${event.name}`,
+    details: { eintraege: n }, user,
+  });
+  live.notify(`event:${eventId}`, 'feedback', `person:${personId}`);
+  return n;
 }
 
 /**
@@ -147,19 +177,26 @@ function latestByPair(eventIds) {
   const regPerson = new Map(db.all(`SELECT id, person_id FROM registrations WHERE event_id IN (${ph}) AND person_id IS NOT NULL`, ...eventIds).map((r) => [r.id, r.person_id]));
   const rows = db.all(`SELECT a.* FROM audit_log a WHERE ${RELEVANT} AND a.event_id IN (${ph}) ORDER BY a.id`, ...eventIds);
   const byPair = new Map();
+  const clearedAt = new Map();
   for (const a of rows) {
     const personId = a.person_id || (a.entity_type === 'registration' ? regPerson.get(a.entity_id) : null);
     if (!personId) continue;
     const key = `${personId}:${a.event_id}`;
+    if (a.action === CLEAR) { byPair.set(key, []); clearedAt.set(key, a.created_at); continue; }
     if (!byPair.has(key)) byPair.set(key, []);
     byPair.get(key).push(entryFromAudit(a));
   }
   // Bestätigungsmails zählen im Verlauf mit
   const mails = new Map();
-  for (const m of db.all(`SELECT g.person_id, g.event_id, COUNT(*) AS n FROM mail_outbox o JOIN registrations g ON g.id = o.registration_id
-    WHERE g.event_id IN (${ph}) AND g.person_id IS NOT NULL GROUP BY g.person_id, g.event_id`, ...eventIds)) mails.set(`${m.person_id}:${m.event_id}`, m.n);
+  for (const m of db.all(`SELECT g.person_id, g.event_id, o.created_at FROM mail_outbox o JOIN registrations g ON g.id = o.registration_id
+    WHERE g.event_id IN (${ph}) AND g.person_id IS NOT NULL`, ...eventIds)) {
+    const key = `${m.person_id}:${m.event_id}`;
+    if (clearedAt.has(key) && m.created_at <= clearedAt.get(key)) continue;
+    mails.set(key, (mails.get(key) || 0) + 1);
+  }
   for (const [key, all] of byPair) {
     const list = dropEchoes(all);
+    if (!list.length) continue;
     const e = [...list].reverse().find((x) => x.state) || list[list.length - 1];
     e.count = list.length + (mails.get(key) || 0);
     out.set(key, finish([e])[0]);
@@ -167,4 +204,4 @@ function latestByPair(eventIds) {
   return out;
 }
 
-module.exports = { forPair, latestByPair, entryFromAudit, SELF };
+module.exports = { forPair, latestByPair, clear, entryFromAudit, SELF };

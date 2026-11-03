@@ -6,6 +6,7 @@ const history = require('../services/history');
 const { sendTable, wantsExport } = require('../lib/export');
 const { FEEDBACK } = require('../lib/labels');
 const h = require('../lib/view-helpers');
+const { flash } = h;
 
 const router = express.Router();
 
@@ -38,7 +39,16 @@ router.get('/rueckmeldungen/verlauf', (req, res) => {
   const personId = Number(req.query.person);
   const eventId = Number(req.query.event);
   if (!personId || !eventId) return res.status(400).send('');
-  res.render('partials/status-history', { entries: history.forPair(eventId, personId) });
+  const entries = history.forPair(eventId, personId);
+  res.render('partials/status-history', { entries, cleared: entries.cleared, personId, eventId });
+});
+
+// Verlauf einer Person bei einem Einsatz leeren (Rückmeldung und Anmeldung bleiben)
+router.post('/rueckmeldungen/verlauf/loeschen', (req, res) => {
+  const n = history.clear(Number(req.body.event_id), Number(req.body.person_id), req.user);
+  flash(res, 'success', `Verlauf gelöscht (${n} Eintr${n === 1 ? 'ag' : 'äge'}). Rückmeldung und Anmeldung sind unverändert.`);
+  const b = String(req.body.back || '');
+  res.redirect(b.startsWith('/') && !b.startsWith('//') ? b : '/rueckmeldungen');
 });
 
 module.exports = router;

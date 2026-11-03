@@ -58,6 +58,15 @@ const ATTEMPT_RESULT = {
 
 const CHANNEL = { telefon: { label: 'Telefon', short: 'Tel' }, whatsapp: { label: 'WhatsApp', short: 'WA' } };
 
+// Genauere Symbole in der Rückmeldungen-Tabelle (innerhalb von An bzw. Unsicher)
+const FEEDBACK_DETAIL = {
+  bestaetigt: { label: 'An, bestätigt', state: 'an' },
+  warteliste: { label: 'Warteliste', state: 'an' },
+  whatsapp: { label: 'Nachricht gesendet, Antwort offen', state: 'unsicher' },
+  telefon: { label: 'Angerufen, nicht erreicht', state: 'unsicher' },
+  rueckfrage: { label: 'Rückfrage nötig', state: 'unsicher' },
+};
+
 const FEEDBACK = {
   an: { label: 'An', tone: 'green' },
   ab: { label: 'Ab', tone: 'red' },
@@ -94,5 +103,5 @@ const SUBMISSION_STATUS = {
 
 module.exports = {
   EVENT_STATUS, REG_STATUS, REG_STATUS_MANUAL, REG_COUNTING, REG_ACTIVE, SOURCE, MATCH_TYPE, INQUIRY_STATUS, INQUIRY_ROW,
-  ATTEMPT_RESULT, CHANNEL, FEEDBACK, PERSON_STATUS, DIET, ROLES, SUBMISSION_STATUS,
+  ATTEMPT_RESULT, CHANNEL, FEEDBACK, FEEDBACK_DETAIL, PERSON_STATUS, DIET, ROLES, SUBMISSION_STATUS,
 };

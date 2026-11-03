@@ -243,3 +243,33 @@ test('Rückmeldungen: Historie zeigt wer wann welchen Stand gesetzt hat', () => 
   assert.equal(h[h.length - 1].text, 'Telefon: Nicht erreicht');
   assert.match(h[h.length - 1].atText, / 09:00$/);
 });
+
+test('Rückmeldungen: eigene Icons und Verlauf löschen', () => {
+  const { anna, offen } = setup();
+  const inquiries = require('../src/services/inquiries');
+  const feedback = require('../src/services/feedback');
+  const history = require('../src/services/history');
+  const chris = db.one("SELECT id FROM persons WHERE first_name = 'Christian'").id;
+  inquiries.addAttempt(offen, anna, { channel: 'whatsapp', result: 'whatsapp' }, system);
+  inquiries.addAttempt(offen, chris, { channel: 'telefon', result: 'nicht_erreicht' }, system);
+  const cell = (pid) => feedback.matrix({}).rows.find((r) => r.person.id === pid).eventCells.find((c) => c.eventId === offen);
+  assert.equal(cell(anna).detail, 'whatsapp');
+  assert.equal(cell(chris).detail, 'telefon');
+  const reg = registrations.create({ eventId: offen, personId: anna, source: 'formular', answer: 'ja' });
+  assert.equal(cell(anna).detail, null);
+  registrations.setStatus(reg, 'bestaetigt', system);
+  assert.equal(cell(anna).detail, 'bestaetigt');
+
+  // Verlauf löschen: Einträge weg, Stand bleibt
+  assert.ok(history.forPair(offen, anna).length >= 3);
+  history.clear(offen, anna, system);
+  const after = history.forPair(offen, anna);
+  assert.equal(after.length, 0);
+  assert.equal(after.cleared.by, 'Test');
+  assert.equal(cell(anna).state, 'an');
+  assert.equal(cell(anna).last, null);
+  registrations.setStatus(reg, 'warteliste', system);
+  assert.deepEqual(history.forPair(offen, anna).map((e) => e.text), ['Anmeldung: Warteliste']);
+  assert.equal(cell(anna).last.count, 1);
+  assert.ok(db.one("SELECT 1 FROM audit_log WHERE action = 'history_clear' AND summary LIKE '%Verlauf von Anna Roth geleert%'"));
+});
