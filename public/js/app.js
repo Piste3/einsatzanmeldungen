@@ -641,6 +641,29 @@
   }
   $$('[data-rte]').forEach(initRte);
 
+  // ---------- Scroll-Position behalten (Rückmeldungen) ----------
+  // Nach einer Aktion (Speichern, Verlauf löschen, Zurücksetzen) lädt die Seite neu; Seite und Tabelle
+  // springen dann an dieselbe Stelle zurück, waagrecht wie senkrecht.
+  if (document.querySelector('[data-keep-scroll]')) {
+    const key = `scroll:${location.pathname}${location.search}`;
+    const boxes = () => $$('[data-keep-scroll]');
+    const save = () => {
+      try {
+        sessionStorage.setItem(key, JSON.stringify({ t: Date.now(), x: window.scrollX, y: window.scrollY, boxes: boxes().map((b) => [b.scrollLeft, b.scrollTop]) }));
+      } catch { /* kein Speicher */ }
+    };
+    window.addEventListener('pagehide', save);
+    document.addEventListener('submit', save, true);
+    try {
+      const st = JSON.parse(sessionStorage.getItem(key) || 'null');
+      sessionStorage.removeItem(key);
+      if (st && Date.now() - st.t < 5 * 60 * 1000) {
+        boxes().forEach((b, i) => { if (st.boxes[i]) { b.scrollLeft = st.boxes[i][0]; b.scrollTop = st.boxes[i][1]; } });
+        window.scrollTo(st.x, st.y);
+      }
+    } catch { /* egal */ }
+  }
+
   // ---------- Dialoge ----------
   // Kontaktversuch-Fenster: alles für diese Person bei diesem Einsatz zurücksetzen
   document.addEventListener('click', async (ev) => {

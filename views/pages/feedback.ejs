@@ -61,7 +61,7 @@
   <div class="card"><div class="empty">Keine veröffentlichten Einsätze im gewählten Zeitraum.</div></div>
 <% } else if (filters.view === 'tabelle') { %>
 <div class="card">
-  <div class="table-wrap fb-wrap">
+  <div class="table-wrap fb-wrap" data-keep-scroll>
     <table class="matrix fb-matrix">
       <thead>
         <tr>
@@ -109,7 +109,7 @@
   </div>
 </div>
 <% } else { %>
-<div class="fb-cards">
+<div class="fb-cards" data-keep-scroll>
   <% events.forEach((e, i) => {
     const groups = { an: [], unsicher: [], ab: [], offen: [] };
     for (const row of rows) groups[row.eventCells[i].state].push({ ...row.person, last: row.eventCells[i].last });
