@@ -46,7 +46,7 @@ router.get('/rueckmeldungen/verlauf', (req, res) => {
 // Verlauf einer Person bei einem Einsatz leeren (Rückmeldung und Anmeldung bleiben)
 router.post('/rueckmeldungen/verlauf/loeschen', (req, res) => {
   const n = history.clear(Number(req.body.event_id), Number(req.body.person_id), req.user);
-  flash(res, 'success', `Verlauf gelöscht (${n} Eintr${n === 1 ? 'ag' : 'äge'}). Rückmeldung und Anmeldung sind unverändert.`);
+  flash(res, 'success', `Verlauf gelöscht (${n} Eintr${n === 1 ? 'ag' : 'äge'}), der neueste Eintrag bleibt stehen. Rückmeldung und Anmeldung sind unverändert.`);
   const b = String(req.body.back || '');
   res.redirect(b.startsWith('/') && !b.startsWith('//') ? b : '/rueckmeldungen');
 });

@@ -680,7 +680,7 @@
     const who = (dlg && (dlg.querySelector('[data-who]') || {}).textContent) || 'diese Person';
     const ok = await uiDialog({
       title: 'Verlauf löschen?',
-      message: `${who}\n\nAlle Einträge im Verlauf werden ausgeblendet. Die Rückmeldung, die Anmeldung und die Schichten bleiben, wie sie sind. Im Verlauf des Einsatzes bleibt vermerkt, wer den Verlauf gelöscht hat.`,
+      message: `${who}\n\nAlle Einträge im Verlauf werden gelöscht, nur der neueste (aktueller Stand) bleibt stehen. Die Rückmeldung, die Anmeldung und die Schichten bleiben, wie sie sind. Im Verlauf des Einsatzes bleibt vermerkt, wer den Verlauf gelöscht hat.`,
       ok: 'Verlauf löschen', danger: true,
     });
     if (!ok) return;

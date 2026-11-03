@@ -6,7 +6,7 @@
 %>
 <div class="hist-head">
   <strong>Verlauf</strong> <span class="muted"><%= entries.length ? `${entries.length} Eintr${entries.length === 1 ? 'ag' : 'äge'}, neueste zuerst` : '' %></span>
-  <% if (entries.length) { %><button type="button" class="btn btn-ghost btn-sm btn-danger hist-clear" data-clear-history data-person="<%= personId %>" data-event="<%= eventId %>" title="Nur den Verlauf leeren – Rückmeldung und Anmeldung bleiben">Verlauf löschen</button><% } %>
+  <% if (entries.length > 1) { %><button type="button" class="btn btn-ghost btn-sm btn-danger hist-clear" data-clear-history data-person="<%= personId %>" data-event="<%= eventId %>" title="Alle Einträge ausser dem neuesten löschen – Rückmeldung und Anmeldung bleiben">Verlauf löschen</button><% } %>
 </div>
 <% if (!entries.length) { %>
   <div class="muted small"><%= cleared ? `Verlauf am ${cleared.atText} von ${cleared.by} gelöscht. Seither nichts Neues.` : 'Noch nichts erfasst: keine Rückmeldung und kein Kontakt.' %></div>

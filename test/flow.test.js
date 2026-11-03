@@ -264,12 +264,13 @@ test('Rückmeldungen: eigene Icons und Verlauf löschen', () => {
   assert.ok(history.forPair(offen, anna).length >= 3);
   history.clear(offen, anna, system);
   const after = history.forPair(offen, anna);
-  assert.equal(after.length, 0);
+  assert.deepEqual(after.map((e) => e.text), ['Anmeldung: Bestätigt'], 'nur der neueste Stand bleibt');
   assert.equal(after.cleared.by, 'Test');
   assert.equal(cell(anna).state, 'an');
-  assert.equal(cell(anna).last, null);
-  registrations.setStatus(reg, 'warteliste', system);
-  assert.deepEqual(history.forPair(offen, anna).map((e) => e.text), ['Anmeldung: Warteliste']);
+  assert.equal(cell(anna).last.text, 'Anmeldung: Bestätigt');
   assert.equal(cell(anna).last.count, 1);
-  assert.ok(db.one("SELECT 1 FROM audit_log WHERE action = 'history_clear' AND summary LIKE '%Verlauf von Anna Roth geleert%'"));
+  registrations.setStatus(reg, 'warteliste', system);
+  assert.deepEqual(history.forPair(offen, anna).map((e) => e.text), ['Anmeldung: Warteliste', 'Anmeldung: Bestätigt']);
+  assert.equal(cell(anna).last.count, 2);
+  assert.ok(db.one("SELECT 1 FROM audit_log WHERE action = 'history_clear' AND summary LIKE '%Verlauf von Anna Roth bis auf den neuesten Eintrag gelöscht%'"));
 });

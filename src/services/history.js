@@ -139,8 +139,10 @@ function forPair(eventId, personId) {
   const clearIdx = audits.map((a) => a.action).lastIndexOf(CLEAR);
   const cleared = clearIdx >= 0 ? audits[clearIdx] : null;
   if (cleared) {
-    audits = audits.slice(clearIdx + 1);
-    mails = mails.filter((m) => m.created_at > cleared.created_at);
+    // der beim Löschen neueste Eintrag (aktueller Stand) bleibt stehen
+    const keep = parse(cleared.details).behalten || '';
+    audits = audits.filter((a, i) => i > clearIdx || `a${a.id}` === keep);
+    mails = mails.filter((m) => m.created_at > cleared.created_at || `m${m.id}` === keep);
   }
   const list = finish([...dropEchoes(audits.filter((a) => a.action !== CLEAR).map(entryFromAudit)), ...mails.map(entryFromMail)]);
   list.cleared = cleared ? { by: cleared.user_name || 'System', atText: fmtDateTime(cleared.created_at) } : null;
@@ -155,11 +157,14 @@ function clear(eventId, personId, user) {
   const event = db.one('SELECT id, name FROM events WHERE id = ?', eventId);
   const person = db.one('SELECT id, first_name, last_name FROM persons WHERE id = ?', personId);
   if (!event || !person) throw new ValidationError(['Einsatz oder Person nicht gefunden.']);
-  const n = forPair(eventId, personId).length;
+  const entries = forPair(eventId, personId);
+  // Nur der neueste Stand bleibt: der Eintrag, der das aktuelle Symbol gesetzt hat (sonst der neueste überhaupt)
+  const keep = entries.find((e) => e.state) || entries[0] || null;
+  const n = Math.max(0, entries.length - (keep ? 1 : 0));
   audit.log({
     entity: 'inquiry', eventId, personId, action: CLEAR,
-    summary: `${user.display_name} hat den Verlauf von ${person.first_name} ${person.last_name} geleert (${n} Einträge) · ${event.name}`,
-    details: { eintraege: n }, user,
+    summary: `${user.display_name} hat den Verlauf von ${person.first_name} ${person.last_name} bis auf den neuesten Eintrag gelöscht (${n} Einträge) · ${event.name}`,
+    details: { eintraege: n, behalten: keep?.id || null }, user,
   });
   live.notify(`event:${eventId}`, 'feedback', `person:${personId}`);
   return n;
@@ -178,20 +183,27 @@ function latestByPair(eventIds) {
   const rows = db.all(`SELECT a.* FROM audit_log a WHERE ${RELEVANT} AND a.event_id IN (${ph}) ORDER BY a.id`, ...eventIds);
   const byPair = new Map();
   const clearedAt = new Map();
+  const keptMail = new Map();
   for (const a of rows) {
     const personId = a.person_id || (a.entity_type === 'registration' ? regPerson.get(a.entity_id) : null);
     if (!personId) continue;
     const key = `${personId}:${a.event_id}`;
-    if (a.action === CLEAR) { byPair.set(key, []); clearedAt.set(key, a.created_at); continue; }
+    if (a.action === CLEAR) {
+      const keep = parse(a.details).behalten || '';
+      byPair.set(key, (byPair.get(key) || []).filter((e) => e.id === keep));
+      clearedAt.set(key, a.created_at);
+      keptMail.set(key, keep);
+      continue;
+    }
     if (!byPair.has(key)) byPair.set(key, []);
     byPair.get(key).push(entryFromAudit(a));
   }
   // Bestätigungsmails zählen im Verlauf mit
   const mails = new Map();
-  for (const m of db.all(`SELECT g.person_id, g.event_id, o.created_at FROM mail_outbox o JOIN registrations g ON g.id = o.registration_id
+  for (const m of db.all(`SELECT o.id, g.person_id, g.event_id, o.created_at FROM mail_outbox o JOIN registrations g ON g.id = o.registration_id
     WHERE g.event_id IN (${ph}) AND g.person_id IS NOT NULL`, ...eventIds)) {
     const key = `${m.person_id}:${m.event_id}`;
-    if (clearedAt.has(key) && m.created_at <= clearedAt.get(key)) continue;
+    if (clearedAt.has(key) && m.created_at <= clearedAt.get(key) && keptMail.get(key) !== `m${m.id}`) continue;
     mails.set(key, (mails.get(key) || 0) + 1);
   }
   for (const [key, all] of byPair) {
