@@ -277,4 +277,11 @@ test('Rückmeldungen: eigene Icons und Verlauf löschen', () => {
   const audit = require('../src/services/audit');
   const personLog = history.withoutCleared(audit.forPerson(anna)).filter((a) => a.event_id === offen).map((a) => a.action);
   assert.deepEqual(personLog, ['status', 'history_clear', 'status']);
+  // Kontaktversuche auf der Personenseite und unter Anfragen: nur der neueste bleibt
+  inquiries.addAttempt(offen, chris, { channel: 'telefon', result: 'nicht_erreicht' }, system);
+  inquiries.addAttempt(offen, chris, { channel: 'whatsapp', result: 'whatsapp' }, system);
+  history.clear(offen, chris, system);
+  const shown = inquiries.forPerson(chris).find((i) => i.event_id === offen).attempts;
+  assert.deepEqual(shown.map((a) => a.result), ['whatsapp']);
+  assert.deepEqual(inquiries.listForEvent(offen).find((r) => r.person_id === chris).attempts.map((a) => a.result), ['whatsapp']);
 });

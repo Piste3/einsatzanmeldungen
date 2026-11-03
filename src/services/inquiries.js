@@ -17,6 +17,20 @@ function attemptsFor(inquiryIds) {
     if (!map.has(r.inquiry_id)) map.set(r.inquiry_id, []);
     map.get(r.inquiry_id).push(r);
   }
+  // «Verlauf löschen»: ältere Kontaktversuche ausblenden. War der neueste Eintrag beim Löschen ein Kontaktversuch,
+  // bleibt der letzte davon stehen.
+  const ph = inquiryIds.map(() => '?').join(',');
+  const clears = db.all(`SELECT i.id AS inquiry_id, a.created_at, a.details,
+      (SELECT k.action FROM audit_log k WHERE 'a' || k.id = json_extract(a.details, '$.behalten')) AS kept_action
+    FROM inquiries i JOIN audit_log a ON a.id = (SELECT MAX(c.id) FROM audit_log c WHERE c.action = 'history_clear' AND c.event_id = i.event_id AND c.person_id = i.person_id)
+    WHERE i.id IN (${ph})`, ...inquiryIds);
+  for (const c of clears) {
+    const list = map.get(c.inquiry_id);
+    if (!list) continue;
+    const before = list.filter((r) => r.created_at <= c.created_at);
+    const keep = c.kept_action === 'attempt' ? before.at(-1) : null;
+    map.set(c.inquiry_id, list.filter((r) => r.created_at > c.created_at || r === keep));
+  }
   return map;
 }
 
