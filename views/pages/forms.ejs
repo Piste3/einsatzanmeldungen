@@ -48,7 +48,7 @@
         <p>Feste Adresse – ändert sich nie:</p>
         <input type="text" readonly value="<%= formUrl %>" data-select-on-focus>
         <p class="mt-s">Einmalig im ClubDesk-Baustein «Externe Inhalte» einbetten. Falls die Darstellung auf dem Handy nicht passt, genügt ein einfacher Link «Zur Anmeldung».</p>
-        <p class="muted">Einbettung erlaubt für: <code><%= frameAncestors %></code> (Umgebungsvariable FORM_FRAME_ANCESTORS)</p>
+        <p class="muted">Einbettung erlaubt für: <code><%= frameAncestors %></code> <% if (user && user.role === 'admin') { %>(ändern unter <a href="/verwaltung/server">Einstellungen › Server</a>)<% } else { %>(FORM_FRAME_ANCESTORS)<% } %></p>
       </div>
     </div>
     <div class="card">

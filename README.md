@@ -75,6 +75,8 @@ npm run handbuch:pdf
 
 Alles läuft über Umgebungsvariablen. `npm start` liest zusätzlich eine `.env`-Datei, siehe `.env.example`.
 
+Admins können fast alle dieser Werte auch im Browser unter **Einstellungen › Server** ändern. Sie werden in der Datenbank gespeichert, gelten sofort und gehen der `.env` vor. Nur `PORT`, `HOST`, `DATA_DIR`, `DB_FILE` und `NODE_ENV` kommen ausschliesslich aus der `.env`, weil der Server sie vor dem Start braucht. Notausgang: `npm run server:zuruecksetzen` (bzw. `betrieb/windows/server-zuruecksetzen.cmd`) löscht die Werte aus der Datenbank wieder.
+
 | Variable | Standard | Bedeutung |
 |---|---|---|
 | `PORT` | `3000` | Port des Servers |

@@ -9,6 +9,7 @@ const backup = require('../src/services/backup');
 const { localNow } = require('../src/lib/dates');
 
 db.open();
+require('../src/services/server-settings').applyStored();
 const dir = backup.backupDir();
 fs.mkdirSync(dir, { recursive: true });
 const file = path.join(dir, `einsatzplaner-${localNow().replace('T', '-').replace(':', '')}-manuell.sqlite`);

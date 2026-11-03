@@ -273,6 +273,31 @@ router.post('/verwaltung/sicherung', (req, res) => {
   res.redirect('/verwaltung/einstellungen');
 });
 
+// ---- Server-Einstellungen (Werte aus der .env) ----
+const serverSettings = require('../services/server-settings');
+const isHttps = (req) => req.secure || String(req.get('x-forwarded-proto') || '').split(',')[0].trim() === 'https';
+
+router.get('/verwaltung/server', (req, res) => {
+  res.render('admin/server', { title: 'Server', ...serverSettings.rows(), smtp: mailer.isConfigured(), testTo: req.user.email || '' });
+});
+
+router.post('/verwaltung/server', (req, res) => {
+  const changed = serverSettings.save(req.body, { user: req.user, secure: isHttps(req) });
+  flash(res, 'success', changed.length ? `Gespeichert, gilt ab sofort: ${changed.join(', ')}.` : 'Keine Änderungen.');
+  res.redirect('/verwaltung/server');
+});
+
+router.post('/verwaltung/server/testmail', async (req, res, next) => {
+  try {
+    const to = String(req.body.test_to || '').trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) throw new ValidationError(['Bitte eine gültige E-Mail-Adresse für die Testmail angeben.']);
+    const r = await mailer.send({ to, subject: '[Test] Mailserver KKB-Einsatzplaner', body: `Diese Testmail hat ${req.user.display_name} unter Einstellungen › Server verschickt. Der Mailversand funktioniert.` });
+    if (r.sent) flash(res, 'success', `Testmail an ${to} verschickt.`);
+    else flash(res, 'error', r.error ? `Testmail konnte nicht verschickt werden: ${r.error}` : 'Es ist kein Mailserver (SMTP) eingetragen – die Testmail liegt nur im Postausgang.');
+    res.redirect('/verwaltung/server');
+  } catch (err) { next(err); }
+});
+
 // ---- Kalendertermin-Vorlage ----
 function previewEvent(id) {
   const chosen = id ? events.get(Number(id)) : null;

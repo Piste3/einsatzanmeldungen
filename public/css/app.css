@@ -762,3 +762,26 @@ tr.changed td:first-child { box-shadow: inset 3px 0 0 var(--orange, #e8742a); }
 .fn-shift-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 8px; }
 .fn-group { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
 .fn-group + .fn-group { padding-left: 10px; border-left: 1px solid var(--border); }
+
+/* ---------- Einstellungen › Server ---------- */
+.server-table { width: 100%; }
+.server-table .group-row th { background: var(--surface-2); font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); padding: 10px 12px 6px; text-align: left; }
+.server-table tbody tr.group-row:hover th { background: var(--surface-2); }
+.server-table td { vertical-align: top; }
+.server-table .server-label { width: 40%; min-width: 150px; }
+.server-table .server-label label { font-weight: 600; display: block; }
+.server-key { font-size: 11px; color: var(--muted); }
+.server-table .server-value { min-width: 150px; }
+.server-table .server-value input:not([type=checkbox]), .server-table .server-value select, .server-table .server-value textarea { width: 100%; }
+.server-table .server-value input[type=number] { width: 110px; }
+.server-table .server-source { width: 110px; }
+.server-readonly { margin: 12px 0 0; display: flex; flex-direction: column; gap: 12px; }
+.server-readonly dt { font-weight: 600; }
+.server-readonly dt code { font-weight: 400; font-size: 11px; color: var(--muted); }
+.server-readonly dd { margin: 2px 0 0; word-break: break-all; }
+.server-readonly dd.field-hint { word-break: normal; }
+@media (max-width: 760px) {
+  .server-table .server-label { width: 100%; min-width: 0; }
+  .server-table .group-row th { display: block; }
+}
+.server-table .server-value input, .server-table .server-value textarea { min-width: 0; }

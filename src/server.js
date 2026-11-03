@@ -11,6 +11,8 @@ const jobs = require('./jobs');
 
 db.open();
 seedDefaults();
+// Server-Einstellungen aus der Verwaltung über die .env legen
+require('./services/server-settings').applyStored();
 
 const app = createApp();
 const server = http.createServer(app);

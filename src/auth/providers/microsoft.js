@@ -20,6 +20,8 @@ const isGuid = (s) => /^[0-9a-f-]{36}$/i.test(String(s));
 
 let discovery = null;
 let jwks = null;
+// Andere Tenant-ID (Einstellungen › Server): Microsoft-Konfiguration neu abrufen
+config.onChange(() => { discovery = null; jwks = null; });
 
 async function getDiscovery() {
   if (!discovery) {

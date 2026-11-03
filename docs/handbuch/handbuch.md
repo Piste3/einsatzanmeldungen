@@ -601,7 +601,7 @@ Konten anlegen, Rolle wählen (Admin, Aufgebotsstelle oder Einsatzleiter) und mi
   - **2FA zurücksetzen,** z. B. wenn jemand sein Handy verloren hat. Danach richtet die Person sie neu ein.
 - **Microsoft-Anmeldung** (nur sichtbar, wenn sie auf dem Server eingerichtet ist, mehr in Kapitel 20): E-Mail-Adresse des Microsoft-Kontos eintragen und «Mit dem Microsoft-Konto dieser E-Mail-Adresse anmelden erlaubt» ankreuzen. Beim ersten Login wird das Konto fest mit diesem Microsoft-Konto verknüpft. Häkchen entfernen oder E-Mail ändern löst die Verknüpfung.
   - **Mit Benutzername und Passwort anmelden erlaubt:** Ausschalten heisst, dass die Person nur noch mit Microsoft hineinkommt. Mindestens eine Anmeldeart muss erlaubt bleiben. Das eigene Passwort-Login lässt sich erst abschalten, wenn man sich einmal erfolgreich mit Microsoft angemeldet hat.
-  - **Notausgang:** Wird die Microsoft-Anmeldung auf dem Server ausgeschaltet (`AUTH_PROVIDERS=local` in der `.env`), gilt das Passwort wieder für alle.
+  - **Notausgang:** Wird die Microsoft-Anmeldung ausgeschaltet (unter **Einstellungen › Server** nur «Passwort» ankreuzen), gilt das Passwort wieder für alle.
 - **Rolle Einsatzleiter:** Das Konto sieht nur Einsätze, die die Aufgebotsstelle freigibt (Kapitel 15). Verknüpft man das Konto mit der Person aus den Stammdaten, wird es bei Einsätzen mit dieser Einsatzleitung zum Freigeben vorgeschlagen. Wechselt das Konto später in eine andere Rolle, verfallen seine Freigaben.
 - **Konto aktiv** ausschalten sperrt den Zugang, ohne Daten zu löschen.
 - **Benutzerkonto löschen** entfernt das Konto endgültig. Was die Person erfasst hat (Anmeldungen, Kontaktversuche, Verlauf), bleibt mit ihrem Namen erhalten, ebenso die verknüpfte Person in den Stammdaten. Das eigene Konto und den letzten aktiven Admin kann man nicht löschen.
@@ -636,7 +636,34 @@ Betreff und Text der Anmeldebestätigung mit denselben Bausteinen wie im Kalende
 
 - **Verein:** Vereinsname und Aufgebots-E-Mail (steht im Aufgebot).
 - **Anmeldeformular:** Titel, Einleitungstext und die Mindestzeit gegen Spam.
-- **Datensicherung:** Die Datenbank wird täglich automatisch gesichert und 30 Tage aufbewahrt. **Jetzt sichern** erstellt sofort eine Sicherung.
+- **Datensicherung:** Die Datenbank wird täglich automatisch gesichert und 30 Tage aufbewahrt. **Jetzt sichern** erstellt sofort eine Sicherung. Ordner und Aufbewahrungsdauer stellst du unter **Server** ein.
+
+### Server: die Werte aus der .env
+
+![Einstellungen › Server](bilder/43-server.jpg)
+
+Die Grundeinstellungen des Servers standen früher nur in der Datei `.env` auf dem Server-PC. Fast alle lassen sich jetzt hier im Browser ändern:
+
+- **Adresse und Sicherheit:** öffentliche Adresse (`https://einsatz.holmium.ch`), Reverse-Proxy, Anmeldung nur über HTTPS, wie lange eine Anmeldung gilt, Abmelden nach Inaktivität und die Webseiten, die das Anmeldeformular einbetten dürfen.
+- **Anmeldung:** Passwort und/oder Microsoft und die Angaben der Microsoft-App (Kapitel 20).
+- **E-Mail-Versand:** Mailserver, Port, SSL, Benutzername, Passwort und Absender. Mit **Mailserver testen** rechts eine Testmail an dich schicken.
+- **Datensicherung:** Ordner und wie viele Tage die Sicherungen behalten werden.
+
+So funktioniert es:
+
+- Werte ändern und unten einmal **Speichern**. Sie gelten **sofort**, ein Neustart ist nicht nötig.
+- Die Spalte **Quelle** zeigt, woher ein Wert kommt: **Verwaltung** (hier gespeichert), **.env** (aus der Datei auf dem Server) oder **Standard**. Was hier gespeichert ist, geht der `.env` vor.
+- **Zurück auf .env** ankreuzen und speichern löscht den Wert hier wieder. Dann gilt wieder die `.env`.
+- **Passwörter und Schlüssel** werden nie angezeigt. Das Feld bleibt leer, «gesetzt» heisst, dass es einen Wert gibt. Leer lassen = unverändert, etwas eintippen = neuer Wert.
+- Jede Änderung wird mit Name und Zeit protokolliert, aber ohne die Werte selbst, also auch ohne Passwörter.
+
+Damit sich niemand aussperrt, prüft die Seite beim Speichern: Die Passwort-Anmeldung lässt sich nur ausschalten, wenn die Microsoft-Angaben vollständig sind und dein eigenes Konto Microsoft freigegeben hat. «Anmeldung nur über HTTPS» lässt sich nur einschalten, wenn du gerade über HTTPS verbunden bist.
+
+**Nur in der .env:** Port, Netzwerk-Schnittstelle, Datenordner, Datenbank-Datei und Betriebsart stehen rechts nur zum Ansehen. Der Server braucht sie, bevor er startet: Auf den Port leitet der Nginx Proxy Manager weiter, und im Datenordner liegt die Datenbank mit den Werten dieser Seite. Ein falscher Wert hier würde den Einsatzplaner unerreichbar machen, und man könnte ihn nicht mehr über den Browser zurückstellen. Diese Werte ändert man deshalb in der `.env` und startet danach unter **System** neu.
+
+> **Ausgesperrt?** Auf dem Server-PC im Ordner `betrieb\windows` doppelt auf `server-zuruecksetzen.cmd` klicken. Das löscht alle Werte dieser Seite und startet den Einsatzplaner neu. Danach gilt wieder die `.env`. Nur einzelne Werte: Namen anhängen, z. B. `server-zuruecksetzen.cmd AUTH_PROVIDERS`.
+
+Gut zu wissen: Die hier gespeicherten Passwörter liegen in der Datenbank und damit auch in jeder Datensicherung. Sicherungen deshalb genauso sorgfältig aufbewahren wie die `.env`.
 
 ### System: Update und Neustart
 
@@ -644,7 +671,7 @@ Betreff und Text der Anmeldebestätigung mit denselben Bausteinen wie im Kalende
 
 - **Nach Updates suchen** zeigt, ob es eine neue Version gibt.
 - **Update installieren** sichert zuerst die Datenbank, holt dann die neue Version, installiert nötige Pakete und startet den Server neu. Das Protokoll läuft live mit. Während des Neustarts ist die Seite einige Sekunden nicht erreichbar.
-- **Server neu starten**, z. B. nach Änderungen an der Konfiguration.
+- **Server neu starten**, z. B. nach Änderungen an der `.env`. Werte unter **Server** gelten ohne Neustart.
 - **Version** zeigt Stand und Datum der installierten Version. Das Handbuch passt immer zu dieser Version.
 
 ### Formulare
@@ -692,19 +719,18 @@ Statt mit Benutzername und Passwort können sich Benutzer auch mit ihrem Microso
 3. **Registrieren**. Auf der Übersicht die **Anwendungs-ID (Client)** und die **Verzeichnis-ID (Mandant)** notieren.
 4. **Zertifikate & Geheimnisse › Neuer geheimer Clientschlüssel**, Ablauf **24 Monate**. Sofort den **Wert** kopieren (nicht die «Geheimnis-ID»). Er wird nur einmal angezeigt. Das **Ablaufdatum** notieren.
 
-**2. Server einstellen**
+**2. Einsatzplaner einstellen**
 
-In der Datei `.env` auf dem Server ergänzen und den Einsatzplaner neu starten:
+Unter **Einstellungen › Server**, Abschnitt «Anmeldung»:
 
-```
-AUTH_PROVIDERS=local,microsoft
-MS_TENANT_ID=<Verzeichnis-ID>   (bei «beliebiges Organisationsverzeichnis»: organizations)
-MS_CLIENT_ID=<Anwendungs-ID>
-MS_CLIENT_SECRET=<Wert des geheimen Schlüssels>
-MS_SECRET_EXPIRES=<Ablaufdatum, z. B. 2028-10-30>
-```
+1. Bei **Anmeldeverfahren** zusätzlich **Microsoft** ankreuzen.
+2. **Tenant-ID:** die Verzeichnis-ID, bei «beliebiges Organisationsverzeichnis» `organizations`.
+3. **Client-ID:** die Anwendungs-ID.
+4. **Geheimer Schlüssel:** den kopierten Wert.
+5. **Schlüssel läuft ab am:** das notierte Ablaufdatum.
+6. **Speichern.** Ein Neustart ist nicht nötig.
 
-Auf der Login-Seite erscheint jetzt **Mit Microsoft anmelden**.
+Auf der Login-Seite erscheint jetzt **Mit Microsoft anmelden**. (Wer lieber direkt am Server arbeitet, kann dieselben Werte auch in der `.env` setzen: `AUTH_PROVIDERS=local,microsoft`, `MS_TENANT_ID`, `MS_CLIENT_ID`, `MS_CLIENT_SECRET`, `MS_SECRET_EXPIRES`, danach neu starten.)
 
 **3. Benutzer freigeben**
 
@@ -718,28 +744,28 @@ Beim ersten Microsoft-Login wird das Benutzerkonto fest mit diesem Microsoft-Kon
 ### Nur noch Microsoft
 
 - **Pro Person:** Häkchen **Mit Benutzername und Passwort anmelden erlaubt** entfernen. Die Person kommt dann nur noch mit Microsoft hinein. Das eigene Konto lässt sich erst umstellen, wenn man sich einmal erfolgreich mit Microsoft angemeldet hat.
-- **Für alle:** in der `.env` `AUTH_PROVIDERS=microsoft` setzen und neu starten. Die Login-Seite zeigt dann nur noch den Microsoft-Knopf.
+- **Für alle:** unter **Einstellungen › Server** bei «Anmeldeverfahren» nur noch **Microsoft** ankreuzen und speichern. Die Login-Seite zeigt dann nur noch den Microsoft-Knopf. Das geht erst, wenn dein eigenes Konto die Microsoft-Anmeldung freigegeben hat.
 
 Die Zwei-Faktor-Abfrage des Einsatzplaners gilt nur für das Passwort-Login. Bei Microsoft gilt die Anmeldesicherheit von Microsoft.
 
 ### Alle 24 Monate: Schlüssel erneuern
 
-Der geheime Clientschlüssel bei Microsoft gilt höchstens 24 Monate. Läuft er ab, funktioniert **Mit Microsoft anmelden** nicht mehr. Ist `MS_SECRET_EXPIRES` gesetzt, zeigt das Cockpit allen Admins 30 Tage vorher eine Erinnerung.
+Der geheime Clientschlüssel bei Microsoft gilt höchstens 24 Monate. Läuft er ab, funktioniert **Mit Microsoft anmelden** nicht mehr. Ist das Ablaufdatum unter **Einstellungen › Server** eingetragen, zeigt das Cockpit allen Admins 30 Tage vorher eine Erinnerung.
 
 So wird der Schlüssel erneuert, am besten ein paar Tage vor dem Ablauf:
 
 1. Auf **entra.microsoft.com** anmelden, **Anwendungen › App-Registrierungen › KKB-Einsatzplaner** öffnen.
 2. **Zertifikate & Geheimnisse › Neuer geheimer Clientschlüssel**, Ablauf **24 Monate**, **Hinzufügen**.
 3. Sofort den **Wert** kopieren.
-4. In der `.env` auf dem Server `MS_CLIENT_SECRET` durch den neuen Wert ersetzen und `MS_SECRET_EXPIRES` auf das neue Ablaufdatum setzen.
-5. Den Einsatzplaner neu starten und einmal mit Microsoft anmelden, um es zu prüfen.
+4. Unter **Einstellungen › Server** bei **Geheimer Schlüssel** den neuen Wert eintragen, bei **Schlüssel läuft ab am** das neue Datum, und speichern.
+5. Abmelden und einmal mit Microsoft anmelden, um es zu prüfen.
 6. Bei Microsoft den alten Schlüssel löschen (Papierkorb-Symbol in der Zeile).
 
 Die Freigaben und Verknüpfungen der Benutzer bleiben dabei erhalten.
 
 ### Zurück zum Passwort-Login (Notausgang)
 
-In der `.env` `AUTH_PROVIDERS=local` setzen und neu starten. Der Microsoft-Knopf verschwindet, und das Passwort gilt wieder für alle, auch für Konten mit «nur Microsoft». Das hilft auch, wenn Microsoft einmal nicht erreichbar ist oder der Schlüssel abgelaufen ist.
+Unter **Einstellungen › Server** bei «Anmeldeverfahren» nur **Passwort** ankreuzen und speichern. Kommt niemand mehr hinein, auf dem Server-PC `betrieb\windows\server-zuruecksetzen.cmd` doppelklicken. Danach gilt wieder die `.env`, und dort steht normalerweise `AUTH_PROVIDERS=local`. Der Microsoft-Knopf verschwindet, und das Passwort gilt wieder für alle, auch für Konten mit «nur Microsoft». Das hilft auch, wenn Microsoft einmal nicht erreichbar ist oder der Schlüssel abgelaufen ist.
 
 **Fehlermeldungen bei der Microsoft-Anmeldung:**
 

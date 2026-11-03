@@ -7,6 +7,8 @@ const { nowIso } = require('./dates');
 const { htmlDocument } = require('./html');
 
 let transport = null;
+// Neue Zugangsdaten (Einstellungen › Server): Verbindung neu aufbauen
+config.onChange(() => { transport = null; });
 function getTransport() {
   if (!config.smtp.host) return null;
   if (!transport) {

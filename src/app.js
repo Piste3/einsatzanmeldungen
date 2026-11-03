@@ -24,7 +24,9 @@ function assetVersion() {
 function createApp() {
   const app = express();
   app.disable('x-powered-by');
-  if (config.trustProxy) app.set('trust proxy', 1);
+  app.set('trust proxy', config.trustProxy ? 1 : false);
+  // Änderung unter Einstellungen › Server wirkt sofort
+  config.onChange(() => app.set('trust proxy', config.trustProxy ? 1 : false));
   app.set('view engine', 'ejs');
   app.set('views', path.join(__dirname, '..', 'views'));
   app.locals.h = helpers;

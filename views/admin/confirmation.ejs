@@ -11,7 +11,7 @@
       <div class="card-head"><h2>Vorlage</h2>
         <label class="check"><input type="checkbox" name="enabled" value="1" <%= conf.enabled ? 'checked' : '' %>> beim Bestätigen automatisch senden</label></div>
       <div class="card-body">
-        <% if (!smtp) { %><div class="callout warn mb">Es ist kein Mailserver (SMTP) eingerichtet. Bestätigungen werden im Postausgang unter «Formulare» abgelegt, aber nicht versendet. Siehe README (SMTP_HOST usw.).</div><% } %>
+        <% if (!smtp) { %><div class="callout warn mb">Es ist kein Mailserver (SMTP) eingerichtet. Bestätigungen werden im Postausgang unter «Formulare» abgelegt, aber nicht versendet. Eintragen unter <a href="/verwaltung/server">Einstellungen › Server</a>.</div><% } %>
         <p class="small muted mb">Die Mail geht an die E-Mail-Adresse der Person, sobald ihre Anmeldung auf «Bestätigt» gesetzt wird. Personen ohne E-Mail-Adresse bekommen keine.</p>
         <div class="field"><label for="subject">Betreff</label><input id="subject" type="text" name="subject" value="<%= conf.subject %>" data-token-target></div>
         <div class="field"><label for="body">Text</label>
