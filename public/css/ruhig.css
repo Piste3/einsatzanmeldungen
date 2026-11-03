@@ -1,0 +1,178 @@
+/* KKB-Einsatzplaner – Gestaltung «ruhig und schlicht» (Probe, liegt über app.css)
+   Idee: helle Fläche, feine Linien statt Schatten, fast keine Farbe.
+   Das KKB-Orange ist der einzige Akzent (Logo, Zähler, aktiver Punkt, Fokus).
+   Schrift: Geist für Text, Geist Mono für Zahlen, Zeiten und Grade. */
+
+@font-face { font-family: "Geist"; src: url("/static/fonts/geist.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url("/static/fonts/geist-mono.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: swap; }
+
+:root {
+  /* Grundfarben */
+  --ink: #18181b;        /* Text, Hauptknopf */
+  --paper: #ffffff;      /* Inhaltsfläche */
+  --shelf: #f6f6f4;      /* Seitenleiste, Tabellenkopf */
+  --line: #e7e7e4;       /* feine Linien */
+  --stone: #6b6b70;      /* Nebentext, 5.3:1 auf Weiss */
+  --signal: #e8732a;     /* KKB-Orange, nur als Akzent */
+
+  --bg: var(--paper);
+  --card: var(--paper);
+  --surface-2: #fafaf9;
+  --border: var(--line);
+  --border-soft: #f0f0ee;
+  --border-strong: #d6d6d2;
+  --text: var(--ink);
+  --text-2: #3f3f46;
+  --muted: var(--stone);
+  --muted-2: #8e8e93;
+  --hover: #f4f4f2;
+  --hover-2: #ececea;
+  --gray-bg: #f1f1ef;
+  --track: #ececea;
+  --orange: var(--signal);
+  --orange-dark: #c95a17;
+  --radius: 10px;
+  --shadow: none;
+  --font: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* Statuspunkte: dunkle Töne, damit Text daneben gut lesbar bleibt */
+  --dot-green: #16a34a;
+  --dot-yellow: #d99a06;
+  --dot-red: #dc2626;
+  --dot-blue: #2563eb;
+  --dot-orange: var(--signal);
+  --dot-gray: #a1a1aa;
+}
+
+:root[data-theme="dark"] {
+  --ink: #ededed; --paper: #0c0c0d; --shelf: #121214; --line: #232326; --stone: #9a9aa1; --signal: #f0843f;
+  --bg: var(--paper); --card: var(--paper); --surface-2: #141416; --border: var(--line); --border-soft: #1b1b1e; --border-strong: #34343a;
+  --text: var(--ink); --text-2: #c4c4c9; --muted: var(--stone); --muted-2: #74747b;
+  --hover: #18181b; --hover-2: #202024; --gray-bg: #1d1d20; --track: #26262a;
+  --orange-dark: #f59a5e;
+  --dot-green: #22c55e; --dot-yellow: #eab308; --dot-red: #f87171; --dot-blue: #60a5fa; --dot-gray: #71717a;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ink: #ededed; --paper: #0c0c0d; --shelf: #121214; --line: #232326; --stone: #9a9aa1; --signal: #f0843f;
+    --bg: var(--paper); --card: var(--paper); --surface-2: #141416; --border: var(--line); --border-soft: #1b1b1e; --border-strong: #34343a;
+    --text: var(--ink); --text-2: #c4c4c9; --muted: var(--stone); --muted-2: #74747b;
+    --hover: #18181b; --hover-2: #202024; --gray-bg: #1d1d20; --track: #26262a;
+    --orange-dark: #f59a5e;
+    --dot-green: #22c55e; --dot-yellow: #eab308; --dot-red: #f87171; --dot-blue: #60a5fa; --dot-gray: #71717a;
+    color-scheme: dark;
+  }
+}
+
+body { font-feature-settings: "cv11", "ss01"; letter-spacing: -0.005em; }
+h1, h2, h3, h4 { font-weight: 600; letter-spacing: -0.02em; }
+
+/* ---------- Seitenleiste: hell, nur durch eine Linie getrennt ---------- */
+.sidebar { background: var(--shelf); color: var(--text-2); border-right: 1px solid var(--line); }
+.brand { padding: 16px 16px 14px; }
+.logo { width: 30px; height: 30px; border-radius: 8px; font-size: 10.5px; background: var(--signal); }
+.brand-title { color: var(--text); font-size: 14px; font-weight: 600; letter-spacing: -0.01em; }
+.brand-sub { color: var(--muted); opacity: 1; }
+.nav { padding: 4px 8px; gap: 1px; }
+.nav a { color: var(--text-2); padding: 7px 10px; font-size: 13.5px; border-radius: 7px; font-weight: 500; }
+.nav a:hover { background: var(--hover-2); color: var(--text); }
+.nav a.active { background: var(--paper); color: var(--text); font-weight: 600; box-shadow: 0 0 0 1px var(--line); }
+.nav-icon { opacity: 0.7; }
+.nav .count { background: transparent; color: var(--signal); font-family: var(--mono); font-size: 11.5px; font-weight: 600; min-width: 0; padding: 0; }
+.nav .count.red { background: transparent; color: var(--dot-red); }
+.nav-sep { background: var(--line); margin: 10px 10px; }
+.sidebar-user { border-top: 1px solid var(--line); }
+.avatar { background: var(--ink); color: var(--paper); }
+.sidebar-user .name { color: var(--text); }
+.sidebar-user .role { color: var(--muted); }
+.sidebar-user button { color: var(--muted); text-decoration: none; }
+.sidebar-user button:hover { color: var(--text); }
+
+/* ---------- Kopfzeile ---------- */
+.main { padding: 22px 32px 56px; }
+.crumbs { font-size: 12.5px; }
+.topbar h1 { font-size: 24px; }
+.btn { height: 32px; border-radius: 7px; font-weight: 500; border-color: var(--border-strong); }
+.btn-primary { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.btn-primary:hover { background: var(--text-2); border-color: var(--text-2); }
+.btn-sm { height: 28px; }
+input[type=text], input[type=password], input[type=email], input[type=date], input[type=time], input[type=number], input[type=search], input[type=tel], select, textarea { border-radius: 7px; border-color: var(--border-strong); }
+input:focus, select:focus, textarea:focus { border-color: var(--text-2); box-shadow: 0 0 0 3px color-mix(in srgb, var(--signal) 22%, transparent); }
+:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+.live { color: var(--muted); font-weight: 500; }
+.live::before { background: var(--dot-green); box-shadow: 0 0 0 3px color-mix(in srgb, var(--dot-green) 18%, transparent); }
+
+/* ---------- Kennzahlen: eine Leiste statt vier Kacheln ---------- */
+.kpi-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: var(--radius); }
+.kpi-strip .kpi { padding: 14px 18px 15px; border-left: 1px solid var(--line); display: flex; flex-direction: column; gap: 2px; }
+.kpi-strip .kpi:first-child { border-left: 0; }
+.kpi-strip a.kpi:hover { background: var(--surface-2); }
+.kpi .label { font-size: 12.5px; color: var(--muted); font-weight: 500; }
+.kpi .value { font-family: var(--mono); font-size: 28px; font-weight: 500; letter-spacing: -0.04em; margin: 4px 0 0; font-variant-numeric: tabular-nums; line-height: 1.15; }
+.kpi .value.orange { color: var(--signal); }
+.kpi .value.words { font-family: var(--font); font-size: 22px; letter-spacing: -0.03em; font-weight: 600; padding-top: 3px; }
+.kpi .sub { font-size: 12px; }
+.kpi .sub.green { color: var(--muted); }
+.kpi .sub a:hover { text-decoration: underline; }
+
+/* ---------- Karten und Tabellen ---------- */
+.card { border-radius: var(--radius); box-shadow: none; }
+.card-head { padding: 13px 16px; border-bottom: 1px solid var(--line); }
+.card-head h2 { font-size: 14.5px; }
+.card-head .hint { color: var(--muted); }
+th { text-transform: none; letter-spacing: 0; font-size: 12px; font-weight: 500; color: var(--muted); background: transparent; padding: 9px 12px; }
+td { padding: 10px 12px; font-size: 13.5px; border-bottom-color: var(--border-soft); }
+tbody tr:hover td { background: var(--surface-2); }
+td .sub, .cell-sub { font-size: 12px; margin-top: 1px; }
+.rank { font-size: 11.5px; font-weight: 500; background: none; color: var(--muted); padding: 0; margin-right: 6px; display: inline-block; min-width: 28px; }
+
+/* Status: Punkt und Text statt farbiger Pille */
+.badge, .tag { background: none !important; border: 1px solid var(--line); color: var(--text-2) !important; font-weight: 500; font-size: 12px; border-radius: 6px; padding: 1px 8px 1px 7px; gap: 6px; display: inline-flex; align-items: center; line-height: 1.6; }
+.badge::before, .tag::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--dot-gray); flex-shrink: 0; }
+.badge-green::before, .tag-green::before { background: var(--dot-green); }
+.badge-yellow::before, .tag-yellow::before { background: var(--dot-yellow); }
+.badge-red::before, .tag-red::before { background: var(--dot-red); }
+.badge-blue::before, .tag-blue::before { background: var(--dot-blue); }
+.badge-orange::before, .tag-orange::before { background: var(--dot-orange); }
+.tag { min-width: 98px; justify-content: flex-start; }
+
+/* Besetzungsbalken: dünner, ruhiger */
+.bar { height: 4px; }
+.bar.green > span { background: var(--dot-green); }
+.bar.yellow > span { background: var(--dot-yellow); }
+.bar.red > span { background: var(--dot-red); }
+.occ-head strong { font-family: var(--mono); font-weight: 500; font-variant-numeric: tabular-nums; }
+
+/* Zu tun und Aktivität */
+.todo { padding: 10px 16px; font-size: 13px; align-items: baseline; }
+.activity { padding: 9px 16px; font-size: 13px; color: var(--text-2); }
+.activity time { font-size: 12px; font-weight: 500; color: var(--muted); display: block; margin-bottom: 1px; font-variant-numeric: tabular-nums; }
+
+.flash { border-radius: 8px; }
+.hint-bar { border-radius: 8px; }
+
+@media (max-width: 1100px) {
+  .kpi-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kpi-strip .kpi:nth-child(3) { border-left: 0; }
+  .kpi-strip .kpi:nth-child(n+3) { border-top: 1px solid var(--line); }
+}
+
+@media (max-width: 760px) {
+  .mobile-bar { background: var(--paper); color: var(--text); border-bottom: 1px solid var(--line); }
+  .mobile-brand { color: var(--text); }
+  .mobile-menu { color: var(--text); }
+  .main { padding: 16px 16px 40px; }
+  .kpi-strip .kpi { padding: 12px 14px; }
+  .kpi .value { font-size: 24px; }
+  .kpi .value.words { font-size: 19px; }
+  table.cards tr { padding: 12px 14px; }
+  table.cards td::before { text-transform: none; letter-spacing: 0; font-size: 12px; font-weight: 500; }
+  .sidebar { box-shadow: none; border-right: 1px solid var(--line); }
+  body.nav-open .sidebar { box-shadow: 0 0 40px rgba(0, 0, 0, 0.18); }
+}
+
+@media print {
+  .badge, .tag { border-color: #999; }
+}

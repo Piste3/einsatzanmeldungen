@@ -10,26 +10,26 @@
 }) %>
 
 <% if (msSecretDays !== null) { %><div class="flash flash-<%= msSecretDays < 0 ? 'error' : 'info' %>"><strong>Microsoft-Schlüssel <%= msSecretDays < 0 ? 'ist abgelaufen' : msSecretDays === 0 ? 'läuft heute ab' : `läuft in ${msSecretDays} Tagen ab` %>.</strong> <%= msSecretDays < 0 ? 'Die Anmeldung mit Microsoft funktioniert nicht mehr.' : 'Danach funktioniert die Anmeldung mit Microsoft nicht mehr.' %> Neuen Schlüssel erstellen: <a class="link" href="/handbuch#20-microsoft-anmeldung">Handbuch, Kapitel 20</a>.</div><% } %>
-<div class="grid grid-4 mb" data-live-region="kpis">
-  <div class="card kpi">
+<div class="kpi-strip mb" data-live-region="kpis">
+  <div class="kpi">
     <div class="label">Neue Anmeldungen</div>
     <div class="value"><%= kpis.neu %></div>
     <div class="sub green"><%= kpis.neuSeit %> in den letzten 24 Stunden</div>
   </div>
-  <a class="card kpi" href="/klaerungen">
+  <a class="kpi" href="/klaerungen">
     <div class="label">Zu klären</div>
     <div class="value orange"><%= kpis.klaeren %></div>
     <div class="sub">Name nicht sicher erkannt</div>
   </a>
-  <div class="card kpi">
+  <div class="kpi">
     <div class="label">Noch nicht erreicht</div>
     <div class="value"><%= kpis.nichtErreicht %></div>
     <div class="sub">Telefon / WhatsApp offen</div>
   </div>
-  <div class="card kpi">
+  <div class="kpi">
     <div class="label">Nächster Einsatz</div>
     <% if (kpis.next) { %>
-      <div class="value"><%= h.fmtDaysUntil(kpis.next.date) %></div>
+      <div class="value words"><%= h.fmtDaysUntil(kpis.next.date) %></div>
       <div class="sub"><a href="/einsaetze/<%= kpis.next.id %>"><%= kpis.next.name %></a></div>
     <% } else { %>
       <div class="value">–</div><div class="sub">kein Einsatz geplant</div>
