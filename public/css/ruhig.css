@@ -7,6 +7,9 @@
 @font-face { font-family: "Geist Mono"; src: url("/static/fonts/geist-mono.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: swap; }
 
 :root {
+  /* Hell ausdrücklich als hell melden: sonst zeichnet der Browser Auswahllisten bei dunklem System
+     im dunklen Schema (weisse Schrift auf heller Markierung) */
+  color-scheme: light;
   /* Grundfarben */
   --ink: #18181b;        /* Text, Hauptknopf */
   --paper: #ffffff;      /* Inhaltsfläche */
@@ -67,6 +70,10 @@
     color-scheme: dark;
   }
 }
+
+/* Optionen in Auswahllisten immer mit den Farben des aktuellen Designs */
+option, optgroup { background-color: var(--input-bg, var(--paper)); color: var(--text); }
+option:checked { background-color: var(--hover-2); color: var(--text); }
 
 body { font-feature-settings: "cv11", "ss01"; letter-spacing: -0.005em; }
 h1, h2, h3, h4 { font-weight: 600; letter-spacing: -0.02em; }
