@@ -23,50 +23,54 @@ const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 const fmtShort = (d) => new Intl.DateTimeFormat('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Zurich' }).format(d).replace(',', '');
 const fmtDate = (d) => new Intl.DateTimeFormat('de-CH', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Zurich' }).format(d);
 
+const FONT_DIR = path.join(__dirname, '..', 'public', 'fonts');
 const CSS = `
+@font-face { font-family: "Geist"; src: url("file://${FONT_DIR}/geist.woff2") format("woff2"); font-weight: 100 900; }
+@font-face { font-family: "Geist Mono"; src: url("file://${FONT_DIR}/geist-mono.woff2") format("woff2"); font-weight: 100 900; }
 @page {
   size: A4;
   margin: 18mm 18mm 20mm 18mm;
-  @top-left { content: "KKB-Einsatzplaner"; font: 600 7.5pt Inter, sans-serif; color: #e8732a; letter-spacing: .06em; text-transform: uppercase; vertical-align: bottom; padding-bottom: 4mm; }
-  @top-right { content: "__BOOK__"; font: 7.5pt Inter, sans-serif; color: #9097a6; vertical-align: bottom; padding-bottom: 4mm; }
-  @bottom-left { content: "Kadetten-Korps Basel"; font: 7.5pt Inter, sans-serif; color: #9097a6; vertical-align: top; padding-top: 5mm; }
-  @bottom-right { content: "Seite " counter(page) " von " counter(pages); font: 7.5pt Inter, sans-serif; color: #6b7385; vertical-align: top; padding-top: 5mm; }
+  @top-left { content: "KKB-Einsatzplaner"; font: 600 7.5pt Geist, sans-serif; color: #18181b; vertical-align: bottom; padding-bottom: 4mm; }
+  @top-right { content: "__BOOK__"; font: 7.5pt Geist, sans-serif; color: #6b6b70; vertical-align: bottom; padding-bottom: 4mm; }
+  @bottom-left { content: "Kadetten-Korps Basel"; font: 7.5pt Geist, sans-serif; color: #6b6b70; vertical-align: top; padding-top: 5mm; }
+  @bottom-right { content: "Seite " counter(page) " von " counter(pages); font: 7.5pt Geist, sans-serif; color: #6b6b70; vertical-align: top; padding-top: 5mm; }
 }
 @page cover { margin: 0; @top-left { content: none; } @top-right { content: none; } @bottom-left { content: none; } @bottom-right { content: none; } }
-:root { --navy: #1d2742; --navy-2: #27324f; --orange: #e8732a; --orange-soft: #fdf0e6; --orange-border: #f6d2b8;
-  --text: #1c2333; --text-2: #4b5366; --muted: #6b7385; --border: #e3e6ec; --soft: #f5f6f9; }
+/* Gleicher Stil wie die App: helle Flächen, feine Linien, Orange nur als Akzent */
+:root { --ink: #18181b; --signal: #e8732a; --shelf: #f6f6f4; --line: #e7e7e4;
+  --text: #18181b; --text-2: #3f3f46; --muted: #6b6b70; --border: #e7e7e4; --soft: #fafaf9; }
 * { box-sizing: border-box; }
 html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-body { margin: 0; font-family: Inter, "Segoe UI", Arial, sans-serif; font-size: 10pt; line-height: 1.55; color: var(--text);
-  font-feature-settings: "cv11", "ss01"; hyphens: auto; -webkit-hyphens: auto; }
+body { margin: 0; font-family: Geist, "Segoe UI", Arial, sans-serif; font-size: 10pt; line-height: 1.55; color: var(--text);
+  hyphens: auto; -webkit-hyphens: auto; }
 
 /* Titelseite */
-.cover { page: cover; height: 297mm; width: 210mm; background: var(--navy); color: #fff; position: relative; overflow: hidden; break-after: page; }
-.cover .band { position: absolute; left: 0; right: 0; bottom: 0; height: 74mm; background: var(--navy-2); }
-.cover .stripe { position: absolute; left: 22mm; top: 0; width: 3mm; height: 100%; background: var(--orange); }
-.cover .head { position: absolute; left: 34mm; top: 30mm; display: flex; align-items: center; gap: 5mm; }
-.cover .head svg { width: 18mm; height: 18mm; }
-.cover .head .org { font-size: 11pt; line-height: 1.35; color: #c9d0e0; }
-.cover .head .org b { display: block; color: #fff; font-size: 13pt; font-weight: 700; }
-.cover .title { position: absolute; left: 34mm; right: 22mm; top: 102mm; }
-.cover .kicker { font-size: 10pt; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--orange); margin-bottom: 6mm; }
-.cover h1 { font-size: 40pt; line-height: 1.05; font-weight: 800; letter-spacing: -.02em; margin: 0 0 7mm; }
-.cover .sub { font-size: 13pt; color: #c9d0e0; max-width: 125mm; line-height: 1.45; }
-.cover .meta { position: absolute; left: 34mm; right: 22mm; bottom: 24mm; display: grid; grid-template-columns: repeat(3, auto); justify-content: start; gap: 0 14mm; font-size: 9pt; color: #aeb8cf; }
-.cover .meta b { display: block; color: #fff; font-size: 11pt; font-weight: 600; margin-top: 1mm; }
+.cover { page: cover; height: 297mm; width: 210mm; background: var(--shelf); color: var(--ink); position: relative; overflow: hidden; break-after: page; }
+.cover .band { position: absolute; left: 0; right: 0; bottom: 0; height: 74mm; background: #fff; border-top: 1px solid var(--line); }
+.cover .stripe { display: none; }
+.cover .head { position: absolute; left: 24mm; top: 26mm; display: flex; align-items: center; gap: 5mm; }
+.cover .head svg { width: 16mm; height: 16mm; }
+.cover .head .org { font-size: 10.5pt; line-height: 1.35; color: var(--muted); }
+.cover .head .org b { display: block; color: var(--ink); font-size: 12.5pt; font-weight: 600; }
+.cover .title { position: absolute; left: 24mm; right: 24mm; top: 100mm; }
+.cover .kicker { font-size: 10pt; font-weight: 500; color: var(--signal); margin-bottom: 6mm; }
+.cover h1 { font-size: 42pt; line-height: 1.02; font-weight: 600; letter-spacing: -.035em; margin: 0 0 7mm; }
+.cover .sub { font-size: 13pt; color: var(--text-2); max-width: 125mm; line-height: 1.45; }
+.cover .meta { position: absolute; left: 24mm; right: 24mm; bottom: 26mm; display: grid; grid-template-columns: repeat(3, auto); justify-content: start; gap: 0 16mm; font-size: 9pt; color: var(--muted); }
+.cover .meta b { display: block; color: var(--ink); font-size: 11pt; font-weight: 600; margin-top: 1mm; font-variant-numeric: tabular-nums; }
 
 /* Inhaltsverzeichnis */
 .front { break-after: page; }
 .front .intro { font-size: 10.5pt; color: var(--text-2); margin: 0 0 6mm; }
 .front .intro blockquote { margin: 4mm 0 0; }
-.front h2.toc-title { font-size: 20pt; font-weight: 800; letter-spacing: -.01em; margin: 0 0 5mm; padding-bottom: 3mm; border-bottom: 2px solid var(--orange); }
+.front h2.toc-title { font-size: 20pt; font-weight: 600; letter-spacing: -.03em; margin: 0 0 5mm; padding-bottom: 3mm; border-bottom: 1px solid var(--line); }
 .toc { list-style: none; margin: 0; padding: 0; }
 .toc li { break-inside: avoid; }
 .toc a { color: inherit; text-decoration: none; display: flex; align-items: baseline; gap: 2mm; }
-.toc a .dots { flex: 1; border-bottom: 1px dotted #b8bfcc; transform: translateY(-1mm); min-width: 6mm; }
-.toc a .pg { font-variant-numeric: tabular-nums; min-width: 7mm; text-align: right; }
+.toc a .dots { flex: 1; border-bottom: 1px dotted #c8c8c4; transform: translateY(-1mm); min-width: 6mm; }
+.toc a .pg { font-variant-numeric: tabular-nums; min-width: 7mm; text-align: right; color: var(--muted); }
 .toc .l2 { margin-top: 2.6mm; font-weight: 600; font-size: 10.5pt; }
-.toc .l2 .n { display: inline-block; width: 8mm; color: var(--orange); font-weight: 700; }
+.toc .l2 .n { display: inline-block; width: 8mm; color: var(--muted); font-family: "Geist Mono", monospace; font-weight: 500; font-size: 9.5pt; }
 .toc .l3 { padding-left: 8mm; font-size: 9pt; color: var(--text-2); margin-top: .6mm; }
 .toc.compact .l3 { display: none; }
 
@@ -75,37 +79,38 @@ body { margin: 0; font-family: Inter, "Segoe UI", Arial, sans-serif; font-size: 
 /* Kurze Handbücher: Kapitel laufen weiter statt jedes Mal eine neue Seite */
 .flow .chapter { break-before: auto; margin-top: 11mm; }
 .flow .front + .chapter { margin-top: 0; }
-.chapter > h2 { display: flex; align-items: center; gap: 4mm; margin: 0 0 6mm; padding-bottom: 4mm; border-bottom: 2px solid var(--orange); font-size: 19pt; font-weight: 800; letter-spacing: -.01em; line-height: 1.15; break-after: avoid; }
-.chapter > h2 .n { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 11mm; height: 11mm; border-radius: 3mm; background: var(--orange); color: #fff; font-size: 15pt; }
-h3 { font-size: 12.5pt; font-weight: 700; color: var(--navy); margin: 7mm 0 2.5mm; padding-left: 3mm; border-left: 1.2mm solid var(--orange); line-height: 1.25; break-after: avoid; }
-h4 { font-size: 10.5pt; margin: 5mm 0 2mm; break-after: avoid; }
+.chapter > h2 { display: flex; align-items: baseline; gap: 4mm; margin: 0 0 6mm; padding-bottom: 4mm; border-bottom: 1px solid var(--line); font-size: 20pt; font-weight: 600; letter-spacing: -.03em; line-height: 1.15; break-after: avoid; }
+.chapter > h2 .n { flex: none; font-family: "Geist Mono", monospace; font-weight: 500; font-size: 13pt; color: var(--signal); letter-spacing: 0; }
+h3 { font-size: 12.5pt; font-weight: 600; letter-spacing: -.015em; color: var(--ink); margin: 7mm 0 2.5mm; line-height: 1.25; break-after: avoid; }
+h4 { font-size: 10.5pt; font-weight: 600; margin: 5mm 0 2mm; break-after: avoid; }
 p { margin: 0 0 2.6mm; orphans: 3; widows: 3; }
 ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
 li { margin: 0 0 1.3mm; }
-li::marker { color: var(--orange); font-weight: 700; }
+li::marker { color: var(--muted); }
 li > ul, li > ol { margin: 1.3mm 0 0; }
-strong { font-weight: 650; }
-a { color: #2b5fb8; text-decoration: none; }
+strong { font-weight: 600; }
+a { color: var(--ink); text-decoration: underline; text-decoration-color: #c8c8c4; text-underline-offset: .6mm; }
 .applink { font-weight: 600; }
-code { font-family: "JetBrains Mono", Consolas, monospace; font-size: 8.4pt; background: var(--soft); border: 1px solid var(--border); padding: 0 1.2mm; border-radius: 1mm; }
-pre { background: var(--navy); color: #e4e8f1; border-radius: 2mm; padding: 3.5mm 4mm; font-size: 8.4pt; line-height: 1.5; break-inside: avoid; white-space: pre-wrap; }
+code { font-family: "Geist Mono", Consolas, monospace; font-size: 8.4pt; background: var(--soft); border: 1px solid var(--border); padding: 0 1.2mm; border-radius: 1mm; }
+pre { background: var(--ink); color: #ededed; border-radius: 2mm; padding: 3.5mm 4mm; font-size: 8.4pt; line-height: 1.5; break-inside: avoid; white-space: pre-wrap; }
 pre code { background: none; border: 0; padding: 0; color: inherit; }
-blockquote { margin: 3mm 0 4mm; padding: 3mm 4mm; background: var(--orange-soft); border: 1px solid var(--orange-border); border-left: 1.5mm solid var(--orange); border-radius: 0 2mm 2mm 0; break-inside: avoid; color: #3a2a1f; }
+blockquote { margin: 3mm 0 4mm; padding: 3mm 4mm 3mm 5mm; background: var(--soft); border: 1px solid var(--line); border-radius: 2mm; break-inside: avoid; color: var(--text-2); position: relative; }
+blockquote::before { content: ""; position: absolute; left: 2mm; top: 3.6mm; width: 1.4mm; height: 1.4mm; border-radius: 50%; background: var(--signal); }
 blockquote p:last-child { margin: 0; }
 table { width: 100%; border-collapse: separate; border-spacing: 0; margin: 2mm 0 4.5mm; font-size: 8.8pt; line-height: 1.45; border: 1px solid var(--border); border-radius: 2mm; overflow: hidden; }
 thead { display: table-header-group; }
 tr { break-inside: avoid; }
-th { background: var(--navy); color: #fff; text-align: left; font-weight: 600; padding: 2mm 3mm; font-size: 8.2pt; letter-spacing: .02em; }
+th { background: var(--shelf); color: var(--muted); text-align: left; font-weight: 500; padding: 2mm 3mm; font-size: 8.2pt; border-bottom: 1px solid var(--border); }
 td { padding: 1.8mm 3mm; vertical-align: top; border-top: 1px solid var(--border); }
-tbody tr:nth-child(even) td { background: #f8f9fb; }
+tbody tr:first-child td { border-top: 0; }
 td:first-child { font-weight: 600; }
 .keep { break-inside: avoid; }
 figure { margin: 3mm 0 5mm; break-inside: avoid; text-align: center; }
-figure img { display: block; margin: 0 auto; max-width: 100%; max-height: 118mm; width: auto; height: auto; border: 1px solid #d5dae3; border-radius: 2mm; }
+figure img { display: block; margin: 0 auto; max-width: 100%; max-height: 118mm; width: auto; height: auto; border: 1px solid var(--line); border-radius: 2mm; }
 figure img.small { max-width: 60%; }
 figure img.tall { max-height: 175mm; }
 figcaption { font-size: 8.2pt; color: var(--muted); margin-top: 2mm; }
-figcaption::before { content: "Bild " counter(fig) " · "; font-weight: 600; color: var(--orange); }
+figcaption::before { content: "Bild " counter(fig) " · "; font-weight: 600; color: var(--ink); }
 body { counter-reset: fig; }
 figure { counter-increment: fig; }
 hr { border: 0; border-top: 1px solid var(--border); margin: 5mm 0; }

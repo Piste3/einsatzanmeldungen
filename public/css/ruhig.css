@@ -216,3 +216,14 @@ td .sub, .cell-sub { font-size: 12px; margin-top: 1px; }
 @media print {
   .badge, .tag { border-color: #999; }
 }
+
+/* ---------- Handbuch in der App ---------- */
+.handbook-toc a:hover { color: var(--text); }
+.prose h2 { font-weight: 600; letter-spacing: -0.025em; }
+.prose a { color: var(--text); text-decoration-color: var(--border-strong); text-underline-offset: 3px; }
+.prose a:hover { text-decoration-color: var(--text); }
+.prose code { font-family: var(--mono); font-size: 12.5px; }
+.prose blockquote { border: 1px solid var(--line); border-left: 1px solid var(--line); background: var(--surface-2); border-radius: 8px; padding: 10px 14px 10px 26px; position: relative; color: var(--text-2); }
+.prose blockquote::before { content: ""; position: absolute; left: 12px; top: 18px; width: 6px; height: 6px; border-radius: 50%; background: var(--signal); }
+.prose th { background: var(--surface-2); }
+.prose img { border-color: var(--line); }

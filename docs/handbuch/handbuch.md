@@ -379,7 +379,7 @@ Die meisten Einsätze haben nur eine Schicht für alle. Dann gibt es nichts zu v
 - **+ Person aus Anmeldungen hinzufügen:** Name tippen und auswählen.
 - **Überschneidung:** Ist jemand zwei Schichten zugeteilt, die sich zeitlich überlappen, erscheint oben ein Hinweis. Er blockiert nichts.
 - Die Schichtwünsche aus dem Formular sind schon übernommen. Meldet sich eine eingeteilte Person ab, wird die Besetzung sofort angepasst.
-- **Externe Abteilungen** stehen am Ende der Spalte ihrer Schicht (blau, mit Anzahl Personen) und zählen zur Besetzung, z. B. «Besetzung · davon 6 extern». Erfasst und geändert werden sie in der Übersicht des Einsatzes.
+- **Externe Abteilungen** stehen am Ende der Spalte ihrer Schicht (Markierung «extern», mit Anzahl Personen) und zählen zur Besetzung, z. B. «Besetzung · davon 6 extern». Erfasst und geändert werden sie in der Übersicht des Einsatzes.
 
 ## 13 · Rückmeldungen und Mitgliederseite
 
