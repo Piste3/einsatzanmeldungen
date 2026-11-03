@@ -2,6 +2,7 @@
 const express = require('express');
 const db = require('../db');
 const feedback = require('../services/feedback');
+const history = require('../services/history');
 const { sendTable, wantsExport } = require('../lib/export');
 const { FEEDBACK } = require('../lib/labels');
 const h = require('../lib/view-helpers');
@@ -30,6 +31,14 @@ router.get('/rueckmeldungen', (req, res) => {
     allUsers: db.all("SELECT id, display_name FROM users WHERE active = 1 AND role <> 'einsatzleiter' ORDER BY display_name"), liveTopics: ['feedback', 'events'],
     shiftChoices: feedback.shiftChoices(data.events.map((e) => e.id)),
   });
+});
+
+// Historie einer Person bei einem Einsatz (wird im Kontaktversuch-Fenster nachgeladen)
+router.get('/rueckmeldungen/verlauf', (req, res) => {
+  const personId = Number(req.query.person);
+  const eventId = Number(req.query.event);
+  if (!personId || !eventId) return res.status(400).send('');
+  res.render('partials/status-history', { entries: history.forPair(eventId, personId) });
 });
 
 module.exports = router;

@@ -135,7 +135,7 @@ function addAttempt(eventId, personId, input, user) {
     audit.log({
       entity: 'inquiry', entityId: inq.id, eventId, personId, action: 'attempt',
       summary: `${sentByName} hat ${person.first_name} ${person.last_name} per ${CHANNEL[channel].label} angefragt (${resultText}) · ${event.name}`,
-      details: { kanal: channel, zeitpunkt: fmtLocal(contactedAt), ergebnis: result, erfasst_von: user.display_name }, user,
+      details: { kanal: channel, zeitpunkt: fmtLocal(contactedAt), ergebnis: result, gesendet_von: sentByName, erfasst_von: user.display_name, notiz: String(input.note || '').trim() || null }, user,
     });
     live.notify(`event:${eventId}`, 'feedback', `person:${personId}`);
     return { inquiryId: inq.id, registrationId };
@@ -151,7 +151,15 @@ function setStatus(eventId, personId, status, user) {
     return addAttempt(eventId, personId, { channel: last?.channel || 'whatsapp', result: status, note: 'Antwort erhalten' }, user);
   }
   const inq = ensureInquiry(eventId, personId, user);
+  if (inq.status === status) return { inquiryId: inq.id };
   db.run('UPDATE inquiries SET status = ?, version = version + 1, updated_at = ?, updated_by = ? WHERE id = ?', status, nowIso(), user.id, inq.id);
+  const person = db.one('SELECT first_name, last_name FROM persons WHERE id = ?', personId);
+  const event = db.one('SELECT name FROM events WHERE id = ?', eventId);
+  audit.log({
+    entity: 'inquiry', entityId: inq.id, eventId, personId, action: 'status',
+    summary: `${user.display_name} hat die Anfrage bei ${person?.first_name} ${person?.last_name} auf «${INQUIRY_STATUS[status].label}» gesetzt · ${event?.name}`,
+    details: { status: { alt: inq.status, neu: status } }, user,
+  });
   live.notify(`event:${eventId}`, 'feedback');
   return { inquiryId: inq.id };
 }

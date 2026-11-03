@@ -738,6 +738,23 @@
       link.hidden = !btn.dataset.currentLink;
       if (btn.dataset.currentLink) link.href = btn.dataset.currentLink;
     }
+    // Verlauf dieser Person bei diesem Einsatz nachladen (wer hat wann was gesetzt)
+    const hist = dlg.querySelector('[data-history]');
+    if (hist) {
+      const pid = btn.dataset.bulkDialog ? '' : btn.dataset.person;
+      const eid = btn.dataset.event || dlg.dataset.event;
+      hist.hidden = !(pid && eid);
+      hist.textContent = '';
+      if (pid && eid) {
+        hist.innerHTML = '<div class="muted">Verlauf wird geladen …</div>';
+        const want = `${pid}:${eid}`;
+        hist.dataset.for = want;
+        fetch(`/rueckmeldungen/verlauf?person=${encodeURIComponent(pid)}&event=${encodeURIComponent(eid)}`, { credentials: 'same-origin' })
+          .then((r) => (r.ok ? r.text() : Promise.reject(new Error(String(r.status)))))
+          .then((html) => { if (hist.dataset.for === want) hist.innerHTML = html; })
+          .catch(() => { if (hist.dataset.for === want) hist.innerHTML = '<div class="muted">Verlauf konnte nicht geladen werden.</div>'; });
+      }
+    }
     const resetBtn = dlg.querySelector('[data-reset-person]');
     if (resetBtn) resetBtn.hidden = Boolean(btn.dataset.bulkDialog);
     $$('details.menu[open]').forEach((d) => d.removeAttribute('open'));

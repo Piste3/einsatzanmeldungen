@@ -352,7 +352,7 @@ Weitere Hilfen im Reiter:
 
 ![Kontaktversuch erfassen](bilder/12-kontaktversuch.jpg)
 
-Im Fenster wählt man Kanal, Datum und Uhrzeit (vorausgefüllt mit jetzt), **Gesendet von** (vorausgefüllt mit dem eigenen Namen, änderbar), das Ergebnis und eine Notiz. Bei «Zugesagt» und einem Einsatz mit mehreren Schichten wählt man zusätzlich die Schichten.
+Oben im Fenster steht der **Verlauf** dieser Person für den Einsatz: alle Kontakte, Rückmeldungen und Statuswechsel mit Name und Zeit (mehr dazu in Kapitel 13). Darunter wählt man Kanal, Datum und Uhrzeit (vorausgefüllt mit jetzt), **Gesendet von** (vorausgefüllt mit dem eigenen Namen, änderbar), das Ergebnis und eine Notiz. Bei «Zugesagt» und einem Einsatz mit mehreren Schichten wählt man zusätzlich die Schichten.
 
 **Alles zurücksetzen:** Unten links im Fenster löscht **Alles zurücksetzen** für diese Person und diesen Einsatz alle Kontaktversuche, die Rückmeldung bzw. Anmeldung und die Schichtzuteilung. Die Person steht danach wieder als «Noch nicht angefragt» in der Liste. Vorher fragt der Einsatzplaner nach. Ein Formular-Eingang bleibt unter «Formulare» gespeichert. Bei Personen, die schon zugesagt haben oder selbst gemeldet sind, steht dafür in der Anfragen-Liste rechts das Symbol ↶. Einen einzelnen falsch erfassten Kontaktversuch nimmt man dagegen mit dem ↶ direkt neben dem Versuch zurück.
 
@@ -395,17 +395,31 @@ Die Seite **Rückmeldungen** beantwortet die wichtigste Frage der Aufgebotsstell
 
 - Mitglieder als Zeilen, Einsätze als Spalten. Kopfzeile und Namensspalte bleiben beim Scrollen stehen.
 - Im Spaltenkopf jedes Einsatzes steht die Besetzung als Balken, z. B. «11 / 16».
-- **Symbole:** ✓ An, ✕ Ab, ? Unsicher, leeres Feld = Offen.
-- Ein Klick auf ein Feld öffnet immer das Fenster für einen Kontaktversuch, auch bei ✓ oder ✕. Oben steht der aktuelle Stand (z. B. «An · Anmeldung: Bestätigt · Formular») mit einem Link zur Anmeldung. Dort lässt sich auch **«Unsicher – weiss es noch nicht»** eintragen oder mit **Alles zurücksetzen** neu beginnen. Erfasst man bei einer bestehenden Anmeldung «Abgesagt», wird sie als zurückgezogen markiert. «Zugesagt» macht eine zurückgezogene Anmeldung wieder aktiv.
+- **Symbole:** ✓ An, ✕ Ab, ? Unsicher, leeres Feld = Offen. Das Symbol zeigt immer nur den neuesten Stand.
+- **Wer hat das gesetzt?** Fährt man mit der Maus über ein Feld, steht dort der letzte Eintrag mit Name und Zeit, z. B. «Zuletzt: Anmeldung: Bestätigt – Lena Meier, heute 14:20 (4 Einträge im Verlauf)». Hat sich jemand selbst über das Formular gemeldet, steht «Person selbst».
+- Ein Klick auf ein Feld öffnet immer das Fenster für einen Kontaktversuch, auch bei ✓ oder ✕. Oben steht der aktuelle Stand (z. B. «An · Anmeldung: Bestätigt · Formular · gesetzt von Lena Meier, heute 14:20») mit einem Link zur Anmeldung. Darunter folgt der **Verlauf** (siehe unten). Dort lässt sich auch **«Unsicher – weiss es noch nicht»** eintragen oder mit **Alles zurücksetzen** neu beginnen. Erfasst man bei einer bestehenden Anmeldung «Abgesagt», wird sie als zurückgezogen markiert. «Zugesagt» macht eine zurückgezogene Anmeldung wieder aktiv.
 - Unten stehen pro Einsatz die Summen An · Ab · Unsicher · Offen.
 - **Einsätze mit mehreren Schichten** haben eine Spalte pro Schicht, mit eigener Besetzung (z. B. «Tagschicht 8 / 10»). ✓ heisst: für diese Schicht angemeldet oder eingeteilt. – heisst: angemeldet, aber für eine andere Schicht. Ein gestricheltes ✓ heisst: zugesagt, aber die Schicht ist noch nicht festgelegt. Ab, Unsicher und Offen gelten für alle Schichten des Einsatzes.
 - Klickt man in einer Schicht-Spalte auf ein offenes Feld und wählt **«Zugesagt»**, ist diese Schicht schon angekreuzt. Weitere Schichten lassen sich dazu wählen, oder man lässt die Auswahl leer und teilt später unter «Schichten» zu. Das gilt genauso beim Erfassen unter Einsatz › Anfragen und auf der Seite eines Mitglieds.
+
+### Verlauf pro Person und Einsatz
+
+![Verlauf im Fenster der Rückmeldungen](bilder/44-verlauf-rueckmeldung.jpg)
+
+Der Verlauf sammelt alles, was bei dieser Person für diesen Einsatz passiert ist, die neuesten Einträge stehen oben. Jeder Eintrag zeigt, was passiert ist, wer es getan hat und wann:
+
+- Anmeldungen und Abmeldungen über das Formular («Person selbst»), per Telefon, WhatsApp oder von Hand erfasst
+- jeder Kontaktversuch mit Kanal und Ergebnis, z. B. «WhatsApp: Nachricht gesendet, Antwort offen», mit Notiz. Wurde der Kontakt für jemand anderen erfasst, steht zusätzlich «erfasst von …».
+- jeder Statuswechsel der Anmeldung (bestätigt, Warteliste, Rückfrage, zurückgezogen …) und jede Änderung der Schicht
+- verschickte Bestätigungsmails, Zurücknehmen eines Kontaktversuchs und «Alles zurücksetzen»
+
+Das Symbol links entspricht dem Stand nach diesem Eintrag. Ein Punkt bedeutet, dass der Eintrag den Stand nicht verändert hat, z. B. bei einer Mail. Der Eintrag, der den aktuellen Stand gesetzt hat, ist mit **aktueller Stand** markiert. Ein nachträglich erfasster Kontaktversuch steht beim Zeitpunkt, an dem angerufen oder geschrieben wurde. Der Verlauf enthält auch alles, was vor dieser Funktion erfasst wurde. Derselbe Verlauf erscheint beim Erfassen unter Einsatz › Anfragen und auf der Seite eines Mitglieds.
 
 ### Ansicht «Pro Einsatz»
 
 ![Rückmeldungen pro Einsatz](bilder/15-rueckmeldungen-pro-einsatz.jpg)
 
-Eine Karte pro Einsatz mit den Namen, gruppiert nach An, Unsicher, Ab und Offen. Bei mehreren Schichten steht «An» aufgeteilt nach Schicht, jeweils mit Besetzung, dazu «An, Schicht noch offen» mit Link zum Zuteilen. Ein Klick auf einen offenen Namen erfasst direkt eine Anfrage. Diese Ansicht ist besonders übersichtlich, wenn viele Einsätze anstehen.
+Eine Karte pro Einsatz mit den Namen, gruppiert nach An, Unsicher, Ab und Offen. Bei mehreren Schichten steht «An» aufgeteilt nach Schicht, jeweils mit Besetzung, dazu «An, Schicht noch offen» mit Link zum Zuteilen. Ein Klick auf einen offenen Namen erfasst direkt eine Anfrage. Fährt man mit der Maus über einen Namen, steht dort, wer den Stand zuletzt gesetzt hat und wann. Diese Ansicht ist besonders übersichtlich, wenn viele Einsätze anstehen.
 
 ### Filter
 
@@ -792,6 +806,9 @@ Das Mitglied sieht die Bestätigungsseite erst, wenn die Anmeldung sicher gespei
 
 **Was ist, wenn jemand das Formular zweimal abschickt?**
 Doppelte Absendungen werden erkannt. Pro Person und Einsatz gibt es höchstens eine Anmeldung.
+
+**Wie sehe ich, wer jemanden schon angeschrieben oder einen Status geändert hat?**
+In den Rückmeldungen mit der Maus über das Feld fahren: Dort stehen der letzte Eintrag, der Name und die Zeit. Ein Klick öffnet den ganzen Verlauf mit allen Kontakten, Rückmeldungen und Statuswechseln.
 
 **Ist man automatisch dabei, wenn man sich anmeldet?**
 Nein. Jede Anmeldung wird von der Aufgebotsstelle bestätigt. Erst dann erhält das Mitglied seine Anmeldebestätigung.

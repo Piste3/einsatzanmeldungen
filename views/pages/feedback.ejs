@@ -5,13 +5,16 @@
 }) %>
 <%
   const SYM = { an: '✓', ab: '✕', unsicher: '?', offen: '', andere: '–', schicht_offen: '✓' };
-  const cellTitle = (c, col, p) => `${p.first_name} ${p.last_name} · ${col.event.name}${col.shift ? ` · ${col.shift.name}` : ''}: ${h.labels.FEEDBACK[c.state].label} – klicken für Kontaktversuch`;
+  // wer den Stand gesetzt hat und wann (letzter Historie-Eintrag)
+  const setBy = (c) => (c.last ? `${c.last.by}, ${c.last.atShort}` : '');
+  const cellTitle = (c, col, p) => `${p.first_name} ${p.last_name} · ${col.event.name}${col.shift ? ` · ${col.shift.name}` : ''}: ${h.labels.FEEDBACK[c.state].label}${c.last ? `\nZuletzt: ${c.last.text} – ${setBy(c)}${c.last.count > 1 ? ` (${c.last.count} Einträge im Verlauf)` : ''}` : ''}\nKlicken für Verlauf und Kontaktversuch`;
   // aktueller Stand für das Kontaktversuch-Fenster
   const currentText = (c, col) => {
     if (c.state === 'offen' && !c.inq) return '';
     const parts = [h.labels.FEEDBACK[c.state].label];
     if (c.reg) parts.push(`Anmeldung: ${h.labels.REG_STATUS[c.reg.status].short} · ${h.labels.SOURCE[c.reg.source]}`);
     if (c.inq) parts.push(`Anfrage: ${(h.labels.INQUIRY_ROW[c.inq.status] || h.labels.INQUIRY_STATUS[c.inq.status]).label}`);
+    if (c.last) parts.push(`gesetzt von ${setBy(c)}`);
     return parts.join(' · ');
   };
   const shiftTime = (sh) => (sh.starts_at && sh.ends_at ? `${sh.starts_at.slice(11, 16)}–${sh.ends_at.slice(11, 16)}` : '');
@@ -103,7 +106,7 @@
 <div class="fb-cards">
   <% events.forEach((e, i) => {
     const groups = { an: [], unsicher: [], ab: [], offen: [] };
-    for (const row of rows) groups[row.eventCells[i].state].push(row.person);
+    for (const row of rows) groups[row.eventCells[i].state].push({ ...row.person, last: row.eventCells[i].last });
     const t = totals[e.id];
     // Bei mehreren Schichten: wer für welche Schicht
     const perShift = e.shifts.map((sh) => ({ sh, list: rows.filter((row) => row.cells.some((c) => c.eventId === e.id && c.shiftId === sh.id && c.state === 'an')).map((row) => row.person) }));
@@ -131,8 +134,8 @@
           <summary><span class="fb fb-<%= st %>"><%= SYM[st] %></span> <%= h.labels.FEEDBACK[st].label %> <span class="muted">· <%= list.length %></span></summary>
           <div class="fb-names">
             <% for (const p of list) { %>
-              <% if (st === 'offen') { %><button type="button" class="pill" data-open-dialog="attempt" data-person="<%= p.id %>" data-event="<%= e.id %>" data-who="<%= `${p.first_name} ${p.last_name} · ${e.name}` %>" title="Anfrage erfassen"><%= p.first_name %> <%= p.last_name %></button>
-              <% } else { %><a class="pill" href="/personen/<%= p.id %>"><%= p.first_name %> <%= p.last_name %></a><% } %>
+              <% if (st === 'offen') { %><button type="button" class="pill" data-open-dialog="attempt" data-person="<%= p.id %>" data-event="<%= e.id %>" data-who="<%= `${p.first_name} ${p.last_name} · ${e.name}` %>" title="<%= p.last ? `Zuletzt: ${p.last.text} – ${setBy(p)} · ` : '' %>Klicken für Verlauf und Kontaktversuch"><%= p.first_name %> <%= p.last_name %></button>
+              <% } else { %><a class="pill" href="/personen/<%= p.id %>"<% if (p.last) { %> title="<%= `${p.last.text} – ${setBy(p)}` %>"<% } %>><%= p.first_name %> <%= p.last_name %></a><% } %>
             <% } %>
           </div>
         </details>

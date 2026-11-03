@@ -241,3 +241,19 @@ td .sub, .cell-sub { font-size: 12px; margin-top: 1px; }
 .nachfassen-head .hint { margin: 0; font-size: 12.5px; }
 .bulkbar [hidden], dialog .btn[hidden] { display: none !important; }
 @media print { .nachfassen-steps, .nachfassen-head .hint { display: none; } }
+
+/* Verlauf im Kontaktversuch-Fenster: wer hat wann welchen Stand gesetzt */
+.hist { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; }
+.hist[hidden] { display: none; }
+.hist-head { display: flex; gap: 8px; align-items: baseline; margin-bottom: 6px; }
+.hist-list { list-style: none; margin: 0; padding: 0; max-height: 300px; overflow-y: auto; }
+.hist-row { display: grid; grid-template-columns: 18px 1fr; gap: 10px; padding: 6px 0; border-top: 1px solid var(--border-soft); }
+.hist-row:first-child { border-top: 0; }
+.hist-row .fb-sm { width: 18px; height: 18px; font-size: 11px; cursor: default; margin-top: 1px; }
+.fb-none { background: transparent; color: var(--muted-2); }
+.hist-main { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.hist-text { color: var(--text); }
+.hist-meta { color: var(--muted); font-size: 12px; }
+.hist-note { color: var(--text-2); font-size: 12px; overflow-wrap: anywhere; }
+.hist-now { font-size: 11px; color: var(--muted); border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; margin-left: 4px; white-space: nowrap; }
+.hist-latest .hist-text { font-weight: 600; }

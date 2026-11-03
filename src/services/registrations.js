@@ -176,7 +176,10 @@ function create({ eventId, personId = null, enteredFirst = null, enteredLast = n
   const text = answer === 'nein'
     ? `${who} hat für «${event.name}» abgesagt · ${SOURCE[source]}`
     : `${who} hat sich für «${event.name}» angemeldet · ${SOURCE[source]}${!personId ? ' (Zuordnung unsicher)' : ''}`;
-  audit.log({ entity: 'registration', entityId: id, eventId, personId, action: 'create', summary: user ? `${text} (erfasst von ${user.display_name})` : text, user });
+  audit.log({
+    entity: 'registration', entityId: id, eventId, personId, action: 'create', summary: user ? `${text} (erfasst von ${user.display_name})` : text,
+    details: { quelle: source, antwort: answer, status: finalStatus }, user,
+  });
   live.notify(`event:${eventId}`, 'clarifications', 'feedback');
   return id;
 }

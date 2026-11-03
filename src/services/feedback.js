@@ -2,6 +2,7 @@
 // Rückmeldungen: Mitglieder × anstehende Einsätze (An / Ab / Unsicher / Offen)
 const db = require('../db');
 const externals = require('./externals');
+const history = require('./history');
 const { today, addDays } = require('../lib/dates');
 const { rankOrder } = require('../lib/sorting');
 
@@ -47,6 +48,8 @@ function matrix({ team = '', period = '3m', sort = 'rang', includeDrafts = false
   const regs = new Map();
   const inqs = new Map();
   const assigned = new Map();
+  // wer den aktuellen Stand gesetzt hat (letzter Historie-Eintrag pro Person und Einsatz)
+  const latest = history.latestByPair(ids);
   if (ids.length) {
     const ph = ids.map(() => '?').join(',');
     for (const r of db.all(`SELECT * FROM registrations WHERE event_id IN (${ph}) AND person_id IS NOT NULL`, ...ids)) regs.set(`${r.person_id}:${r.event_id}`, r);
@@ -89,7 +92,7 @@ function matrix({ team = '', period = '3m', sort = 'rang', includeDrafts = false
     const eventCells = evts.map((e) => {
       const c = cellState(regs.get(`${p.id}:${e.id}`), inqs.get(`${p.id}:${e.id}`));
       totals[e.id][c.state]++;
-      return { ...c, eventId: e.id };
+      return { ...c, eventId: e.id, last: latest.get(`${p.id}:${e.id}`) || null };
     });
     const byEvent = new Map(eventCells.map((c) => [c.eventId, c]));
     const cells = columns.map((col) => {

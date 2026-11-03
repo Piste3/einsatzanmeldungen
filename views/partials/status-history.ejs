@@ -1,0 +1,19 @@
+<%# Historie einer Person bei einem Einsatz, neueste zuerst (im Kontaktversuch-Fenster der Rückmeldungen) %>
+<% const SYM = { an: '✓', ab: '✕', unsicher: '?', offen: '' }; const cur = entries.findIndex((e) => e.state); %>
+<div class="hist-head"><strong>Verlauf</strong> <span class="muted"><%= entries.length ? `${entries.length} Eintr${entries.length === 1 ? 'ag' : 'äge'}, neueste zuerst` : '' %></span></div>
+<% if (!entries.length) { %>
+  <div class="muted small">Noch nichts erfasst: keine Rückmeldung und kein Kontakt.</div>
+<% } else { %>
+<ol class="hist-list">
+  <% entries.forEach((e, i) => { %>
+  <li class="hist-row<%= i === cur ? ' hist-latest' : '' %>">
+    <span class="fb fb-sm <%= e.state ? `fb-${e.state}` : 'fb-none' %>" aria-hidden="true"><%= e.state ? SYM[e.state] : '·' %></span>
+    <span class="hist-main">
+      <span class="hist-text"><%= e.text %><% if (i === cur) { %> <span class="hist-now">aktueller Stand</span><% } %></span>
+      <span class="hist-meta"><%= e.by %> · <%= e.atText %><% if (e.enteredBy) { %> · erfasst von <%= e.enteredBy %><% } %></span>
+      <% if (e.note) { %><span class="hist-note">«<%= e.note %>»</span><% } %>
+    </span>
+  </li>
+  <% }) %>
+</ol>
+<% } %>

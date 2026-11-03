@@ -202,3 +202,44 @@ test('Kontaktversuch bei bestehender Anmeldung: Absage zieht zurück, Zusage akt
   assert.equal(registrations.get(reg).status, 'neu');
   assert.equal(db.one('SELECT COUNT(*) AS n FROM registrations WHERE person_id = ?', anna).n, 1);
 });
+
+test('Rückmeldungen: Historie zeigt wer wann welchen Stand gesetzt hat', () => {
+  const { anna, offen } = setup();
+  const inquiries = require('../src/services/inquiries');
+  const feedback = require('../src/services/feedback');
+  const history = require('../src/services/history');
+  const lena = { id: null, display_name: 'Lena Meier', role: 'admin' };
+  const marco = { id: null, display_name: 'Marco Frei', role: 'admin' };
+  db.run("UPDATE persons SET email = 'anna@example.ch' WHERE id = ?", anna);
+  // Nachricht gesendet, dann meldet sich Anna selbst an, dann bestätigt Marco
+  inquiries.addAttempt(offen, anna, { channel: 'whatsapp', result: 'whatsapp', note: 'Gruppenchat' }, lena);
+  const reg = registrations.create({ eventId: offen, personId: anna, enteredFirst: 'Anna', enteredLast: 'Roth', matchType: 'auto', source: 'formular', answer: 'ja' });
+  registrations.setStatus(reg, 'bestaetigt', marco);
+
+  const list = history.forPair(offen, anna);
+  const texts = list.map((e) => `${e.text} | ${e.by}`);
+  assert.ok(texts.includes('WhatsApp: Nachricht gesendet, Antwort offen | Lena Meier'), texts.join('\n'));
+  assert.ok(texts.includes('Angemeldet · Formular | Person selbst'), texts.join('\n'));
+  assert.ok(texts.includes('Anmeldung: Bestätigt | Marco Frei'), texts.join('\n'));
+  assert.ok(list.some((e) => e.text.startsWith('Bestätigungsmail an anna@example.ch')), 'Bestätigungsmail steht im Verlauf');
+  assert.equal(list.find((e) => e.kind === 'inquiry:attempt').note, 'Gruppenchat');
+
+  // Tabelle: Icon zeigt den neuesten Stand, dazu wer ihn gesetzt hat
+  const cell = feedback.matrix({}).rows.find((r) => r.person.id === anna).eventCells.find((c) => c.eventId === offen);
+  assert.equal(cell.state, 'an');
+  assert.equal(cell.last.by, 'Marco Frei');
+  assert.equal(cell.last.count, 4, 'inkl. Bestätigungsmail');
+
+  // Zusage per Telefon: Anmeldung und Kontakt erscheinen als ein Eintrag
+  const chris = db.one("SELECT id FROM persons WHERE first_name = 'Christian'").id;
+  inquiries.addAttempt(offen, chris, { channel: 'telefon', result: 'zugesagt' }, lena);
+  assert.deepEqual(history.forPair(offen, chris).map((e) => e.text), ['Telefon: Zugesagt']);
+  // Anfrage-Status direkt setzen wird ebenfalls protokolliert
+  inquiries.setStatus(offen, chris, 'unsicher', marco);
+  assert.equal(history.forPair(offen, chris)[0].by, 'Marco Frei');
+  // nachträglich erfasster Anruf von gestern steht zeitlich richtig, also zuunterst
+  inquiries.addAttempt(offen, chris, { channel: 'telefon', result: 'nicht_erreicht', date: addDays(today(), -1), time: '09:00' }, marco);
+  const h = history.forPair(offen, chris);
+  assert.equal(h[h.length - 1].text, 'Telefon: Nicht erreicht');
+  assert.match(h[h.length - 1].atText, / 09:00$/);
+});
