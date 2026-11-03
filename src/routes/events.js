@@ -401,13 +401,6 @@ router.post('/einsaetze/:id/anfragen/versuch/:aid/loeschen', loadEvent, (req, re
   res.redirect(`/einsaetze/${req.event.id}/anfragen`);
 });
 
-router.post('/einsaetze/:id/anfragen/vorsehen', loadEvent, (req, res) => {
-  const ids = [].concat(req.body.person_ids || []);
-  inquiries.plan(req.event.id, ids, req.user);
-  flash(res, 'success', `${ids.length} Person${ids.length === 1 ? '' : 'en'} zur Anfrage vorgesehen.`);
-  res.redirect(`/einsaetze/${req.event.id}/anfragen`);
-});
-
 // Reiter «Schichten»
 router.get('/einsaetze/:id/schichten', loadEvent, (req, res) => {
   const e = req.event;

@@ -21,13 +21,12 @@ function attemptsFor(inquiryIds) {
 }
 
 // Anzeige-Status einer Zeile im Reiter «Anfragen»:
-// «angemeldet» = hat sich inzwischen selbst gemeldet (Formular oder anders), «vorgesehen» = zur Anfrage vorgemerkt, noch kein Kontakt
+// «angemeldet» = hat sich inzwischen selbst gemeldet (Formular oder anders), «offen» = noch nicht angefragt
 function rowState(r) {
   if (r.reg_id && r.inquiry_status !== 'zugesagt') return 'angemeldet';
-  if (r.inquiry_status === 'offen' && r.inquiry_id && !r.attempts.length) return 'vorgesehen';
   return r.inquiry_status;
 }
-const ROW_ORDER = { nicht_erreicht: 0, whatsapp: 0, unsicher: 0, vorgesehen: 1, offen: 2, zugesagt: 3, angemeldet: 4, abgesagt: 5 };
+const ROW_ORDER = { nicht_erreicht: 0, whatsapp: 0, unsicher: 0, offen: 2, zugesagt: 3, angemeldet: 4, abgesagt: 5 };
 
 /**
  * Reiter «Anfragen»: alle aktiven Personen ohne Anmeldung zu diesem Einsatz
@@ -60,7 +59,7 @@ function listForEvent(eventId, { status = '', team = '', q = '', sort = 'rang' }
   const counts = {};
   for (const r of out) counts[r.state] = (counts[r.state] || 0) + 1;
   const total = out.length;
-  if (status) out = out.filter((r) => r.state === status || (status === 'offen' && r.state === 'vorgesehen'));
+  if (status) out = out.filter((r) => r.state === status);
   out.sort((a, b) => (ROW_ORDER[a.state] ?? 2) - (ROW_ORDER[b.state] ?? 2));
   return Object.assign(out, { counts, total });
 }
@@ -80,12 +79,6 @@ function ensureInquiry(eventId, personId, user) {
     inq = db.one('SELECT * FROM inquiries WHERE event_id = ? AND person_id = ?', eventId, personId);
   }
   return inq;
-}
-
-// Person zur Anfrage vorsehen (Status «Offen»)
-function plan(eventId, personIds, user) {
-  for (const pid of personIds) ensureInquiry(eventId, Number(pid), user);
-  live.notify(`event:${eventId}`, 'feedback');
 }
 
 /**
@@ -225,4 +218,4 @@ function resetPerson(eventId, personId, user) {
   });
 }
 
-module.exports = { listForEvent, forPerson, plan, addAttempt, setStatus, removeAttempt, resetPerson, attemptLabel };
+module.exports = { listForEvent, forPerson, addAttempt, setStatus, removeAttempt, resetPerson, attemptLabel };

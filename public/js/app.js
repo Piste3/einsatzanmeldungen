@@ -159,7 +159,12 @@
   function updateSelected(form) {
     const n = $$(`input[type=checkbox][form="${form.id}"]:checked`).length;
     const el = form.querySelector('[data-selected-count]');
-    if (el) el.textContent = `${n} ausgewählt`;
+    if (el) el.textContent = n || !el.dataset.emptyText ? `${n} ausgewählt` : el.dataset.emptyText;
+    // Knöpfe, die erst mit einer Auswahl Sinn ergeben, erscheinen erst dann – mit der Anzahl im Text
+    $$('[data-needs-selection]', form).forEach((b) => {
+      b.hidden = !n;
+      if (b.dataset.countText) b.textContent = b.dataset.countText.replace('{n}', `${n} Person${n === 1 ? '' : 'en'}`);
+    });
   }
 
   // Rückfragen vor dem Absenden. Das Absenden wird angehalten, die Fragen nacheinander gestellt

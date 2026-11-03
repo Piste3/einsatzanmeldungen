@@ -337,26 +337,30 @@ Der Reiter **Anfragen** zeigt alle aktiven Mitglieder, die sich für diesen Eins
 
 ![Einsatz › Anfragen](bilder/11-anfragen.jpg)
 
-- **Zähler pro Status** oben filtern die Liste mit einem Klick. Daneben Mannschaft, Sortierung nach Rang und Namenssuche.
-- Die **Mobilnummer** ist ein Anruf-Link; das Sprechblasen-Symbol daneben öffnet direkt den **WhatsApp-Chat**.
+**So geht Nachfassen** (steht auch oben im Reiter):
+
+1. Person anrufen oder per WhatsApp anschreiben. Die **Mobilnummer** ist ein Anruf-Link, das Sprechblasen-Symbol daneben öffnet direkt den **WhatsApp-Chat**.
+2. Mit **Erfassen** festhalten, wie es gelaufen ist (z. B. «nicht erreicht» oder «Nachricht gesendet»).
+3. Kommt die Antwort später, in der Zeile **Zugesagt** oder **Abgesagt** klicken.
+
+Weitere Hilfen im Reiter:
+
+- **Filter oben:** Ein Klick zeigt nur die Personen mit diesem Status, z. B. **Noch nicht angefragt** = alle, die noch niemand kontaktiert hat. **Alle** zeigt wieder die ganze Liste. Daneben Mannschaft, Sortierung nach Rang und Namenssuche.
 - **Kontaktversuche** stehen mit Kanal (Tel / WA), Datum, Uhrzeit, wer es war, Ergebnis und Notiz.
-- **Erfassen** öffnet das Fenster für einen neuen Kontaktversuch.
-- **Zugesagt / Abgesagt** direkt in der Zeile, wenn die Antwort nach einem Anruf oder einer WhatsApp kommt.
 - Der **Pfeil** beim letzten Kontaktversuch nimmt ihn zurück, falls er falsch erfasst wurde. Hat er eine Anmeldung erzeugt, wird diese mitgelöscht.
-- **Mehrere auf einmal:** Personen ankreuzen und **Kontakt für Ausgewählte erfassen**, z. B. «WhatsApp an alle gesendet». **Zur Anfrage vormerken** merkt Personen vor, ohne einen Kontakt zu erfassen.
+- **Mehrere auf einmal:** Hat man mehreren dieselbe WhatsApp geschickt, kreuzt man sie links an. Dann erscheint der Knopf **Kontakt für 3 Personen erfassen** (mit der Anzahl), und man erfasst den Kontakt für alle in einem Schritt. **Alle auswählen** kreuzt die ganze (gefilterte) Liste an.
 
 ![Kontaktversuch erfassen](bilder/12-kontaktversuch.jpg)
 
 Im Fenster wählt man Kanal, Datum und Uhrzeit (vorausgefüllt mit jetzt), **Gesendet von** (vorausgefüllt mit dem eigenen Namen, änderbar), das Ergebnis und eine Notiz. Bei «Zugesagt» und einem Einsatz mit mehreren Schichten wählt man zusätzlich die Schichten.
 
-**Alles zurücksetzen:** Unten links im Fenster löscht **Alles zurücksetzen** für diese Person und diesen Einsatz alle Kontaktversuche, die Rückmeldung bzw. Anmeldung und die Schichtzuteilung. Die Person gilt danach wieder als offen. Vorher fragt der Einsatzplaner nach. Ein Formular-Eingang bleibt unter «Formulare» gespeichert. Bei Personen, die schon zugesagt haben oder selbst gemeldet sind, steht dafür in der Anfragen-Liste rechts das Symbol ↶. Einen einzelnen falsch erfassten Kontaktversuch nimmt man dagegen mit dem ↶ direkt neben dem Versuch zurück.
+**Alles zurücksetzen:** Unten links im Fenster löscht **Alles zurücksetzen** für diese Person und diesen Einsatz alle Kontaktversuche, die Rückmeldung bzw. Anmeldung und die Schichtzuteilung. Die Person steht danach wieder als «Noch nicht angefragt» in der Liste. Vorher fragt der Einsatzplaner nach. Ein Formular-Eingang bleibt unter «Formulare» gespeichert. Bei Personen, die schon zugesagt haben oder selbst gemeldet sind, steht dafür in der Anfragen-Liste rechts das Symbol ↶. Einen einzelnen falsch erfassten Kontaktversuch nimmt man dagegen mit dem ↶ direkt neben dem Versuch zurück.
 
 ### Das Ergebnis einer Anfrage
 
 | Status | Bedeutung | Was danach passiert |
 |---|---|---|
-| Offen | Noch nicht kontaktiert | – |
-| Vorgemerkt | Zur Anfrage vorgemerkt, noch kein Kontakt | – |
+| Noch nicht angefragt | Noch niemand hat die Person kontaktiert | – |
 | Nicht erreicht | Telefonisch nicht erreicht | Bleibt oben in der Liste zum Nachfassen |
 | Per WhatsApp angefragt | Nachricht gesendet, Antwort offen | Kommt die Antwort, «Zugesagt» oder «Abgesagt» klicken |
 | Unsicher | «Weiss es noch nicht» | Bleibt ein offener Fall, bis die Antwort kommt |

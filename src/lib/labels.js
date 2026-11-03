@@ -34,7 +34,7 @@ const MATCH_TYPE = {
 };
 
 const INQUIRY_STATUS = {
-  offen: { label: 'Offen', tone: 'gray' },
+  offen: { label: 'Noch nicht angefragt', tone: 'gray' },
   zugesagt: { label: 'Zugesagt', tone: 'green' },
   abgesagt: { label: 'Abgesagt', tone: 'red' },
   nicht_erreicht: { label: 'Nicht erreicht', tone: 'yellow' },
@@ -44,7 +44,6 @@ const INQUIRY_STATUS = {
 
 // Zusätzliche Anzeige-Status im Reiter «Anfragen»
 const INQUIRY_ROW = {
-  vorgesehen: { label: 'Vorgesehen', tone: 'gray' },
   angemeldet: { label: 'Selbst gemeldet', tone: 'green' },
 };
 
