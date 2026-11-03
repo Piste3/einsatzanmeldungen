@@ -117,5 +117,8 @@ Ja, solange die Freigabe besteht. Sie stehen unter «Vergangen».
 **Ich habe mein Passwort vergessen oder mein Handy mit der Authenticator-App verloren.**
 Mit einem Wiederherstellungscode anmelden (statt des 6-stelligen Codes) und die Zwei-Faktor-Anmeldung neu einrichten. Ohne Code oder bei vergessenem Passwort hilft ein Admin.
 
+**Kann ich dieses Handbuch ausdrucken?**
+Ja. Auf der Seite «Handbuch» oben rechts **Als PDF** klicken. Das Handbuch öffnet sich als PDF in einem neuen Tab; von dort drucken, speichern oder weiterschicken.
+
 **Woher weiss ich, ob dieses Handbuch aktuell ist?**
-Oben auf der Handbuch-Seite stehen Stand und Version. Das Handbuch wird mit jedem Update mitgeliefert.
+Oben auf der Handbuch-Seite stehen Stand und Version, im PDF steht der Stand auf der Titelseite. Das Handbuch wird mit jedem Update mitgeliefert.

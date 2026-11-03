@@ -6,6 +6,7 @@ RUN npm ci --omit=dev
 COPY src ./src
 COPY public ./public
 COPY views ./views
+COPY docs ./docs
 COPY scripts ./scripts
 RUN mkdir -p /data && chown node:node /data
 VOLUME /data

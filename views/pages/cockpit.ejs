@@ -9,7 +9,7 @@
   actions: '<a class="btn btn-primary" href="/einsaetze/neu">+ Neuer Einsatz</a>',
 }) %>
 
-<% if (msSecretDays !== null) { %><div class="flash flash-<%= msSecretDays < 0 ? 'error' : 'info' %>"><strong>Microsoft-Schlüssel <%= msSecretDays < 0 ? 'ist abgelaufen' : msSecretDays === 0 ? 'läuft heute ab' : `läuft in ${msSecretDays} Tagen ab` %>.</strong> <%= msSecretDays < 0 ? 'Die Anmeldung mit Microsoft funktioniert nicht mehr.' : 'Danach funktioniert die Anmeldung mit Microsoft nicht mehr.' %> Neuen Schlüssel erstellen: <a class="link" href="/handbuch#16-microsoft-anmeldung">Handbuch, Kapitel 16</a>.</div><% } %>
+<% if (msSecretDays !== null) { %><div class="flash flash-<%= msSecretDays < 0 ? 'error' : 'info' %>"><strong>Microsoft-Schlüssel <%= msSecretDays < 0 ? 'ist abgelaufen' : msSecretDays === 0 ? 'läuft heute ab' : `läuft in ${msSecretDays} Tagen ab` %>.</strong> <%= msSecretDays < 0 ? 'Die Anmeldung mit Microsoft funktioniert nicht mehr.' : 'Danach funktioniert die Anmeldung mit Microsoft nicht mehr.' %> Neuen Schlüssel erstellen: <a class="link" href="/handbuch#20-microsoft-anmeldung">Handbuch, Kapitel 20</a>.</div><% } %>
 <div class="grid grid-4 mb" data-live-region="kpis">
   <div class="card kpi">
     <div class="label">Neue Anmeldungen</div>

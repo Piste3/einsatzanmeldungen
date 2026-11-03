@@ -104,3 +104,29 @@ test('ICS: formatierte Beschreibung als X-ALT-DESC', () => {
   assert.match(unfolded, /DESCRIPTION:fett\r\n/);
   assert.match(unfolded, /X-ALT-DESC;FMTTYPE=text\/html:<!DOCTYPE html>.*<b>fett<\/b>/);
 });
+
+test('Handbuch: die PDFs passen zum aktuellen Text, zu den Bildern und zur Vorlage', () => {
+  const fs = require('node:fs');
+  const handbook = require('../src/lib/handbook');
+  const stand = handbook.readStand();
+  for (const key of Object.keys(handbook.BOOKS)) {
+    assert.ok(fs.existsSync(handbook.pdfPath(key)), `${handbook.BOOKS[key].pdf} fehlt – «npm run handbuch:pdf» ausführen`);
+    assert.equal(stand[key]?.quelle, handbook.sourceHash(key),
+      `Das PDF «${handbook.BOOKS[key].pdf}» ist veraltet – nach Änderungen am Handbuch «npm run handbuch:pdf» ausführen`);
+    for (const src of handbook.images(handbook.source(key))) assert.ok(fs.existsSync(`${handbook.DIR}/${src}`), `Bild fehlt: ${src}`);
+  }
+});
+
+test('Handbuch-PDF: Seitenzahlen der Kapitel aus den Sprungzielen lesen', () => {
+  const { pageNumbers } = require('../scripts/handbuch-pdf');
+  const pdf = Buffer.from([
+    '%PDF-1.4', '1 0 obj <</Type /Catalog /Pages 2 0 R /Dests 9 0 R>> endobj',
+    '2 0 obj <</Type /Pages /Count 3 /Kids [3 0 R 6 0 R]>> endobj',
+    '3 0 obj <</Type /Pages /Count 2 /Kids [4 0 R 5 0 R]>> endobj',
+    '4 0 obj <</Type /Page /Parent 3 0 R>> endobj', '5 0 obj <</Type /Page /Parent 3 0 R>> endobj',
+    '6 0 obj <</Type /Page /Parent 2 0 R>> endobj',
+    '9 0 obj <</1-warum [5 0 R /XYZ 0 841 0]\n/2-ablauf#2Dx [6 0 R /XYZ 0 841 0]>> endobj',
+    'trailer <</Root 1 0 R>>',
+  ].join('\n'), 'latin1');
+  assert.deepEqual(pageNumbers(pdf), { '1-warum': 2, '2-ablauf-x': 3 });
+});

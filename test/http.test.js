@@ -248,6 +248,20 @@ test('Einsatzleiter: sieht nur freigegebene Einsätze, nur lesen', async () => {
   assert.match(fullBook, /href="\/handbuch\/einsatzleiter"/);
   assert.match(await (await get('/handbuch/einsatzleiter', auf.cookie)).text(), /Was du als Einsatzleiter siehst/);
 
+  // «Als PDF»: das gestaltete PDF, Einsatzleiter bekommen ihres
+  assert.match(fullBook, /href="\/handbuch\/pdf"/);
+  for (const [path, cookie, file] of [
+    ['/handbuch/pdf', auf.cookie, 'KKB-Einsatzplaner_Handbuch.pdf'],
+    ['/handbuch/einsatzleiter/pdf', auf.cookie, 'KKB-Einsatzplaner_Handbuch_Einsatzleiter.pdf'],
+    ['/handbuch/pdf', leo.cookie, 'KKB-Einsatzplaner_Handbuch_Einsatzleiter.pdf'],
+  ]) {
+    const r = await get(path, cookie);
+    assert.equal(r.status, 200, path);
+    assert.equal(r.headers.get('content-type'), 'application/pdf');
+    assert.match(r.headers.get('content-disposition'), new RegExp(`inline; filename="${file}"`));
+    assert.equal(Buffer.from(await r.arrayBuffer()).subarray(0, 5).toString(), '%PDF-');
+  }
+
   // Aufgebotsstelle gibt frei
   const page = await (await get(`/einsaetze/${ev}`, auf.cookie)).text();
   assert.match(page, /Einsatzleiter-Zugriff/);

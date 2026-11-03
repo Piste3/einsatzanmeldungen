@@ -1,2 +1,5 @@
 *.sh text eol=lf
 betrieb/windows/* -text
+*.pdf binary
+*.jpg binary
+*.png binary

@@ -13,7 +13,8 @@
     "seed": "node --disable-warning=ExperimentalWarning --env-file-if-exists=.env scripts/seed.js",
     "user:create": "node --disable-warning=ExperimentalWarning --env-file-if-exists=.env scripts/create-user.js",
     "test": "node --disable-warning=ExperimentalWarning --test test/*.test.js",
-    "backup": "node --disable-warning=ExperimentalWarning --env-file-if-exists=.env scripts/backup.js"
+    "backup": "node --disable-warning=ExperimentalWarning --env-file-if-exists=.env scripts/backup.js",
+    "handbuch:pdf": "node --disable-warning=ExperimentalWarning scripts/handbuch-pdf.js"
   },
   "license": "UNLICENSED",
   "dependencies": {

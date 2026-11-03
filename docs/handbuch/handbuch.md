@@ -22,13 +22,14 @@ Ein Einsatz mit rund 15 Kadettinnen und Kadetten bedeutet viel Kleinarbeit: Anme
 
 Jeder Einsatz durchläuft dieselben Schritte. Die Mitglieder sehen davon nur einen: das Anmeldeformular auf unserer ClubDesk-Seite.
 
-1. **Einsatz anlegen** – Name und Datum genügen für den Anfang (Kapitel 5).
+1. **Einsatz anlegen** – Name und Datum genügen für den Anfang, das Soll pro Funktion kommt dazu (Kapitel 5 und 6). Helfen andere Abteilungen mit, nur deren Anzahl erfassen (Kapitel 7).
 2. **Veröffentlichen** – der Einsatz erscheint sofort im Anmeldeformular.
-3. **Mitglieder melden sich an** – über das Formular, mit Vor- und Nachname (Kapitel 6).
-4. **Zuordnen** – der Einsatzplaner erkennt die Person. Was nicht eindeutig ist, landet in den Klärungen (Kapitel 8).
-5. **Nachfassen** – wer sich nicht gemeldet hat, wird angerufen oder per WhatsApp angefragt (Kapitel 9).
-6. **Bestätigen und Schichten besetzen** – jede Anmeldung wird von Hand bestätigt (Kapitel 7 und 10).
-7. **Aufgebot** – der Kalendertermin mit allen Angaben entsteht per Klick (Kapitel 12).
+3. **Mitglieder melden sich an** – über das Formular, mit Vor- und Nachname (Kapitel 8).
+4. **Zuordnen** – der Einsatzplaner erkennt die Person. Was nicht eindeutig ist, landet in den Klärungen (Kapitel 10).
+5. **Nachfassen** – wer sich nicht gemeldet hat, wird angerufen oder per WhatsApp angefragt (Kapitel 11).
+6. **Bestätigen und einteilen** – jede Anmeldung wird von Hand bestätigt, dann Schichten und Funktionen (EL, SC, BF) besetzen (Kapitel 9, 12 und 6).
+7. **Teilnehmerliste** – für Einsatzleitung und Küche als PDF, oder der Einsatzleiter schaut selbst nach (Kapitel 14 und 15).
+8. **Aufgebot** – der Kalendertermin mit allen Angaben entsteht per Klick (Kapitel 16).
 
 > **Wichtig:** Niemand gilt automatisch als dabei, nur weil er das Formular ausgefüllt hat. Bestätigt wird immer von Hand durch die Aufgebotsstelle.
 
@@ -45,7 +46,7 @@ Der Einsatzplaner läuft im Browser – auf dem Computer, dem Tablet oder dem Ha
 1. Die Adresse des Einsatzplaners öffnen (z. B. einsatz.holmium.ch) und ein Lesezeichen setzen.
 2. Mit dem persönlichen Benutzernamen und Passwort anmelden. Jede Person hat ein eigenes Konto – Konten werden nicht geteilt.
    Ist die Microsoft-Anmeldung eingerichtet und für dein Konto freigegeben, geht es auch mit «Mit Microsoft anmelden».
-3. Ist die **Zwei-Faktor-Anmeldung** eingerichtet, fragt der Einsatzplaner danach nach dem 6-stelligen Code aus der Authenticator-App (Kapitel 15).
+3. Ist die **Zwei-Faktor-Anmeldung** eingerichtet, fragt der Einsatzplaner danach nach dem 6-stelligen Code aus der Authenticator-App (Kapitel 19).
 4. Es öffnet sich das Cockpit.
 
 Nach 5 falschen Versuchen (Passwort oder Code) ist das Konto für 15 Minuten gesperrt. Ein vergessenes Passwort setzt ein Admin zurück.
@@ -56,7 +57,7 @@ Nach 5 falschen Versuchen (Passwort oder Code) ist das Konto für 15 Minuten ges
 |---|---|
 | Aufgebotsstelle | Einsätze und Schichten anlegen und veröffentlichen, Anmeldungen prüfen, zuordnen und bestätigen, Anfragen erfassen, Schichten besetzen, Kalendertermine exportieren, drucken und exportieren, Personen pflegen |
 | Admin | Alles, was die Aufgebotsstelle kann, und zusätzlich: Benutzer verwalten, Auswahllisten, Vorlagen, Bestätigungsmail und Einstellungen, Formular-Eingänge, Update und Neustart, Änderungen an abgeschlossenen Einsätzen (mit Begründung) |
-| Einsatzleiter | Sieht nur die Einsätze, die die Aufgebotsstelle für ihn freigegeben hat: Angaben, Schichten und Teilnehmerliste (mit Mobil und Essenseinschränkungen), als PDF, Excel oder CSV. Nur lesen – ändern kann er nichts (siehe «Für Einsatzleiter» unten) |
+| Einsatzleiter | Sieht nur die Einsätze, die die Aufgebotsstelle für ihn freigegeben hat: Angaben, Schichten und Teilnehmerliste (mit Mobil und Essenseinschränkungen), als PDF, Excel oder CSV. Nur lesen – ändern kann er nichts (Kapitel 15) |
 | Mitglieder | Haben kein Konto. Sie melden sich nur über das Anmeldeformular auf ClubDesk an |
 
 ### Aufbau der Oberfläche
@@ -70,9 +71,9 @@ Links steht die Navigation, rechts der Inhalt.
 | Rückmeldungen | Wer hat sich wofür gemeldet – als Tabelle oder pro Einsatz |
 | Klärungen | Anmeldungen, deren Name nicht sicher zugeordnet werden konnte. Die Zahl zeigt, wie viele offen sind |
 | Personen | Stammdaten mit Suche; pro Person eine eigene Seite |
-| Formulare | Eingänge des Anmeldeformulars, Fehler und Postausgang (Admin) |
+| Formulare | Eingänge des Anmeldeformulars, Fehler und Postausgang (Admin). Die Aufgebotsstelle sieht hier stattdessen **Formular-Vorschau**: das Anmeldeformular, wie es die Mitglieder sehen |
 | Einstellungen | Benutzer, Auswahllisten, Vorlagen, Kalendertermin, Bestätigungsmail, Einstellungen, System (Admin) |
-| Handbuch | Diese Anleitung, immer im Stand der installierten Version. Oben rechts geht es zum Handbuch für Einsatzleiter |
+| Handbuch | Diese Anleitung, immer im Stand der installierten Version. Oben rechts: **Handbuch für Einsatzleiter** und **Als PDF** |
 
 ### Bedienung, die überall gleich ist
 
@@ -83,7 +84,9 @@ Links steht die Navigation, rechts der Inhalt.
 - **Die Stelle bleibt:** Nach dem Speichern kommt man an dieselbe Stelle der Seite zurück.
 - **Nichts geht verloren:** Hat ein anderer Teil der Seite noch ungespeicherte Eingaben, fragt der Einsatzplaner vor dem Speichern nach. Beim Verlassen einer Seite mit ungespeicherten Eingaben warnt der Browser.
 - **Gleichzeitig bearbeiten:** Bearbeitet jemand denselben Eintrag, steht oben ein Hinweis. Speichern zwei Personen gleichzeitig, zeigt der Einsatzplaner beide Stände an, statt still zu überschreiben.
+- **Ein Speichern-Knopf pro Tabelle:** Tabellen zum Bearbeiten (Schichten verwalten, Auswahllisten, Vorlagen) haben unten rechts einen einzigen **Speichern**-Knopf. Mehrere Zeilen ändern, in der leeren untersten Zeile etwas Neues eintragen, dann einmal speichern. Geänderte Zeilen sind links orange markiert, und unten steht «Ungespeicherte Änderungen».
 - **Export und Drucken:** Listen lassen sich als Excel oder CSV exportieren – genau mit den eingestellten Filtern – und drucken. Ausdrucke sind immer hell.
+- **Handbuch als PDF:** Auf der Seite «Handbuch» öffnet **Als PDF** dieses Handbuch als gestaltetes PDF mit Inhaltsverzeichnis und Seitenzahlen – zum Drucken, Speichern oder Weiterschicken.
 - **Die Suche oben rechts** findet Personen, Einsätze und Anmeldungen.
 
 ### Konto und Darstellung
@@ -94,25 +97,6 @@ Links steht die Navigation, rechts der Inhalt.
 - Das **Symbol daneben** wechselt die Darstellung: «wie System» (Bildschirm), «Hell» (Sonne) oder «Dunkel» (Mond). Die Wahl gilt pro Benutzer auf allen Geräten.
 
 ![Der Einsatzplaner im dunklen Design](bilder/31-dunkel.jpg)
-
-### Für Einsatzleiter
-
-Einsatzleiter haben ein eigenes, kurzes [Handbuch für Einsatzleiter](/handbuch/einsatzleiter); unter «Handbuch» sehen sie nur dieses. Hier die Übersicht für die Aufgebotsstelle:
-
-Einsatzleiter melden sich gleich an wie alle anderen. Statt des Cockpits sehen sie **Meine Einsätze**: alle Einsätze, die die Aufgebotsstelle für sie freigegeben hat, anstehende oben, vergangene darunter.
-
-![Meine Einsätze (Einsatzleiter)](bilder/38-meine-einsaetze.jpg)
-
-Ein Klick auf den Einsatz zeigt:
-
-- **Angaben:** Datum, Antreten und Abtreten, Einsatzleitung, Tenue, Beschreibung.
-- **Schichten** mit Zeiten und Besetzung (Ist / Soll).
-- **Teilnehmer** mit Rang, Mobilnummer, Essenseinschränkungen, Schicht und Status, der höchste Rang zuerst. Auswahl wie bei der Teilnehmerliste: «Angemeldete», «Nur bestätigte» oder «Angemeldete + Warteliste», einzelne Schicht, Sortierung.
-- Oben **Teilnehmerliste (PDF)**, **Excel** und **CSV** – genau mit der gewählten Auswahl.
-
-![Einsatz aus Sicht des Einsatzleiters](bilder/39-einsatzleiter-einsatz.jpg)
-
-Einsatzleiter können nichts ändern und sehen keine anderen Einsätze, keine Personenliste, keine Rückmeldungen, Anfragen oder internen Bemerkungen. Änderungen und Rückfragen gehen an die Aufgebotsstelle. Die Essenseinschränkungen sind wie bei der Aufgebotsstelle nur bis zum Einsatz sichtbar, danach steht «Hinweis vorhanden». Jedes PDF und jeder Download steht im Verlauf des Einsatzes.
 
 ## 4 · Das Cockpit
 
@@ -145,7 +129,7 @@ Die Liste zeigt alle Einsätze mit Datum, Antreten, Status, Besetzung und Einsat
 - **Tenue:** mit einem Klick eine Vorlage übernehmen, z. B. «Uniform orange + VD», und bei Bedarf anpassen.
 - **Beschreibung** ist für die Mitglieder im Formular sichtbar, die **interne Bemerkung** nur für die Aufgebotsstelle.
 - **Schichten:** Eine Schicht für den ganzen Einsatz wird automatisch angelegt. Weitere Schichten kommen nach dem Speichern dazu.
-- **Schichten und Soll:** pro Schicht, wie viele Einsatzleiter (EL), Sektorchefs (SC), Busfahrer (BF) und Einsatzteilnehmer (TN) es braucht. Leer lassen, was es nicht braucht. Die Summe ist das Soll der Schicht. Siehe «Funktionen» unten.
+- **Schichten und Soll:** pro Schicht, wie viele Einsatzleiter (EL), Sektorchefs (SC), Busfahrer (BF) und Einsatzteilnehmer (TN) es braucht. Leer lassen, was es nicht braucht. Die Summe ist das Soll der Schicht (Kapitel 6).
 - **Anmeldeformular:** Anmeldefrage aus einer Vorlage wählen und Text und Hilfetext anpassen. Die Standard-Vorlage (Einstellungen › Vorlagen) ist bei neuen Einsätzen schon ausgewählt.
 - **Als Entwurf speichern** oder direkt **Veröffentlichen** – dann erscheint der Einsatz sofort im Anmeldeformular.
 
@@ -155,77 +139,14 @@ Die Liste zeigt alle Einsätze mit Datum, Antreten, Status, Besetzung und Einsat
 
 - **Kennzahlen:** neu eingegangen, zu prüfen, bestätigt und ohne Rückmeldung.
 - **Besetzung** pro Schicht mit Ist / Soll. Helfen externe Abteilungen mit, steht darunter z. B. «8 eigene + 6 extern».
-- **Funktionen:** Ist / Soll pro Schicht und Funktion (EL, SC, BF, TN) und wer welche Funktion hat (siehe unten).
-- **Externe Abteilungen:** andere Abteilungen oder Vereine, die mit einer Anzahl Personen mithelfen (siehe unten).
+- **Funktionen:** Ist / Soll pro Schicht und Funktion (EL, SC, BF, TN) und wer welche Funktion hat (Kapitel 6).
+- **Externe Abteilungen:** andere Abteilungen oder Vereine, die mit einer Anzahl Personen mithelfen (Kapitel 7).
 - **Angaben** des Einsatzes und wann das Aufgebot zuletzt exportiert wurde.
 - **Status:** Entwurf → Veröffentlicht → Abgeschlossen, oder jederzeit Abgesagt. Nach dem Abschluss sind die Daten schreibgeschützt; Änderungen sind dann nur noch durch einen Admin mit Begründung möglich. Bei einer Absage bleiben alle Daten erhalten.
 - **Im Formular anzeigen:** schaltet den Einsatz im Anmeldeformular ein oder aus, z. B. wenn er voll ist.
 - **Checkliste:** zeigt, welche Angaben noch fehlen.
-- **Einsatzleiter-Zugriff:** gibt den Einsatz für einen Einsatzleiter frei (siehe «Einsatzleiter freigeben» unten).
-- Oben gibt es **Kalendertermin**, **Drucken** bzw. **Export**, **Teilnehmerliste** und **Bearbeiten**.
-
-### Funktionen (EL, SC, BF, Einsatzteilnehmer)
-
-Pro Einsatz legst du fest, wie viele es von jeder Funktion braucht, und teilst die Angemeldeten ein. Standardmässig gibt es:
-
-| Kürzel | Funktion |
-|---|---|
-| **EL** | Einsatzleiter |
-| **SC** | Sektorchef |
-| **BF** | Busfahrer |
-| **TN** | Einsatzteilnehmer (Standard) |
-
-![Einsatz bearbeiten › Schichten und Soll](bilder/41-soll-pro-funktion.jpg)
-
-**Soll festlegen:** Das Soll gibt es **pro Schicht und Funktion**. Beim Anlegen oder unter **Bearbeiten** in der Karte **Schichten und Soll** steht eine Spalte pro Schicht; dort die Anzahl pro Funktion eintragen, z. B. Tagschicht 1 EL, 2 SC, 1 BF, 6 TN und Abendschicht 1 SC, 5 TN. Leer oder 0 heisst: braucht es nicht. Dasselbe geht im Reiter **Schichten** unter «Schichten verwalten» (eine Spalte pro Funktion), dort auch für eine neue Schicht.
-
-Das **Soll der Schicht** ist immer die Summe davon (im Beispiel 10 und 6) – es gibt kein separates Feld mehr. Einsätze, die vorher nur eine Soll-Anzahl pro Schicht hatten, wurden beim Update übernommen: Die Zahl steht jetzt bei den Einsatzteilnehmern.
-
-![Einsatz › Übersicht › Funktionen](bilder/42-funktionen.jpg)
-
-**Funktionen zuweisen** – drei Wege:
-
-- In der **Übersicht**, Karte **Funktionen**: unter jeder Funktion im Auswahlfeld **+ EL zuweisen …** (bzw. SC, BF) eine angemeldete Person wählen (tippen zum Suchen). Das **✕** beim Namen nimmt die Funktion wieder weg.
-- Im Reiter **Anmeldungen** in der Spalte **Funktion** direkt pro Zeile umstellen.
-- Im Reiter **Anmeldungen** mehrere ankreuzen und oben **Funktion zuweisen …** wählen.
-
-Wer keine Funktion zugewiesen hat, zählt automatisch als **Einsatzteilnehmer (TN)**. Du musst also nur EL, SC und BF einteilen.
-
-Was die Karte **Funktionen** zeigt:
-
-- Pro Schicht und Funktion **Ist / Soll** mit Balken: grün = genau voll, gelb/rot = es fehlen noch welche, orange = zu viele (z. B. «2 / 1 · 1 zu viel»). Rechts beim Schichtnamen das Total der Schicht. Bei mehreren Schichten stehen nur die Funktionen, die in dieser Schicht ein Soll haben oder besetzt sind.
-- Es zählen wie bei der Besetzung die Anmeldungen mit Status Neu, Rückfrage oder Bestätigt, die der Schicht zugeteilt sind. Warteliste und Abmeldungen zählen nicht; Abgemeldete bekommen keine Funktion.
-- Die Funktion einer **Person** gilt für den ganzen Einsatz: Wer als SC eingeteilt ist und in der Tag- und der Abendschicht arbeitet, zählt in beiden Schichten als SC. Im Reiter «Schichten» steht das Kürzel (z. B. «SC») neben dem Namen und unter jeder Schicht die Zeile Ist / Soll pro Funktion.
-- **Externe Abteilungen** zählen mit ihrer Anzahl Personen in ihren Schichten – standardmässig als Einsatzteilnehmer. Stellt eine Abteilung z. B. den Busfahrer, beim Erfassen der Abteilung **Funktion** auf «BF» stellen.
-
-Die Funktionen stehen auch auf der **Teilnehmerliste** (Spalte «Fkt.» bzw. «Funktion» und oben «Funktionen (Ist/Soll)»), auf der Seite des Mitglieds, in der Einsatzliste beim Export und in der Ansicht der Einsatzleiter. Jede Zuweisung steht im Verlauf.
-
-> **Funktion EL ≠ Rolle «Einsatzleiter»:** Die **Funktion** EL sagt, wer an diesem Einsatz die Leitung hat. Die **Benutzer-Rolle** «Einsatzleiter» ist ein Login, mit dem jemand freigegebene Einsätze ansehen kann. Hat eine Person mit Funktion EL (oder SC, BF) ein Einsatzleiter-Konto, schlägt die Karte **Einsatzleiter-Zugriff** vor, ihr den Einsatz freizugeben – freigeben musst du aber selbst mit einem Klick. Das Feld **Einsatzleitung** bei den Angaben bleibt unabhängig davon die Hauptverantwortung, die ins Aufgebot kommt.
-
-Welche Funktionen es gibt, legt ein Admin unter Einstellungen › Auswahllisten › **Funktionen an Einsätzen** fest (siehe Kapitel 14).
-
-### Externe Abteilungen
-
-Manchmal helfen andere Abteilungen oder Vereine mit, z. B. die Feuerwehr oder ein Samariterverein. Von ihnen braucht es keine Namen, nur **welche Abteilung** und **wie viele Personen** kommen.
-
-![Einsatz › Übersicht › Externe Abteilungen](bilder/40-externe-abteilungen.jpg)
-
-- In der Übersicht des Einsatzes auf **+ Externe Abteilung hinzufügen** klicken.
-- **Abteilung:** aus der Liste wählen oder einen neuen Namen eintippen. Ein neuer Name wird automatisch in die Liste aufgenommen und beim nächsten Einsatz vorgeschlagen. Gross- und Kleinschreibung spielt keine Rolle.
-- **Anzahl Personen** eintragen.
-- **Funktion:** meist Einsatzteilnehmer. Stellt die Abteilung z. B. den Busfahrer, hier «BF» wählen – die Personen zählen dann in den Funktionen dort mit.
-- **Schichten:** Hat der Einsatz mehrere Schichten, ankreuzen, in welchen die Abteilung mithilft. Sind alle angekreuzt, gilt sie für den ganzen Einsatz, auch für später hinzugefügte Schichten.
-- **Essenseinschränkungen** (freiwillig): pro Zeile die Anzahl Personen, die Art (vegetarisch, vegan, Allergie, Unverträglichkeit, religiös, andere) und bei Bedarf Details, z. B. «2 · vegetarisch» und «1 · Allergie · Nüsse». Mit **+ weitere Einschränkung** kommt eine Zeile dazu, mit **✕** fällt sie weg. Auch hier braucht es keine Namen. Wer nicht aufgeführt ist, isst ohne Einschränkung. Es können nicht mehr Einschränkungen als Personen erfasst werden.
-- **Kontakt** (z. B. «Hptm Muster, 079 …») und **Bemerkung** sind freiwillig.
-- Mit **Bearbeiten** lassen sich die Angaben ändern oder die Abteilung **vom Einsatz entfernen**.
-
-Was die externen Personen bewirken:
-
-- Sie **zählen in der Besetzung mit** (Ist / Soll) – in der Übersicht, im Cockpit, in der Einsatzliste und unter «Schichten». Ist eine Schicht damit voll, erscheint der übliche Hinweis.
-- In den **Rückmeldungen** steht die Zahl zusätzlich, z. B. «9 + 6 ext. / 10».
-- Auf der **Teilnehmerliste** (Seite, PDF, Excel, CSV) stehen sie in einem eigenen Abschnitt mit Anzahl, Schicht, Essenseinschränkungen, Kontakt und Bemerkung. Oben steht das Total, z. B. «11 Personen + 9 extern = 20 total».
-- In der **Verpflegung** unter der Teilnehmerliste zählen ihre Essenseinschränkungen zu denen der eigenen Leute dazu, z. B. «3 vegetarisch». Die übrigen Personen dieser Abteilung zählen als «ohne Einschränkung». Hat eine Abteilung gar keine Essenseinschränkungen eingetragen, erscheinen ihre Personen als «extern (keine Angaben)».
-- Jede Änderung steht im Verlauf des Einsatzes.
+- **Einsatzleiter-Zugriff:** gibt den Einsatz für einen Einsatzleiter frei (Kapitel 15).
+- Oben gibt es **Kalendertermin** (Kapitel 16), **Drucken** bzw. **Export**, **Teilnehmerliste** (Kapitel 14) und **Bearbeiten**.
 
 ### Reiter «Formular»
 
@@ -239,39 +160,87 @@ Zeigt genau, wie der Einsatz im Anmeldeformular aussieht, und bis wann er dort s
 
 Jede Änderung am Einsatz, an Anmeldungen und Anfragen steht hier mit Zeitpunkt und Person.
 
-### Teilnehmerliste
+## 6 · Funktionen und Soll (EL, SC, BF, TN)
 
-Die Teilnehmerliste zeigt auf einen Blick, wer kommt – mit **Rang, Name, Mobilnummer und Essenseinschränkungen**, der höchste Rang zuerst. Ein Klick auf **Teilnehmerliste** oben auf jeder Seite des Einsatzes öffnet sie sofort als **PDF in einem neuen Tab**. Von dort lässt sie sich drucken, speichern oder weiterschicken.
+Pro Einsatz legst du fest, wie viele Personen es von jeder Funktion braucht, und teilst die Angemeldeten ein. So siehst du auf einen Blick, ob z. B. noch ein Sektorchef oder der Busfahrer fehlt.
 
-- Werden beim Einsatz Funktionen ausser Einsatzteilnehmer verwendet, zeigt eine Spalte **Funktion** das Kürzel (EL, SC, BF, TN) und oben steht «Funktionen (Ist/Soll)», bei mehreren Schichten pro Schicht, z. B. «EL 1/1 · SC 2/2 · BF 1/1 · TN 8/12».
-- Unter der Liste steht die Zusammenfassung für die Küche, z. B. «2 vegetarisch · 1 Allergie · 7 ohne Einschränkung».
-- **Externe Abteilungen** stehen in einem eigenen Abschnitt unter den Personen, mit Anzahl, Schicht, Essenseinschränkungen, Kontakt und Bemerkung; ihre Essenseinschränkungen zählen in der Verpflegung mit. In Excel und CSV kommen sie als eigene Zeilen mit Rang «extern» und einer Spalte «Anzahl» ans Ende. Ist die Liste auf eine Schicht eingeschränkt, erscheinen nur die Abteilungen dieser Schicht.
-- Der kleine Pfeil **▾** neben dem Knopf bietet die Liste auch als **Excel** oder **CSV** an, mit Essenseinschränkung und Details in getrennten Spalten.
-- **Auswahl anpassen …** (ebenfalls im Pfeil-Menü) zeigt die Liste in der App und lässt wählen:
-  - **Wer steht drauf:** «Angemeldete» (neu, Rückfrage und bestätigt – wie die Besetzung), «Nur bestätigte» oder «Angemeldete + Warteliste». Abmeldungen, Absagen und ungültige Anmeldungen stehen nie drauf.
-  - **Schicht:** Hat der Einsatz mehrere Schichten, lässt sich die Liste auf eine Schicht einschränken. Sonst zeigt eine Spalte, wer in welcher Schicht ist.
-  - **Sortierung:** Rang hoch → tief oder tief → hoch, innerhalb des Rangs alphabetisch, oder **Funktion, dann Rang** (EL, SC, BF zuerst, dann die Einsatzteilnehmer).
-  - **PDF öffnen**, **Excel** und **CSV** übernehmen genau diese Auswahl.
-- Anmeldungen, die noch keiner Person zugeordnet sind, fehlen in der Liste. Die Seite «Auswahl anpassen» weist mit einem Link zu den Klärungen darauf hin.
-- Jedes PDF und jeder Download wird im Verlauf des Einsatzes festgehalten.
+| Kürzel | Funktion |
+|---|---|
+| **EL** | Einsatzleiter |
+| **SC** | Sektorchef |
+| **BF** | Busfahrer |
+| **TN** | Einsatzteilnehmer (Standard) |
 
-![Einsatz › Teilnehmerliste als PDF](bilder/35-teilnehmerliste.jpg)
+Welche Funktionen es gibt, legt ein Admin unter Einstellungen › Auswahllisten › **Funktionen an Einsätzen** fest (Kapitel 18).
 
-> **Sensible Angaben:** Die Essenseinschränkungen stehen für alle angemeldeten Personen drin, solange der Einsatz bevorsteht. Nach dem Einsatz zeigt die Liste der Aufgebotsstelle nur noch «Hinweis vorhanden»; die genaue Angabe sieht dann nur noch ein Admin.
+### Soll festlegen
 
-### Einsatzleiter freigeben
+![Einsatz bearbeiten › Schichten und Soll](bilder/41-soll-pro-funktion.jpg)
 
-Damit ein Einsatzleiter seinen Einsatz mit allen Angaben und Teilnehmern selbst ansehen kann, gibt die Aufgebotsstelle den Einsatz für ihn frei. Er braucht dafür ein Benutzerkonto mit der Rolle **Einsatzleiter** (legt ein Admin unter Einstellungen › Benutzer an).
+Das Soll gibt es **pro Schicht und Funktion**. Beim Anlegen oder unter **Bearbeiten** in der Karte **Schichten und Soll** steht eine Spalte pro Schicht; dort die Anzahl pro Funktion eintragen, z. B. Tagschicht 1 EL, 2 SC, 1 BF, 6 TN und Abendschicht 1 SC, 5 TN. Leer oder 0 heisst: braucht es nicht.
 
-![Einsatz › Übersicht › Einsatzleiter-Zugriff](bilder/37-einsatzleiter-freigeben.jpg)
+Dasselbe geht im Reiter **Schichten** unter **Schichten verwalten**: eine Zeile pro Schicht mit den Spalten EL, SC, BF und TN, auch für eine neue Schicht. Die ganze Tabelle hat einen einzigen **Speichern**-Knopf (Kapitel 12).
 
-1. Den Einsatz öffnen, Reiter **Übersicht**.
-2. Rechts in der Karte **Einsatzleiter-Zugriff** den Einsatzleiter wählen und **Freigeben** klicken. Ist bei «Einsatzleitung» eine Person eingetragen, die ein Einsatzleiter-Konto hat, ist sie schon vorausgewählt. Hat jemand mit einer Funktion (z. B. EL) ein Einsatzleiter-Konto, erscheint oben ein Vorschlag mit eigenem **Freigeben**-Knopf.
-3. Der Einsatz erscheint sofort unter «Meine Einsätze» des Einsatzleiters.
+Das **Soll der Schicht** ist immer die Summe davon (im Beispiel 10 und 6) – ein separates Feld dafür gibt es nicht. Einsätze, die früher nur eine Soll-Anzahl pro Schicht hatten, wurden beim Update übernommen: Die Zahl steht jetzt bei den Einsatzteilnehmern.
 
-Ein Einsatz kann für mehrere Einsatzleiter freigegeben sein. **Entfernen** nimmt die Freigabe wieder weg. Freigeben und Entfernen stehen im Verlauf des Einsatzes. Die Freigabe bleibt bestehen, bis sie jemand entfernt – auch nach dem Einsatz; die Essenseinschränkungen sind dann aber nicht mehr sichtbar.
+### Funktionen zuweisen
 
-## 6 · So melden sich die Mitglieder an
+![Einsatz › Übersicht › Funktionen](bilder/42-funktionen.jpg)
+
+Es gibt drei Wege:
+
+- In der **Übersicht**, Karte **Funktionen**: unter jeder Funktion im Auswahlfeld **+ EL zuweisen …** (bzw. SC, BF) eine angemeldete Person wählen (tippen zum Suchen). Das **✕** beim Namen nimmt die Funktion wieder weg.
+- Im Reiter **Anmeldungen** in der Spalte **Funktion** direkt pro Zeile umstellen.
+- Im Reiter **Anmeldungen** mehrere ankreuzen und oben **Funktion zuweisen …** wählen.
+
+Wer keine Funktion zugewiesen hat, zählt automatisch als **Einsatzteilnehmer (TN)**. Du musst also nur EL, SC und BF einteilen.
+
+### Was die Karte «Funktionen» zeigt
+
+- Pro Schicht und Funktion **Ist / Soll** mit Balken: grün = genau voll, gelb/rot = es fehlen noch welche, orange = zu viele (z. B. «2 / 1 · 1 zu viel»). Rechts beim Schichtnamen das Total der Schicht. Bei mehreren Schichten stehen nur die Funktionen, die in dieser Schicht ein Soll haben oder besetzt sind.
+- Es zählen wie bei der Besetzung die Anmeldungen mit Status Neu, Rückfrage oder Bestätigt, die der Schicht zugeteilt sind. Warteliste und Abmeldungen zählen nicht; Abgemeldete bekommen keine Funktion.
+- Die Funktion einer **Person** gilt für den ganzen Einsatz: Wer als SC eingeteilt ist und in der Tag- und der Abendschicht arbeitet, zählt in beiden Schichten als SC. Im Reiter «Schichten» steht das Kürzel (z. B. «SC») neben dem Namen und unter jeder Schicht die Zeile Ist / Soll pro Funktion.
+- **Externe Abteilungen** zählen mit ihrer Anzahl Personen in ihren Schichten – standardmässig als Einsatzteilnehmer. Stellt eine Abteilung z. B. den Busfahrer, beim Erfassen der Abteilung **Funktion** auf «BF» stellen (Kapitel 7).
+
+Die Funktionen stehen auch auf der **Teilnehmerliste** (Spalte «Fkt.» bzw. «Funktion» und oben «Funktionen (Ist/Soll)»), auf der Seite des Mitglieds, in der Einsatzliste beim Export und in der Ansicht der Einsatzleiter. Jede Zuweisung steht im Verlauf.
+
+> **Funktion EL ≠ Rolle «Einsatzleiter»:** Die **Funktion** EL sagt, wer an diesem Einsatz die Leitung hat. Die **Benutzer-Rolle** «Einsatzleiter» ist ein Login, mit dem jemand freigegebene Einsätze ansehen kann (Kapitel 15). Hat eine Person mit Funktion EL (oder SC, BF) ein Einsatzleiter-Konto, schlägt die Karte **Einsatzleiter-Zugriff** vor, ihr den Einsatz freizugeben – freigeben musst du aber selbst mit einem Klick. Das Feld **Einsatzleitung** bei den Angaben bleibt unabhängig davon die Hauptverantwortung, die ins Aufgebot kommt.
+
+## 7 · Externe Abteilungen
+
+Manchmal helfen andere Abteilungen oder Vereine mit, z. B. die Feuerwehr, die Verkehrskadetten einer anderen Region oder ein Samariterverein. Von ihnen braucht es keine Namen, nur **welche Abteilung** und **wie viele Personen** kommen.
+
+![Einsatz › Übersicht › Externe Abteilungen](bilder/40-externe-abteilungen.jpg)
+
+### Abteilung erfassen
+
+1. In der **Übersicht** des Einsatzes auf **+ Externe Abteilung hinzufügen** klicken.
+2. **Abteilung:** aus der Liste wählen oder einen neuen Namen eintippen, z. B. «VK NWS». Ein neuer Name wird automatisch in die Liste aufgenommen und beim nächsten Einsatz vorgeschlagen. Gross- und Kleinschreibung spielt keine Rolle.
+3. **Anzahl Personen** eintragen.
+4. **Funktion:** meist Einsatzteilnehmer. Stellt die Abteilung z. B. den Busfahrer, hier «BF» wählen – die Personen zählen dann in den Funktionen dort mit (Kapitel 6).
+5. **Schichten:** Hat der Einsatz mehrere Schichten, ankreuzen, in welchen die Abteilung mithilft. Sind alle angekreuzt, gilt sie für den ganzen Einsatz, auch für später hinzugefügte Schichten.
+6. **Kontakt** (z. B. «Hptm Muster, 079 …») und **Bemerkung** sind freiwillig.
+
+Mit **Bearbeiten** lassen sich die Angaben ändern oder die Abteilung **vom Einsatz entfernen**. Jede Änderung steht im Verlauf des Einsatzes.
+
+### Essenseinschränkungen der Abteilung
+
+Freiwillig lässt sich erfassen, wie viele Personen der Abteilung eine Essenseinschränkung haben – auch hier ohne Namen:
+
+- Pro Zeile die **Anzahl** Personen, die **Art** (vegetarisch, vegan, Allergie, Unverträglichkeit, religiös, andere) und bei Bedarf **Details**, z. B. «2 · vegetarisch» und «1 · Allergie · Nüsse».
+- **+ weitere Einschränkung** fügt eine Zeile hinzu, **✕** entfernt sie.
+- Wer nicht aufgeführt ist, isst ohne Einschränkung. Es können nicht mehr Einschränkungen als Personen erfasst werden.
+
+### Was die externen Personen bewirken
+
+- Sie **zählen in der Besetzung mit** (Ist / Soll) – in der Übersicht («8 eigene + 6 extern»), im Cockpit, in der Einsatzliste und unter «Schichten». Ist eine Schicht damit voll, erscheint der übliche Hinweis.
+- In den **Rückmeldungen** steht die Zahl zusätzlich, z. B. «9 + 6 ext. / 10».
+- Auf der **Teilnehmerliste** (Seite, PDF, Excel, CSV) stehen sie in einem eigenen Abschnitt mit Anzahl, Schicht, Essenseinschränkungen, Kontakt und Bemerkung. Oben steht das Total, z. B. «11 Personen + 9 extern = 20 total».
+- In der **Verpflegung** unter der Teilnehmerliste zählen ihre Essenseinschränkungen zu denen der eigenen Leute dazu, z. B. «3 vegetarisch». Die übrigen Personen der Abteilung zählen als «ohne Einschränkung». Hat eine Abteilung gar keine Essenseinschränkungen eingetragen, erscheinen ihre Personen als «extern (keine Angaben)».
+
+Die Liste aller Abteilungen pflegt ein Admin unter Einstellungen › Auswahllisten (Kapitel 18).
+
+## 8 · So melden sich die Mitglieder an
 
 Es gibt ein einziges, gemeinsames Anmeldeformular für alle Einsätze. Es ist einmal auf der ClubDesk-Seite eingebettet und zeigt immer genau die Einsätze, für die man sich gerade anmelden kann.
 
@@ -299,7 +268,7 @@ Die Bestätigungsseite erscheint erst, wenn die Anmeldung sicher gespeichert ist
 
 > **Gut zu wissen:** Wie viele sich schon angemeldet haben, sehen die Mitglieder nicht. Doppelt abgeschickte Formulare werden erkannt, und Spam wird über ein verstecktes Feld und eine Mindestzeit abgefangen.
 
-## 7 · Anmeldungen bearbeiten und bestätigen
+## 9 · Anmeldungen bearbeiten und bestätigen
 
 Jede Anmeldung landet automatisch beim richtigen Einsatz – egal ob sie über das Formular, per Telefon oder per WhatsApp kam.
 
@@ -308,7 +277,7 @@ Jede Anmeldung landet automatisch beim richtigen Einsatz – egal ob sie über d
 - **Zähler pro Status** oben: ein Klick filtert die Liste.
 - **Sortierung:** «Rang: hoch → tief» (Standard), «Rang: tief → hoch», «Funktion, dann Rang» oder «neueste zuerst». Daneben das Suchfeld.
 - **Funktionen (Ist/Soll)** stehen über der Tabelle (pro Schicht), sobald beim Einsatz EL, SC oder BF vorkommen.
-- **Spalte «Funktion»:** EL, SC, BF oder TN direkt umstellen (siehe «Funktionen» in Kapitel 5).
+- **Spalte «Funktion»:** EL, SC, BF oder TN direkt umstellen (Kapitel 6).
 - **Sammelaktionen:** mehrere Anmeldungen ankreuzen und gemeinsam bestätigen, den Status ändern, eine **Funktion zuweisen** oder exportieren.
 - **Bestätigen** direkt in der Zeile. Orange markierte Zeilen sind noch nicht bestätigt.
 - Bemerkungen der Mitglieder und Hinweise zur Verpflegung stehen in der Spalte «Bemerkung».
@@ -334,7 +303,7 @@ Mit **+ Anmeldung erfassen** lässt sich eine Anmeldung per Telefon, WhatsApp od
 | Status | Bedeutung | Zählt zur Besetzung |
 |---|---|---|
 | Neu eingegangen | Formular abgeschickt oder Zusage erfasst, noch nicht bearbeitet | ja |
-| Unsichere Zuordnung | Name konnte nicht sicher zugeordnet werden (Kapitel 8) | nein |
+| Unsichere Zuordnung | Name konnte nicht sicher zugeordnet werden (Kapitel 10) | nein |
 | Rückfrage nötig | Es gibt noch etwas zu klären, z. B. «erst ab 19:30» | ja |
 | Warteliste | Gültig, aber die Schichten sind voll | nein |
 | Bestätigt | Teilnahme verbindlich bestätigt | ja |
@@ -342,9 +311,9 @@ Mit **+ Anmeldung erfassen** lässt sich eine Anmeldung per Telefon, WhatsApp od
 | Abgesagt | Hat abgesagt | nein |
 | Ungültig | z. B. Test- oder Spass-Anmeldung | nein |
 
-> **Nach dem Bestätigen** erhält das Mitglied automatisch eine Anmeldebestätigung per E-Mail, sofern eine Adresse hinterlegt ist und die Bestätigungsmail eingeschaltet ist (Kapitel 14).
+> **Nach dem Bestätigen** erhält das Mitglied automatisch eine Anmeldebestätigung per E-Mail, sofern eine Adresse hinterlegt ist und die Bestätigungsmail eingeschaltet ist (Kapitel 18).
 
-## 8 · Unklare Namen zuordnen
+## 10 · Unklare Namen zuordnen
 
 Der Einsatzplaner ordnet einen Namen nur dann automatisch zu, wenn er eindeutig ist. Alles andere landet in den **Klärungen** – nichts wird geraten, und es werden nie selbständig neue Personen angelegt.
 
@@ -362,7 +331,7 @@ So geht's:
 
 Gross- und Kleinschreibung, Leerzeichen, Umlaute (ä/ae) und vertauschte Vor- und Nachnamen erkennt der Einsatzplaner selbst.
 
-## 9 · Nachfassen per Telefon und WhatsApp
+## 11 · Nachfassen per Telefon und WhatsApp
 
 Der Reiter **Anfragen** zeigt alle aktiven Mitglieder, die sich für diesen Einsatz noch nicht gemeldet haben, und alle, die schon angefragt wurden. Die Zahl im Reiter zeigt die offenen Nachfass-Fälle.
 
@@ -397,7 +366,7 @@ Im Fenster wählt man Kanal, Datum und Uhrzeit (vorausgefüllt mit jetzt), **Ges
 
 > **Beispiel:** David Suter wurde am 26.10. und am 27.10. von Lena Meier angerufen, beide Male ohne Erfolg. Am Abend schreibt Anna Roth ihm per WhatsApp und erfasst das. Am nächsten Tag sieht die ganze Aufgebotsstelle, dass er schon zweimal angerufen und einmal angeschrieben wurde – niemand ruft ihn ein drittes Mal an.
 
-## 10 · Schichten besetzen
+## 12 · Schichten besetzen
 
 Die meisten Einsätze haben nur eine Schicht für alle. Dann gibt es nichts zu verteilen: Jede Anmeldung gilt automatisch für diese Schicht.
 
@@ -412,7 +381,7 @@ Die meisten Einsätze haben nur eine Schicht für alle. Dann gibt es nichts zu v
 - Die Schichtwünsche aus dem Formular sind schon übernommen. Meldet sich eine eingeteilte Person ab, wird die Besetzung sofort angepasst.
 - **Externe Abteilungen** stehen am Ende der Spalte ihrer Schicht (blau, mit Anzahl Personen) und zählen zur Besetzung, z. B. «Besetzung · davon 6 extern». Erfasst und geändert werden sie in der Übersicht des Einsatzes.
 
-## 11 · Rückmeldungen und Mitgliederseite
+## 13 · Rückmeldungen und Mitgliederseite
 
 Die Seite **Rückmeldungen** beantwortet die wichtigste Frage der Aufgebotsstelle: Wer hat sich für welchen Einsatz gemeldet – und wer noch nicht?
 
@@ -456,7 +425,75 @@ Namenssuche, Zeitraum (nächste 2 Wochen bis nächstes Jahr), Mannschaft, «Nur 
 - Offene Einsätze lassen sich direkt mit **Anfrage erfassen** nachfassen.
 - **Frühere Einsätze** und der **Verlauf** sind zuklappbar. Die Seite lässt sich drucken und nach Excel exportieren.
 
-## 12 · Das Aufgebot als Kalendertermin
+## 14 · Die Teilnehmerliste
+
+Die Teilnehmerliste zeigt auf einen Blick, wer kommt – mit **Rang, Name, Mobilnummer und Essenseinschränkungen**, der höchste Rang zuerst. Sie ist das, was die Einsatzleitung und die Küche brauchen.
+
+![Einsatz › Teilnehmerliste als PDF](bilder/35-teilnehmerliste.jpg)
+
+### Als PDF öffnen
+
+Ein Klick auf **Teilnehmerliste** oben auf jeder Seite des Einsatzes öffnet sie sofort als **PDF in einem neuen Tab**. Von dort lässt sie sich drucken, speichern oder weiterschicken.
+
+- Oben stehen Datum, Antreten, Einsatzleitung und die Anzahl Personen, z. B. «11 Personen + 9 extern = 20 total».
+- Werden beim Einsatz Funktionen ausser Einsatzteilnehmer verwendet, zeigt eine Spalte **Funktion** das Kürzel (EL, SC, BF, TN), und oben steht «Funktionen (Ist/Soll)», bei mehreren Schichten pro Schicht, z. B. «EL 1/1 · SC 2/2 · BF 1/1 · TN 8/12».
+- **Externe Abteilungen** stehen in einem eigenen Abschnitt unter den Personen, mit Anzahl, Schicht, Essenseinschränkungen, Kontakt und Bemerkung.
+- Unter der Liste steht die **Verpflegung** als Zusammenfassung für die Küche, z. B. «2 vegetarisch · 1 Allergie · 7 ohne Einschränkung» – die externen Abteilungen sind mitgezählt.
+
+### Excel, CSV und Auswahl
+
+Der kleine Pfeil **▾** neben dem Knopf bietet die Liste auch als **Excel** oder **CSV** an, mit Essenseinschränkung und Details in getrennten Spalten. Externe Abteilungen kommen dort als eigene Zeilen mit Rang «extern» und einer Spalte «Anzahl» ans Ende.
+
+**Auswahl anpassen …** (ebenfalls im Pfeil-Menü) zeigt die Liste in der App und lässt wählen:
+
+- **Wer steht drauf:** «Angemeldete» (neu, Rückfrage und bestätigt – wie die Besetzung), «Nur bestätigte» oder «Angemeldete + Warteliste». Abmeldungen, Absagen und ungültige Anmeldungen stehen nie drauf.
+- **Schicht:** Hat der Einsatz mehrere Schichten, lässt sich die Liste auf eine Schicht einschränken; dann erscheinen auch nur die externen Abteilungen dieser Schicht. Sonst zeigt eine Spalte, wer in welcher Schicht ist.
+- **Sortierung:** Rang hoch → tief oder tief → hoch, innerhalb des Rangs alphabetisch, oder **Funktion, dann Rang** (EL, SC, BF zuerst, dann die Einsatzteilnehmer).
+- **PDF öffnen**, **Excel** und **CSV** übernehmen genau diese Auswahl.
+
+Anmeldungen, die noch keiner Person zugeordnet sind, fehlen in der Liste. Die Seite «Auswahl anpassen» weist mit einem Link zu den Klärungen darauf hin. Jedes PDF und jeder Download wird im Verlauf des Einsatzes festgehalten.
+
+> **Sensible Angaben:** Die Essenseinschränkungen stehen für alle angemeldeten Personen drin, solange der Einsatz bevorsteht. Nach dem Einsatz zeigt die Liste der Aufgebotsstelle nur noch «Hinweis vorhanden»; die genaue Angabe sieht dann nur noch ein Admin.
+
+## 15 · Einsatzleiter
+
+Mit der Rolle **Einsatzleiter** kann die Leitung eines Einsatzes selbst nachschauen, wer kommt – mit allen Angaben und der Teilnehmerliste, immer im aktuellen Stand. Niemand muss ihr mehr Listen per Mail schicken.
+
+### Konto anlegen
+
+Ein Admin legt unter Einstellungen › **Benutzer** ein Konto mit der Rolle **Einsatzleiter** an und verknüpft es am besten mit der Person aus den Stammdaten (Kapitel 18). Dann wird das Konto bei Einsätzen, bei denen diese Person die Einsatzleitung hat oder eine Funktion wie EL hat, automatisch zum Freigeben vorgeschlagen.
+
+### Einen Einsatz freigeben
+
+![Einsatz › Übersicht › Einsatzleiter-Zugriff](bilder/37-einsatzleiter-freigeben.jpg)
+
+1. Den Einsatz öffnen, Reiter **Übersicht**.
+2. Rechts in der Karte **Einsatzleiter-Zugriff** den Einsatzleiter wählen und **Freigeben** klicken. Ist bei «Einsatzleitung» eine Person eingetragen, die ein Einsatzleiter-Konto hat, ist sie schon vorausgewählt. Hat jemand mit einer Funktion (z. B. EL) ein Einsatzleiter-Konto, erscheint oben ein Vorschlag mit eigenem **Freigeben**-Knopf.
+3. Der Einsatz erscheint sofort unter «Meine Einsätze» des Einsatzleiters.
+
+Ein Einsatz kann für mehrere Einsatzleiter freigegeben sein. **Entfernen** nimmt die Freigabe wieder weg. Freigeben und Entfernen stehen im Verlauf des Einsatzes. Die Freigabe bleibt bestehen, bis sie jemand entfernt – auch nach dem Einsatz; die Essenseinschränkungen sind dann aber nicht mehr sichtbar. Wechselt das Konto in eine andere Rolle, verfallen seine Freigaben.
+
+### Was Einsatzleiter sehen
+
+Einsatzleiter melden sich gleich an wie alle anderen. Statt des Cockpits sehen sie **Meine Einsätze**: alle Einsätze, die für sie freigegeben sind, anstehende oben, vergangene darunter.
+
+![Meine Einsätze (Einsatzleiter)](bilder/38-meine-einsaetze.jpg)
+
+Ein Klick auf den Einsatz zeigt:
+
+- **Angaben:** Datum, Antreten und Abtreten, Einsatzleitung, Tenue, Beschreibung.
+- **Schichten** mit Zeiten und Besetzung (Ist / Soll), dazu die externen Abteilungen.
+- **Funktionen** mit Ist / Soll pro Schicht und wer welche Funktion hat.
+- **Teilnehmer** mit Funktion, Rang, Mobilnummer, Essenseinschränkungen, Schicht und Status, der höchste Rang zuerst. Auswahl wie bei der Teilnehmerliste: «Angemeldete», «Nur bestätigte» oder «Angemeldete + Warteliste», einzelne Schicht, Sortierung.
+- Oben **Teilnehmerliste (PDF)**, **Excel** und **CSV** – genau mit der gewählten Auswahl.
+
+![Einsatz aus Sicht des Einsatzleiters](bilder/39-einsatzleiter-einsatz.jpg)
+
+Einsatzleiter können nichts ändern und sehen keine anderen Einsätze, keine Personenliste, keine Rückmeldungen, Anfragen oder internen Bemerkungen. Änderungen und Rückfragen gehen an die Aufgebotsstelle. Die Essenseinschränkungen sind wie bei der Aufgebotsstelle nur bis zum Einsatz sichtbar, danach steht «Hinweis vorhanden». Jedes PDF und jeder Download steht im Verlauf des Einsatzes.
+
+Unter «Handbuch» sehen Einsatzleiter nur ihr eigenes, kurzes [Handbuch für Einsatzleiter](/handbuch/einsatzleiter). Die Aufgebotsstelle findet es auf der Handbuch-Seite oben rechts.
+
+## 16 · Das Aufgebot als Kalendertermin
 
 Ist ein Einsatz besetzt, erstellt die Aufgebotsstelle das Aufgebot mit einem Klick auf **Kalendertermin**. Heraus kommt eine Kalenderdatei (.ics), die sich in Outlook, Google Kalender oder Apple Kalender öffnen und weiterleiten lässt.
 
@@ -525,7 +562,7 @@ Die Beschreibung des Kalendertermins und der Text der Bestätigungsmail lassen s
 
 > **Tipp:** Nach dem Umstellen einmal einen Kalendertermin exportieren und in ClubDesk bzw. Outlook importieren, um zu sehen, wie er dort aussieht.
 
-## 13 · Personen und Stammdaten
+## 17 · Personen und Stammdaten
 
 ![Personen](bilder/16-personen.jpg)
 
@@ -545,7 +582,7 @@ Jede Person existiert genau einmal. Anmeldungen, Anfragen und Schichten verweise
 
 > **Sensible Angaben:** Essenseinschränkungen sieht vollständig nur der Admin; die Aufgebotsstelle sieht sie nur bei Personen, die für einen Einsatz angemeldet sind. Im Anmeldeformular werden solche Angaben nie abgefragt.
 
-## 14 · Für Admins
+## 18 · Für Admins
 
 Unter **Einstellungen** sorgt der Admin dafür, dass die Grundlagen stimmen.
 
@@ -562,10 +599,10 @@ Konten anlegen, Rolle wählen (Admin, Aufgebotsstelle oder Einsatzleiter) und mi
   - **Pflicht für dieses Konto:** Die Person muss die 2FA beim nächsten Login einrichten. Vorher kommt sie nirgends hin.
   - **Code verlangen:** bei jedem Login, oder einmal pro Tag, Woche, Monat bzw. 3 Monate pro Gerät. Gilt für alle, die 2FA eingerichtet haben – auch freiwillig.
   - **2FA zurücksetzen,** z. B. wenn jemand sein Handy verloren hat. Danach richtet die Person sie neu ein.
-- **Microsoft-Anmeldung** (nur sichtbar, wenn sie auf dem Server eingerichtet ist, mehr in Kapitel 16): E-Mail-Adresse des Microsoft-Kontos eintragen und «Mit dem Microsoft-Konto dieser E-Mail-Adresse anmelden erlaubt» ankreuzen. Beim ersten Login wird das Konto fest mit diesem Microsoft-Konto verknüpft. Häkchen entfernen oder E-Mail ändern löst die Verknüpfung.
+- **Microsoft-Anmeldung** (nur sichtbar, wenn sie auf dem Server eingerichtet ist, mehr in Kapitel 20): E-Mail-Adresse des Microsoft-Kontos eintragen und «Mit dem Microsoft-Konto dieser E-Mail-Adresse anmelden erlaubt» ankreuzen. Beim ersten Login wird das Konto fest mit diesem Microsoft-Konto verknüpft. Häkchen entfernen oder E-Mail ändern löst die Verknüpfung.
   - **Mit Benutzername und Passwort anmelden erlaubt:** Ausschalten heisst, dass die Person nur noch mit Microsoft hineinkommt. Mindestens eine Anmeldeart muss erlaubt bleiben. Das eigene Passwort-Login lässt sich erst abschalten, wenn man sich einmal erfolgreich mit Microsoft angemeldet hat.
   - **Notausgang:** Wird die Microsoft-Anmeldung auf dem Server ausgeschaltet (`AUTH_PROVIDERS=local` in der `.env`), gilt das Passwort wieder für alle.
-- **Rolle Einsatzleiter:** Das Konto sieht nur Einsätze, die die Aufgebotsstelle freigibt (Kapitel 5, «Einsatzleiter freigeben»). Verknüpft man das Konto mit der Person aus den Stammdaten, wird es bei Einsätzen mit dieser Einsatzleitung zum Freigeben vorgeschlagen. Wechselt das Konto später in eine andere Rolle, verfallen seine Freigaben.
+- **Rolle Einsatzleiter:** Das Konto sieht nur Einsätze, die die Aufgebotsstelle freigibt (Kapitel 15). Verknüpft man das Konto mit der Person aus den Stammdaten, wird es bei Einsätzen mit dieser Einsatzleitung zum Freigeben vorgeschlagen. Wechselt das Konto später in eine andere Rolle, verfallen seine Freigaben.
 - **Konto aktiv** ausschalten sperrt den Zugang, ohne Daten zu löschen.
 - **Benutzerkonto löschen** entfernt das Konto endgültig. Was die Person erfasst hat (Anmeldungen, Kontaktversuche, Verlauf), bleibt mit ihrem Namen erhalten, ebenso die verknüpfte Person in den Stammdaten. Das eigene Konto und den letzten aktiven Admin kann man nicht löschen.
 
@@ -591,7 +628,7 @@ Bei den Anmeldefragen legt die Spalte **Standard** fest, welche Vorlage bei jede
 
 ![Einstellungen › Bestätigungsmail](bilder/21-bestaetigungsmail.jpg)
 
-Betreff und Text der Anmeldebestätigung mit denselben Bausteinen wie im Kalendertermin. Der Text lässt sich formatieren – Schriftart, Grösse, Fett, Kursiv, Farben, Listen, Tabellen und Links (siehe «Texte formatieren» in Kapitel 12). Die Mail geht formatiert raus, mit einer Klartext-Fassung für Mailprogramme ohne HTML. Mit **Vorschau** für einen echten Einsatz prüfen und eine **Testmail** an sich selbst schicken. Der Haken «beim Bestätigen automatisch senden» schaltet den Versand ein oder aus. Ohne eingerichteten Mailserver bleiben die Mails im Postausgang (unter «Formulare») und gehen raus, sobald er eingerichtet ist.
+Betreff und Text der Anmeldebestätigung mit denselben Bausteinen wie im Kalendertermin. Der Text lässt sich formatieren – Schriftart, Grösse, Fett, Kursiv, Farben, Listen, Tabellen und Links (siehe «Texte formatieren» in Kapitel 16). Die Mail geht formatiert raus, mit einer Klartext-Fassung für Mailprogramme ohne HTML. Mit **Vorschau** für einen echten Einsatz prüfen und eine **Testmail** an sich selbst schicken. Der Haken «beim Bestätigen automatisch senden» schaltet den Versand ein oder aus. Ohne eingerichteten Mailserver bleiben die Mails im Postausgang (unter «Formulare») und gehen raus, sobald er eingerichtet ist.
 
 ### Einstellungen und Datensicherung
 
@@ -619,7 +656,7 @@ Betreff und Text der Anmeldebestätigung mit denselben Bausteinen wie im Kalende
 - **Einbettung in ClubDesk:** die feste Adresse des Formulars. Sie wird einmal im ClubDesk-Baustein eingebettet, danach ist auf ClubDesk nie wieder etwas zu tun.
 - **Postausgang:** versendete und wartende Anmeldebestätigungen.
 
-## 15 · Sicherheit und Zwei-Faktor-Anmeldung
+## 19 · Sicherheit und Zwei-Faktor-Anmeldung
 
 Mit der Zwei-Faktor-Anmeldung reicht das Passwort allein nicht mehr. Zusätzlich braucht es einen 6-stelligen Code, den nur das eigene Handy erzeugt. Wer das Passwort errät oder mitliest, kommt so trotzdem nicht hinein.
 
@@ -639,7 +676,7 @@ Mit der Zwei-Faktor-Anmeldung reicht das Passwort allein nicht mehr. Zusätzlich
 
 Weitere Schutzmassnahmen: Passwörter mit mindestens 10 Zeichen, sicher verschlüsselt gespeichert; Sperre nach 5 Fehlversuchen für 15 Minuten; automatische Abmeldung nach Inaktivität; jede Änderung ist vor fremden Seiten geschützt.
 
-## 16 · Microsoft-Anmeldung
+## 20 · Microsoft-Anmeldung
 
 Statt mit Benutzername und Passwort können sich Benutzer auch mit ihrem Microsoft-Konto anmelden, z. B. dem KKB-Konto von Microsoft 365. Wer hineindarf und mit welcher Rolle, bestimmt weiterhin der Einsatzplaner: Ein Microsoft-Konto allein öffnet nichts.
 
@@ -712,7 +749,7 @@ In der `.env` `AUTH_PROVIDERS=local` setzen und neu starten. Der Microsoft-Knopf
 | «Genehmigung erforderlich» (von Microsoft) | Die Organisation erlaubt die App nur mit Zustimmung eines Microsoft-Admins des Vereins. |
 | «Microsoft-Anmeldung fehlgeschlagen» | Meist ist der Schlüssel abgelaufen oder falsch eingetragen. Siehe «Schlüssel erneuern». |
 
-## 17 · Häufige Fragen
+## 21 · Häufige Fragen
 
 **Brauchen die Mitglieder ein Konto oder eine App?**
 Nein. Sie öffnen das Formular auf der ClubDesk-Seite, geben Vor- und Nachnamen ein und wählen ihre Einsätze – auf jedem Handy und Computer.
@@ -762,5 +799,8 @@ Nein. In der Übersicht des Einsatzes unter **Externe Abteilungen** nur die Abte
 **Funktioniert der Einsatzplaner auf dem Handy?**
 Ja. Er ist für den Computer gemacht, lässt sich aber auch auf Tablet und Handy bedienen – etwa um unterwegs einen Anruf zu erfassen.
 
+**Kann ich das Handbuch ausdrucken oder weiterschicken?**
+Ja. Auf der Seite «Handbuch» oben rechts **Als PDF** klicken. Es öffnet sich das gestaltete Handbuch mit Titelseite, Inhaltsverzeichnis und Seitenzahlen in einem neuen Tab; von dort drucken, speichern oder weiterschicken. Das Handbuch für Einsatzleiter gibt es genauso als eigenes PDF.
+
 **Woher weiss ich, ob dieses Handbuch aktuell ist?**
-Oben auf der Handbuch-Seite stehen Stand und Version. Das Handbuch wird mit jedem Update mitgeliefert und passt damit immer zur installierten Version.
+Oben auf der Handbuch-Seite stehen Stand und Version, im PDF steht der Stand auf der Titelseite. Das Handbuch und sein PDF werden mit jedem Update mitgeliefert und passen damit immer zur installierten Version.
