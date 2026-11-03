@@ -273,4 +273,8 @@ test('Rückmeldungen: eigene Icons und Verlauf löschen', () => {
   assert.deepEqual(history.forPair(offen, anna).map((e) => e.text), ['Anmeldung: Warteliste', 'Anmeldung: Bestätigt']);
   assert.equal(cell(anna).last.count, 2);
   assert.ok(db.one("SELECT 1 FROM audit_log WHERE action = 'history_clear' AND summary LIKE '%Verlauf von Anna Roth bis auf den neuesten Eintrag gelöscht%'"));
+  // Personenseite: gelöschte Einträge verschwinden auch dort
+  const audit = require('../src/services/audit');
+  const personLog = history.withoutCleared(audit.forPerson(anna)).filter((a) => a.event_id === offen).map((a) => a.action);
+  assert.deepEqual(personLog, ['status', 'history_clear', 'status']);
 });

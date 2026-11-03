@@ -216,4 +216,22 @@ function latestByPair(eventIds) {
   return out;
 }
 
-module.exports = { forPair, latestByPair, clear, entryFromAudit, SELF };
+/**
+ * Protokollzeilen (z. B. «Letzte Aktivität» einer Person) ohne die per «Verlauf löschen» gelöschten Einträge.
+ * Die Zeile «hat den Verlauf … gelöscht» selbst bleibt stehen.
+ */
+function withoutCleared(rows) {
+  const pairs = [...new Set(rows.filter((a) => a.event_id && a.person_id).map((a) => `${a.person_id}:${a.event_id}`))];
+  if (!pairs.length) return rows;
+  const clears = new Map();
+  for (const c of db.all(`SELECT id, event_id, person_id, details FROM audit_log WHERE action = ? ORDER BY id`, CLEAR)) {
+    clears.set(`${c.person_id}:${c.event_id}`, { id: c.id, keep: parse(c.details).behalten || '' });
+  }
+  return rows.filter((a) => {
+    if (a.action === CLEAR || !['registration', 'inquiry'].includes(a.entity_type)) return true;
+    const c = clears.get(`${a.person_id}:${a.event_id}`);
+    return !c || a.id > c.id || `a${a.id}` === c.keep;
+  });
+}
+
+module.exports = { forPair, latestByPair, clear, withoutCleared, entryFromAudit, SELF };
