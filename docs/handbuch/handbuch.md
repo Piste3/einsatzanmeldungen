@@ -80,7 +80,7 @@ Links steht die Navigation, rechts der Inhalt.
 - **Live:** Die grüne Anzeige «Live» oben bedeutet, dass sich die Seite von selbst aktualisiert, wenn jemand anderes etwas ändert. Während man selbst etwas eingibt, wartet die Aktualisierung und zeigt stattdessen «Es gibt neue Daten».
 - **Suchen beim Tippen:** Alle Suchfelder filtern sofort, Enter ist nicht nötig. Auswahlfelder wie Mannschaft oder Status wirken ebenfalls sofort.
 - **Auswahlfelder mit Suche:** Wo man eine Person oder einen Einsatz auswählt, kann man einfach tippen, z. B. «meier chr». Gross-/Kleinschreibung, Umlaute und die Reihenfolge der Wörter spielen keine Rolle.
-- **Sortierung nach Rang:** Personenlisten sind standardmässig vom höchsten zum tiefsten Rang sortiert, bei gleichem Rang nach Name. Im Auswahlfeld «Sortierung» lässt sich auf «Rang: tief → hoch» umschalten.
+- **Sortierung nach Rang:** Personenlisten sind standardmässig vom tiefsten zum höchsten Rang sortiert, bei gleichem Rang nach Name. Im Auswahlfeld «Sortierung» lässt sich auf «Rang: hoch → tief» umschalten.
 - **Die Stelle bleibt:** Nach dem Speichern kommt man an dieselbe Stelle der Seite zurück.
 - **Nichts geht verloren:** Hat ein anderer Teil der Seite noch ungespeicherte Eingaben, fragt der Einsatzplaner vor dem Speichern nach. Beim Verlassen einer Seite mit ungespeicherten Eingaben warnt der Browser.
 - **Gleichzeitig bearbeiten:** Bearbeitet jemand denselben Eintrag, steht oben ein Hinweis. Speichern zwei Personen gleichzeitig, zeigt der Einsatzplaner beide Stände an, statt still zu überschreiben.
@@ -275,7 +275,7 @@ Jede Anmeldung landet automatisch beim richtigen Einsatz – egal ob sie über d
 ![Einsatz › Anmeldungen](bilder/07-anmeldungen.jpg)
 
 - **Zähler pro Status** oben: ein Klick filtert die Liste.
-- **Sortierung:** «Rang: hoch → tief» (Standard), «Rang: tief → hoch», «Funktion, dann Rang» oder «neueste zuerst». Daneben das Suchfeld.
+- **Sortierung:** «Rang: tief → hoch» (Standard), «Rang: hoch → tief», «Funktion, dann Rang» oder «neueste zuerst». Daneben das Suchfeld.
 - **Funktionen (Ist/Soll)** stehen über der Tabelle (pro Schicht), sobald beim Einsatz EL, SC oder BF vorkommen.
 - **Spalte «Funktion»:** EL, SC, BF oder TN direkt umstellen (Kapitel 6).
 - **Sammelaktionen:** mehrere Anmeldungen ankreuzen und gemeinsam bestätigen, den Status ändern, eine **Funktion zuweisen** oder exportieren.
@@ -405,7 +405,7 @@ Eine Karte pro Einsatz mit den Namen, gruppiert nach An, Unsicher, Ab und Offen.
 
 ### Filter
 
-Namenssuche, Zeitraum (nächste 2 Wochen bis nächstes Jahr), Mannschaft, «Nur mit offenen Einsätzen» oder «Nur mit Unsicheren», Sortierung (Rang hoch → tief oder tief → hoch, nach Name, meiste offen zuerst) und «Entwürfe» einblenden.
+Namenssuche, Zeitraum (nächste 2 Wochen bis nächstes Jahr), Mannschaft, «Nur mit offenen Einsätzen» oder «Nur mit Unsicheren», Sortierung (Rang tief → hoch oder hoch → tief, nach Name, meiste offen zuerst) und «Entwürfe» einblenden.
 
 | Anzeige | Bedeutung |
 |---|---|
@@ -427,7 +427,7 @@ Namenssuche, Zeitraum (nächste 2 Wochen bis nächstes Jahr), Mannschaft, «Nur 
 
 ## 14 · Die Teilnehmerliste
 
-Die Teilnehmerliste zeigt auf einen Blick, wer kommt – mit **Rang, Name, Mobilnummer und Essenseinschränkungen**, der höchste Rang zuerst. Sie ist das, was die Einsatzleitung und die Küche brauchen.
+Die Teilnehmerliste zeigt auf einen Blick, wer kommt – mit **Rang, Name, Mobilnummer und Essenseinschränkungen**, der tiefste Rang zuerst. Sie ist das, was die Einsatzleitung und die Küche brauchen.
 
 ![Einsatz › Teilnehmerliste als PDF](bilder/35-teilnehmerliste.jpg)
 
@@ -448,7 +448,7 @@ Der kleine Pfeil **▾** neben dem Knopf bietet die Liste auch als **Excel** ode
 
 - **Wer steht drauf:** «Angemeldete» (neu, Rückfrage und bestätigt – wie die Besetzung), «Nur bestätigte» oder «Angemeldete + Warteliste». Abmeldungen, Absagen und ungültige Anmeldungen stehen nie drauf.
 - **Schicht:** Hat der Einsatz mehrere Schichten, lässt sich die Liste auf eine Schicht einschränken; dann erscheinen auch nur die externen Abteilungen dieser Schicht. Sonst zeigt eine Spalte, wer in welcher Schicht ist.
-- **Sortierung:** Rang hoch → tief oder tief → hoch, innerhalb des Rangs alphabetisch, oder **Funktion, dann Rang** (EL, SC, BF zuerst, dann die Einsatzteilnehmer).
+- **Sortierung:** Rang tief → hoch (Standard) oder hoch → tief, innerhalb des Rangs alphabetisch, oder **Funktion, dann Rang** (EL, SC, BF zuerst, dann die Einsatzteilnehmer).
 - **PDF öffnen**, **Excel** und **CSV** übernehmen genau diese Auswahl.
 
 Anmeldungen, die noch keiner Person zugeordnet sind, fehlen in der Liste. Die Seite «Auswahl anpassen» weist mit einem Link zu den Klärungen darauf hin. Jedes PDF und jeder Download wird im Verlauf des Einsatzes festgehalten.
@@ -484,7 +484,7 @@ Ein Klick auf den Einsatz zeigt:
 - **Angaben:** Datum, Antreten und Abtreten, Einsatzleitung, Tenue, Beschreibung.
 - **Schichten** mit Zeiten und Besetzung (Ist / Soll), dazu die externen Abteilungen.
 - **Funktionen** mit Ist / Soll pro Schicht und wer welche Funktion hat.
-- **Teilnehmer** mit Funktion, Rang, Mobilnummer, Essenseinschränkungen, Schicht und Status, der höchste Rang zuerst. Auswahl wie bei der Teilnehmerliste: «Angemeldete», «Nur bestätigte» oder «Angemeldete + Warteliste», einzelne Schicht, Sortierung.
+- **Teilnehmer** mit Funktion, Rang, Mobilnummer, Essenseinschränkungen, Schicht und Status, der tiefste Rang zuerst. Auswahl wie bei der Teilnehmerliste: «Angemeldete», «Nur bestätigte» oder «Angemeldete + Warteliste», einzelne Schicht, Sortierung.
 - Oben **Teilnehmerliste (PDF)**, **Excel** und **CSV** – genau mit der gewählten Auswahl.
 
 ![Einsatz aus Sicht des Einsatzleiters](bilder/39-einsatzleiter-einsatz.jpg)
@@ -568,7 +568,7 @@ Die Beschreibung des Kalendertermins und der Text der Bestätigungsmail lassen s
 
 Jede Person existiert genau einmal. Anmeldungen, Anfragen und Schichten verweisen nur auf sie.
 
-- **Suche** nach Name, E-Mail oder Mobilnummer (auch Namensvarianten), Filter nach Mannschaft, Rang und Status, Sortierung nach Rang (hoch → tief oder tief → hoch) oder Name.
+- **Suche** nach Name, E-Mail oder Mobilnummer (auch Namensvarianten), Filter nach Mannschaft, Rang und Status, Sortierung nach Rang (tief → hoch oder hoch → tief) oder Name.
 - **+ Neue Person** und **Bearbeiten** öffnen das Personenformular mit Rang, Mannschaften, Jahrgang, Mobil, E-Mail, Essenseinschränkungen und interner Bemerkung.
 - **Namensvarianten** wie «Chrigi» werden bei der Person gespeichert und bei Anmeldungen automatisch erkannt.
 - **Status setzen** für mehrere ausgewählte Personen (aktiv, inaktiv, ausgetreten). Inaktive erscheinen nirgends mehr als Vorschlag.

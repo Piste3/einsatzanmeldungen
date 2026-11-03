@@ -12,7 +12,7 @@
     <% } %>
   </div>
   <div class="row">
-    <select name="sort" form="anm-filter" aria-label="Sortierung" style="width:auto"><option value="rang" <%= filters.sort === 'rang' ? 'selected' : '' %>>Rang: hoch → tief</option><option value="rang_auf" <%= filters.sort === 'rang_auf' ? 'selected' : '' %>>Rang: tief → hoch</option><option value="funktion" <%= filters.sort === 'funktion' ? 'selected' : '' %>>Funktion, dann Rang</option><option value="neu" <%= filters.sort === 'neu' ? 'selected' : '' %>>neueste zuerst</option></select>
+    <select name="sort" form="anm-filter" aria-label="Sortierung" style="width:auto"><option value="rang" <%= filters.sort === 'rang' ? 'selected' : '' %>>Rang: tief → hoch</option><option value="rang_ab" <%= filters.sort === 'rang_ab' ? 'selected' : '' %>>Rang: hoch → tief</option><option value="funktion" <%= filters.sort === 'funktion' ? 'selected' : '' %>>Funktion, dann Rang</option><option value="neu" <%= filters.sort === 'neu' ? 'selected' : '' %>>neueste zuerst</option></select>
     <form method="get" action="<%= base %>" class="search" id="anm-filter" data-autosubmit><input type="hidden" name="status" value="<%= filters.status %>"><input type="search" name="q" value="<%= filters.q %>" placeholder="Filtern …"></form>
     <button class="btn btn-sm" type="button" data-open-dialog="add-reg">+ Anmeldung erfassen</button>
   </div>

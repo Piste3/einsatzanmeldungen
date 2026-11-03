@@ -49,7 +49,7 @@ Gibt dir die Aufgebotsstelle einen weiteren Einsatz frei, erscheint er sofort in
 
 **Funktionen:** Hat die Aufgebotsstelle festgelegt, wie viele Einsatzleiter (EL), Sektorchefs (SC), Busfahrer (BF) und Einsatzteilnehmer (TN) es braucht, zeigt diese Karte pro Schicht und Funktion Ist / Soll, z. B. «SC 1 / 2 · 1 fehlt», und wer eingeteilt ist. Die Funktion einer Person gilt in allen ihren Schichten. Wer keine Funktion hat, zählt als Einsatzteilnehmer. Eingeteilt wird von der Aufgebotsstelle.
 
-**Teilnehmer:** Die Tabelle unten zeigt, wer kommt, der höchste Rang zuerst.
+**Teilnehmer:** Die Tabelle unten zeigt, wer kommt, der tiefste Rang zuerst.
 
 | Spalte | Bedeutung |
 |---|---|
@@ -66,7 +66,7 @@ Unter der Tabelle stehen die **externen Abteilungen** (Leute anderer Abteilungen
 
 - **Wer steht drauf:** «Angemeldete» (Standard: neu, Rückfrage und bestätigt), «Nur bestätigte» oder «Angemeldete + Warteliste». Abmeldungen und Absagen stehen nie drauf.
 - **Schicht:** Bei mehreren Schichten lässt sich die Liste auf eine Schicht einschränken.
-- **Sortierung:** «Rang: hoch → tief» oder «Rang: tief → hoch», innerhalb des Rangs alphabetisch, oder «Funktion, dann Rang» (EL, SC, BF zuerst).
+- **Sortierung:** «Rang: tief → hoch» (Standard) oder «Rang: hoch → tief», innerhalb des Rangs alphabetisch, oder «Funktion, dann Rang» (EL, SC, BF zuerst).
 
 Die Seite aktualisiert sich von selbst, sobald die Aufgebotsstelle etwas ändert – die grüne Anzeige **Live** oben rechts zeigt das an. Du musst nicht neu laden.
 

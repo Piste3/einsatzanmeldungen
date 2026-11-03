@@ -31,7 +31,7 @@
     </div>
     <% if (kind === 'externe') { %><div class="card-body small muted">Andere Abteilungen oder Vereine, die bei Einsätzen mithelfen. Beim Einsatz kann man auch direkt einen neuen Namen eintippen – er landet dann hier. Inaktive Abteilungen werden beim Einsatz nicht mehr vorgeschlagen.</div><% } %>
     <% if (kind === 'funktionen') { %><div class="card-body small muted">Pro Einsatz legst du fest, wie viele es von jeder Funktion braucht, und weist sie den Angemeldeten zu. Wer keine Funktion zugewiesen hat, zählt als <strong>Standard</strong> (Einsatzteilnehmer). Kleine Zahl bei der Reihenfolge = weiter oben. Nicht zu verwechseln mit der Benutzer-Rolle «Einsatzleiter» (Login).</div><% } %>
-    <% if (kind === 'raenge') { %><div class="card-body small muted">Die Reihenfolge bestimmt die Sortierung: kleine Zahl = tiefer Rang. Listen zeigen die Personen standardmässig vom höchsten zum tiefsten Rang.</div><% } %>
+    <% if (kind === 'raenge') { %><div class="card-body small muted">Die Reihenfolge bestimmt die Sortierung: kleine Zahl = tiefer Rang. Listen zeigen die Personen standardmässig vom tiefsten zum höchsten Rang.</div><% } %>
     <%- include('_section-foot') %>
   </form>
   <% } %>

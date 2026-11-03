@@ -207,7 +207,7 @@ router.post('/einsaetze/:id/externe/:xid/loeschen', loadEvent, (req, res) => {
 // Reiter «Anmeldungen»
 router.get('/einsaetze/:id/anmeldungen', loadEvent, (req, res) => {
   const e = req.event;
-  const filters = { status: req.query.status || '', q: req.query.q || '', sort: ['neu', 'rang_auf', 'funktion'].includes(req.query.sort) ? req.query.sort : 'rang' };
+  const filters = { status: req.query.status || '', q: req.query.q || '', sort: ['neu', 'rang_ab', 'funktion'].includes(req.query.sort) ? req.query.sort : 'rang' };
   const list = registrations.listForEvent(e.id, filters);
   const canSeeDiet = (r) => r.person_id && persons.canSeeDiet(req.user, r.person_id);
   const dietOf = (r) => {
@@ -287,7 +287,7 @@ router.get('/einsaetze/:id/teilnehmerliste', loadEvent, (req, res) => {
       title: `Teilnehmerliste · ${e.name}${shift ? ` · ${shift.name}` : ''}`,
       subtitle: [
         [h.fmtDateWd(e.date), e.start_time ? `Antreten ${e.start_time}${e.start_place ? ` · ${e.start_place}` : ''}` : '', leader].filter(Boolean).join('  ·  '),
-        `${registrations.PARTICIPANT_SCOPES[filters.umfang].label} · ${list.length} ${list.length === 1 ? 'Person' : 'Personen'}${extTotal ? ` + ${extTotal} extern = ${list.length + extTotal} total` : ''} · ${{ rang_auf: 'tiefster Rang zuerst', funktion: 'nach Funktion, dann Rang' }[filters.sort] || 'höchster Rang zuerst'}`,
+        `${registrations.PARTICIPANT_SCOPES[filters.umfang].label} · ${list.length} ${list.length === 1 ? 'Person' : 'Personen'}${extTotal ? ` + ${extTotal} extern = ${list.length + extTotal} total` : ''} · ${{ rang_ab: 'höchster Rang zuerst', funktion: 'nach Funktion, dann Rang' }[filters.sort] || 'tiefster Rang zuerst'}`,
         ...(showFunction ? [`Funktionen (Ist/Soll): ${functions.line(fnSummary)}`] : []),
       ],
       columns,
@@ -342,7 +342,7 @@ router.get('/einsaetze/:id/teilnehmerliste', loadEvent, (req, res) => {
 // Reiter «Anfragen»
 router.get('/einsaetze/:id/anfragen', loadEvent, (req, res) => {
   const e = req.event;
-  const filters = { status: req.query.status || '', team: req.query.team || '', q: req.query.q || '', sort: req.query.sort === 'rang_auf' ? 'rang_auf' : 'rang' };
+  const filters = { status: req.query.status || '', team: req.query.team || '', q: req.query.q || '', sort: req.query.sort === 'rang_ab' ? 'rang_ab' : 'rang' };
   const list = inquiries.listForEvent(e.id, filters);
   const format = wantsExport(req);
   if (format) {

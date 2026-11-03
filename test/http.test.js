@@ -180,14 +180,17 @@ test('Teilnehmerliste: nach Rang, mit Mobil und Essenseinschränkungen, als Seit
   await users.create({ username: 'mara', display_name: 'Mara', role: 'aufgebotsstelle', password: 'Aufgebot-2026-m', must_change_password: false }, null);
   const mara = await login('mara', 'Aufgebot-2026-m');
   const html = await (await get(`/einsaetze/${ev}/teilnehmerliste`, mara.cookie)).text();
-  const order = ['Hans Haupt', 'Willi Wacht', 'Sina Soldat'].map((n) => html.indexOf(n));
-  assert.ok(order.every((i) => i > 0) && order[0] < order[1] && order[1] < order[2], 'höchster Rang zuerst');
+  const order = ['Sina Soldat', 'Willi Wacht', 'Hans Haupt'].map((n) => html.indexOf(n));
+  assert.ok(order.every((i) => i > 0) && order[0] < order[1] && order[1] < order[2], 'Standard: tiefster Rang zuerst');
+  const ab = await (await get(`/einsaetze/${ev}/teilnehmerliste?sort=rang_ab`, mara.cookie)).text();
+  const orderAb = ['Hans Haupt', 'Willi Wacht', 'Sina Soldat'].map((n) => ab.indexOf(n));
+  assert.ok(orderAb.every((i) => i > 0) && orderAb[0] < orderAb[1] && orderAb[1] < orderAb[2], 'umgeschaltet: höchster Rang zuerst');
   assert.doesNotMatch(html, /Abi Gemeldet/, 'Abmeldungen stehen nicht auf der Liste');
   assert.match(html, /079 999 88 77/);
   assert.match(html, /Allergie<\/strong>: Nüsse/, 'Aufgebotsstelle sieht die Angaben der Angemeldeten');
   assert.match(html, /1 Allergie · 1 vegetarisch · 1 ohne Einschränkung/);
 
-  const auf = await (await get(`/einsaetze/${ev}/teilnehmerliste?sort=rang_auf&umfang=bestaetigt`, mara.cookie)).text();
+  const auf = await (await get(`/einsaetze/${ev}/teilnehmerliste?sort=rang_ab&umfang=bestaetigt`, mara.cookie)).text();
   assert.match(auf, /Hans Haupt/);
   assert.doesNotMatch(auf, /Sina Soldat/, 'nur bestätigte');
 
@@ -195,7 +198,8 @@ test('Teilnehmerliste: nach Rang, mit Mobil und Essenseinschränkungen, als Seit
   assert.match(csv.headers.get('content-disposition'), /Teilnehmerliste_Zolli-Fest/);
   const lines = (await csv.text()).replace(/^﻿/, '').trim().split(/\r?\n/);
   assert.match(lines[0], /Nr\.;Rang;Nachname;Vorname;Mobil;Essenseinschränkung;Details;Status/);
-  assert.match(lines[1], /^1;Hptm;Haupt;Hans;079 999 88 77;Allergie;Nüsse;Bestätigt$/);
+  assert.match(lines[1], /^1;Sdt;Soldat;Sina;079 111 22 33;vegetarisch;;Neu$/);
+  assert.match(lines[3], /^3;Hptm;Haupt;Hans;079 999 88 77;Allergie;Nüsse;Bestätigt$/);
   assert.equal(lines.length, 4);
   const xlsx = await get(`/einsaetze/${ev}/teilnehmerliste?format=xlsx`, mara.cookie);
   assert.equal(xlsx.status, 200);

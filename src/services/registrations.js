@@ -22,10 +22,10 @@ const SELECT = `
   LEFT JOIN ranks r ON r.id = p.rank_id
   LEFT JOIN functions f ON f.id = g.function_id`;
 
-// Sortierung: Rang (Standard), Rang aufsteigend oder Funktion (EL, SC, BF … zuerst), dann Rang
+// Sortierung: Rang tief → hoch (Standard), Rang hoch → tief oder Funktion (EL, SC, BF … zuerst), dann Rang
 const BY_FUNCTION = 'coalesce(f.sort, (SELECT min(sort) FROM functions WHERE is_default = 1), 999), coalesce(f.id, 0)';
 const orderFor = (sort) => (sort === 'funktion' ? `${BY_FUNCTION}, ${rankOrder('rang')}` : rankOrder(sort));
-const SORTS = ['rang', 'rang_auf', 'funktion'];
+const SORTS = ['rang', 'rang_ab', 'funktion'];
 
 function hydrate(rows) {
   if (!rows.length) return rows;
@@ -108,7 +108,7 @@ function participantView(e, query, user) {
   const filters = {
     umfang: PARTICIPANT_SCOPES[query.umfang] ? query.umfang : 'angemeldet',
     schicht: shift ? shift.id : '',
-    sort: SORTS.includes(query.sort) ? query.sort : 'rang',
+    sort: SORTS.includes(query.sort) ? query.sort : 'rang', // «rang_auf» aus alten Links landet so beim Standard
   };
   const list = participants(e.id, { scope: filters.umfang, shiftId: shift?.id, sort: filters.sort }, user);
   const shiftOf = (r) => (r.assigned.length ? r.assigned.map((a) => a.name).join(' + ')
