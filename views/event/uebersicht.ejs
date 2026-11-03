@@ -2,27 +2,89 @@
   const s = stats;
   const nextStatus = { entwurf: [['veroeffentlicht', 'Veröffentlichen', 'btn-primary'], ['abgesagt', 'Absagen', 'btn-danger']], veroeffentlicht: [['abgeschlossen', 'Abschliessen', ''], ['entwurf', 'Zurück auf Entwurf', ''], ['abgesagt', 'Absagen', 'btn-danger']], abgesagt: [['entwurf', 'Wieder auf Entwurf setzen', '']], abgeschlossen: isAdmin ? [['veroeffentlicht', 'Wieder öffnen (Admin)', '']] : [] }[event.status] || [];
 %>
-<div class="grid grid-4 mb">
-  <a class="card kpi" href="/einsaetze/<%= event.id %>/anmeldungen?status=neu"><div class="label">Neu eingegangen</div><div class="value"><%= s.neu %></div><div class="sub">noch nicht bestätigt</div></a>
-  <a class="card kpi" href="/einsaetze/<%= event.id %>/anmeldungen?status=zu_pruefen"><div class="label">Zu prüfen</div><div class="value orange"><%= s.zuPruefen %></div><div class="sub">unsicher oder Rückfrage</div></a>
-  <a class="card kpi" href="/einsaetze/<%= event.id %>/anmeldungen?status=bestaetigt"><div class="label">Bestätigt</div><div class="value"><%= s.bestaetigt %></div><div class="sub">von <%= s.total %> Anmeldungen</div></a>
-  <a class="card kpi" href="/einsaetze/<%= event.id %>/anfragen"><div class="label">Ohne Rückmeldung</div><div class="value"><%= s.offen %></div><div class="sub"><%= s.inquiryOpen %> angefragt, nicht erreicht</div></a>
+<%
+  // Lage: was fehlt noch? Pro Schicht die Funktionen mit Lücken, sonst die Schicht als Ganzes
+  const multiDay = h.isMultiDay(event);
+  const gaps = [];
+  const overs = [];
+  for (const sh of fnSummary.shifts) {
+    const miss = sh.rows.filter((f) => f.missing > 0).map((f) => `${f.missing} ${f.short}`);
+    if (miss.length) gaps.push({ shift: sh.name, text: miss.join(', ') });
+    const more = sh.rows.filter((f) => f.over > 0).map((f) => `${f.over} ${f.short}`);
+    if (more.length) overs.push({ shift: sh.name, text: more.join(', ') });
+  }
+  if (!fnSummary.hasTargets) for (const sh of s.shifts) if (sh.missing) gaps.push({ shift: sh.name, text: `${sh.missing} Personen` });
+  const noSoll = !s.shifts.some((sh) => sh.soll);
+  const lage = noSoll ? { tone: 'gray', text: 'Noch kein Soll festgelegt' } : gaps.length ? { tone: 'yellow', text: 'Es fehlen noch Leute' } : { tone: 'green', text: 'Alle Schichten sind besetzt' };
+  // Besetzung als Tabelle: Zeilen = Funktionen, Spalten = Schichten
+  const fnRows = [];
+  for (const sh of fnSummary.shifts) for (const f of sh.rows) if (!fnRows.some((x) => x.id === f.id)) fnRows.push(f);
+  const cell = (sh, f) => sh.rows.find((x) => x.id === f.id);
+  const occText = (c) => (!c ? '–' : `${c.ist} / ${c.soll ?? '–'}`);
+  const occNote = (c) => (!c || !c.soll ? '' : c.over ? `${c.over} zu viel` : c.missing ? `${c.missing} ${c.missing === 1 ? 'fehlt' : 'fehlen'}` : 'voll');
+%>
+<div class="card mb lage">
+  <div class="lage-main">
+    <span class="lage-dot dot-<%= lage.tone %>" aria-hidden="true"></span>
+    <div>
+      <strong><%= lage.text %></strong>
+      <% if (gaps.length) { %><div class="small muted"><%= gaps.map((g) => (fnSummary.shifts.length > 1 ? `${g.shift}: ${g.text}` : g.text)).join(' · ') %></div><% } %>
+      <% if (overs.length) { %><div class="small muted">Mehr als nötig: <%= overs.map((g) => (fnSummary.shifts.length > 1 ? `${g.shift} ${g.text}` : g.text)).join(' · ') %></div><% } %>
+      <% if (noSoll) { %><div class="small muted"><a class="link" href="/einsaetze/<%= event.id %>/bearbeiten#funktionen">Soll pro Schicht festlegen</a></div><% } %>
+    </div>
+  </div>
+  <div class="lage-counts">
+    <a href="/einsaetze/<%= event.id %>/anmeldungen?status=neu"><strong><%= s.neu %></strong> neu</a>
+    <a href="/einsaetze/<%= event.id %>/anmeldungen?status=zu_pruefen" class="<%= s.zuPruefen ? 'warn' : '' %>"><strong><%= s.zuPruefen %></strong> zu prüfen</a>
+    <a href="/einsaetze/<%= event.id %>/anmeldungen?status=bestaetigt"><strong><%= s.bestaetigt %></strong> von <%= s.total %> bestätigt</a>
+    <a href="/einsaetze/<%= event.id %>/anfragen"><strong><%= s.offen %></strong> ohne Rückmeldung</a>
+  </div>
 </div>
 <div class="grid grid-main">
   <div class="stack">
-    <div class="card">
-      <div class="card-head"><h2>Besetzung</h2><a class="small" href="/einsaetze/<%= event.id %>/schichten">Schichten →</a></div>
-      <div class="card-body">
-        <% for (const sh of s.shifts) { %>
-          <div class="occ">
-            <div class="occ-head"><span><strong><%= sh.name %></strong> · <%= h.fmtShiftWhen(sh, h.isMultiDay(event)) || 'Zeit offen' %></span><strong><%= sh.ist %> / <%= sh.soll ?? '–' %><%= sh.missing ? ` · ${sh.missing} fehlen` : (sh.soll && sh.ist >= sh.soll ? ' · voll' : '') %></strong></div>
-            <div class="bar <%= sh.tone %>"><span style="width:<%= h.pct(sh.ist, sh.soll) %>%"></span></div>
-            <% if (sh.extern) { %><div class="small muted ext-split"><%= sh.intern %> eigene + <%= sh.extern %> extern</div><% } %>
-          </div>
-        <% } %>
+    <div class="card" id="besetzung">
+      <div class="card-head"><h2>Besetzung <span class="hint">Ist / Soll</span></h2><a class="small no-print" href="/einsaetze/<%= event.id %>/schichten#funktionen">Einteilen →</a></div>
+      <div class="table-wrap">
+        <table class="occ-table no-cards">
+          <thead>
+            <tr><th>Funktion</th><% for (const sh of fnSummary.shifts) { %><th class="right"><%= sh.name %><span class="sub"><%= h.fmtShiftWhen(sh, multiDay) || 'Zeit offen' %></span></th><% } %></tr>
+          </thead>
+          <tbody>
+            <% for (const f of fnRows) { %>
+              <tr>
+                <td><span class="fn-tag<%= f.is_default ? ' fn-default' : '' %>"><%= f.short %></span> <%= f.name %></td>
+                <% for (const sh of fnSummary.shifts) { const c = cell(sh, f); %>
+                  <td class="right nowrap"><% if (c) { %><span class="occ-cell"><span class="occ-n"><%= occText(c) %></span><span class="occ-note tone-<%= c.tone %>"><%= occNote(c) %></span></span><% } else { %><span class="muted">–</span><% } %></td>
+                <% } %>
+              </tr>
+            <% } %>
+            <% if (!fnRows.length) { %><tr><td colspan="<%= fnSummary.shifts.length + 1 %>" class="empty">Noch kein Soll und noch niemand zugeteilt.</td></tr><% } %>
+          </tbody>
+          <tfoot>
+            <tr><td>Total</td><% for (const sh of s.shifts) { %><td class="right">
+              <div class="occ-total"><strong><%= sh.ist %> / <%= sh.soll ?? '–' %></strong><% if (sh.extern) { %><span class="small muted"><%= sh.intern %> eigene + <%= sh.extern %> extern</span><% } %></div>
+              <div class="bar <%= sh.tone %>"><span style="width:<%= h.pct(sh.ist, sh.soll) %>%"></span></div>
+            </td><% } %></tr>
+          </tfoot>
+        </table>
       </div>
     </div>
-    <%- include('_functions', { fnSummary, assignable, functionOptions, editable: true }) %>
+    <div class="card" id="angaben">
+      <div class="card-head"><h2>Angaben</h2><a class="small no-print" href="/einsaetze/<%= event.id %>/bearbeiten">Bearbeiten →</a></div>
+      <div class="card-body">
+        <dl class="kv left">
+          <dt>Datum</dt><dd><% if (event.date_from) { %><%= h.fmtEventDate(event, 'long') %><% if (!event.date) { %> <span class="muted small">· aus den Schichten</span><% } %><% } else { %><span class="muted">offen – Datum beim Einsatz oder bei den <a class="link" href="/einsaetze/<%= event.id %>/schichten">Schichten</a> eintragen</span><% } %></dd>
+          <dt>Antreten</dt><dd><%= event.start_time || '–' %><%= event.start_place ? ` · ${event.start_place}` : '' %></dd>
+          <dt>Abtreten</dt><dd><%= event.end_time || '–' %><%= (event.end_place || event.start_place) ? ` · ${event.end_place || event.start_place}` : '' %></dd>
+          <dt>Einsatzleitung</dt><dd><%= event.leader_last ? `${event.leader_rank || ''} ${event.leader_first} ${event.leader_last}`.trim() + (event.leader_mobile ? ` (${event.leader_mobile})` : '') : '–' %></dd>
+          <dt>Tenue</dt><dd class="pre"><%= event.tenue || '–' %></dd>
+          <dt>Beschreibung</dt><dd class="pre"><%= event.description || '–' %></dd>
+          <% for (const d of extraDefs) { %><dt><%= d.name %></dt><dd><%= (event.extra || {})[d.name] || '–' %></dd><% } %>
+          <dt>Interne Bemerkung</dt><dd class="pre"><%= event.internal_note || '–' %></dd>
+          <dt>Aufgebot</dt><dd><%= event.calendar_sent_at ? `Kalendertermin exportiert ${h.fmtDateTime(event.calendar_sent_at)}` : 'noch nicht exportiert' %></dd>
+        </dl>
+      </div>
+    </div>
     <% const extTotal = externals.reduce((a, x) => a + x.person_count, 0); const multiShift = event.shifts.length > 1; %>
     <div class="card" id="externe">
       <div class="card-head"><h2>Externe Abteilungen <span class="hint">nur Anzahl Personen, ohne Namen</span></h2><% if (extTotal) { %><strong class="small"><%= h.plural(extTotal, 'Person', 'Personen') %></strong><% } %></div>
@@ -49,27 +111,6 @@
       </details>
       <datalist id="ext-units"><% for (const u of unitOptions) { %><option value="<%= u.name %>"></option><% } %></datalist>
     </div>
-    <div class="card">
-      <div class="card-head"><h2>Angaben</h2></div>
-      <div class="card-body">
-        <dl class="kv left">
-          <dt>Datum</dt><dd><% if (event.date_from) { %><%= h.fmtEventDate(event, 'long') %><% if (!event.date) { %> <span class="muted small">· aus den Schichten</span><% } %><% } else { %><span class="muted">offen – Datum beim Einsatz oder bei den <a class="link" href="/einsaetze/<%= event.id %>/schichten">Schichten</a> eintragen</span><% } %></dd>
-          <dt>Antreten</dt><dd><%= event.start_time || '–' %><%= event.start_place ? ` · ${event.start_place}` : '' %></dd>
-          <dt>Abtreten</dt><dd><%= event.end_time || '–' %><%= (event.end_place || event.start_place) ? ` · ${event.end_place || event.start_place}` : '' %></dd>
-          <dt>Einsatzleitung</dt><dd><%= event.leader_last ? `${event.leader_rank || ''} ${event.leader_first} ${event.leader_last}`.trim() + (event.leader_mobile ? ` (${event.leader_mobile})` : '') : '–' %></dd>
-          <dt>Tenue</dt><dd class="pre"><%= event.tenue || '–' %></dd>
-          <dt>Beschreibung</dt><dd class="pre"><%= event.description || '–' %></dd>
-          <% for (const d of extraDefs) { %><dt><%= d.name %></dt><dd><%= (event.extra || {})[d.name] || '–' %></dd><% } %>
-          <dt>Interne Bemerkung</dt><dd class="pre"><%= event.internal_note || '–' %></dd>
-          <dt>Aufgebot</dt><dd><%= event.calendar_sent_at ? `Kalendertermin exportiert ${h.fmtDateTime(event.calendar_sent_at)}` : 'noch nicht exportiert' %></dd>
-        </dl>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-head"><h2>Letzte Aktivität</h2><a class="small" href="/einsaetze/<%= event.id %>/verlauf">Verlauf →</a></div>
-      <% if (!activity.length) { %><div class="empty">Noch keine Aktivität.</div><% } %>
-      <% for (const a of activity) { %><div class="activity" data-row-id="a<%= a.id %>"><time><%= h.fmtRelative(a.created_at) %></time> <%= a.summary %></div><% } %>
-    </div>
   </div>
   <div class="stack">
     <div class="card">
@@ -86,9 +127,7 @@
         <% } %>
         </div>
       </div>
-    </div>
-    <div class="card">
-      <div class="card-body">
+      <div class="card-body sep-top">
         <form method="post" action="/einsaetze/<%= event.id %>/formular" class="switch" data-autosubmit>
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <input type="hidden" name="show_in_form" value="<%= event.show_in_form ? '0' : '1' %>">
@@ -144,12 +183,14 @@
       </div>
     </div>
     <div class="card">
-      <div class="card-head"><h2>Checkliste</h2></div>
+      <% const openItems = checklist.filter((c) => !c.done); %>
+      <div class="card-head"><h2>Checkliste <span class="hint"><%= checklist.length - openItems.length %> von <%= checklist.length %> erledigt</span></h2></div>
       <div class="card-body">
         <ul class="checklist">
-          <% for (const c of checklist) { %><li class="<%= c.done ? 'done' : 'open' %>"><span class="dot"><%= c.done ? '✓' : '' %></span><%= c.label %></li><% } %>
+          <% for (const c of openItems) { %><li class="open"><span class="dot"></span><%= c.label %></li><% } %>
+          <% if (!openItems.length) { %><li class="done"><span class="dot">✓</span>Alles erledigt</li><% } %>
         </ul>
-        <a class="btn btn-sm mt-s" href="/einsaetze/<%= event.id %>/bearbeiten">Angaben ergänzen</a>
+        <% if (openItems.length) { %><a class="btn btn-sm mt-s" href="/einsaetze/<%= event.id %>/bearbeiten">Angaben ergänzen</a><% } %>
       </div>
     </div>
   </div>

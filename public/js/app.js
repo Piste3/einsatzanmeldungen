@@ -1122,7 +1122,7 @@
 
   // Handy: Tabellen als Karten. Jede Zelle bekommt den Spaltentitel als Beschriftung; die erste Inhaltsspalte ist der Titel der Karte.
   function cardTable(table) {
-    if (table.classList.contains('matrix') || table.closest('.prose, dialog, .rte-area, .rich') || table.dataset.cardsDone) return;
+    if (table.classList.contains('matrix') || table.classList.contains('no-cards') || table.closest('.prose, dialog, .rte-area, .rich') || table.dataset.cardsDone) return;
     const heads = $$('thead th', table);
     if (!heads.length) return;
     const labels = heads.map((th) => th.textContent.trim());

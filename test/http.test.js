@@ -477,12 +477,18 @@ test('Funktionen: Soll pro Einsatz festlegen, zuweisen, Ist/Soll und Teilnehmerl
   registrations.setShifts(reg.marco, [sh1.id], system);
   events.deleteShift(sh2.id, system);
 
-  // Übersicht: Karte «Funktionen», Vorschlag für den Einsatzleiter-Zugriff (Konto der Person mit Funktion EL)
+  // Übersicht: Besetzung als Tabelle Funktion × Schicht, Lage oben, Vorschlag für den Einsatzleiter-Zugriff (Konto der Person mit Funktion EL)
   await users.create({ username: 'marco2', display_name: 'Marco Leit', role: 'einsatzleiter', person_id: ids.marco, password: 'Kommando-Marco-2026', must_change_password: false }, null);
   const over = await (await get(`/einsaetze/${ev}`, auf.cookie)).text();
-  assert.match(over, /id="funktionen"/);
-  assert.match(over, /1 \/ 2 · 1 fehlt/);
-  assert.match(over, /2 \/ 1 · 1 zu viel/);
+  assert.match(over, /id="besetzung"/);
+  assert.match(over, /Es fehlen noch Leute/);
+  assert.match(over, /1 \/ 2<\/span><span class="occ-note tone-yellow">1 fehlt/);
+  assert.match(over, /2 \/ 1<\/span><span class="occ-note tone-orange">1 zu viel/);
+  // Zuweisen der Funktionen: im Reiter «Schichten»
+  const sch = await (await get(`/einsaetze/${ev}/schichten`, auf.cookie)).text();
+  assert.match(sch, /id="funktionen"/);
+  assert.match(sch, /1 \/ 2 · 1 fehlt/);
+  assert.match(sch, /2 \/ 1 · 1 zu viel/);
   assert.match(over, /ist als Einsatzleiter \(EL\) eingeteilt und hat ein Einsatzleiter-Konto/);
   const anm = await (await get(`/einsaetze/${ev}/anmeldungen?sort=funktion`, auf.cookie)).text();
   assert.match(anm, /Funktion zuweisen/);

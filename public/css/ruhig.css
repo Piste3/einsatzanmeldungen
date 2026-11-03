@@ -269,3 +269,45 @@ td .sub, .cell-sub { font-size: 12px; margin-top: 1px; }
 :root[data-theme="dark"] .fb-d-bestaetigt { color: #0c0c0d; }
 .hist-head .hist-clear { margin-left: auto; min-height: 0; padding: 2px 8px; font-size: 12px; }
 .hist-cleared { margin-top: 6px; }
+
+/* ---------- Einsatz-Übersicht ---------- */
+/* Lage: ein Satz, was fehlt, daneben die offenen Arbeiten als Links */
+.lage { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; padding: 14px 18px; }
+.lage-main { display: flex; gap: 12px; align-items: flex-start; min-width: 0; flex: 1 1 320px; }
+.lage-main strong { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+.lage-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; background: var(--dot-gray); }
+.lage-dot.dot-green { background: var(--dot-green); box-shadow: 0 0 0 4px color-mix(in srgb, var(--dot-green) 16%, transparent); }
+.lage-dot.dot-yellow { background: var(--dot-yellow); box-shadow: 0 0 0 4px color-mix(in srgb, var(--dot-yellow) 18%, transparent); }
+.lage-counts { display: flex; flex-wrap: wrap; gap: 6px; }
+.lage-counts a { display: inline-flex; align-items: baseline; gap: 5px; padding: 6px 11px; border: 1px solid var(--line); border-radius: 8px; font-size: 13px; color: var(--text-2); min-height: 34px; }
+.lage-counts a:hover { background: var(--hover); color: var(--text); }
+.lage-counts a strong { font-family: var(--mono); font-weight: 500; font-size: 14px; color: var(--text); font-variant-numeric: tabular-nums; }
+.lage-counts a.warn strong { color: var(--signal); }
+
+/* Besetzung als Tabelle: Funktion × Schicht */
+.occ-table td, .occ-table th { padding-left: 16px; padding-right: 16px; }
+.occ-table th .sub { display: block; font-weight: 400; color: var(--muted-2); font-size: 11.5px; }
+.occ-table .fn-tag { margin-right: 6px; min-width: 26px; text-align: center; display: inline-block; }
+.occ-cell { display: inline-flex; flex-direction: column; align-items: flex-end; line-height: 1.3; }
+.occ-n { font-variant-numeric: tabular-nums; font-weight: 600; }
+.occ-note { font-size: 11.5px; color: var(--muted); display: inline-flex; align-items: center; gap: 5px; }
+.occ-note:empty { display: none; }
+.occ-note::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--dot-gray); }
+.occ-note.tone-green::before { background: var(--dot-green); }
+.occ-note.tone-yellow::before { background: var(--dot-yellow); }
+.occ-note.tone-red::before { background: var(--dot-red); }
+.occ-note.tone-orange::before { background: var(--dot-orange); }
+.occ-table tfoot td { background: none; border-top: 1px solid var(--line); font-size: 13px; vertical-align: top; padding-top: 10px; padding-bottom: 12px; }
+.occ-total { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; }
+.occ-table tfoot .bar { margin-top: 6px; max-width: 160px; margin-left: auto; }
+.sep-top { border-top: 1px solid var(--line); }
+#angaben dl.kv { grid-template-columns: 140px minmax(0, 1fr); }
+
+@media (max-width: 760px) {
+  .lage { padding: 12px 14px; }
+  .lage-counts a { flex: 1 1 auto; }
+  .occ-table td, .occ-table th { padding-left: 12px; padding-right: 12px; }
+  #angaben dl.kv { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  #angaben dl.kv dt { font-size: 12px; }
+  #angaben dl.kv dd { margin-bottom: 8px; }
+}

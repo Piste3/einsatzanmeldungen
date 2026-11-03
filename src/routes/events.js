@@ -162,7 +162,7 @@ router.get('/einsaetze/:id', loadEvent, (req, res) => {
   const e = req.event;
   res.render('pages/event', {
     title: e.name, tab: 'uebersicht', stats: events.stats(e), checklist: events.checklist(e), inForm: events.isInForm(e),
-    lastEnd: events.lastEnd(e), activity: audit.forEvent(e.id, 8), extraDefs: events.extraDefs(),
+    lastEnd: events.lastEnd(e), extraDefs: events.extraDefs(),
     leaderAccess: leaders.forEvent(e.id), leaderCandidates: leaders.candidates(e.id),
     externals: externals.forEvent(e.id, e.shifts), unitOptions: externals.units({ activeOnly: true }),
     ...functionPanel(e),
@@ -431,7 +431,7 @@ router.get('/einsaetze/:id/schichten', loadEvent, (req, res) => {
   }
   combos.sort((a, b) => a.value.split(',').length - b.value.split(',').length);
   res.render('pages/event', { title: `${e.name} · Schichten`, tab: 'schichten', stats, columns, unassigned, combos, overlaps: registrations.overlaps(e.id), regs,
-    fnCols: functions.all().filter((f) => f.active || f.is_default || e.shifts.some((s) => s.targets[f.id])), fnSummary: functions.summary(e) });
+    fnCols: functions.all().filter((f) => f.active || f.is_default || e.shifts.some((s) => s.targets[f.id])), ...functionPanel(e) });
 });
 
 router.post('/einsaetze/:id/schichten', loadEvent, (req, res) => {

@@ -60,6 +60,8 @@
   <% } %>
 </div>
 
+<div class="mt"><%- include('_functions', { fnSummary, assignable, functionOptions, editable: true, backTo: `/einsaetze/${event.id}/schichten#funktionen` }) %></div>
+
 <% const closed = event.status === 'abgeschlossen'; %>
 <form class="card mt no-print" method="post" action="/einsaetze/<%= event.id %>/schichten/speichern" id="shifts-form" data-section>
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">

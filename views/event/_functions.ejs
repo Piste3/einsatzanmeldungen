@@ -2,7 +2,7 @@
   // Karte «Funktionen»: Ist/Soll pro Schicht und Funktion und wer welche Funktion hat.
   // Erwartet: event, fnSummary; mit editable: assignable (Anmeldungen), functionOptions, csrfToken
   const fs = fnSummary;
-  const back = `/einsaetze/${event.id}#funktionen`;
+  const back = typeof backTo !== 'undefined' && backTo ? backTo : `/einsaetze/${event.id}/schichten#funktionen`;
   const canEdit = typeof editable !== 'undefined' && editable;
   const person = (g) => `${g.rank_short ? `<span class="rank">${h.escapeHtml(g.rank_short)}</span>` : ''}${h.escapeHtml(`${g.first_name} ${g.last_name}`)}`;
 %>

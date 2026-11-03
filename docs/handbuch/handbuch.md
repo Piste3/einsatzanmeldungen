@@ -152,16 +152,18 @@ Aus den Schichten ergibt sich der Zeitraum des Einsatzes. Er steht überall dort
 
 ![Einsatz › Übersicht](bilder/05-einsatz-uebersicht.jpg)
 
-- **Kennzahlen:** neu eingegangen, zu prüfen, bestätigt und ohne Rückmeldung.
-- **Besetzung** pro Schicht mit Ist / Soll. Helfen externe Abteilungen mit, steht darunter z. B. «8 eigene + 6 extern».
-- **Funktionen:** Ist / Soll pro Schicht und Funktion (EL, SC, BF, TN) und wer welche Funktion hat (Kapitel 6).
-- **Externe Abteilungen:** andere Abteilungen oder Vereine, die mit einer Anzahl Personen mithelfen (Kapitel 7).
+Die Übersicht passt meist auf einen Bildschirm. Links steht, wie es um den Einsatz steht, rechts das, was man selten ändert.
+
+- **Lage** ganz oben: ein Satz, ob alle Schichten besetzt sind oder was noch fehlt, z. B. «Abendschicht: 1 SC, 3 TN». Hat eine Schicht mehr Leute als nötig, steht das in der zweiten Zeile. Rechts davon die offenen Arbeiten: neu, zu prüfen, bestätigt und ohne Rückmeldung. Ein Klick öffnet die passende Liste.
+- **Besetzung:** eine Tabelle mit einer Zeile pro Funktion (EL, SC, BF, TN) und einer Spalte pro Schicht. In jedem Feld Ist / Soll und darunter «voll», «1 fehlt» oder «2 zu viel». Die letzte Zeile zeigt das Total der Schicht mit Balken, bei externen Abteilungen z. B. «8 eigene + 6 extern». **Einteilen →** führt zum Reiter «Schichten», wo man die Funktionen zuweist (Kapitel 6).
 - **Angaben** des Einsatzes und wann das Aufgebot zuletzt exportiert wurde.
+- **Externe Abteilungen:** andere Abteilungen oder Vereine, die mit einer Anzahl Personen mithelfen (Kapitel 7).
 - **Status:** Entwurf → Veröffentlicht → Abgeschlossen, oder jederzeit Abgesagt. Nach dem Abschluss sind die Daten schreibgeschützt; Änderungen sind dann nur noch durch einen Admin mit Begründung möglich. Bei einer Absage bleiben alle Daten erhalten.
-- **Im Formular anzeigen:** schaltet den Einsatz im Anmeldeformular ein oder aus, z. B. wenn er voll ist.
-- **Checkliste:** zeigt, welche Angaben noch fehlen.
+- **Im Formular anzeigen** (in der Karte «Status»): schaltet den Einsatz im Anmeldeformular ein oder aus, z. B. wenn er voll ist.
+- **Checkliste:** zeigt, wie viele Punkte erledigt sind, und listet nur noch die offenen auf.
 - **Einsatzleiter-Zugriff:** gibt den Einsatz für einen Einsatzleiter frei (Kapitel 15).
 - Oben gibt es **Kalendertermin** (Kapitel 16), **Drucken** bzw. **Export**, **Teilnehmerliste** (Kapitel 14) und **Bearbeiten**.
+- Was sonst geändert wurde, steht im Reiter **Verlauf**.
 
 ### Reiter «Formular»
 
@@ -200,11 +202,11 @@ Das **Soll der Schicht** ist immer die Summe davon (im Beispiel 10 und 6) – ei
 
 ### Funktionen zuweisen
 
-![Einsatz › Übersicht › Funktionen](bilder/42-funktionen.jpg)
+![Einsatz › Schichten › Funktionen](bilder/42-funktionen.jpg)
 
 Es gibt drei Wege:
 
-- In der **Übersicht**, Karte **Funktionen**: unter jeder Funktion im Auswahlfeld **+ EL zuweisen …** (bzw. SC, BF) eine angemeldete Person wählen (tippen zum Suchen). Das **✕** beim Namen nimmt die Funktion wieder weg.
+- Im Reiter **Schichten**, Karte **Funktionen** (oder in der Übersicht über **Einteilen →**): unter jeder Funktion im Auswahlfeld **+ EL zuweisen …** (bzw. SC, BF) eine angemeldete Person wählen (tippen zum Suchen). Das **✕** beim Namen nimmt die Funktion wieder weg.
 - Im Reiter **Anmeldungen** in der Spalte **Funktion** direkt pro Zeile umstellen.
 - Im Reiter **Anmeldungen** mehrere ankreuzen und oben **Funktion zuweisen …** wählen.
 
@@ -393,6 +395,7 @@ Die meisten Einsätze haben nur eine Schicht für alle. Dann gibt es nichts zu v
 ![Einsatz › Schichten mit zwei Schichten](bilder/13-schichten.jpg)
 
 - Jede Schicht ist eine Spalte mit Zeit und Besetzung (Ist / Soll). Grün heisst voll. Darunter Ist / Soll pro Funktion, z. B. «EL 1/1 · SC 2/2 · TN 5/6».
+- **Funktionen:** darunter die Karte, in der man EL, SC und BF zuweist (Kapitel 6).
 - **Schichten verwalten** (unten): Name, Tag, Zeit und das Soll pro Funktion (Spalten EL, SC, BF, TN). Die Spalte «Soll» zeigt die Summe und rechnet beim Tippen mit. Die Tabelle hat **einen einzigen Speichern-Knopf** unten rechts: mehrere Schichten ändern, bei Bedarf in der untersten Zeile eine neue Schicht eintragen, dann einmal **Speichern**. Geänderte Zeilen sind links orange markiert, und der Fuss der Tabelle zeigt «Ungespeicherte Änderungen». **+ Hinzufügen** in der neuen Zeile speichert ebenfalls alles auf einmal. **Löschen** wirkt sofort pro Zeile (mit Rückfrage). Ist eine Zeile ungültig, z. B. eine angefangene neue Schicht ohne Namen, wird nichts gespeichert.
 - **Noch keiner Schicht zugeteilt:** Anmeldungen ohne Schicht stehen oben und werden über «zuteilen …» eingeteilt.
 - **Umteilen** über das Auswahlfeld bei der Person. Eine Person kann auch mehreren Schichten zugeteilt sein («Tag + Abend»).
@@ -864,7 +867,7 @@ Im Einsatz oben auf **Teilnehmerliste** klicken – sie öffnet sich als PDF in 
 Ja. Er braucht ein Konto mit der Rolle «Einsatzleiter», und die Aufgebotsstelle gibt ihm den Einsatz in der Übersicht unter «Einsatzleiter-Zugriff» frei. Dann sieht er Angaben und Teilnehmerliste – nur lesen.
 
 **Wie lege ich fest, wie viele EL, SC, BF und Einsatzteilnehmer es braucht?**
-Einsatz **Bearbeiten** › Karte **Schichten und Soll** (pro Schicht eine Spalte). Zuweisen in der Übersicht (Karte «Funktionen») oder im Reiter «Anmeldungen» in der Spalte «Funktion». Wer nichts zugewiesen hat, ist Einsatzteilnehmer.
+Einsatz **Bearbeiten** › Karte **Schichten und Soll** (pro Schicht eine Spalte). Zuweisen im Reiter «Schichten» (Karte «Funktionen») oder im Reiter «Anmeldungen» in der Spalte «Funktion». Wer nichts zugewiesen hat, ist Einsatzteilnehmer.
 
 **Ist die Funktion EL dasselbe wie die Rolle «Einsatzleiter»?**
 Nein. Die Funktion EL ist die Einteilung am Einsatz. Die Rolle «Einsatzleiter» ist ein Benutzerkonto mit Lesezugriff. Hat jemand beides, schlägt die Übersicht vor, ihm den Einsatz freizugeben.
