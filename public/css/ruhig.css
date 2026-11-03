@@ -31,6 +31,8 @@
   --track: #ececea;
   --orange: var(--signal);
   --orange-dark: #c95a17;
+  --orange-soft: #fdf5ef;
+  --orange-border: #f3d9c6;
   --radius: 10px;
   --shadow: none;
   --font: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
@@ -49,7 +51,7 @@
   --ink: #ededed; --paper: #0c0c0d; --shelf: #121214; --line: #232326; --stone: #9a9aa1; --signal: #f0843f;
   --bg: var(--paper); --card: var(--paper); --surface-2: #141416; --border: var(--line); --border-soft: #1b1b1e; --border-strong: #34343a;
   --text: var(--ink); --text-2: #c4c4c9; --muted: var(--stone); --muted-2: #74747b;
-  --hover: #18181b; --hover-2: #202024; --gray-bg: #1d1d20; --track: #26262a;
+  --hover: #18181b; --hover-2: #202024; --gray-bg: #1d1d20; --track: #26262a; --input-bg: #111113;
   --orange-dark: #f59a5e;
   --dot-green: #22c55e; --dot-yellow: #eab308; --dot-red: #f87171; --dot-blue: #60a5fa; --dot-gray: #71717a;
   color-scheme: dark;
@@ -59,7 +61,7 @@
     --ink: #ededed; --paper: #0c0c0d; --shelf: #121214; --line: #232326; --stone: #9a9aa1; --signal: #f0843f;
     --bg: var(--paper); --card: var(--paper); --surface-2: #141416; --border: var(--line); --border-soft: #1b1b1e; --border-strong: #34343a;
     --text: var(--ink); --text-2: #c4c4c9; --muted: var(--stone); --muted-2: #74747b;
-    --hover: #18181b; --hover-2: #202024; --gray-bg: #1d1d20; --track: #26262a;
+    --hover: #18181b; --hover-2: #202024; --gray-bg: #1d1d20; --track: #26262a; --input-bg: #111113;
     --orange-dark: #f59a5e;
     --dot-green: #22c55e; --dot-yellow: #eab308; --dot-red: #f87171; --dot-blue: #60a5fa; --dot-gray: #71717a;
     color-scheme: dark;
@@ -109,6 +111,10 @@ input:focus, select:focus, textarea:focus { border-color: var(--text-2); box-sha
 .kpi-strip .kpi { padding: 14px 18px 15px; border-left: 1px solid var(--line); display: flex; flex-direction: column; gap: 2px; }
 .kpi-strip .kpi:first-child { border-left: 0; }
 .kpi-strip a.kpi:hover { background: var(--surface-2); }
+/* Andere Seiten mit Kennzahlen-Kacheln (Einsatz-Übersicht, Formulare) zeigen dieselbe Leiste */
+.grid-4:has(> .card.kpi) { gap: 0; border: 1px solid var(--line); border-radius: var(--radius); }
+.grid-4 > .card.kpi { border: 0; border-left: 1px solid var(--line); border-radius: 0; background: none; }
+.grid-4 > .card.kpi:first-child { border-left: 0; }
 .kpi .label { font-size: 12.5px; color: var(--muted); font-weight: 500; }
 .kpi .value { font-family: var(--mono); font-size: 28px; font-weight: 500; letter-spacing: -0.04em; margin: 4px 0 0; font-variant-numeric: tabular-nums; line-height: 1.15; }
 .kpi .value.orange { color: var(--signal); }
@@ -143,7 +149,8 @@ td .sub, .cell-sub { font-size: 12px; margin-top: 1px; }
 .bar.green > span { background: var(--dot-green); }
 .bar.yellow > span { background: var(--dot-yellow); }
 .bar.red > span { background: var(--dot-red); }
-.occ-head strong { font-family: var(--mono); font-weight: 500; font-variant-numeric: tabular-nums; }
+.occ-head > strong { font-weight: 600; font-variant-numeric: tabular-nums; }
+.occ-head > span strong { font-weight: 600; color: var(--text); }
 
 /* Zu tun und Aktivität */
 .todo { padding: 10px 16px; font-size: 13px; align-items: baseline; }
@@ -153,10 +160,43 @@ td .sub, .cell-sub { font-size: 12px; margin-top: 1px; }
 .flash { border-radius: 8px; }
 .hint-bar { border-radius: 8px; }
 
+/* ---------- Restliche Stellen, die früher Dunkelblau waren ---------- */
+.btn-dark { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.btn-dark:hover { background: var(--text-2); border-color: var(--text-2); }
+.segmented input:checked + label, .segmented-links a.active { background: var(--ink); color: var(--paper); }
+.theme-toggle { color: var(--muted); }
+.theme-toggle:hover { color: var(--text); background: var(--hover-2); }
+.tabs a { font-weight: 500; }
+.tabs a.active { border-color: var(--ink); font-weight: 600; }
+.tabs .n { background: none; color: var(--muted); font-family: var(--mono); padding: 0; }
+.auth-page { background: var(--shelf); }
+
+/* Filter-Chips: neutral mit Punkt, aktiver Filter mit dunklem Rand */
+.chip { background: none !important; color: var(--text-2) !important; border: 1px solid var(--line); border-radius: 7px; font-weight: 500; padding: 4px 10px 4px 9px; gap: 6px; }
+.chip::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--dot-gray); }
+.chip.badge-gray::before { display: none; }
+.chip:hover { background: var(--hover) !important; }
+.chip.active { outline: 0; border-color: var(--ink); color: var(--text) !important; box-shadow: inset 0 0 0 1px var(--ink); }
+
+/* Kürzel der Funktionen (EL, SC, TN): neutral, gleich breit */
+.fn-tag { color: var(--text-2); background: none; border: 1px solid var(--line); font-family: var(--mono); font-weight: 500; font-size: 10.5px; border-radius: 5px; padding: 0 5px; }
+.fn-tag.fn-default { color: var(--muted); background: none; font-weight: 500; }
+
+/* Hinweisboxen und Auswahl: ruhige Flächen statt Blau und Orange */
+.callout { background: var(--surface-2); color: var(--text-2); border: 1px solid var(--line); }
+.callout strong.cap { color: var(--text); }
+.flash-info { background: var(--surface-2); color: var(--text-2); border: 1px solid var(--line); }
+.bulkbar { background: var(--surface-2); border-bottom-color: var(--line); }
+.block-btn { background: none; border-color: var(--line); color: var(--text-2); font-weight: 500; }
+.block-btn:hover { background: var(--hover-2); }
+.template-chips button { font-weight: 500; }
+.auth-card { border: 1px solid var(--line); border-radius: 12px; box-shadow: none; }
+.auth-card .btn { height: 38px; }
+
 @media (max-width: 1100px) {
   .kpi-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .kpi-strip .kpi:nth-child(3) { border-left: 0; }
-  .kpi-strip .kpi:nth-child(n+3) { border-top: 1px solid var(--line); }
+  .kpi-strip .kpi:nth-child(3), .grid-4 > .card.kpi:nth-child(3) { border-left: 0; }
+  .kpi-strip .kpi:nth-child(n+3), .grid-4 > .card.kpi:nth-child(n+3) { border-top: 1px solid var(--line); }
 }
 
 @media (max-width: 760px) {
