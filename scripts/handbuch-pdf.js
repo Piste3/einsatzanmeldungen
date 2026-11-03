@@ -20,6 +20,7 @@ const MAX_IMG_PX = 1400; // Bildbreite im PDF (reicht für ~200 dpi bei voller S
 const FLOW = new Set(['einsatzleiter']); // diese Handbücher ohne Seitenumbruch vor jedem Kapitel
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const fmtShort = (d) => new Intl.DateTimeFormat('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Zurich' }).format(d).replace(',', '');
 const fmtDate = (d) => new Intl.DateTimeFormat('de-CH', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Zurich' }).format(d);
 
 const CSS = `
@@ -110,7 +111,8 @@ figure { counter-increment: fig; }
 hr { border: 0; border-top: 1px solid var(--border); margin: 5mm 0; }
 `;
 
-function build(key, { date, pages = {} } = {}) {
+function build(key, { version, pages = {} } = {}) {
+  const { date, commit } = version;
   const book = handbook.BOOKS[key];
   const { html, toc } = handbook.render(key, {
     imageSrc: (src) => {
@@ -149,7 +151,7 @@ function build(key, { date, pages = {} } = {}) {
   </div>
   <div class="meta">
     <div>Stand<b>${esc(fmtDate(date))}</b></div>
-    <div>Gilt für<b>die installierte Version</b></div>
+    <div>Version (Push)<b>${commit ? `${esc(commit)} · ${esc(fmtShort(date))}` : 'nicht committet'}</b></div>
     <div>Online<b>Menü «Handbuch»</b></div>
   </div>
 </section>
@@ -191,7 +193,7 @@ function pageNumbers(buf) {
   return result;
 }
 
-async function makePdf(browser, key, date) {
+async function makePdf(browser, key, version) {
   const page = await browser.newPage();
   const tmp = path.join(os.tmpdir(), `kkb-handbuch-${key}-${process.pid}.html`);
   const load = async (html) => {
@@ -233,9 +235,9 @@ async function makePdf(browser, key, date) {
   };
   const opts = { format: 'A4', printBackground: true, preferCSSPageSize: true, outline: true, tagged: true };
   // 1. Durchgang: wo landet welche Überschrift? 2. Durchgang: mit Seitenzahlen im Inhaltsverzeichnis
-  await load(build(key, { date }));
+  await load(build(key, { version }));
   const pages = pageNumbers(await page.pdf(opts));
-  await load(build(key, { date, pages }));
+  await load(build(key, { version, pages }));
   const buf = await page.pdf(opts);
   await page.close();
   fs.rmSync(tmp, { force: true });
@@ -257,14 +259,23 @@ async function main() {
   }
   const browser = await chromium.launch();
   const date = new Date();
+  // Auf dem Titelblatt steht der Push, aus dem das PDF stammt: Änderungen also zuerst committen
+  const draft = args.includes('--entwurf');
+  if (draft) args.splice(args.indexOf('--entwurf'), 1);
+  if (!draft && handbook.sourcesDirty()) {
+    console.error('Am Handbuch gibt es Änderungen, die noch nicht committet sind. Zuerst committen, dann die PDFs erzeugen und separat committen.\n(Zum Anschauen ohne Commit: npm run handbuch:pdf -- --entwurf)');
+    process.exit(1);
+  }
+  const version = draft && handbook.sourcesDirty() ? { commit: null, date } : handbook.sourceVersion();
+  if (!version.date) Object.assign(version, { date });
   const stand = handbook.readStand();
   fs.mkdirSync(handbook.PDF_DIR, { recursive: true });
   try {
     for (const key of keys) {
-      const { buf, count, found } = await makePdf(browser, key, date);
+      const { buf, count, found } = await makePdf(browser, key, version);
       const file = handbook.pdfPath(key);
       fs.writeFileSync(file, buf);
-      stand[key] = { quelle: handbook.sourceHash(key), erzeugt: date.toISOString(), seiten: count };
+      stand[key] = { quelle: handbook.sourceHash(key), version: version.commit, erzeugt: date.toISOString(), seiten: count };
       console.log(`${path.relative(process.cwd(), file)}: ${count} Seiten, ${(buf.length / 1048576).toFixed(1)} MB, ${found} Sprungziele`);
       if (copyDir) {
         const name = handbook.BOOKS[key].pdf.replace(/\.pdf$/, `_${date.toISOString().slice(0, 10)}.pdf`);

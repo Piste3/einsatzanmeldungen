@@ -64,7 +64,7 @@ npm test
 
 ### Handbuch
 
-Die Handbücher stehen in `docs/handbuch/` (`handbuch.md`, `einsatzleiter.md`, Bilder in `bilder/`) und erscheinen in der App unter «Handbuch». Der Knopf **Als PDF** liefert die gestalteten PDFs aus `docs/handbuch/pdf/`. Nach jeder Änderung am Text oder an den Bildern die PDFs neu erzeugen und mit committen – `npm test` meldet sonst, dass sie veraltet sind:
+Die Handbücher stehen in `docs/handbuch/` (`handbuch.md`, `einsatzleiter.md`, Bilder in `bilder/`) und erscheinen in der App unter «Handbuch». Der Knopf **Als PDF** liefert die gestalteten PDFs aus `docs/handbuch/pdf/`. Auf der Titelseite und auf der Handbuch-Seite steht die Version: Code und Datum des letzten Pushs, der das Handbuch geändert hat. Darum nach jeder Änderung am Text oder an den Bildern zuerst diese committen, dann die PDFs neu erzeugen und separat committen – `npm test` meldet sonst, dass sie veraltet sind:
 
 ```bash
 npm install --no-save playwright && npx playwright install chromium   # einmalig, nur auf dem Rechner, der die PDFs erzeugt

@@ -5,24 +5,16 @@
 const express = require('express');
 const fs = require('node:fs');
 const path = require('node:path');
-const { execFileSync } = require('node:child_process');
 const handbook = require('../lib/handbook');
 const leaders = require('../services/leaders');
 
 const router = express.Router();
 const { DIR, BOOKS } = handbook;
 
-// Stand des Handbuchs: letzter Git-Commit am Handbuch, sonst Änderungsdatum der Datei
+// Stand des Handbuchs: letzter Push mit Änderungen am Handbuch (wie im PDF), sonst Änderungsdatum der Datei
 function versionInfo(file) {
-  const stat = fs.statSync(file);
-  let date = stat.mtime;
-  let commit = null;
-  try {
-    const out = execFileSync('git', ['-c', `safe.directory=${path.join(DIR, '..', '..')}`, 'log', '-1', '--format=%cI %h', '--', 'docs/handbuch'],
-      { cwd: path.join(DIR, '..', '..'), encoding: 'utf8', timeout: 3000, stdio: ['ignore', 'pipe', 'ignore'] }).trim();
-    if (out) { const [iso, hash] = out.split(' '); date = new Date(iso); commit = hash; }
-  } catch { /* ohne Git: Dateidatum */ }
-  return { date, commit };
+  const v = handbook.sourceVersion();
+  return v.commit ? v : { date: fs.statSync(file).mtime, commit: null };
 }
 
 const cache = new Map();

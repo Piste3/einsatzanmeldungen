@@ -5,6 +5,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
+const { execFileSync } = require('node:child_process');
 const { marked } = require('marked');
 
 const DIR = path.join(__dirname, '..', '..', 'docs', 'handbuch');
@@ -77,6 +78,26 @@ function sourceHash(key) {
   return h.digest('hex').slice(0, 16);
 }
 
+// Version des Handbuchs = letzter Push (Commit), der Text oder Bilder geändert hat.
+// Die PDFs selbst zählen nicht mit, damit Seite und PDF denselben Code zeigen.
+const APP_DIR = path.join(__dirname, '..', '..');
+const SOURCES = ['--', 'docs/handbuch', ':(exclude)docs/handbuch/pdf'];
+function git(args) {
+  return execFileSync('git', ['-c', `safe.directory=${APP_DIR.replace(/\\/g, '/')}`, ...args],
+    { cwd: APP_DIR, encoding: 'utf8', timeout: 3000, stdio: ['ignore', 'pipe', 'ignore'], windowsHide: true }).trim();
+}
+function sourceVersion() {
+  try {
+    const out = git(['log', '-1', '--format=%h %cI', ...SOURCES]);
+    if (out) { const [commit, iso] = out.split(' '); return { commit, date: new Date(iso) }; }
+  } catch { /* ohne Git */ }
+  return { commit: null, date: null };
+}
+// Gibt es am Handbuch noch nicht committete Änderungen?
+function sourcesDirty() {
+  return git(['status', '--porcelain', ...SOURCES]) !== '';
+}
+
 function pdfPath(key) {
   return path.join(PDF_DIR, BOOKS[key].pdf);
 }
@@ -85,4 +106,4 @@ function readStand() {
   try { return JSON.parse(fs.readFileSync(STAND_FILE, 'utf8')); } catch { return {}; }
 }
 
-module.exports = { DIR, PDF_DIR, STAND_FILE, BOOKS, slug, source, images, render, sourceHash, pdfPath, readStand };
+module.exports = { sourceVersion, sourcesDirty, DIR, PDF_DIR, STAND_FILE, BOOKS, slug, source, images, render, sourceHash, pdfPath, readStand };
