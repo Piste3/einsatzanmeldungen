@@ -81,8 +81,9 @@ const HEAD_BG = '0.95 0.96 0.97';
  * opts: {
  *   title, subtitle: [string], landscape: bool,
  *   columns: [{ label, width (Anteil), fit (so breit wie der Inhalt), align: 'left'|'right' }],
- *   rows: [[string | { text, bold }]],
- *   sections: [{ title, columns, rows, empty }] – weitere Tabellen mit Zwischentitel,
+ *   rows: [[string | { text, bold, muted }]] – ohne columns gibt es keine erste Tabelle (nur sections),
+ *   sections: [{ title, small, subtitle: [string], pageBreak, columns, rows, empty, after }] – weitere Tabellen mit Zwischentitel
+ *             (small = kleiner Titel, pageBreak = auf neuer Seite beginnen, after = Absätze unter dieser Tabelle),
  *   after: [{ label, text }]   – Absätze unter den Tabellen (label fett),
  *   footer: string             – links unten auf jeder Seite (rechts: Seite x / y),
  *   empty: string              – Text, wenn die Tabelle leer ist
@@ -174,28 +175,44 @@ function tablePdf(opts) {
   }
   y -= 10;
 
-  table(opts.columns, opts.rows, opts.empty);
+  // Absätze (label fett, Text daneben)
+  const paragraphs = (list) => {
+    for (const p of list || []) {
+      const label = p.label ? `${p.label} ` : '';
+      const lw = textWidth(label, size, true);
+      const lines = wrap(p.text || '', size, usable - lw);
+      if (y - lines.length * lh - 6 < bottom) newPage();
+      if (label) text(label, M, y - size, { bold: true });
+      lines.forEach((line, k) => text(line, M + lw, y - size - k * lh, { color: p.muted ? GRAY : null }));
+      y -= lines.length * lh + 6;
+    }
+  };
 
-  // Weitere Tabellen mit Zwischentitel (z. B. externe Abteilungen)
-  for (const sec of opts.sections || []) {
-    y -= 14;
-    if (y - 12.5 - 3 * (lh + 2 * padY) < bottom) newPage();
-    text(sec.title, M, y - 11, { bold: true, sz: 11 });
-    y -= 18;
-    table(sec.columns, sec.rows, sec.empty);
-  }
+  if (opts.columns) table(opts.columns, opts.rows, opts.empty);
 
-  // Absätze unter der Tabelle
+  // Weitere Tabellen mit Zwischentitel (z. B. externe Abteilungen, eine Schicht)
+  (opts.sections || []).forEach((sec, i) => {
+    const tsz = sec.small ? 9.5 : 12;
+    if (sec.pageBreak && (i > 0 || opts.columns)) newPage();
+    else {
+      y -= sec.small ? 8 : (i === 0 && !opts.columns ? 0 : 16);
+      if (y - tsz - 3 * (lh + 2 * padY) < bottom) newPage();
+    }
+    if (sec.title) {
+      for (const line of wrap(sec.title, tsz, usable, true)) { text(line, M, y - tsz, { bold: true, sz: tsz }); y -= tsz + 4; }
+      y -= 3;
+    }
+    for (const s of sec.subtitle || []) {
+      for (const line of wrap(s, 9, usable)) { text(line, M, y - 9, { sz: 9, color: GRAY }); y -= 12; }
+    }
+    if (sec.subtitle?.length) y -= 3;
+    if (sec.columns) table(sec.columns, sec.rows, sec.empty);
+    if (sec.after?.length) { y -= 6; paragraphs(sec.after); }
+  });
+
+  // Absätze unter den Tabellen
   y -= 8;
-  for (const p of opts.after || []) {
-    const label = p.label ? `${p.label} ` : '';
-    const lw = textWidth(label, size, true);
-    const lines = wrap(p.text || '', size, usable - lw);
-    if (y - lines.length * lh - 6 < bottom) newPage();
-    if (label) text(label, M, y - size, { bold: true });
-    lines.forEach((line, k) => text(line, M + lw, y - size - k * lh, { color: p.muted ? GRAY : null }));
-    y -= lines.length * lh + 6;
-  }
+  paragraphs(opts.after);
 
   // Fusszeile mit Seitenzahl
   pages.forEach((p, i) => {

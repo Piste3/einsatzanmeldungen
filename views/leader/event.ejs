@@ -9,7 +9,7 @@
 %>
 <%- include('../partials/topbar', {
   crumbs: [['Meine Einsätze', '/'], [e.name]], heading: e.name, badges: h.eventBadge(e.status), subline: sub, showSearch: false,
-  actions: `<a class="btn btn-primary" href="${exportUrl('pdf')}" target="_blank" rel="noopener" title="Teilnehmerliste als PDF in einem neuen Tab öffnen">Teilnehmerliste (PDF)</a><a class="btn" href="${exportUrl('xlsx')}">Excel</a><a class="btn" href="${exportUrl('csv')}">CSV</a>`,
+  actions: `<a class="btn btn-primary" href="${exportUrl('pdf')}" target="_blank" rel="noopener" title="Teilnehmerliste als PDF in einem neuen Tab öffnen">Teilnehmerliste (PDF)</a><a class="btn" href="${exportUrl('xlsx')}">Excel</a><a class="btn" href="${exportUrl('csv')}">CSV</a><a class="btn" href="${h.escapeHtml(h.withQuery(`${base}/verpflegungsliste`, q))}">Verpflegungsliste</a>`,
 }) %>
 <% if (e.status === 'abgesagt') { %><div class="callout warn mb">Dieser Einsatz wurde abgesagt.</div><% } %>
 <% if (e.status === 'entwurf') { %><div class="callout mb">Dieser Einsatz ist noch ein Entwurf – Angaben können sich noch ändern.</div><% } %>
@@ -46,20 +46,13 @@
 
 <% if (showFunction) { %><div class="mb"><%- include('../event/_functions', { fnSummary, editable: false }) %></div><% } %>
 
-<form class="filters" method="get" action="<%= base %>" data-autosubmit>
-  <select name="umfang" aria-label="Wer steht auf der Liste?">
-    <% for (const [k, s] of Object.entries(scopes)) { %><option value="<%= k %>" <%= filters.umfang === k ? 'selected' : '' %>><%= s.label %></option><% } %>
-  </select>
-  <% if (e.shifts.length > 1) { %>
-    <select name="schicht" aria-label="Schicht">
-      <option value="">Alle Schichten</option>
-      <% for (const s of e.shifts) { %><option value="<%= s.id %>" <%= filters.schicht === s.id ? 'selected' : '' %>>Nur <%= s.name %></option><% } %>
-    </select>
-  <% } %>
-  <select name="sort" aria-label="Sortierung">
-    <% for (const [k, l] of [['rang', 'Rang: tief → hoch'], ['rang_ab', 'Rang: hoch → tief'], ['funktion', 'Funktion, dann Rang']]) { %><option value="<%= k %>" <%= filters.sort === k ? 'selected' : '' %>><%= l %></option><% } %>
-  </select>
-</form>
+<%- include('../partials/list-filters', { action: base }) %>
 
-<%- include('../partials/participants-table', { personLinks: false }) %>
+<% if (groups) { %>
+  <% for (const g of groups) { %>
+    <%- include('../partials/participants-table', { personLinks: false, groupTitle: g.title, list: g.list, exts: g.exts, extTotal: g.extTotal, fnSummary: g.fnSummary, showFunction: showFunction && Boolean(g.fnSummary), summary: g.summary }) %>
+  <% } %>
+<% } else { %>
+  <%- include('../partials/participants-table', { personLinks: false }) %>
+<% } %>
 <%- include('../partials/foot') %>

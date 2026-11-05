@@ -11,7 +11,8 @@ Die Aufgebotsstelle gibt dir einzelne Einsätze frei. Für diese Einsätze siehs
 - die **Angaben**: Datum, Antreten und Abtreten, Einsatzleitung, Tenue und Beschreibung,
 - die **Schichten** mit Zeiten und Besetzung,
 - die **Teilnehmer** mit Rang, Mobilnummer, Essenseinschränkungen, Schicht und Status,
-- die **Teilnehmerliste** als PDF, Excel oder CSV.
+- die **Teilnehmerliste** als PDF, Excel oder CSV,
+- die **Verpflegungsliste** für die Küche: Anzahl Essen und Essenseinschränkungen.
 
 Du kannst nur lesen, nichts ändern. Anmeldungen bestätigen, Schichten einteilen und Angaben anpassen macht die Aufgebotsstelle. Andere Einsätze, die Personenliste und interne Bemerkungen siehst du nicht.
 
@@ -21,7 +22,7 @@ Du kannst nur lesen, nichts ändern. Anmeldungen bestätigen, Schichten einteile
 
 1. Die Adresse des Einsatzplaners öffnen (z. B. einsatz.holmium.ch) und ein Lesezeichen setzen – auf dem Handy am besten auf dem Startbildschirm.
 2. Mit deinem Benutzernamen und Passwort anmelden. Dein Konto erhältst du von einem Admin. Ist die Microsoft-Anmeldung für dein Konto freigegeben, geht es auch mit «Mit Microsoft anmelden».
-3. Ist bei dir die **Zwei-Faktor-Anmeldung** eingerichtet, fragt der Einsatzplaner danach nach dem 6-stelligen Code aus der Authenticator-App (Kapitel 6).
+3. Ist bei dir die **Zwei-Faktor-Anmeldung** eingerichtet, fragt der Einsatzplaner danach nach dem 6-stelligen Code aus der Authenticator-App (Kapitel 7).
 4. Es öffnet sich **Meine Einsätze**.
 
 Musst du beim ersten Anmelden ein neues Passwort wählen, öffnet sich direkt die Seite dafür. Nach 5 falschen Versuchen ist das Konto für 15 Minuten gesperrt. Ein vergessenes Passwort setzt ein Admin zurück.
@@ -34,6 +35,7 @@ Hier stehen alle Einsätze, die für dich freigegeben sind: **Anstehend** oben, 
 
 - Ein Klick auf den **Namen des Einsatzes** öffnet alle Angaben und die Teilnehmer.
 - **Teilnehmerliste** öffnet die Liste direkt als PDF in einem neuen Tab.
+- **Verpflegung** öffnet die Verpflegungsliste direkt als PDF in einem neuen Tab.
 
 Gibt dir die Aufgebotsstelle einen weiteren Einsatz frei, erscheint er sofort in der Liste. Steht hier nichts, ist zurzeit kein Einsatz für dich freigegeben – melde dich bei der Aufgebotsstelle.
 
@@ -41,7 +43,7 @@ Gibt dir die Aufgebotsstelle einen weiteren Einsatz frei, erscheint er sofort in
 
 ![Ein Einsatz aus Sicht des Einsatzleiters](bilder/39-einsatzleiter-einsatz.jpg)
 
-**Oben** stehen Datum, Antreten und die Einsatzleitung, rechts die Knöpfe für die Teilnehmerliste. Ein Hinweis zeigt, wenn der Einsatz noch ein **Entwurf** ist (Angaben können sich noch ändern) oder **abgesagt** wurde.
+**Oben** stehen Datum, Antreten und die Einsatzleitung, rechts die Knöpfe für die Teilnehmerliste und die Verpflegungsliste. Ein Hinweis zeigt, wenn der Einsatz noch ein **Entwurf** ist (Angaben können sich noch ändern) oder **abgesagt** wurde.
 
 **Angaben:** Datum, Antreten und Abtreten mit Ort, Einsatzleitung mit Mobilnummer, Tenue und Beschreibung. Dauert ein Einsatz mehrere Tage, steht beim Datum der Zeitraum, z. B. «Samstag, 2. – Sonntag, 3. Januar 2027», und bei jeder Schicht ihr Tag.
 
@@ -65,7 +67,7 @@ Unter der Tabelle stehen die **externen Abteilungen** (Leute anderer Abteilungen
 **Auswahl über der Tabelle:**
 
 - **Wer steht drauf:** «Angemeldete» (Standard: neu, Rückfrage und bestätigt), «Nur bestätigte» oder «Angemeldete + Warteliste». Abmeldungen und Absagen stehen nie drauf.
-- **Schicht:** Bei mehreren Schichten lässt sich die Liste auf eine Schicht einschränken.
+- **Schicht:** Bei mehreren Schichten: **Ganzer Einsatz** (Standard), **Pro Schicht (je ein Block)** oder nur eine Schicht. Pro Schicht steht jede Schicht mit ihren Leuten und ihrer Verpflegung für sich. Wer in zwei Schichten ist, steht in beiden. Wer noch keine Schicht hat, steht am Schluss.
 - **Sortierung:** «Rang: tief → hoch» (Standard) oder «Rang: hoch → tief», innerhalb des Rangs alphabetisch, oder «Funktion, dann Rang» (EL, SC, BF zuerst).
 
 Die Seite aktualisiert sich von selbst, sobald die Aufgebotsstelle etwas ändert – die grüne Anzeige **Live** oben rechts zeigt das an. Du musst nicht neu laden.
@@ -84,7 +86,21 @@ Die Liste zeigt den Stand im Moment des Öffnens. Hat sich seither etwas geände
 
 Die Essenseinschränkungen siehst du nur, solange der Einsatz bevorsteht. Danach steht in der Spalte «Hinweis vorhanden».
 
-## 6 · Konto, Sicherheit und Darstellung
+Wählst du **Pro Schicht**, beginnt im PDF jede Schicht auf einer neuen Seite. So kannst du jeder Schichtleitung ihr Blatt geben.
+
+## 6 · Die Verpflegungsliste
+
+![Die Verpflegungsliste als PDF](bilder/45-verpflegungsliste.jpg)
+
+Die Verpflegungsliste ist für die Küche. Der Knopf **Verpflegungsliste** oben im Einsatz öffnet sie in der App, mit der gleichen Auswahl wie die Teilnehmer. Dort stehen **PDF öffnen**, **Excel** und **CSV**.
+
+- **Essen:** pro Essenseinschränkung die Anzahl, dazu «ohne Einschränkung» und **Total Essen**. Beim ganzen Einsatz mit mehreren Schichten gibt es eine Spalte pro Schicht und rechts «Ganzer Einsatz». Wer in zwei Schichten ist, zählt in beiden Schichten, im Total aber nur einmal.
+- **Personen mit Essenseinschränkungen:** Rang, Name, Einschränkung und Details.
+- **Externe Abteilungen:** Anzahl Personen und ihre Essenseinschränkungen.
+
+Mit **Pro Schicht** bekommt jede Schicht ihren eigenen Block. Mit einer einzelnen Schicht siehst du nur diese.
+
+## 7 · Konto, Sicherheit und Darstellung
 
 ![Unten links: eigener Name, Darstellung und Abmelden](bilder/32-umschalter.jpg)
 
@@ -93,17 +109,20 @@ Die Essenseinschränkungen siehst du nur, solange der Einsatz bevorsteht. Danach
 - Das **Symbol neben deinem Namen** wechselt die Darstellung: «wie System», «Hell» oder «Dunkel».
 - **Abmelden** – vor allem auf fremden oder geteilten Geräten. Nach längerer Inaktivität wirst du automatisch abgemeldet.
 
-## 7 · Auf dem Handy
+## 8 · Auf dem Handy
 
 Der Einsatzplaner funktioniert auf jedem Handy im Browser, eine App braucht es nicht. Der Knopf ☰ oben links öffnet das Menü. Tabellen erscheinen als Karten: pro Person ein Block mit den Angaben untereinander. Mobilnummern lassen sich direkt antippen. Die Teilnehmerliste als PDF öffnet sich im Browser des Handys und lässt sich von dort teilen.
 
-## 8 · Häufige Fragen
+## 9 · Häufige Fragen
 
 **Ich sehe meinen Einsatz nicht.**
 Die Aufgebotsstelle hat ihn noch nicht für dich freigegeben. Melde dich bei ihr – sobald sie ihn freigibt, erscheint er sofort unter «Meine Einsätze».
 
 **Eine Angabe stimmt nicht oder jemand fehlt auf der Liste.**
 Du kannst selbst nichts ändern. Melde es der Aufgebotsstelle; ihre Änderung siehst du sofort.
+
+**Wie viele Essen braucht es?**
+Oben im Einsatz auf **Verpflegungsliste** klicken. Unten in der Tabelle steht **Total Essen**, darüber die Essenseinschränkungen. Externe Abteilungen sind mitgezählt.
 
 **Was heisst «Neu eingegangen»?**
 Die Person hat sich angemeldet, die Aufgebotsstelle hat sie aber noch nicht bestätigt. Wer sicher dabei ist, siehst du mit der Auswahl «Nur bestätigte».

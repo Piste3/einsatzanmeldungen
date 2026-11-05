@@ -19,8 +19,16 @@
   const expItems = exportTabs[tab]
     ? menuSep + menuHead('Diese Ansicht') + `<a href="${h.escapeHtml(h.withQuery(`${base}/${tab}`, query, { format: 'xlsx' }))}">Als Excel (.xlsx)</a><a href="${h.escapeHtml(h.withQuery(`${base}/${tab}`, query, { format: 'csv' }))}">Als CSV</a>`
     : '';
-  const tnItems = menuSep + menuHead('Teilnehmerliste') + `<a href="${base}/teilnehmerliste?format=xlsx">Als Excel</a><a href="${base}/teilnehmerliste?format=csv">Als CSV</a><a href="${base}/teilnehmerliste">Auswahl anpassen …</a>`;
-  const more = `<details class="menu"><summary class="btn">Mehr ▾</summary><div class="menu-list">${calItems}${expItems}${tnItems}${menuSep}<button type="button" data-print>Drucken</button></div></details>`;
+  const multi = e.shifts.length > 1;
+  const pdfLink = (path, label) => `<a href="${base}/${path}" target="_blank" rel="noopener">${label}</a>`;
+  const tnItems = menuSep + menuHead('Teilnehmerliste')
+    + (multi ? pdfLink('teilnehmerliste?format=pdf&amp;schicht=alle', 'Pro Schicht (PDF)') : '')
+    + `<a href="${base}/teilnehmerliste?format=xlsx">Als Excel</a><a href="${base}/teilnehmerliste?format=csv">Als CSV</a><a href="${base}/teilnehmerliste">Auswahl anpassen …</a>`;
+  const mealItems = menuSep + menuHead('Verpflegungsliste')
+    + pdfLink('verpflegungsliste?format=pdf', multi ? 'Ganzer Einsatz (PDF)' : 'Als PDF')
+    + (multi ? pdfLink('verpflegungsliste?format=pdf&amp;schicht=alle', 'Pro Schicht (PDF)') : '')
+    + `<a href="${base}/verpflegungsliste">Ansehen und auswählen …</a>`;
+  const more = `<details class="menu"><summary class="btn">Mehr ▾</summary><div class="menu-list">${calItems}${expItems}${tnItems}${mealItems}${menuSep}<button type="button" data-print>Drucken</button></div></details>`;
   const headActions = `<a class="btn btn-primary" href="${base}/teilnehmerliste?format=pdf" target="_blank" rel="noopener" title="Teilnehmerliste als PDF in einem neuen Tab öffnen">Teilnehmerliste</a><a class="btn" href="${base}/bearbeiten">Bearbeiten</a>${more}`;
   const tabs = [['uebersicht', 'Übersicht', ''], ['anmeldungen', 'Anmeldungen', tabCounts.registrations], ['anfragen', 'Anfragen', tabCounts.inquiries], ['schichten', 'Schichten', ''], ['formular', 'Formular', ''], ['verlauf', 'Verlauf', '']];
 %>

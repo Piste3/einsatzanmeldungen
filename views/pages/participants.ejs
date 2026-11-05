@@ -9,28 +9,21 @@
 %>
 <%- include('../partials/topbar', {
   crumbs: [['Einsätze', '/einsaetze'], [e.name, `/einsaetze/${e.id}`], ['Teilnehmerliste']],
-  heading: `Teilnehmerliste${shift ? ` · ${shift.name}` : ''}`, subline: sub, showSearch: false,
-  actions: `<a class="btn btn-primary" href="${exportUrl('pdf')}" target="_blank" rel="noopener">PDF öffnen</a><a class="btn" href="${exportUrl('xlsx')}">Excel</a><a class="btn" href="${exportUrl('csv')}">CSV</a>`,
+  heading: `Teilnehmerliste${shift ? ` · ${shift.name}` : perShift ? ' pro Schicht' : ''}`, subline: sub, showSearch: false,
+  actions: `<a class="btn btn-primary" href="${exportUrl('pdf')}" target="_blank" rel="noopener">PDF öffnen</a><a class="btn" href="${exportUrl('xlsx')}">Excel</a><a class="btn" href="${exportUrl('csv')}">CSV</a><a class="btn" href="${h.escapeHtml(h.withQuery(`/einsaetze/${e.id}/verpflegungsliste`, q))}">Verpflegungsliste</a>`,
 }) %>
 
-<form class="filters" method="get" action="<%= base %>" data-autosubmit>
-  <select name="umfang" aria-label="Wer steht auf der Liste?">
-    <% for (const [k, s] of Object.entries(scopes)) { %><option value="<%= k %>" <%= filters.umfang === k ? 'selected' : '' %>><%= s.label %></option><% } %>
-  </select>
-  <% if (e.shifts.length > 1) { %>
-    <select name="schicht" aria-label="Schicht">
-      <option value="">Alle Schichten</option>
-      <% for (const s of e.shifts) { %><option value="<%= s.id %>" <%= filters.schicht === s.id ? 'selected' : '' %>>Nur <%= s.name %><%= h.isMultiDay(e) && s.starts_at ? ` (${h.fmtShiftWhen(s, true)})` : '' %></option><% } %>
-    </select>
-  <% } %>
-  <select name="sort" aria-label="Sortierung">
-    <% for (const [k, l] of [['rang', 'Rang: tief → hoch'], ['rang_ab', 'Rang: hoch → tief'], ['funktion', 'Funktion, dann Rang']]) { %><option value="<%= k %>" <%= filters.sort === k ? 'selected' : '' %>><%= l %></option><% } %>
-  </select>
-</form>
+<%- include('../partials/list-filters', { action: base }) %>
 
 <% if (unresolved) { %>
   <div class="callout warn mb no-print"><%= unresolved === 1 ? '1 Anmeldung ist noch keiner Person zugeordnet und fehlt' : `${unresolved} Anmeldungen sind noch keiner Person zugeordnet und fehlen` %> deshalb in der Liste. → <a class="link" href="/klaerungen">Klärungen</a></div>
 <% } %>
 
-<%- include('../partials/participants-table', { personLinks: true }) %>
+<% if (groups) { %>
+  <% for (const g of groups) { %>
+    <%- include('../partials/participants-table', { personLinks: true, groupTitle: g.title, list: g.list, exts: g.exts, extTotal: g.extTotal, fnSummary: g.fnSummary, showFunction: showFunction && Boolean(g.fnSummary), summary: g.summary }) %>
+  <% } %>
+<% } else { %>
+  <%- include('../partials/participants-table', { personLinks: true }) %>
+<% } %>
 <%- include('../partials/foot') %>

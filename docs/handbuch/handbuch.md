@@ -28,7 +28,7 @@ Jeder Einsatz durchläuft dieselben Schritte. Die Mitglieder sehen davon nur ein
 4. **Zuordnen** – der Einsatzplaner erkennt die Person. Was nicht eindeutig ist, landet in den Klärungen (Kapitel 10).
 5. **Nachfassen** – wer sich nicht gemeldet hat, wird angerufen oder per WhatsApp angefragt (Kapitel 11).
 6. **Bestätigen und einteilen** – jede Anmeldung wird von Hand bestätigt, dann Schichten und Funktionen (EL, SC, BF) besetzen (Kapitel 9, 12 und 6).
-7. **Teilnehmerliste** – für Einsatzleitung und Küche als PDF, oder der Einsatzleiter schaut selbst nach (Kapitel 14 und 15).
+7. **Teilnehmerliste** und **Verpflegungsliste** – für Einsatzleitung und Küche als PDF, für den ganzen Einsatz oder pro Schicht. Oder der Einsatzleiter schaut selbst nach (Kapitel 14 und 15).
 8. **Aufgebot** – der Kalendertermin mit allen Angaben entsteht per Klick (Kapitel 16).
 
 > **Wichtig:** Niemand gilt automatisch als dabei, nur weil er das Formular ausgefüllt hat. Bestätigt wird immer von Hand durch die Aufgebotsstelle.
@@ -57,7 +57,7 @@ Nach 5 falschen Versuchen (Passwort oder Code) ist das Konto für 15 Minuten ges
 |---|---|
 | Aufgebotsstelle | Einsätze und Schichten anlegen und veröffentlichen, Anmeldungen prüfen, zuordnen und bestätigen, Anfragen erfassen, Schichten besetzen, Kalendertermine exportieren, drucken und exportieren, Personen pflegen |
 | Admin | Alles, was die Aufgebotsstelle kann, und zusätzlich: Benutzer verwalten, Auswahllisten, Vorlagen, Bestätigungsmail und Einstellungen, Formular-Eingänge, Update und Neustart, Änderungen an abgeschlossenen Einsätzen (mit Begründung) |
-| Einsatzleiter | Sieht nur die Einsätze, die die Aufgebotsstelle für ihn freigegeben hat: Angaben, Schichten und Teilnehmerliste (mit Mobil und Essenseinschränkungen), als PDF, Excel oder CSV. Nur lesen – ändern kann er nichts (Kapitel 15) |
+| Einsatzleiter | Sieht nur die Einsätze, die die Aufgebotsstelle für ihn freigegeben hat: Angaben, Schichten, Teilnehmerliste (mit Mobil und Essenseinschränkungen) und Verpflegungsliste, als PDF, Excel oder CSV. Nur lesen – ändern kann er nichts (Kapitel 15) |
 | Mitglieder | Haben kein Konto. Sie melden sich nur über das Anmeldeformular auf ClubDesk an |
 
 ### Aufbau der Oberfläche
@@ -161,7 +161,7 @@ Die Übersicht passt meist auf einen Bildschirm. Links steht, wie es um den Eins
 - **Status und Formular** (rechts): Entwurf → Veröffentlicht → Abgeschlossen, oder jederzeit Abgesagt. Nach dem Abschluss sind die Daten schreibgeschützt; Änderungen sind dann nur noch durch einen Admin mit Begründung möglich. Bei einer Absage bleiben alle Daten erhalten.
 - **Im Formular anzeigen** (in derselben Karte): schaltet den Einsatz im Anmeldeformular ein oder aus, z. B. wenn er voll ist. Darunter führt **So sieht der Einsatz im Formular aus →** zum Reiter «Formular».
 - **Einsatzleiter-Zugriff:** gibt den Einsatz für einen Einsatzleiter frei (Kapitel 15).
-- Oben rechts stehen drei Knöpfe: **Teilnehmerliste** (dunkel, Kapitel 14), **Bearbeiten** und **Mehr ▾**. Im Menü **Mehr** liegen der **Kalendertermin** (Kapitel 16), der Export der aktuellen Liste als Excel oder CSV, die Teilnehmerliste als Excel oder CSV mit **Auswahl anpassen …** und **Drucken**.
+- Oben rechts stehen drei Knöpfe: **Teilnehmerliste** (dunkel, Kapitel 14), **Bearbeiten** und **Mehr ▾**. Im Menü **Mehr** liegen der **Kalendertermin** (Kapitel 16), der Export der aktuellen Liste als Excel oder CSV, die **Teilnehmerliste** (pro Schicht als PDF, als Excel oder CSV, **Auswahl anpassen …**), die **Verpflegungsliste** (ganzer Einsatz oder pro Schicht als PDF, **Ansehen und auswählen …**) und **Drucken**.
 - Was sonst geändert wurde, steht im Reiter **Verlauf**.
 
 ### Reiter «Formular»
@@ -252,7 +252,7 @@ Freiwillig lässt sich erfassen, wie viele Personen der Abteilung eine Essensein
 - Sie **zählen in der Besetzung mit** (Ist / Soll) – in der Übersicht («8 eigene + 6 extern»), im Cockpit, in der Einsatzliste und unter «Schichten». Ist eine Schicht damit voll, erscheint der übliche Hinweis.
 - In den **Rückmeldungen** steht die Zahl zusätzlich, z. B. «9 + 6 ext. / 10».
 - Auf der **Teilnehmerliste** (Seite, PDF, Excel, CSV) stehen sie in einem eigenen Abschnitt mit Anzahl, Schicht, Essenseinschränkungen, Kontakt und Bemerkung. Oben steht das Total, z. B. «11 Personen + 9 extern = 20 total».
-- In der **Verpflegung** unter der Teilnehmerliste zählen ihre Essenseinschränkungen zu denen der eigenen Leute dazu, z. B. «3 vegetarisch». Die übrigen Personen der Abteilung zählen als «ohne Einschränkung». Hat eine Abteilung gar keine Essenseinschränkungen eingetragen, erscheinen ihre Personen als «extern (keine Angaben)».
+- In der **Verpflegung** unter der Teilnehmerliste und in der **Verpflegungsliste** zählen ihre Essenseinschränkungen zu denen der eigenen Leute dazu, z. B. «3 vegetarisch». Die übrigen Personen der Abteilung zählen als «ohne Einschränkung». Hat eine Abteilung gar keine Essenseinschränkungen eingetragen, erscheinen ihre Personen als «extern (keine Angaben)».
 
 Die Liste aller Abteilungen pflegt ein Admin unter Einstellungen › Auswahllisten (Kapitel 18).
 
@@ -475,7 +475,7 @@ Namenssuche, Zeitraum (nächste 2 Wochen bis nächstes Jahr), Mannschaft, «Nur 
 - Offene Einsätze lassen sich direkt mit **Anfrage erfassen** nachfassen.
 - **Frühere Einsätze** und der **Verlauf** sind zuklappbar. Die Seite lässt sich drucken und nach Excel exportieren.
 
-## 14 · Die Teilnehmerliste
+## 14 · Teilnehmerliste und Verpflegungsliste
 
 Die Teilnehmerliste zeigt auf einen Blick, wer kommt – mit **Rang, Name, Mobilnummer und Essenseinschränkungen**, der tiefste Rang zuerst. Sie ist das, was die Einsatzleitung und die Küche brauchen.
 
@@ -497,11 +497,36 @@ Das Menü **Mehr ▾** neben dem Knopf bietet die Liste unter «Teilnehmerliste�
 **Auswahl anpassen …** (ebenfalls im Menü **Mehr**) zeigt die Liste in der App und lässt wählen:
 
 - **Wer steht drauf:** «Angemeldete» (neu, Rückfrage und bestätigt – wie die Besetzung), «Nur bestätigte» oder «Angemeldete + Warteliste». Abmeldungen, Absagen und ungültige Anmeldungen stehen nie drauf.
-- **Schicht:** Hat der Einsatz mehrere Schichten, lässt sich die Liste auf eine Schicht einschränken; dann erscheinen auch nur die externen Abteilungen dieser Schicht. Sonst zeigt eine Spalte, wer in welcher Schicht ist.
+- **Schicht:** Hat der Einsatz mehrere Schichten, gibt es drei Möglichkeiten:
+  - **Ganzer Einsatz** (Standard): alle in einer Liste. Eine Spalte zeigt, wer in welcher Schicht ist.
+  - **Pro Schicht (je ein Block):** jede Schicht mit ihren eingeteilten Personen und externen Abteilungen, darunter die Verpflegung dieser Schicht. Wer in zwei Schichten ist, steht in beiden. Wer noch in keiner Schicht eingeteilt ist, steht am Schluss im Block «Noch in keiner Schicht eingeteilt». Im PDF beginnt jede Schicht auf einer neuen Seite. So kann jede Schichtleitung ihr eigenes Blatt bekommen.
+  - **Nur «Name der Schicht»:** nur diese Schicht, mit den externen Abteilungen dieser Schicht.
 - **Sortierung:** Rang tief → hoch (Standard) oder hoch → tief, innerhalb des Rangs alphabetisch, oder **Funktion, dann Rang** (EL, SC, BF zuerst, dann die Einsatzteilnehmer).
 - **PDF öffnen**, **Excel** und **CSV** übernehmen genau diese Auswahl.
 
+Die Teilnehmerliste pro Schicht als PDF gibt es auch direkt im Menü **Mehr ▾** unter «Teilnehmerliste» › **Pro Schicht (PDF)**.
+
 Anmeldungen, die noch keiner Person zugeordnet sind, fehlen in der Liste. Die Seite «Auswahl anpassen» weist mit einem Link zu den Klärungen darauf hin. Jedes PDF und jeder Download wird im Verlauf des Einsatzes festgehalten.
+
+### Die Verpflegungsliste für die Küche
+
+Die Verpflegungsliste sagt der Küche, **wie viele Essen** es braucht und **welche Essenseinschränkungen** es gibt. Eigene Personen und externe Abteilungen sind mitgezählt.
+
+![Einsatz › Verpflegungsliste als PDF](bilder/45-verpflegungsliste.jpg)
+
+So öffnest du sie: im Einsatz **Mehr ▾** › «Verpflegungsliste»:
+
+- **Ganzer Einsatz (PDF)** bzw. **Als PDF** bei nur einer Schicht.
+- **Pro Schicht (PDF):** ein Block pro Schicht.
+- **Ansehen und auswählen …** zeigt die Liste in der App. Dort gibt es die gleiche Auswahl wie bei der Teilnehmerliste (wer, Schicht, Sortierung) und die Knöpfe **PDF öffnen**, **Excel** und **CSV**. Der Knopf **Teilnehmerliste** wechselt mit der gleichen Auswahl zur Teilnehmerliste und zurück.
+
+Das steht drin:
+
+- **Essen:** pro Essenseinschränkung die Anzahl, dazu «ohne Einschränkung» und zuunterst **Total Essen**. Beim ganzen Einsatz mit mehreren Schichten gibt es eine Spalte pro Schicht und rechts «Ganzer Einsatz». Wer in mehreren Schichten eingeteilt ist, zählt in jeder dieser Schichten. In «Ganzer Einsatz» zählt jede Person einmal. Wer noch in keiner Schicht ist, steht in der Spalte «ohne Schicht».
+- **Personen mit Essenseinschränkungen:** Rang, Name, Einschränkung und Details (z. B. «Allergie · Nüsse»), der tiefste Rang zuerst. Beim ganzen Einsatz steht dazu die Schicht.
+- **Externe Abteilungen:** Anzahl Personen und ihre Essenseinschränkungen, z. B. «2× vegetarisch, 1× religiös: kein Schweinefleisch». Abteilungen ohne Angaben stehen mit «keine Angaben» drin.
+
+Als **Excel** oder **CSV** hat die Verpflegungsliste eine Zeile pro Schicht und Essenseinschränkung: Schicht, Essen, Anzahl und in der Spalte «Wer» die Namen (bei externen Abteilungen Abteilung und Anzahl). Die Zeile «Total Essen» schliesst jede Schicht ab.
 
 > **Sensible Angaben:** Die Essenseinschränkungen stehen für alle angemeldeten Personen drin, solange der Einsatz bevorsteht. Nach dem Einsatz zeigt die Liste der Aufgebotsstelle nur noch «Hinweis vorhanden»; die genaue Angabe sieht dann nur noch ein Admin.
 
@@ -535,7 +560,8 @@ Ein Klick auf den Einsatz zeigt:
 - **Schichten** mit Zeiten und Besetzung (Ist / Soll), dazu die externen Abteilungen.
 - **Funktionen** mit Ist / Soll pro Schicht und wer welche Funktion hat.
 - **Teilnehmer** mit Funktion, Rang, Mobilnummer, Essenseinschränkungen, Schicht und Status, der tiefste Rang zuerst. Auswahl wie bei der Teilnehmerliste: «Angemeldete», «Nur bestätigte» oder «Angemeldete + Warteliste», einzelne Schicht, Sortierung.
-- Oben **Teilnehmerliste (PDF)**, **Excel** und **CSV** – genau mit der gewählten Auswahl.
+- Oben **Teilnehmerliste (PDF)**, **Excel** und **CSV** – genau mit der gewählten Auswahl. Bei der Schicht gibt es auch **Pro Schicht (je ein Block)**.
+- Der Knopf **Verpflegungsliste** zeigt Anzahl Essen und Essenseinschränkungen, für den ganzen Einsatz oder pro Schicht, als PDF, Excel oder CSV (Kapitel 14).
 
 ![Einsatz aus Sicht des Einsatzleiters](bilder/39-einsatzleiter-einsatz.jpg)
 
@@ -865,7 +891,10 @@ Beim Einsatz das Datum leer lassen und im Reiter «Schichten» jeder Schicht ihr
 Ja. Jede Liste lässt sich drucken und als Excel- oder CSV-Datei exportieren, genau mit den eingestellten Filtern.
 
 **Wie bekomme ich eine Liste aller Teilnehmenden mit Telefon und Essenswünschen?**
-Im Einsatz oben auf **Teilnehmerliste** klicken – sie öffnet sich als PDF in einem neuen Tab. Excel, CSV und weitere Auswahl gibt es im Menü **Mehr ▾** daneben.
+Im Einsatz oben auf **Teilnehmerliste** klicken – sie öffnet sich als PDF in einem neuen Tab. Excel, CSV, die Liste pro Schicht und weitere Auswahl gibt es im Menü **Mehr ▾** daneben.
+
+**Wie viele Essen braucht die Küche?**
+Im Einsatz **Mehr ▾** › «Verpflegungsliste» › **Ganzer Einsatz (PDF)** oder **Pro Schicht (PDF)**. Die Liste zeigt die Anzahl Essen, die Essenseinschränkungen und wer sie hat – externe Abteilungen eingerechnet (Kapitel 14).
 
 **Kann der Einsatzleiter selbst sehen, wer kommt?**
 Ja. Er braucht ein Konto mit der Rolle «Einsatzleiter», und die Aufgebotsstelle gibt ihm den Einsatz in der Übersicht unter «Einsatzleiter-Zugriff» frei. Dann sieht er Angaben und Teilnehmerliste – nur lesen.

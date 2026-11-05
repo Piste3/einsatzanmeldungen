@@ -1,0 +1,16 @@
+<%# Auswahl für Teilnehmer- und Verpflegungsliste: Umfang, Schicht (ganzer Einsatz, pro Schicht, eine Schicht), Sortierung %>
+<form class="filters" method="get" action="<%= action %>" data-autosubmit>
+  <select name="umfang" aria-label="Wer steht auf der Liste?">
+    <% for (const [k, s] of Object.entries(scopes)) { %><option value="<%= k %>" <%= filters.umfang === k ? 'selected' : '' %>><%= s.label %></option><% } %>
+  </select>
+  <% if (event.shifts.length > 1) { %>
+    <select name="schicht" aria-label="Schicht">
+      <option value="">Ganzer Einsatz</option>
+      <option value="alle" <%= filters.schicht === 'alle' ? 'selected' : '' %>>Pro Schicht (je ein Block)</option>
+      <% for (const s of event.shifts) { %><option value="<%= s.id %>" <%= filters.schicht === s.id ? 'selected' : '' %>>Nur <%= s.name %><%= h.isMultiDay(event) && s.starts_at ? ` (${h.fmtShiftWhen(s, true)})` : '' %></option><% } %>
+    </select>
+  <% } %>
+  <select name="sort" aria-label="Sortierung">
+    <% for (const [k, l] of [['rang', 'Rang: tief → hoch'], ['rang_ab', 'Rang: hoch → tief'], ['funktion', 'Funktion, dann Rang']]) { %><option value="<%= k %>" <%= filters.sort === k ? 'selected' : '' %>><%= l %></option><% } %>
+  </select>
+</form>

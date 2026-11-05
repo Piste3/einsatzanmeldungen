@@ -17,7 +17,7 @@ const h = require('../lib/view-helpers');
 const { REG_STATUS, SOURCE, INQUIRY_STATUS, INQUIRY_ROW, MATCH_TYPE, DIET, REG_COUNTING } = require('../lib/labels');
 const { ValidationError, ConflictError } = require('../services/errors');
 const { BY_RANK } = require('../lib/sorting');
-const { tablePdf } = require('../lib/pdf');
+const lists = require('../services/lists');
 const { today } = require('../lib/dates');
 
 const router = express.Router();
@@ -261,94 +261,59 @@ router.get('/einsaetze/:id/anmeldungen', loadEvent, (req, res) => {
   });
 });
 
-// Teilnehmerliste: wer kommt, mit Mobil und Essenseinschränkungen – zum Drucken (PDF), als Excel oder CSV
+// Teilnehmerliste: wer kommt, mit Mobil und Essenseinschränkungen – zum Drucken (PDF), als Excel oder CSV.
+// Für den ganzen Einsatz, pro Schicht (schicht=alle) oder für eine Schicht (schicht=<id>).
+const FORMAT_LABEL = { pdf: 'PDF', csv: 'CSV', xlsx: 'Excel' };
+const unresolvedCount = (eventId) => db.one("SELECT COUNT(*) AS n FROM registrations WHERE event_id = ? AND person_id IS NULL AND status = 'unsicher'", eventId).n;
+const variantText = (v) => (v.shift ? ` (${v.shift.name})` : v.perShift ? ' (pro Schicht)' : '');
+
+function sendPdf(res, baseName, pdf) {
+  const file = `${lists.fileName(baseName)}_${today()}.pdf`;
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', contentDisposition(file).replace(/^attachment/, 'inline'));
+  return res.send(pdf);
+}
+
 router.get('/einsaetze/:id/teilnehmerliste', loadEvent, (req, res) => {
   const e = req.event;
-  const { shift, filters, list, showShift, showStatus, shiftOf, exts, extTotal, fnSummary, showFunction } = registrations.participantView(e, req.query, req.user);
+  const v = registrations.participantView(e, req.query, req.user);
   const format = req.query.format === 'pdf' ? 'pdf' : wantsExport(req);
   if (format) {
     audit.log({
       entity: 'event', entityId: e.id, eventId: e.id, action: 'export',
-      summary: `${req.user.display_name} hat die Teilnehmerliste${shift ? ` (${shift.name})` : ''} für «${e.name}» exportiert (${{ pdf: 'PDF', csv: 'CSV', xlsx: 'Excel' }[format]}, ${list.length} Personen${extTotal ? ` + ${extTotal} extern` : ''})`,
+      summary: `${req.user.display_name} hat die Teilnehmerliste${variantText(v)} für «${e.name}» exportiert (${FORMAT_LABEL[format]}, ${v.list.length} Personen${v.extTotal ? ` + ${v.extTotal} extern` : ''})`,
       user: req.user,
     });
-  }
-  const baseName = `Teilnehmerliste ${e.name}${shift ? ` ${shift.name}` : ''}`;
-  if (format === 'pdf') {
-    const leader = e.leader_person_id ? `Leitung ${[e.leader_rank, e.leader_first, e.leader_last].filter(Boolean).join(' ')}` : '';
-    const summary = registrations.dietSummary(list, exts);
-    const columns = [
-      { label: 'Nr.', fit: true, align: 'right', value: (r, i) => String(i + 1) },
-      ...(showFunction ? [{ label: 'Fkt.', fit: true, value: (r) => (r.func.is_default ? { text: r.func.short, muted: true } : { text: r.func.short, bold: true }) }] : []),
-      { label: 'Rang', fit: true, value: (r) => r.rank_short || '' },
-      { label: 'Name', width: 2, value: (r) => ({ text: `${r.first_name} ${r.last_name}`, bold: true }) },
-      { label: 'Mobil', fit: true, value: (r) => r.mobile || '–' },
-      { label: 'Essenseinschränkungen', width: 2.6, value: (r) => (!r.diet.has ? { text: '–', muted: true } : !r.diet.visible ? { text: r.diet.label, muted: true } : { text: r.diet.label, bold: true }) },
-    ];
-    if (showShift) columns.push({ label: 'Schicht', width: 1.5, value: shiftOf });
-    if (showStatus) columns.push({ label: 'Status', fit: true, value: (r) => REG_STATUS[r.status].short });
-    const extColumns = [
-      { label: 'Abteilung', width: 2, value: (x) => ({ text: x.unit_name, bold: true }) },
-      { label: 'Personen', fit: true, align: 'right', value: (x) => ({ text: String(x.person_count), bold: true }) },
-      ...(showFunction ? [{ label: 'Fkt.', fit: true, value: (x) => x.func.short }] : []),
-      ...(showShift ? [{ label: 'Schicht', width: 1.3, value: (x) => externals.shiftLabel(x, e.shifts) }] : []),
-      { label: 'Essenseinschränkungen', width: 2.2, value: (x) => (x.dietLabel ? { text: x.dietLabel, bold: true } : { text: '–', muted: true }) },
-      { label: 'Kontakt', width: 1.6, value: (x) => x.contact || '–' },
-      { label: 'Bemerkung', width: 1.4, value: (x) => x.note || '' },
-    ];
-    const pdf = tablePdf({
-      title: `Teilnehmerliste · ${e.name}${shift ? ` · ${shift.name}` : ''}`,
-      subtitle: [
-        [shift && h.isMultiDay(e) ? h.fmtShiftWhen(shift, true) : h.fmtEventDate(e, 'wd'), e.start_time ? `Antreten ${e.start_time}${e.start_place ? ` · ${e.start_place}` : ''}` : '', leader].filter(Boolean).join('  ·  '),
-        `${registrations.PARTICIPANT_SCOPES[filters.umfang].label} · ${list.length} ${list.length === 1 ? 'Person' : 'Personen'}${extTotal ? ` + ${extTotal} extern = ${list.length + extTotal} total` : ''} · ${{ rang_ab: 'höchster Rang zuerst', funktion: 'nach Funktion, dann Rang' }[filters.sort] || 'tiefster Rang zuerst'}`,
-        ...(showFunction ? [`Funktionen (Ist/Soll): ${functions.line(fnSummary)}`] : []),
-      ],
-      columns,
-      rows: list.map((r, i) => columns.map((c) => c.value(r, i))),
-      empty: 'Noch niemand angemeldet.',
-      sections: exts.length ? [{
-        title: `Externe Abteilungen · ${extTotal} ${extTotal === 1 ? 'Person' : 'Personen'}`,
-        columns: extColumns,
-        rows: exts.map((x) => extColumns.map((c) => c.value(x))),
-      }] : [],
-      after: list.length || extTotal ? [
-        { label: 'Verpflegung:', text: summary.map(([l, n]) => `${n} ${l}`).join(' · ') },
-        ...(summary.some(([l]) => l === 'Hinweis vorhanden') ? [{ text: '«Hinweis vorhanden»: Nach dem Einsatz sieht die genaue Angabe nur noch ein Admin.', muted: true }] : []),
-      ] : [],
-      footer: `${settings.get('verein_name') || 'KKB'} · KKB-Einsatzplaner · Stand ${h.fmtDateTime(h.nowIso())}`,
-    });
-    const file = `${baseName.replace(/[^\w\-äöüÄÖÜ]+/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '')}_${today()}.pdf`;
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', contentDisposition(file).replace(/^attachment/, 'inline'));
-    return res.send(pdf);
-  }
-  if (format) {
-    const cols = [
-      { label: 'Nr.', value: (r) => list.indexOf(r) + 1 },
-      ...(showFunction ? [{ label: 'Funktion', value: (r) => r.func.short }] : []),
-      { label: 'Rang', value: (r) => r.rank_short || '' },
-      { label: 'Nachname', value: (r) => r.last_name },
-      { label: 'Vorname', value: (r) => r.first_name },
-      { label: 'Mobil', value: (r) => r.mobile || '' },
-      { label: 'Essenseinschränkung', value: (r) => (r.diet.visible ? r.diet.category : r.diet.label) },
-      { label: 'Details', value: (r) => r.diet.text },
-    ];
-    if (showShift) cols.push({ label: 'Schicht', value: shiftOf });
-    if (showStatus) cols.push({ label: 'Status', value: (r) => REG_STATUS[r.status].short });
-    if (!exts.length) return sendTable(res, format, baseName, cols, list);
-    // Externe Abteilungen als eigene Zeilen unten anhängen: Rang «extern», Name = Abteilung, Spalte «Anzahl»
-    cols.splice(1, 0, { label: 'Anzahl', value: (r) => (r.ext ? r.ext.person_count : 1) });
-    const extCols = {
-      'Nr.': () => '', Anzahl: (x) => x.person_count, Funktion: (x) => x.func.short, Rang: () => 'extern', Nachname: (x) => x.unit_name, Vorname: () => '',
-      Mobil: (x) => x.contact || '', 'Essenseinschränkung': (x) => x.dietLabel, Details: (x) => x.note || '', Schicht: (x) => externals.shiftLabel(x, e.shifts), Status: () => '',
-    };
-    const wrapCols = cols.map((c) => ({ label: c.label, value: (r) => (r.ext ? extCols[c.label](r.ext) : c.value(r)) }));
-    return sendTable(res, format, baseName, wrapCols, [...list, ...exts.map((x) => ({ ext: x }))]);
+    const baseName = lists.participantName(e, v);
+    if (format === 'pdf') return sendPdf(res, baseName, lists.participantPdf(e, v));
+    const { cols, rows } = lists.participantTable(e, v);
+    return sendTable(res, format, baseName, cols, rows);
   }
   res.render('pages/participants', {
-    title: `${e.name} · Teilnehmerliste`, list, filters, shift, showShift, showStatus, shiftOf, fnSummary, showFunction,
-    summary: registrations.dietSummary(list, exts), scopes: registrations.PARTICIPANT_SCOPES, exts, extTotal, extShift: (x) => externals.shiftLabel(x, e.shifts),
-    unresolved: db.one("SELECT COUNT(*) AS n FROM registrations WHERE event_id = ? AND person_id IS NULL AND status = 'unsicher'", e.id).n,
+    title: `${e.name} · Teilnehmerliste`, ...v,
+    summary: registrations.dietSummary(v.list, v.exts), scopes: registrations.PARTICIPANT_SCOPES, unresolved: unresolvedCount(e.id),
+  });
+});
+
+// Verpflegungsliste: Anzahl Essen und Essenseinschränkungen (eigene Personen + externe Abteilungen) – Seite, PDF, Excel, CSV
+router.get('/einsaetze/:id/verpflegungsliste', loadEvent, (req, res) => {
+  const e = req.event;
+  const v = registrations.mealView(e, req.query, req.user);
+  const format = req.query.format === 'pdf' ? 'pdf' : wantsExport(req);
+  if (format) {
+    audit.log({
+      entity: 'event', entityId: e.id, eventId: e.id, action: 'export',
+      summary: `${req.user.display_name} hat die Verpflegungsliste${variantText(v)} für «${e.name}» exportiert (${FORMAT_LABEL[format]}, ${v.all.total} Essen)`,
+      user: req.user,
+    });
+    const baseName = lists.mealName(e, v);
+    if (format === 'pdf') return sendPdf(res, baseName, lists.mealPdf(e, v));
+    const { cols, rows } = lists.mealTable(e, v);
+    return sendTable(res, format, baseName, cols, rows);
+  }
+  res.render('pages/meals', {
+    title: `${e.name} · Verpflegungsliste`, ...v, scopes: registrations.PARTICIPANT_SCOPES, unresolved: unresolvedCount(e.id),
+    leaderView: leaders.isLeader(req.user),
   });
 });
 

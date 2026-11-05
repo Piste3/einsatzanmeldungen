@@ -6,7 +6,7 @@ const audit = require('./audit');
 const live = require('../lib/live');
 const persons = require('./persons');
 const functions = require('./functions');
-const { nowIso } = require('../lib/dates');
+const { nowIso, fmtShiftWhen, isMultiDay } = require('../lib/dates');
 const { REG_STATUS, REG_STATUS_MANUAL, REG_COUNTING, SOURCE, DIET } = require('../lib/labels');
 const { ValidationError, ConflictError } = require('./errors');
 const { nameKey } = require('../lib/normalize');
@@ -102,12 +102,15 @@ function participants(eventId, { scope = 'angemeldet', shiftId = null, sort = 'r
   });
 }
 
-// Teilnehmerliste mit Auswahl aus der Adresszeile (Umfang, Schicht, Sortierung) – für Seite und Export
+// Teilnehmerliste mit Auswahl aus der Adresszeile (Umfang, Schicht, Sortierung) – für Seite und Export.
+// Schicht: leer = ganzer Einsatz, «alle» = pro Schicht (je ein Block), Zahl = nur diese Schicht.
 function participantView(e, query, user) {
-  const shift = e.shifts.length > 1 ? e.shifts.find((s) => s.id === Number(query.schicht)) || null : null;
+  const multi = e.shifts.length > 1;
+  const shift = multi ? e.shifts.find((s) => s.id === Number(query.schicht)) || null : null;
+  const perShift = multi && !shift && query.schicht === 'alle';
   const filters = {
     umfang: PARTICIPANT_SCOPES[query.umfang] ? query.umfang : 'angemeldet',
-    schicht: shift ? shift.id : '',
+    schicht: shift ? shift.id : perShift ? 'alle' : '',
     sort: SORTS.includes(query.sort) ? query.sort : 'rang', // «rang_auf» aus alten Links landet so beim Standard
   };
   const list = participants(e.id, { scope: filters.umfang, shiftId: shift?.id, sort: filters.sort }, user);
@@ -118,9 +121,56 @@ function participantView(e, query, user) {
   const extTotal = exts.reduce((a, x) => a + x.person_count, 0);
   const fnSummary = functions.summary(e, { shiftId: shift?.id });
   return {
-    fnSummary, showFunction: fnSummary.usesFunctions, shift, filters, list, showShift: e.shifts.length > 1 && !shift, showStatus: filters.umfang !== 'bestaetigt', shiftOf,
+    fnSummary, showFunction: fnSummary.usesFunctions, shift, perShift, filters, list, showShift: multi && !shift && !perShift, showStatus: filters.umfang !== 'bestaetigt', shiftOf,
     exts, extTotal, extShift: (x) => externals.shiftLabel(x, e.shifts),
+    groups: perShift ? shiftGroups(e, list, exts) : null,
   };
+}
+
+// Name der Schicht mit Zeit, z. B. «Abend · 17:00–22:00» (mehrtägig mit Tag)
+const shiftTitle = (e, s) => [s.name, fmtShiftWhen(s, isMultiDay(e))].filter(Boolean).join(' · ');
+
+// Pro Schicht: jede Schicht mit ihren eingeteilten Personen und externen Abteilungen.
+// Wer noch in keiner Schicht eingeteilt ist, steht am Schluss in einem eigenen Block.
+function shiftGroups(e, list, exts) {
+  const groups = e.shifts.map((s) => {
+    const gx = exts.filter((x) => externals.coversShift(x, s.id));
+    return {
+      shift: s, title: shiftTitle(e, s), list: list.filter((r) => r.assigned.some((a) => a.id === s.id)),
+      exts: gx, extTotal: gx.reduce((a, x) => a + x.person_count, 0), fnSummary: functions.summary(e, { shiftId: s.id }),
+    };
+  });
+  const rest = list.filter((r) => !r.assigned.length);
+  if (rest.length) groups.push({ shift: null, title: 'Noch in keiner Schicht eingeteilt', list: rest, exts: [], extTotal: 0, fnSummary: null });
+  for (const g of groups) g.summary = dietSummary(g.list, g.exts);
+  return groups;
+}
+
+// Verpflegungsliste: Anzahl Essen und Essenseinschränkungen (eigene Personen + externe Abteilungen).
+// Gleiche Auswahl wie die Teilnehmerliste. Ganzer Einsatz mit mehreren Schichten: zusätzlich eine Spalte pro Schicht.
+function mealView(e, query, user) {
+  const view = participantView(e, query, user);
+  const block = (list, exts) => {
+    const extTotal = exts.reduce((a, x) => a + x.person_count, 0);
+    return {
+      list, exts, summary: dietSummary(list, exts), total: list.length + extTotal, persons: list.length, extTotal,
+      people: list.filter((r) => r.diet.has), extDiets: exts.filter((x) => x.dietList.length), extNoInfo: exts.filter((x) => !x.dietList.length),
+    };
+  };
+  const all = block(view.list, view.exts);
+  const groups = view.shift ? null : e.shifts.length > 1 ? shiftGroups(e, view.list, view.exts).map((g) => ({ ...g, ...block(g.list, g.exts) })) : null;
+  // Tabelle Bezeichnung × Schicht (nur ganzer Einsatz): Werte pro Schicht, rechts das Total (jede Person einmal)
+  let matrix = null;
+  if (groups && !view.perShift) {
+    const maps = groups.map((g) => new Map(g.summary));
+    matrix = {
+      cols: groups.map((g) => ({ label: g.shift ? g.shift.name : 'ohne Schicht', when: g.shift ? fmtShiftWhen(g.shift, isMultiDay(e)) : '' })),
+      rows: all.summary.map(([label, n]) => ({ label, values: maps.map((m) => m.get(label) || 0), total: n })),
+      totals: groups.map((g) => g.total), total: all.total,
+      overlap: groups.reduce((a, g) => a + g.total, 0) !== all.total,
+    };
+  }
+  return { ...view, all, groups: view.perShift ? groups : null, shiftBlocks: groups, matrix };
 }
 
 // Zusammenfassung der Essenseinschränkungen für die Küche: [[Bezeichnung, Anzahl]], inkl. externe Abteilungen
@@ -389,5 +439,5 @@ function remove(id, user) {
 
 module.exports = {
   remove, get, listForEvent, listForPerson, unresolved, create, setStatus, bulkStatus, updateNote, assignPerson, setShifts, overlaps,
-  applyWishes, personLabel, findUnresolvedDuplicate, hydrate, participants, participantView, dietSummary, PARTICIPANT_SCOPES, SORTS,
+  applyWishes, personLabel, findUnresolvedDuplicate, hydrate, participants, participantView, mealView, shiftGroups, shiftTitle, dietSummary, PARTICIPANT_SCOPES, SORTS,
 };

@@ -14,7 +14,7 @@
           <td><%- h.eventBadge(e.status) %></td>
           <td class="center"><%= e.angemeldet || '–' %></td>
           <td class="center"><%= e.bestaetigt || '–' %></td>
-          <td class="nowrap right"><a class="btn btn-sm" href="/einsaetze/<%= e.id %>/teilnehmerliste?format=pdf" target="_blank" rel="noopener">Teilnehmerliste</a></td>
+          <td class="nowrap right"><a class="btn btn-sm" href="/einsaetze/<%= e.id %>/teilnehmerliste?format=pdf" target="_blank" rel="noopener">Teilnehmerliste</a> <a class="btn btn-sm" href="/einsaetze/<%= e.id %>/verpflegungsliste?format=pdf" target="_blank" rel="noopener">Verpflegung</a></td>
         </tr>
       <% } %>
       </tbody>

@@ -786,3 +786,8 @@ tr.changed td:first-child { box-shadow: inset 3px 0 0 var(--orange, #e8742a); }
   .server-table .group-row th { display: block; }
 }
 .server-table .server-value input, .server-table .server-value textarea { min-width: 0; }
+
+/* Verpflegungsliste */
+.meal-sum td, .meal-sum th { font-variant-numeric: tabular-nums; }
+.meal-sum th .sub { display: block; font-weight: 400; text-transform: none; letter-spacing: 0; }
+.meal-sum tr.total td { font-weight: 700; border-top: 2px solid var(--border); }

@@ -1,6 +1,7 @@
 <%# Teilnehmertabelle mit Verpflegungs-Zusammenfassung (Teilnehmerliste und Einsatzleiter-Ansicht) %>
-<div class="card participants">
-  <div class="card-head"><h2><%= list.length %> <%= list.length === 1 ? 'Person' : 'Personen' %><%= extTotal ? ` + ${extTotal} extern` : '' %> <span class="hint"><%= scopes[filters.umfang].label %> · Stand <%= h.fmtDateTime(h.nowIso()) %></span></h2></div>
+<% const gTitle = typeof groupTitle !== 'undefined' ? groupTitle : ''; %>
+<div class="card participants<%= gTitle ? ' mb' : '' %>">
+  <div class="card-head"><h2><% if (gTitle) { %><%= gTitle %> <span class="hint"><%= list.length %> <%= list.length === 1 ? 'Person' : 'Personen' %><%= extTotal ? ` + ${extTotal} extern` : '' %></span><% } else { %><%= list.length %> <%= list.length === 1 ? 'Person' : 'Personen' %><%= extTotal ? ` + ${extTotal} extern` : '' %> <span class="hint"><%= scopes[filters.umfang].label %> · Stand <%= h.fmtDateTime(h.nowIso()) %></span><% } %></h2></div>
   <% if (showFunction) { %>
     <div class="card-body fn-line small"><span class="muted">Funktionen (Ist/Soll):</span>
       <%- include('fn-line', { fnSummary }) %>
@@ -10,7 +11,7 @@
     <table>
       <thead><tr><th class="nr"></th><% if (showFunction) { %><th>Funktion</th><% } %><th>Name</th><th>Mobil</th><th>Essenseinschränkungen</th><% if (showShift) { %><th>Schicht</th><% } %><% if (showStatus) { %><th>Status</th><% } %></tr></thead>
       <tbody>
-      <% if (!list.length) { %><tr><td colspan="<%= 4 + (showFunction ? 1 : 0) + (showShift ? 1 : 0) + (showStatus ? 1 : 0) %>" class="empty">Noch niemand angemeldet<%= filters.umfang === 'bestaetigt' ? ' und bestätigt' : '' %>.</td></tr><% } %>
+      <% if (!list.length) { %><tr><td colspan="<%= 4 + (showFunction ? 1 : 0) + (showShift ? 1 : 0) + (showStatus ? 1 : 0) %>" class="empty"><%= gTitle ? 'Niemand eingeteilt' : 'Noch niemand angemeldet' %><%= filters.umfang === 'bestaetigt' ? ' und bestätigt' : '' %>.</td></tr><% } %>
       <% list.forEach((r, i) => { %>
         <tr>
           <td class="nr muted"><%= i + 1 %></td>

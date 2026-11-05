@@ -63,6 +63,9 @@ router.get('/einsaetze/:id(\\d+)/teilnehmerliste', loadGranted, (req, res, next)
   res.redirect(`/einsaetze/${req.event.id}${qs ? `?${qs}` : ''}`);
 });
 
+// Verpflegungsliste: Seite und Exporte laufen über die normale Route (nur lesen)
+router.get('/einsaetze/:id(\\d+)/verpflegungsliste', loadGranted, (req, res, next) => next('router'));
+
 // Handbuch ist erlaubt
 router.use('/handbuch', (req, res, next) => next('router'));
 

@@ -559,3 +559,94 @@ test('Funktionen: Soll pro Einsatz festlegen, zuweisen, Ist/Soll und Teilnehmerl
   assert.deepEqual(db.all('SELECT short FROM functions ORDER BY sort').map((f) => f.short), ['EL', 'SC', 'BF', 'TN', 'SAN']);
   assert.equal(db.one('SELECT short FROM functions WHERE is_default = 1').short, 'TN');
 });
+
+test('Teilnehmer- und Verpflegungsliste: ganzer Einsatz, pro Schicht, eine Schicht', async () => {
+  const db = require('../src/db');
+  const { system } = require('./helpers');
+  const persons = require('../src/services/persons');
+  const events = require('../src/services/events');
+  const registrations = require('../src/services/registrations');
+  const externals = require('../src/services/externals');
+  const leaders = require('../src/services/leaders');
+  const { today, addDays } = require('../src/lib/dates');
+  const rank = (s) => db.one('SELECT id FROM ranks WHERE short = ?', s).id;
+  const ev = events.create({ name: 'Rheinschwimmen', date: addDays(today(), 5), start_time: '10:00', end_time: '14:00' }, system);
+  events.addShift(ev, { name: 'Nachmittag', start: '14:00', end: '18:00' }, system);
+  db.run("UPDATE shifts SET name = 'Vormittag' WHERE event_id = ? AND name = 'Ganzer Einsatz'", ev);
+  const e = events.get(ev);
+  const [vor, nach] = e.shifts;
+  const p = (first, last, r, diet = {}) => persons.create({ first_name: first, last_name: last, status: 'aktiv', rank_id: rank(r), ...diet }, system);
+  const reg = (pid, shifts) => {
+    const id = registrations.create({ eventId: ev, personId: pid, matchType: 'auto', source: 'manuell', wishes: [], user: system });
+    if (shifts.length) registrations.setShifts(id, shifts, system);
+    return id;
+  };
+  reg(p('Vera', 'Vegi', 'Sdt', { diet_category: 'vegetarisch' }), [vor.id]);
+  reg(p('Nora', 'Nuss', 'Kpl', { diet_category: 'allergie', diet_text: 'Erdnüsse' }), [vor.id, nach.id]);
+  reg(p('Otto', 'Ohne', 'Hptm'), [nach.id]);
+  reg(p('Fritz', 'Frei', 'Gfr'), []);
+  externals.add(e, { unit_name: 'Pontoniere', person_count: '4', shift_ids: [String(nach.id)], diet_count: ['1'], diet_category: ['vegan'], diet_text: [''] }, system);
+
+  await users.create({ username: 'kueche', display_name: 'Küche', role: 'aufgebotsstelle', password: 'Aufgebot-2026-k', must_change_password: false }, null);
+  const k = await login('kueche', 'Aufgebot-2026-k');
+  const text = async (path) => (await get(path, k.cookie)).text();
+
+  // Teilnehmerliste pro Schicht: ein Block pro Schicht, wer in zwei Schichten ist, steht zweimal; Rest am Schluss
+  const tn = await text(`/einsaetze/${ev}/teilnehmerliste?schicht=alle`);
+  assert.match(tn, /Teilnehmerliste pro Schicht/);
+  const iVor = tn.indexOf('Vormittag'); const iNach = tn.indexOf('Nachmittag ·'); const iRest = tn.indexOf('Noch in keiner Schicht eingeteilt');
+  assert.ok(iVor > 0 && iVor < iNach && iNach < iRest, 'Schichten in Reihenfolge, Rest am Schluss');
+  assert.equal(tn.split('Nora Nuss').length - 1, 2, 'in zwei Schichten = zweimal aufgeführt');
+  assert.ok(tn.indexOf('Fritz Frei') > iRest);
+  assert.match(tn.slice(iNach, iRest), /Pontoniere/);
+  assert.doesNotMatch(tn.slice(iVor, iNach), /Pontoniere/);
+  const tnCsv = (await text(`/einsaetze/${ev}/teilnehmerliste?format=csv&schicht=alle`)).replace(/^﻿/, '').trim().split(/\r?\n/);
+  assert.match(tnCsv[0], /^Schicht;Nr\.;Anzahl;Rang;Nachname/);
+  assert.match(tnCsv[1], /^Vormittag · 10:00–14:00;1;1;Sdt;Vegi;Vera;/);
+  assert.ok(tnCsv.some((l) => /^Nachmittag · 14:00–18:00;;4;extern;Pontoniere;/.test(l)));
+  const tnPdf = await get(`/einsaetze/${ev}/teilnehmerliste?format=pdf&schicht=alle`, k.cookie);
+  assert.match(tnPdf.headers.get('content-disposition'), /Teilnehmerliste_Rheinschwimmen_pro_Schicht_/);
+  assert.match(Buffer.from(await tnPdf.arrayBuffer()).toString('latin1'), /\/Count 3 /, 'jede Schicht auf einer eigenen Seite');
+
+  // Verpflegungsliste ganzer Einsatz: Spalte pro Schicht + Total (jede Person einmal)
+  const vl = await text(`/einsaetze/${ev}/verpflegungsliste`);
+  assert.match(vl, /<h1>Verpflegungsliste<\/h1>/);
+  const total = vl.match(/<tr class="total"><td>Total Essen<\/td>(.*?)<\/tr>/)[1].match(/>(\d+)</g).map((x) => Number(x.slice(1, -1)));
+  assert.deepEqual(total, [2, 6, 1, 8], 'Vormittag 2, Nachmittag 2 + 4 extern, ohne Schicht 1, ganzer Einsatz 4 + 4');
+  assert.match(vl, /Wer in mehreren Schichten eingeteilt ist/);
+  assert.match(vl, /Nora Nuss<\/strong><\/a><\/td>\s*<td><strong>Allergie<\/strong><\/td>\s*<td>Erdnüsse<\/td>/);
+  assert.match(vl, /1× vegan/);
+  const vlCsv = (await text(`/einsaetze/${ev}/verpflegungsliste?format=csv`)).replace(/^﻿/, '').trim().split(/\r?\n/);
+  assert.equal(vlCsv[0], 'Schicht;Essen;Anzahl;Wer');
+  assert.ok(vlCsv.includes('Ganzer Einsatz;Total Essen;8;'));
+  assert.ok(vlCsv.includes('Nachmittag · 14:00–18:00;vegan;1;Pontoniere 1×'));
+  assert.ok(vlCsv.includes('Ganzer Einsatz;Allergie;1;Kpl Nora Nuss (Erdnüsse)'));
+
+  // eine Schicht und pro Schicht
+  const one = await text(`/einsaetze/${ev}/verpflegungsliste?schicht=${nach.id}`);
+  assert.match(one, /Verpflegungsliste · Nachmittag/);
+  assert.match(one, /<tr class="total"><td>Total Essen<\/td><td class="right">6<\/td>/);
+  assert.doesNotMatch(one, /Vera Vegi/);
+  const per = await text(`/einsaetze/${ev}/verpflegungsliste?schicht=alle`);
+  assert.equal(per.split('<tr class="total">').length - 1, 3, 'drei Blöcke: zwei Schichten + ohne Schicht');
+  const vlPdf = await get(`/einsaetze/${ev}/verpflegungsliste?format=pdf&schicht=alle`, k.cookie);
+  assert.equal(vlPdf.headers.get('content-type'), 'application/pdf');
+  assert.match(Buffer.from(await vlPdf.arrayBuffer()).toString('latin1'), /^%PDF-1\.4/);
+  assert.ok(db.one("SELECT 1 FROM audit_log WHERE event_id = ? AND action = 'export' AND summary LIKE '%Verpflegungsliste (pro Schicht)%'", ev));
+
+  // Menü im Einsatzkopf
+  const head = await text(`/einsaetze/${ev}`);
+  assert.match(head, /verpflegungsliste\?format=pdf&amp;schicht=alle/);
+  assert.match(head, /teilnehmerliste\?format=pdf&amp;schicht=alle/);
+
+  // Einsatzleiter: freigegebener Einsatz ja, andere nein
+  const el = await users.create({ username: 'vera-el', display_name: 'Vera EL', role: 'einsatzleiter', password: 'Leitung-2026-v', must_change_password: false }, null);
+  leaders.grant(ev, el.id, system);
+  const v = await login('vera-el', 'Leitung-2026-v');
+  const elPage = await (await get(`/einsaetze/${ev}/verpflegungsliste`, v.cookie)).text();
+  assert.match(elPage, /Meine Einsätze/);
+  assert.doesNotMatch(elPage, /\/personen\//, 'keine Links zu Personen');
+  assert.equal((await get(`/einsaetze/${ev}/verpflegungsliste?format=pdf`, v.cookie)).headers.get('content-type'), 'application/pdf');
+  const other = events.create({ name: 'Anderer Einsatz', date: addDays(today(), 6) }, system);
+  assert.equal((await get(`/einsaetze/${other}/verpflegungsliste`, v.cookie)).status, 403);
+});
