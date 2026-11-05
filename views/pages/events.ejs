@@ -12,7 +12,6 @@
   <label class="row small muted">von <input type="date" name="from" value="<%= filters.from %>"></label>
   <label class="row small muted">bis <input type="date" name="to" value="<%= filters.to %>"></label>
   <input type="search" name="q" value="<%= filters.q %>" placeholder="Name filtern …">
-  <button class="btn btn-sm" type="submit">Filtern</button>
   <% if (filters.from || filters.to || filters.q || filters.status !== 'aktiv') { %><a class="btn btn-sm btn-ghost" href="/einsaetze">Zurücksetzen</a><% } %>
 </form>
 <div class="card">

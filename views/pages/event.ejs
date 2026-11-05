@@ -7,21 +7,26 @@
   const sub = `<strong>${h.fmtEventDate(e, 'wd')}</strong><span>Antreten ${h.escapeHtml(e.start_time || '–')}${e.start_place ? ' · ' + h.escapeHtml(e.start_place) : ''}</span><span>Leitung ${leader}</span>`;
   const exportTabs = { anmeldungen: 1, anfragen: 1, verlauf: 1 };
   const base = `/einsaetze/${e.id}`;
-  let cal;
+  // Kopf: Teilnehmerliste (Hauptknopf), Bearbeiten, «Mehr ▾» mit allem Weiteren
+  const menuSep = '<div class="sep"></div>';
+  const menuHead = (t) => `<div class="menu-head">${t}</div>`;
+  let calItems;
   if (e.shifts.length > 1) {
-    cal = `<details class="menu"><summary class="btn">Kalendertermin</summary><div class="menu-list">
-      <a href="${base}/kalender?scope=event">Ein Termin für den ganzen Einsatz</a>
-      <a href="${base}/kalender?scope=shifts">Ein Termin pro Schicht</a><div class="sep"></div>
-      ${e.shifts.map((s) => `<a href="${base}/kalender?scope=shift&shift=${s.id}">Nur ${h.escapeHtml(s.name)}</a>`).join('')}</div></details>`;
-  } else cal = `<a class="btn" href="${base}/kalender">Kalendertermin</a>`;
-  const exp = exportTabs[tab]
-    ? `<details class="menu"><summary class="btn">Export</summary><div class="menu-list"><a href="${h.escapeHtml(h.withQuery(`${base}/${tab}`, query, { format: 'xlsx' }))}">Excel (.xlsx)</a><a href="${h.escapeHtml(h.withQuery(`${base}/${tab}`, query, { format: 'csv' }))}">CSV</a><div class="sep"></div><button type="button" data-print>Drucken</button></div></details>`
-    : '<button type="button" class="btn" data-print>Drucken</button>';
+    calItems = menuHead('Kalendertermin')
+      + `<a href="${base}/kalender?scope=event">Ein Termin für den ganzen Einsatz</a><a href="${base}/kalender?scope=shifts">Ein Termin pro Schicht</a>`
+      + e.shifts.map((s) => `<a href="${base}/kalender?scope=shift&shift=${s.id}">Nur ${h.escapeHtml(s.name)}</a>`).join('');
+  } else calItems = `<a href="${base}/kalender">Kalendertermin (.ics)</a>`;
+  const expItems = exportTabs[tab]
+    ? menuSep + menuHead('Diese Ansicht') + `<a href="${h.escapeHtml(h.withQuery(`${base}/${tab}`, query, { format: 'xlsx' }))}">Als Excel (.xlsx)</a><a href="${h.escapeHtml(h.withQuery(`${base}/${tab}`, query, { format: 'csv' }))}">Als CSV</a>`
+    : '';
+  const tnItems = menuSep + menuHead('Teilnehmerliste') + `<a href="${base}/teilnehmerliste?format=xlsx">Als Excel</a><a href="${base}/teilnehmerliste?format=csv">Als CSV</a><a href="${base}/teilnehmerliste">Auswahl anpassen …</a>`;
+  const more = `<details class="menu"><summary class="btn">Mehr ▾</summary><div class="menu-list">${calItems}${expItems}${tnItems}${menuSep}<button type="button" data-print>Drucken</button></div></details>`;
+  const headActions = `<a class="btn btn-primary" href="${base}/teilnehmerliste?format=pdf" target="_blank" rel="noopener" title="Teilnehmerliste als PDF in einem neuen Tab öffnen">Teilnehmerliste</a><a class="btn" href="${base}/bearbeiten">Bearbeiten</a>${more}`;
   const tabs = [['uebersicht', 'Übersicht', ''], ['anmeldungen', 'Anmeldungen', tabCounts.registrations], ['anfragen', 'Anfragen', tabCounts.inquiries], ['schichten', 'Schichten', ''], ['formular', 'Formular', ''], ['verlauf', 'Verlauf', '']];
 %>
 <%- include('../partials/topbar', {
   crumbs: [['Einsätze', '/einsaetze'], [e.name]], heading: e.name, badges: badgesHtml, subline: sub, showSearch: false,
-  actions: cal + exp + `<a class="btn" href="${base}/teilnehmerliste?format=pdf" target="_blank" rel="noopener" title="Teilnehmerliste als PDF in einem neuen Tab öffnen">Teilnehmerliste</a><details class="menu"><summary class="btn" aria-label="Teilnehmerliste: weitere Formate" title="Teilnehmerliste: weitere Formate">▾</summary><div class="menu-list"><a href="${base}/teilnehmerliste?format=pdf" target="_blank" rel="noopener">Teilnehmerliste als PDF</a><a href="${base}/teilnehmerliste?format=xlsx">Teilnehmerliste als Excel</a><a href="${base}/teilnehmerliste?format=csv">Teilnehmerliste als CSV</a><div class="sep"></div><a href="${base}/teilnehmerliste">Auswahl anpassen …</a></div></details><a class="btn" href="${base}/bearbeiten">Bearbeiten</a>`,
+  actions: headActions,
 }) %>
 <% if (e.status === 'abgeschlossen') { %><div class="callout warn mb">Dieser Einsatz ist abgeschlossen. Die Daten sind schreibgeschützt; Änderungen nur noch durch einen Admin mit Begründung.</div><% } %>
 <% if (e.status === 'abgesagt') { %><div class="callout warn mb">Dieser Einsatz wurde abgesagt. Alle Daten bleiben erhalten.</div><% } %>

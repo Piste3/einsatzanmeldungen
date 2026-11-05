@@ -21,15 +21,15 @@
 </div>
 <% if (locked) { %><div class="flash flash-info">Der Einsatz ist <%= h.labels.EVENT_STATUS[event.status].label.toLowerCase() %>. Anfragen lassen sich nur noch ansehen.</div><% } %>
 <div class="card">
-  <div class="card-head nachfassen-head">
-    <h2>Nachfassen</h2>
+  <details class="card-head nachfassen-head help-fold" data-remember="hilfe-nachfassen" open>
+    <summary><h2>Nachfassen</h2><span class="hint help-fold-hint">So geht es</span></summary>
     <ol class="nachfassen-steps">
       <li>Person anrufen oder per WhatsApp anschreiben (Nummer bzw. Sprechblase anklicken).</li>
       <li>Mit <strong>Erfassen</strong> festhalten, wie es gelaufen ist.</li>
       <li>Kommt die Antwort später, in der Zeile <strong>Zugesagt</strong> oder <strong>Abgesagt</strong> klicken.</li>
     </ol>
     <p class="hint">Mehreren dieselbe WhatsApp geschickt? Links ankreuzen und für alle auf einmal erfassen.</p>
-  </div>
+  </details>
   <% if (!locked) { %>
   <form id="auswahl" class="bulkbar" data-bulk>
     <label class="check"><input type="checkbox" data-select-all="person_ids"> <span class="count" data-selected-count data-empty-text="Alle auswählen">Alle auswählen</span></label>
@@ -41,7 +41,16 @@
       <thead><tr><th class="check-col"></th><th>Person</th><th>Mobil</th><th>Status</th><th>Kontaktversuche</th><th class="actions-col"></th></tr></thead>
       <tbody>
       <% if (!list.length) { %><tr><td colspan="6" class="empty"><%= list.total ? 'Keine Treffer für diesen Filter.' : 'Alle aktiven Mitglieder haben sich gemeldet.' %></td></tr><% } %>
-      <% for (const r of list) { const done = ['zugesagt', 'angemeldet'].includes(r.state); const wa = h.waLink(r.mobile); %>
+      <%
+        const isClosed = (r) => ['zugesagt', 'angemeldet', 'abgesagt'].includes(r.state);
+        const openRows = list.filter((r) => !isClosed(r));
+        const closedRows = list.filter(isClosed);
+        const grouped = !filters.status && openRows.length > 0 && closedRows.length > 0;
+        const ordered = grouped ? [...openRows, ...closedRows] : Array.from(list);
+      %>
+      <% for (const r of ordered) { const done = ['zugesagt', 'angemeldet'].includes(r.state); const wa = h.waLink(r.mobile); %>
+        <% if (grouped && r === openRows[0]) { %><tr class="group-row"><td colspan="6"><strong>Noch offen</strong> <span class="muted">· <%= openRows.length %></span></td></tr><% } %>
+        <% if (grouped && r === closedRows[0]) { %><tr class="group-row"><td colspan="6"><strong>Erledigt</strong> <span class="muted">· <%= closedRows.length %> (zugesagt, angemeldet oder abgesagt)</span></td></tr><% } %>
         <tr data-row-id="i<%= r.person_id %>-<%= r.attempts.length %>-<%= r.state %>" class="<%= r.state === 'whatsapp' ? 'highlight' : '' %> <%= done || r.state === 'abgesagt' ? 'row-muted' : '' %>">
           <td class="check-col"><% if (!locked && !done) { %><input type="checkbox" name="person_ids" value="<%= r.person_id %>" form="auswahl" aria-label="Auswählen"><% } %></td>
           <td><%- h.rank(r.rank_short) %><a href="/personen/<%= r.person_id %>"><strong><%= r.first_name %> <%= r.last_name %></strong></a><% if (r.teams) { %><span class="sub"><%= r.teams %></span><% } %></td>

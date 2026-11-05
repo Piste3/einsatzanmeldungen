@@ -7,7 +7,6 @@
 <% } else if (!multi) { %>
   <div class="callout mb">Dieser Einsatz hat eine Schicht. Jede Anmeldung gilt automatisch für diese Schicht – es gibt nichts zu verteilen.</div>
 <% } %>
-<p class="small muted no-print">Externe Abteilungen (nur mit Anzahl Personen) erfasst du in der <a class="link" href="/einsaetze/<%= event.id %>#externe">Übersicht</a>.</p>
 <% if (multi && unassigned.length) { %>
   <div class="card mb">
     <div class="card-head"><h2>Noch keiner Schicht zugeteilt <span class="hint"><%= unassigned.length %> Anmeldungen</span></h2></div>
@@ -21,19 +20,24 @@
     <% } %>
   </div>
 <% } %>
-<div class="shift-cols">
+<div class="shift-cols" id="funktionen">
   <% for (const col of columns) { const assignedIds = new Set(col.regs.map((r) => r.id)); %>
     <div class="card">
       <div class="card-head">
         <div><h2><%= col.name %></h2><span class="small muted"><%= h.fmtShiftWhen(col, multiDay) || 'Zeit offen' %><%= col.start_place ? ` · ${col.start_place}` : '' %></span></div>
         <div class="occ"><div class="occ-head"><span>Besetzung<%= col.extern ? ` · davon ${col.extern} extern` : '' %></span><strong><%= col.ist %> / <%= col.soll ?? '–' %><%= col.soll ? (col.ist >= col.soll ? ' · voll' : ` · ${col.missing} fehlen`) : '' %></strong></div><div class="bar <%= col.tone %>"><span style="width:<%= h.pct(col.ist, col.soll) %>%"></span></div></div>
-        <% const fx = fnSummary.shifts.find((x) => x.id === col.id); if (fx && fx.rows.some((r) => r.soll || (!r.is_default && r.ist))) { %><div class="fn-line small fn-line-shift"><% for (const f of fx.rows.filter((r) => r.soll || r.ist)) { %><span class="fn-chip tone-<%= f.tone %>" title="<%= f.name %>"><span class="fn-tag<%= f.is_default ? ' fn-default' : '' %>"><%= f.short %></span> <%= f.ist %>/<%= f.soll ?? '–' %></span><% } %></div><% } %>
+        <% const fx = fnSummary.shifts.find((x) => x.id === col.id); if (fx && fx.rows.some((r) => r.soll || (!r.is_default && r.ist))) { %><div class="fn-line small fn-line-shift"><% for (const f of fx.rows.filter((r) => r.soll || r.ist)) { %><span class="fn-chip tone-<%= f.tone %>" title="<%= f.name %>: <%= f.ist %> / <%= f.soll ?? '–' %><%= f.soll ? (f.over ? ` · ${f.over} zu viel` : f.missing ? ` · ${f.missing} ${f.missing === 1 ? 'fehlt' : 'fehlen'}` : ' · voll') : '' %>"><span class="fn-tag<%= f.is_default ? ' fn-default' : '' %>"><%= f.short %></span> <%= f.ist %>/<%= f.soll ?? '–' %></span><% } %></div><% } %>
       </div>
       <% if (!col.regs.length && !col.exts.length) { %><div class="empty">Noch niemand zugeteilt.</div><% } %>
       <% for (const r of col.regs) { const current = r.assigned.map((a) => a.id).join(','); %>
-        <div class="shift-row <%= overlapNames.has(`${r.rank_short ? r.rank_short + ' ' : ''}${r.first_name} ${r.last_name}`) ? 'overlap' : '' %>" data-row-id="s<%= col.id %>-<%= r.id %>">
-          <span class="name"><%- h.rank(r.rank_short) %><a href="/personen/<%= r.person_id %>"><%= r.first_name %> <%= r.last_name %></a><% if (!r.func.is_default) { %> <span class="fn-tag" title="<%= r.func.name %>"><%= r.func.short %></span><% } %></span>
+        <div class="shift-row <%= overlapNames.has(`${r.rank_short ? r.rank_short + ' ' : ''}${r.first_name} ${r.last_name}`) ? 'overlap' : '' %>" data-row-id="s<%= col.id %>-<%= r.id %>-<%= r.func.id %>">
+          <span class="name"><%- h.rank(r.rank_short) %><a href="/personen/<%= r.person_id %>"><%= r.first_name %> <%= r.last_name %></a></span>
           <%- h.badge(h.labels.REG_STATUS[r.status].short, h.labels.REG_STATUS[r.status].tone) %>
+          <form method="post" action="/anmeldungen/<%= r.id %>/funktion" data-autosubmit class="fn-select"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="back" value="<%= back %>">
+            <select name="function_id" data-submit-on-change aria-label="Funktion von <%= r.first_name %> <%= r.last_name %>" title="Funktion (gilt für alle Schichten der Person)" class="<%= r.func.is_default ? 'fn-is-default' : '' %>">
+              <% for (const f of functionOptions) { %><option value="<%= f.id %>" <%= r.func.id === f.id ? 'selected' : '' %> title="<%= f.name %>"><%= f.short %></option><% } %>
+              <% if (!functionOptions.some((f) => f.id === r.func.id)) { %><option value="<%= r.func.id %>" selected><%= r.func.short %></option><% } %>
+            </select></form>
           <% if (multi) { %>
             <form method="post" action="/anmeldungen/<%= r.id %>/schichten" data-autosubmit><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="back" value="<%= back %>">
               <select name="shift_ids" data-submit-on-change aria-label="Umteilen">
@@ -60,13 +64,14 @@
   <% } %>
 </div>
 
-<div class="mt"><%- include('_functions', { fnSummary, assignable, functionOptions, editable: true, backTo: `/einsaetze/${event.id}/schichten#funktionen` }) %></div>
+<p class="small muted mt-s">Die Funktion (<%= functionOptions.map((f) => f.short).join(', ') %>) wählst du direkt in der Zeile. Sie gilt für alle Schichten der Person. Es zählen Anmeldungen mit Status Neu, Rückfrage oder Bestätigt sowie <a class="link" href="/einsaetze/<%= event.id %>#externe">externe Abteilungen</a>. Wer keine Funktion hat, zählt als <%= fnSummary.def.name %>.</p>
 
 <% const closed = event.status === 'abgeschlossen'; %>
-<form class="card mt no-print" method="post" action="/einsaetze/<%= event.id %>/schichten/speichern" id="shifts-form" data-section>
+<details class="card mt no-print shifts-fold" id="schichten-bearbeiten"<%= !event.date_from ? ' open' : '' %>>
+<summary class="card-head"><h2>Schichten bearbeiten <span class="hint">Name, Tag, Zeit und Soll pro Funktion</span></h2><span class="btn btn-sm">Öffnen</span></summary>
+<form method="post" action="/einsaetze/<%= event.id %>/schichten/speichern" id="shifts-form" data-section>
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   <% if (closed) { %><input type="hidden" name="reason" value="" data-reason><% } %>
-  <div class="card-head"><h2>Schichten verwalten <span class="hint">Name, Tag, Zeit, Soll pro Funktion – das Soll der Schicht ist die Summe</span></h2></div>
   <div class="table-wrap">
     <table class="form-table">
       <thead><tr><th>Name</th><th>Datum</th><th>Beginn</th><th>Ende</th><% for (const f of fnCols) { %><th class="fn-col" title="Soll <%= f.name %>"><span class="fn-tag<%= f.is_default ? ' fn-default' : '' %>"><%= f.short %></span></th><% } %><th class="fn-col" title="Summe der Funktionen">Soll</th><th>Antretensort (optional)</th><th>Interne Bemerkung</th><th></th></tr></thead>
@@ -100,10 +105,11 @@
   </div>
   <% if (closed) { %><div class="card-body small muted">Abgeschlossen: Änderungen nur durch Admins mit Begründung (wird beim Speichern abgefragt).</div><% } %>
   <div class="section-foot">
-    <span class="small muted" data-dirty-hint>Mehrere Schichten ändern, dann einmal speichern. Für eine neue Schicht die unterste Zeile ausfüllen.</span>
+    <span class="small muted" data-dirty-hint>Das Soll der Schicht ist die Summe der Funktionen. Mehrere Schichten ändern, dann einmal speichern. Neue Schicht: unterste Zeile ausfüllen.</span>
     <button class="btn btn-primary btn-sm" type="submit">Speichern</button>
   </div>
 </form>
+</details>
 <% if (multi) { for (const s of event.shifts) { %>
   <form id="shift-del-<%= s.id %>" method="post" action="/schichten/<%= s.id %>/loeschen" class="hidden" data-confirm="Schicht «<%= s.name %>» löschen? Zuteilungen gehen verloren."><input type="hidden" name="_csrf" value="<%= csrfToken %>"><% if (closed) { %><input type="hidden" name="reason" value="" data-reason><% } %></form>
 <% } } %>

@@ -245,6 +245,14 @@
       return;
     }
     if (t.matches('[data-print]')) { ev.preventDefault(); window.print(); return; }
+    // Zugeklappte Gruppe einer Tabelle auf- und zuklappen (z. B. «Warteliste, abgemeldet» bei den Anmeldungen)
+    if (t.matches('[data-toggle-group]')) {
+      const key = t.dataset.toggleGroup;
+      const open = t.getAttribute('aria-expanded') !== 'true';
+      t.setAttribute('aria-expanded', String(open));
+      $$(`tr[data-group="${key}"]`, t.closest('table')).forEach((tr) => { tr.hidden = !open; });
+      return;
+    }
     // Essenseinschränkungen externer Abteilungen: Zeile hinzufügen / entfernen
     if (t.matches('[data-diet-add]')) {
       const field = t.closest('.field');
@@ -1155,7 +1163,19 @@
     } else cardTable(t);
   });
 
-  const enhanceAll = (root = document) => { $$('select[data-search]', root).forEach(enhanceSelect); cardAll(root.closest ? (root.closest('table') || root) : root); };
+  // Aufklappbare Hilfen merken sich, ob man sie zugeklappt hat (nur in diesem Browser)
+  const rememberFold = (root = document) => $$('details[data-remember]', root).forEach((d) => {
+    if (d.dataset.rememberDone) return;
+    d.dataset.rememberDone = '1';
+    try { if (localStorage.getItem(`fold:${d.dataset.remember}`) === 'zu') d.open = false; } catch (e) { /* ohne Speicher: offen lassen */ }
+    d.addEventListener('toggle', () => { try { localStorage.setItem(`fold:${d.dataset.remember}`, d.open ? 'auf' : 'zu'); } catch (e) { /* egal */ } });
+  });
+  rememberFold();
+  // Sprungadresse (#schichten-bearbeiten) auf einen zugeklappten Bereich: aufklappen
+  const openHashTarget = () => { const id = decodeURIComponent(location.hash.slice(1)); const d = id && document.getElementById(id); if (d && d.tagName === 'DETAILS') d.open = true; };
+  openHashTarget();
+  window.addEventListener('hashchange', openHashTarget);
+  const enhanceAll = (root = document) => { rememberFold(root); $$('select[data-search]', root).forEach(enhanceSelect); cardAll(root.closest ? (root.closest('table') || root) : root); };
   enhanceAll();
   new MutationObserver((muts) => {
     for (const m of muts) for (const n of m.addedNodes) if (n.nodeType === 1) { if (n.matches('select[data-search]')) enhanceSelect(n); else enhanceAll(n); }

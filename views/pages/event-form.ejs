@@ -75,7 +75,7 @@
   const colTotal = (c) => shownFns.reduce((a, f) => a + (Number(valOf(c, f)) > 0 ? Number(valOf(c, f)) : 0), 0);
 %>
     <div class="card" id="funktionen">
-      <div class="card-head"><h2>Schichten und Soll <span class="hint">wie viele braucht es?</span></h2><% if (!isNew) { %><a class="small" href="/einsaetze/<%= e.id %>/schichten">Schichten verwalten →</a><% } %></div>
+      <div class="card-head"><h2>Schichten und Soll <span class="hint">wie viele braucht es?</span></h2><% if (!isNew) { %><a class="small" href="/einsaetze/<%= e.id %>/schichten#schichten-bearbeiten">Schichten hinzufügen oder ändern →</a><% } %></div>
       <div class="table-wrap">
         <table class="form-table fn-grid" data-fn-grid>
           <thead>
@@ -95,7 +95,7 @@
         </table>
       </div>
       <div class="card-body small muted">
-        Leer lassen, was es nicht braucht. Das Soll der Schicht ist die Summe. Wer keine Funktion hat, zählt als <%= (functionList.find((f) => f.is_default) || {}).name || 'Einsatzteilnehmer' %>. Zuweisen kannst du die Funktionen in der Übersicht oder im Reiter «Anmeldungen».
+        Leer lassen, was es nicht braucht. Das Soll der Schicht ist die Summe. Wer keine Funktion hat, zählt als <%= (functionList.find((f) => f.is_default) || {}).name || 'Einsatzteilnehmer' %>. Die Funktion einer Person wählst du im Reiter «Schichten» oder «Anmeldungen».
         <% if (isNew) { %>Weitere Schichten kannst du nach dem Speichern im Reiter «Schichten» hinzufügen.<% } %>
       </div>
     </div>
@@ -123,6 +123,12 @@
       </div>
     </div>
   </div>
+</div>
+<div class="form-foot">
+  <span class="small muted" data-dirty-hint>Änderungen werden erst mit «Speichern» übernommen.</span>
+  <% if (!isNew) { %><a class="btn btn-ghost" href="/einsaetze/<%= e.id %>">Abbrechen</a><% } %>
+  <button class="btn<%= (isNew || e.status === 'entwurf') ? '' : ' btn-primary' %>" type="submit" name="action" value="save"><%= isNew ? 'Als Entwurf speichern' : 'Speichern' %></button>
+  <% if (isNew || e.status === 'entwurf') { %><button class="btn btn-primary" type="submit" name="action" value="publish">Veröffentlichen</button><% } %>
 </div>
 </form>
 <%- include('../partials/foot') %>

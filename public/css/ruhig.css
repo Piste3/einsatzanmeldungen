@@ -313,3 +313,42 @@ td .sub, .cell-sub { font-size: 12px; margin-top: 1px; }
 }
 
 .ch.md { background: var(--orange-soft); color: var(--orange-dark); }
+
+/* ---------- Seiten-Gerüst (05.11.2026): Kopf, «Zu tun», Werkzeugleiste, Inhalt ---------- */
+.menu-list .menu-head { padding: 6px 10px 2px; font-size: 11px; font-weight: 600; color: var(--muted-2); text-transform: uppercase; letter-spacing: .04em; }
+.lage-todo { margin-top: 6px; color: var(--text-2); }
+.lage-todo .link { margin-left: 4px; white-space: nowrap; }
+.switch + .link { display: inline-block; margin-top: 10px; }
+#externe .ext-add summary { padding-top: 12px; padding-bottom: 12px; }
+/* Tabellen in Gruppen (Anmeldungen, Anfragen) */
+tr.group-row td { background: var(--hover); padding-top: 8px; padding-bottom: 8px; font-size: 12.5px; border-bottom: 1px solid var(--line); }
+tr.group-row strong { font-weight: 600; }
+.group-toggle { background: none; border: 0; padding: 0; font: inherit; font-weight: 600; color: var(--text); cursor: pointer; min-height: 28px; }
+.group-toggle .chev { display: inline-block; transition: transform .15s; }
+.group-toggle[aria-expanded="true"] .chev { transform: rotate(90deg); }
+@media (prefers-reduced-motion: reduce) { .group-toggle .chev { transition: none; } }
+.bulkbar .bulk-aside { margin-left: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+.bulkbar:has([data-needs-selection]:not([hidden])) .bulk-aside { display: none; }
+/* Aufklappbare Hilfe im Kartenkopf */
+.help-fold > summary { list-style: none; cursor: pointer; display: flex; align-items: baseline; gap: 10px; min-height: 28px; }
+.help-fold > summary::-webkit-details-marker { display: none; }
+.help-fold > summary::after { content: "▾"; margin-left: auto; color: var(--muted-2); font-size: 12px; }
+.help-fold:not([open]) > summary::after { content: "▸"; }
+.help-fold[open] .help-fold-hint { display: none; }
+.help-fold > summary { align-self: stretch; }
+/* Schichten: Funktion pro Zeile, «Schichten bearbeiten» zugeklappt */
+.shift-row .fn-select select { width: auto; min-width: 64px; height: 30px; padding: 0 24px 0 8px; font-size: 12.5px; }
+.shifts-fold > summary { list-style: none; cursor: pointer; }
+.shifts-fold > summary::-webkit-details-marker { display: none; }
+.shifts-fold[open] > summary .btn { display: none; }
+.shifts-fold[open] > summary { border-bottom: 1px solid var(--line); }
+/* Formular-Fuss mit Speichern (Einsatz bearbeiten) */
+.form-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 16px; padding: 12px 0; border-top: 1px solid var(--line); }
+.form-foot [data-dirty-hint] { margin-right: auto; }
+#shifts-form .form-table { width: 100%; }
+#shifts-form .form-table input[type=text] { min-width: 96px; }
+#shifts-form .form-table .fn-col input { width: 48px; }
+#shifts-form .form-table td { padding-left: 4px; padding-right: 4px; }
+#shifts-form .form-table td:first-child input { min-width: 130px; }
+#shifts-form .form-table input[type=date] { min-width: 124px; }
+#shifts-form .form-table input[type=time] { min-width: 90px; }
