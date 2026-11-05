@@ -25,10 +25,11 @@
   // Kopf: bei Schichten an verschiedenen Tagen steht über jeder Schichtspalte ihr Tag, sonst das Einsatzdatum
   const colDate = (col) => (col.shift && col.shift.starts_at && h.isMultiDay(col.event) ? h.fmtRange(col.shift.starts_at.slice(0, 10), null, 'short') : h.fmtEventDate(col.event, 'short'));
   const colExt = (col) => (col.shift ? col.event.externByShift[col.shift.id] || 0 : 0);
-  const colFill = (col) => { const t = colTotals[col.key]; return col.shift && col.shift.target_count ? Math.min(100, Math.round(((t.an + colExt(col)) / col.shift.target_count) * 100)) : null; };
+  const colIst = (col) => (col.shift ? col.event.istByShift[col.shift.id] || 0 : col.event.ist);
+  const colFill = (col) => (col.shift && col.shift.target_count ? Math.min(100, Math.round(((colIst(col) + colExt(col)) / col.shift.target_count) * 100)) : null);
   const extTxt = (n) => (n ? ` + ${n} ext.` : '');
   const colTone = (col) => { const f = colFill(col); return f === null ? 'gray' : f >= 100 ? 'green' : f >= 60 ? 'yellow' : 'red'; };
-  const fill = (e) => (e.soll ? Math.min(100, Math.round(((totals[e.id].an + (e.extern || 0)) / e.soll) * 100)) : null);
+  const fill = (e) => (e.soll ? Math.min(100, Math.round(((e.ist + (e.extern || 0)) / e.soll) * 100)) : null);
   const tone = (e) => { const f = fill(e); return f === null ? 'gray' : f >= 100 ? 'green' : f >= 60 ? 'yellow' : 'red'; };
 %>
 <form class="filters fb-filters" method="get" data-autosubmit>
@@ -56,7 +57,7 @@
   <details class="menu">
   <summary class="btn btn-sm">Legende ▾</summary>
   <div class="menu-list legend legend-menu small">
-    <span class="fb fb-an">✓</span> An <span class="fb fb-an fb-d-bestaetigt">✓</span> Bestätigt <span class="fb fb-an fb-d-warteliste"><%- DSYM.warteliste %></span> Warteliste <span class="fb fb-ab">✕</span> Ab <span class="fb fb-unsicher fb-d-whatsapp"><%- DSYM.whatsapp %></span> Nachricht gesendet <span class="fb fb-unsicher fb-d-telefon"><%- DSYM.telefon %></span> Nicht erreicht <span class="fb fb-unsicher fb-d-muendlich"><%- DSYM.muendlich %></span> Mündlich gefragt <span class="fb fb-unsicher">?</span> Unsicher <span class="fb fb-unsicher fb-d-rueckfrage">!</span> Rückfrage <span class="fb fb-offen"></span> Offen<% if (columns.some((c) => c.shift)) { %> <span class="fb fb-schicht_offen">✓</span> An, Schicht offen <span class="fb fb-andere">–</span> Andere Schicht<% } %>
+    <span class="fb fb-an">✓</span> An <span class="fb fb-an fb-d-bestaetigt">✓</span> Bestätigt <span class="fb fb-an fb-d-warteliste"><%- DSYM.warteliste %></span> Warteliste <span class="fb fb-ab">✕</span> Ab <span class="fb fb-unsicher fb-d-whatsapp"><%- DSYM.whatsapp %></span> Nachricht gesendet <span class="fb fb-unsicher fb-d-telefon"><%- DSYM.telefon %></span> Nicht erreicht <span class="fb fb-unsicher fb-d-muendlich"><%- DSYM.muendlich %></span> Mündlich gefragt <span class="fb fb-unsicher">?</span> Unsicher <span class="fb fb-unsicher fb-d-rueckfrage">!</span> Rückfrage <span class="fb fb-offen"></span> Offen<% if (columns.some((c) => c.shift)) { %> <span class="fb fb-schicht_offen">✓</span> An, ohne Schicht <span class="fb fb-andere">–</span> Andere Schicht<% } %>
   </div>
   </details>
   </div>
@@ -79,10 +80,10 @@
                 <% if (col.shift) { const ct = colTotals[col.key]; %>
                   <span class="sh"><%= col.shift.name %><% if (h.isMultiDay(e) && col.shift.starts_at) { %><span class="sh-day"><%= colDate(col) %></span><% } %></span>
                   <span class="fill fill-<%= colTone(col) %>"><span style="width:<%= colFill(col) ?? 0 %>%"></span></span>
-                  <span class="num"><%= ct.an %><%= extTxt(colExt(col)) %><%= col.shift.target_count ? ` / ${col.shift.target_count}` : ' An' %><%= ct.schicht_offen ? ` · ${ct.schicht_offen} offen` : '' %></span>
+                  <span class="num"><%= colIst(col) %><%= extTxt(colExt(col)) %><%= col.shift.target_count ? ` / ${col.shift.target_count}` : '' %><%= ct.schicht_offen ? ` · ${ct.schicht_offen} ohne Schicht` : '' %></span>
                 <% } else { %>
                   <span class="fill fill-<%= tone(e) %>"><span style="width:<%= fill(e) ?? 0 %>%"></span></span>
-                  <span class="num"><%= t.an %><%= extTxt(e.extern) %><%= e.soll ? ` / ${e.soll}` : ' An' %></span>
+                  <span class="num"><%= e.ist %><%= extTxt(e.extern) %><%= e.soll ? ` / ${e.soll}` : '' %></span>
                 <% } %>
               </a>
             </th>
@@ -120,24 +121,28 @@
     for (const row of rows) groups[row.eventCells[i].state].push({ ...row.person, last: row.eventCells[i].last });
     const t = totals[e.id];
     // Bei mehreren Schichten: wer für welche Schicht
-    const perShift = e.shifts.map((sh) => ({ sh, list: rows.filter((row) => row.cells.some((c) => c.eventId === e.id && c.shiftId === sh.id && c.state === 'an')).map((row) => row.person) }));
+    const perShift = e.shifts.map((sh) => ({ sh, list: rows.filter((row) => row.cells.some((c) => c.eventId === e.id && c.shiftId === sh.id && c.counts)).map((row) => row.person) }));
     const noShift = e.shifts.length ? rows.filter((row) => row.cells.some((c) => c.eventId === e.id && c.state === 'schicht_offen')).map((row) => row.person) : [];
+    // Warteliste zählt nicht zur Besetzung, steht aber sichtbar unter den Schichten
+    const waiting = e.shifts.length ? rows.filter((row) => row.eventCells[i].reg?.status === 'warteliste').map((row) => row.person) : [];
   %>
   <div class="card fb-card">
     <div class="card-head">
       <h2><a href="/einsaetze/<%= e.id %>"><%= e.name %></a> <span class="hint"><%= h.fmtEventDate(e, 'short') %><%= e.status === 'entwurf' ? ' · Entwurf' : '' %></span></h2>
-      <span class="num"><strong><%= t.an %></strong><%= extTxt(e.extern) %><%= e.soll ? ` / ${e.soll}` : '' %> An</span>
+      <span class="num"><strong><%= e.ist %></strong><%= extTxt(e.extern) %><%= e.soll ? ` / ${e.soll}` : '' %> besetzt</span>
     </div>
     <div class="card-body">
       <span class="fill fill-<%= tone(e) %> fill-wide"><span style="width:<%= fill(e) ?? 0 %>%"></span></span>
       <% if (perShift.length) { %>
         <div class="fb-shifts">
           <% for (const { sh, list } of perShift) { %>
-            <div class="fb-shift-row"><span class="sh-name"><%= sh.name %> <span class="muted small"><%= h.fmtShiftWhen(sh, h.isMultiDay(e)) %></span></span><span class="num"><strong><%= list.length %></strong><%= extTxt(e.externByShift[sh.id]) %><%= sh.target_count ? ` / ${sh.target_count}` : '' %></span></div>
+            <div class="fb-shift-row"><span class="sh-name"><%= sh.name %> <span class="muted small"><%= h.fmtShiftWhen(sh, h.isMultiDay(e)) %></span></span><span class="num"><strong><%= e.istByShift[sh.id] || 0 %></strong><%= extTxt(e.externByShift[sh.id]) %><%= sh.target_count ? ` / ${sh.target_count}` : '' %></span></div>
             <div class="fb-names"><% for (const p of list) { %><a class="pill" href="/personen/<%= p.id %>"><%= p.first_name %> <%= p.last_name %></a><% } %><% if (!list.length) { %><span class="muted small">noch niemand</span><% } %></div>
           <% } %>
-          <% if (noShift.length) { %><div class="fb-shift-row"><span class="sh-name">An, Schicht noch offen</span><a class="link small" href="/einsaetze/<%= e.id %>/schichten">zuteilen →</a></div>
+          <% if (noShift.length) { %><div class="fb-shift-row"><span class="sh-name">An, ohne Schicht</span><a class="link small" href="/einsaetze/<%= e.id %>/schichten">zuteilen →</a></div>
             <div class="fb-names"><% for (const p of noShift) { %><a class="pill" href="/personen/<%= p.id %>"><%= p.first_name %> <%= p.last_name %></a><% } %></div><% } %>
+          <% if (waiting.length) { %><div class="fb-shift-row"><span class="sh-name">Warteliste <span class="muted small">zählt nicht</span></span></div>
+            <div class="fb-names"><% for (const p of waiting) { %><a class="pill" href="/personen/<%= p.id %>"><%= p.first_name %> <%= p.last_name %></a><% } %></div><% } %>
         </div>
       <% } %>
       <% for (const [st, list] of Object.entries(groups)) { if (!list.length || (st === 'an' && perShift.length)) continue; const many = st === 'offen' && list.length > 8; %>

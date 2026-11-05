@@ -38,7 +38,8 @@
   <div class="lage-counts">
     <a href="/einsaetze/<%= event.id %>/anmeldungen?status=neu"><strong><%= s.neu %></strong> neu</a>
     <a href="/einsaetze/<%= event.id %>/anmeldungen?status=zu_pruefen" class="<%= s.zuPruefen ? 'warn' : '' %>"><strong><%= s.zuPruefen %></strong> zu prüfen</a>
-    <a href="/einsaetze/<%= event.id %>/anmeldungen?status=bestaetigt"><strong><%= s.bestaetigt %></strong> von <%= s.total %> bestätigt</a>
+    <a href="/einsaetze/<%= event.id %>/anmeldungen?status=bestaetigt"><strong><%= s.bestaetigt %></strong> bestätigt</a>
+    <a href="/einsaetze/<%= event.id %>/anmeldungen"><strong><%= s.total %></strong> Anmeldungen</a>
     <a href="/einsaetze/<%= event.id %>/anfragen"><strong><%= s.offen %></strong> ohne Rückmeldung</a>
   </div>
 </div>

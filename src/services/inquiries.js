@@ -42,6 +42,14 @@ function rowState(r) {
 }
 const ROW_ORDER = { nicht_erreicht: 0, whatsapp: 0, unsicher: 0, offen: 2, zugesagt: 3, angemeldet: 4, abgesagt: 5 };
 
+// Zahl der Gruppe «Noch offen» im Reiter Anfragen (noch nicht angefragt, nicht erreicht, WhatsApp ohne Antwort, unsicher)
+function openCount(eventId) {
+  return db.one(`SELECT COUNT(*) AS n FROM persons p LEFT JOIN inquiries i ON i.person_id = p.id AND i.event_id = ?
+    WHERE NOT EXISTS (SELECT 1 FROM registrations g WHERE g.event_id = ? AND g.person_id = p.id AND g.status <> 'ungueltig')
+      AND (p.status = 'aktiv' OR i.id IS NOT NULL)
+      AND coalesce(i.status, 'offen') IN ('offen', 'nicht_erreicht', 'whatsapp', 'unsicher')`, eventId, eventId).n;
+}
+
 /**
  * Reiter «Anfragen»: alle aktiven Personen ohne Anmeldung zu diesem Einsatz
  * plus alle Personen, die bereits angefragt wurden.
@@ -243,4 +251,4 @@ function resetPerson(eventId, personId, user) {
   });
 }
 
-module.exports = { listForEvent, forPerson, addAttempt, setStatus, removeAttempt, resetPerson, attemptLabel };
+module.exports = { listForEvent, openCount, forPerson, addAttempt, setStatus, removeAttempt, resetPerson, attemptLabel };

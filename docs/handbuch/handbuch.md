@@ -106,7 +106,7 @@ Das Cockpit beantwortet jeden Tag die Frage: Was ist zu tun?
 ![Das Cockpit](bilder/02-cockpit.jpg)
 
 - **Zu tun** (ganz oben, über die ganze Breite): konkrete Hinweise, z. B. unklare Namen klären, Anmeldungen bestätigen, Personen nachfassen, ein voller Einsatz, der noch im Formular steht, oder ein Aufgebot, das noch nicht exportiert ist. Ein Klick öffnet die passende Seite. Sind es mehr als sechs Punkte, zeigt **weitere Punkte anzeigen** den Rest. Rechts im Kopf steht der nächste Einsatz.
-- **Noch nicht bestätigt:** links alle Anmeldungen für anstehende Einsätze mit Status «Neu eingegangen», «Rückfrage nötig» oder «Warteliste», nach Einsatz gruppiert und nach Rang geordnet, mit Schicht, Quelle und Zeitpunkt. **Bestätigen** bestätigt direkt aus dem Cockpit. Hat ein Einsatz mehrere neue Anmeldungen, bestätigt **Alle N neuen bestätigen** in der Zeile des Einsatzes alle auf einmal (mit Rückfrage). Ein Klick auf den Einsatznamen öffnet seine Anmeldungen.
+- **Noch nicht bestätigt:** links alle Anmeldungen für anstehende Einsätze mit Status «Neu eingegangen» oder «Rückfrage nötig», nach Einsatz gruppiert. Die Warteliste steht nicht hier, weil sie ein bewusster Entscheid ist. Die Liste ist nach Rang geordnet, mit Schicht, Quelle und Zeitpunkt. **Bestätigen** bestätigt direkt aus dem Cockpit. Hat ein Einsatz mehrere neue Anmeldungen, bestätigt **Alle N neuen bestätigen** in der Zeile des Einsatzes alle auf einmal (mit Rückfrage). Ein Klick auf den Einsatznamen öffnet seine Anmeldungen.
 - **Anstehende Einsätze:** direkt darunter die Besetzung pro Schicht (Ist / Soll; grün = voll, gelb = teilweise, rot = viele fehlen), dazu wie viele Anmeldungen neu, unsicher oder offen sind. Ein Klick öffnet den Einsatz.
 - **Letzte Aktivität** (rechts): die acht neuesten Einträge, wer sich wann angemeldet hat, wer wen angefragt und wer was bestätigt hat. **Ältere anzeigen** zeigt weitere.
 
@@ -154,7 +154,7 @@ Aus den Schichten ergibt sich der Zeitraum des Einsatzes. Er steht überall dort
 
 Die Übersicht passt meist auf einen Bildschirm. Links steht, wie es um den Einsatz steht, rechts das, was man selten ändert.
 
-- **Lage** ganz oben: ein Satz, ob alle Schichten besetzt sind oder was noch fehlt, z. B. «Abendschicht: 1 SC, 3 TN». Hat eine Schicht mehr Leute als nötig, steht das in der zweiten Zeile. Fehlen noch Angaben, steht darunter **Noch offen:** mit den fehlenden Punkten, z. B. «Anmeldefrage», und der Link **Angaben ergänzen →**. Rechts davon die offenen Arbeiten: neu, zu prüfen, bestätigt und ohne Rückmeldung. Ein Klick öffnet die passende Liste.
+- **Lage** ganz oben: ein Satz, ob alle Schichten besetzt sind oder was noch fehlt, z. B. «Abendschicht: 1 SC, 3 TN». Hat eine Schicht mehr Leute als nötig, steht das in der zweiten Zeile. Fehlen noch Angaben, steht darunter **Noch offen:** mit den fehlenden Punkten, z. B. «Anmeldefrage», und der Link **Angaben ergänzen →**. Rechts davon die Zahlen: neu, zu prüfen, bestätigt, alle Anmeldungen und ohne Rückmeldung. Ein Klick öffnet die passende Liste.
 - **Besetzung:** eine Tabelle mit einer Zeile pro Funktion (EL, SC, BF, TN) und einer Spalte pro Schicht. In jedem Feld Ist / Soll und darunter «voll», «1 fehlt» oder «2 zu viel». Die letzte Zeile zeigt das Total der Schicht mit Balken, bei externen Abteilungen z. B. «8 eigene + 6 extern». **Einteilen →** führt zum Reiter «Schichten», wo man Schichten und Funktionen zuteilt (Kapitel 6).
 - **Angaben** des Einsatzes und wann das Aufgebot zuletzt exportiert wurde.
 - **Externe Abteilungen:** andere Abteilungen oder Vereine, die mit einer Anzahl Personen mithelfen (Kapitel 7). Gibt es keine, steht nur der Knopf **+ Externe Abteilung hinzufügen**.
@@ -352,7 +352,7 @@ Gross- und Kleinschreibung, Leerzeichen, Umlaute (ä/ae) und vertauschte Vor- un
 
 ## 11 · Nachfassen per Telefon, WhatsApp oder mündlich
 
-Der Reiter **Anfragen** zeigt alle aktiven Mitglieder, die sich für diesen Einsatz noch nicht gemeldet haben, und alle, die schon angefragt wurden. Die Zahl im Reiter zeigt die offenen Nachfass-Fälle.
+Der Reiter **Anfragen** zeigt alle aktiven Mitglieder, die sich für diesen Einsatz noch nicht gemeldet haben, und alle, die schon angefragt wurden. Die Zahl im Reiter ist dieselbe wie bei der Gruppe **Noch offen**: noch nicht angefragt, nicht erreicht, WhatsApp ohne Antwort und unsicher.
 
 ![Einsatz › Anfragen](bilder/11-anfragen.jpg)
 
@@ -416,13 +416,13 @@ Die Seite **Rückmeldungen** beantwortet die wichtigste Frage der Aufgebotsstell
 ![Rückmeldungen als Tabelle](bilder/14-rueckmeldungen.jpg)
 
 - Mitglieder als Zeilen, Einsätze als Spalten. Kopfzeile und Namensspalte bleiben beim Scrollen stehen.
-- Im Spaltenkopf jedes Einsatzes steht die Besetzung als Balken, z. B. «11 / 16».
+- Im Spaltenkopf jedes Einsatzes steht die Besetzung als Balken, z. B. «11 / 16». Sie zählt gleich wie der Reiter «Schichten» und die Übersicht: Anmeldungen mit Status Neu, Rückfrage oder Bestätigt. Die Warteliste zählt nicht.
 - **Symbole:** ✓ An, ✕ Ab, ? Unsicher, leeres Feld = Offen. Dazu gibt es eigene Symbole für den genaueren Stand: ein grün gefülltes ✓ für eine bestätigte Anmeldung, eine Uhr für die Warteliste, eine blaue Sprechblase für «Nachricht gesendet, Antwort offen», ein gelbes Telefon für «angerufen, nicht erreicht», eine sprechende Person für «mündlich gefragt, weiss es noch nicht» und ! für «Rückfrage nötig». Der Knopf **Legende ▾** rechts über der Tabelle erklärt alle Symbole. Das Symbol zeigt immer nur den neuesten Stand.
 - **Wer hat das gesetzt?** Fährt man mit der Maus über ein Feld, steht dort der letzte Eintrag mit Name und Zeit, z. B. «Zuletzt: Anmeldung: Bestätigt – Lena Meier, heute 14:20 (4 Einträge im Verlauf)». Hat sich jemand selbst über das Formular gemeldet, steht «Person selbst».
 - Ein Klick auf ein Feld öffnet immer das Fenster für einen Kontaktversuch, auch bei ✓ oder ✕. Oben steht der aktuelle Stand (z. B. «An · Anmeldung: Bestätigt · Formular · gesetzt von Lena Meier, heute 14:20») mit einem Link zur Anmeldung. Darunter folgt der **Verlauf** (siehe unten). Dort lässt sich auch **«Unsicher – weiss es noch nicht»** eintragen oder mit **Alles zurücksetzen** neu beginnen. Erfasst man bei einer bestehenden Anmeldung «Abgesagt», wird sie als zurückgezogen markiert. «Zugesagt» macht eine zurückgezogene Anmeldung wieder aktiv.
 - Unten stehen pro Einsatz die Summen An · Ab · Unsicher · Offen.
 - Nach dem Speichern, «Verlauf löschen» oder «Alles zurücksetzen» bleibt die Seite an derselben Stelle stehen. Auch die Tabelle springt nicht nach oben oder links zurück.
-- **Einsätze mit mehreren Schichten** haben eine Spalte pro Schicht, mit eigener Besetzung (z. B. «Tagschicht 8 / 10»). ✓ heisst: für diese Schicht angemeldet oder eingeteilt. – heisst: angemeldet, aber für eine andere Schicht. Ein gestricheltes ✓ heisst: zugesagt, aber die Schicht ist noch nicht festgelegt. Ab, Unsicher und Offen gelten für alle Schichten des Einsatzes.
+- **Einsätze mit mehreren Schichten** haben eine Spalte pro Schicht, mit eigener Besetzung (z. B. «Tagschicht 8 / 10 · 1 ohne Schicht»). «ohne Schicht» heisst: zugesagt, aber noch keiner Schicht zugeteilt. ✓ heisst: für diese Schicht angemeldet oder eingeteilt. – heisst: angemeldet, aber für eine andere Schicht. Ein gestricheltes ✓ heisst: zugesagt, aber die Schicht ist noch nicht festgelegt. Ab, Unsicher und Offen gelten für alle Schichten des Einsatzes.
 - Klickt man in einer Schicht-Spalte auf ein offenes Feld und wählt **«Zugesagt»**, ist diese Schicht schon angekreuzt. Weitere Schichten lassen sich dazu wählen, oder man lässt die Auswahl leer und teilt später unter «Schichten» zu. Das gilt genauso beim Erfassen unter Einsatz › Anfragen und auf der Seite eines Mitglieds.
 
 ### Verlauf pro Person und Einsatz
@@ -445,7 +445,7 @@ Das Symbol links entspricht dem Stand nach diesem Eintrag. Ein Punkt bedeutet, d
 
 ![Rückmeldungen pro Einsatz](bilder/15-rueckmeldungen-pro-einsatz.jpg)
 
-Eine Karte pro Einsatz mit den Namen, gruppiert nach An, Unsicher, Ab und Offen. Bei mehreren Schichten steht «An» aufgeteilt nach Schicht, jeweils mit Besetzung, dazu «An, Schicht noch offen» mit Link zum Zuteilen. Ein Klick auf einen offenen Namen erfasst direkt eine Anfrage. Fährt man mit der Maus über einen Namen, steht dort, wer den Stand zuletzt gesetzt hat und wann. Diese Ansicht ist besonders übersichtlich, wenn viele Einsätze anstehen.
+Eine Karte pro Einsatz mit den Namen, gruppiert nach An, Unsicher, Ab und Offen. Bei mehreren Schichten steht «An» aufgeteilt nach Schicht, jeweils mit Besetzung, dazu «An, ohne Schicht» mit Link zum Zuteilen und die **Warteliste** mit dem Hinweis «zählt nicht». Ein Klick auf einen offenen Namen erfasst direkt eine Anfrage. Fährt man mit der Maus über einen Namen, steht dort, wer den Stand zuletzt gesetzt hat und wann. Diese Ansicht ist besonders übersichtlich, wenn viele Einsätze anstehen.
 
 ### Filter
 
@@ -464,7 +464,7 @@ Namenssuche, Zeitraum (nächste 2 Wochen bis nächstes Jahr), Mannschaft, «Nur 
 | Rückfrage (!) | Anmeldung mit offener Frage, z. B. nachträglich «Nein» im Formular |
 | Offen | Noch keine Rückmeldung und noch nicht angefragt |
 | Andere Schicht (–) | Angemeldet, aber für eine andere Schicht dieses Einsatzes |
-| An, Schicht offen (gestricheltes ✓) | Zugesagt, Schicht noch nicht festgelegt |
+| An, ohne Schicht (gestricheltes ✓) | Zugesagt, Schicht noch nicht festgelegt |
 
 ### Die Seite eines Mitglieds
 

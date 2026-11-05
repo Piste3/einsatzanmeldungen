@@ -41,8 +41,8 @@ function loadEvent(req, res, next) {
   res.locals.liveTopics = [`event:${e.id}`, 'events'];
   res.locals.tabCounts = {
     registrations: db.one("SELECT COUNT(*) AS n FROM registrations WHERE event_id = ? AND status <> 'ungueltig'", e.id).n,
-    // offene Nachfass-Fälle: nicht erreicht oder Antwort auf WhatsApp ausstehend
-    inquiries: events.stats(e).inquiryOpen,
+    // gleiche Zahl wie die Gruppe «Noch offen» im Reiter Anfragen
+    inquiries: inquiries.openCount(e.id),
   };
   next();
 }

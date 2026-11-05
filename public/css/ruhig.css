@@ -403,3 +403,13 @@ tr.group-row strong { font-weight: 600; }
 #shifts-form .form-table .fn-col input { width: 40px; padding-left: 4px; padding-right: 4px; text-align: center; }
 #shifts-form .form-table td:first-child input { min-width: 90px; }
 #shifts-form .form-table input[type=date] { width: 124px; }
+
+/* Einsatz bearbeiten am Handy: Soll-Tabelle bleibt eine Tabelle; bei vielen Schichten scrollt nur sie seitlich */
+@media (max-width: 760px) {
+  .table-wrap:has(> table.no-cards) { overflow-x: auto; }
+  .fn-grid { width: 100%; }
+  .fn-grid th:first-child, .fn-grid td:first-child { width: auto; white-space: normal; }
+  .fn-grid .fn-cell { width: 76px; min-width: 76px; padding-left: 4px; padding-right: 4px; }
+  .fn-grid input { width: 60px; }
+  .fn-sum { width: 60px; }
+}

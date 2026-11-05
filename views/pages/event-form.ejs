@@ -77,7 +77,7 @@
     <div class="card" id="funktionen">
       <div class="card-head"><h2>Schichten und Soll <span class="hint">wie viele braucht es?</span></h2><% if (!isNew) { %><a class="small" href="/einsaetze/<%= e.id %>/schichten#schichten-bearbeiten">Schichten hinzufügen oder ändern →</a><% } %></div>
       <div class="table-wrap">
-        <table class="form-table fn-grid" data-fn-grid>
+        <table class="form-table fn-grid no-cards" data-fn-grid>
           <thead>
             <tr><th>Funktion</th><% for (const c of cols) { %><th class="fn-cell"><%= c.name %><% if (c.starts_at) { %><span class="sub muted"><%= h.fmtShiftWhen(c, h.isMultiDay(e)) %></span><% } %></th><% } %></tr>
           </thead>

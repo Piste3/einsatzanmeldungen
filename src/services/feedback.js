@@ -3,8 +3,10 @@
 const db = require('../db');
 const externals = require('./externals');
 const history = require('./history');
+const events = require('./events');
 const { today, addDays, isMultiDay, fmtShiftWhen } = require('../lib/dates');
 const { rankOrder } = require('../lib/sorting');
+const { REG_COUNTING } = require('../lib/labels');
 
 const PERIODS = {
   '2w': { label: 'nächste 2 Wochen', days: 14 },
@@ -88,6 +90,10 @@ function matrix({ team = '', period = '3m', sort = 'rang', includeDrafts = false
       // Externe Abteilungen (nur Anzahl) pro Schicht; Summe wie beim Soll über alle Schichten
       e.externByShift = externals.countsByShift(e.id, shifts.get(e.id) || []);
       e.extern = Object.values(e.externByShift).reduce((a, n) => a + n, 0);
+      // Besetzung (Ist) mit derselben Regel wie Schichten, Übersicht und Cockpit: Neu, Rückfrage, Bestätigt
+      const st = events.stats({ ...e, shifts: shifts.get(e.id) || [] });
+      e.istByShift = Object.fromEntries(st.shifts.map((s) => [s.id, s.intern]));
+      e.ist = st.shifts.length ? st.shifts.reduce((a, s) => a + s.intern, 0) : st.neu + st.rueckfrage + st.bestaetigt;
       // Nur bei mehreren Schichten eine Spalte pro Schicht
       e.shifts = (shifts.get(e.id) || []).length > 1 ? shifts.get(e.id) : [];
     }
@@ -95,7 +101,7 @@ function matrix({ team = '', period = '3m', sort = 'rang', includeDrafts = false
       if (!assigned.has(a.registration_id)) assigned.set(a.registration_id, new Set());
       assigned.get(a.registration_id).add(a.shift_id);
     }
-  } else for (const e of evts) { e.shifts = []; e.externByShift = {}; e.extern = 0; }
+  } else for (const e of evts) { e.shifts = []; e.externByShift = {}; e.extern = 0; e.istByShift = {}; e.ist = 0; }
   // Spalten: ein Einsatz oder eine Schicht eines Einsatzes
   const columns = evts.flatMap((e) => (e.shifts.length
     ? e.shifts.map((sh, i) => ({ event: e, shift: sh, first: i === 0, key: `${e.id}:${sh.id}` }))
@@ -125,7 +131,9 @@ function matrix({ team = '', period = '3m', sort = 'rang', includeDrafts = false
         state = !mine.size ? 'schicht_offen' : mine.has(col.shift.id) ? 'an' : 'andere';
       }
       colTotals[col.key][state]++;
-      return { ...base, state, detail: state === base.state ? base.detail : null, shiftId: col.shift?.id || null };
+      // zählt zur Besetzung dieser Schicht (gleiche Regel wie e.istByShift)
+      const counts = Boolean(col.shift && base.reg && REG_COUNTING.includes(base.reg.status) && assigned.get(base.reg.id)?.has(col.shift.id));
+      return { ...base, state, detail: state === base.state ? base.detail : null, shiftId: col.shift?.id || null, counts };
     });
     return { person: p, cells, eventCells, openCount: eventCells.filter((c) => c.state === 'offen').length };
   });
