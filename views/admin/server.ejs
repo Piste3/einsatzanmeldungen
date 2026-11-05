@@ -6,16 +6,16 @@
   <form class="card" method="post" action="/verwaltung/server" data-section autocomplete="off">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <input type="hidden" name="has__AUTH_PROVIDERS" value="1">
-    <div class="card-head"><h2>Werte aus der .env</h2></div>
+    <div class="card-head"><h2>Werte aus der .env <span class="hint">Gruppe anklicken zum Aufklappen</span></h2></div>
     <div class="card-body small muted">Was du hier speicherst, gilt sofort und geht der <code>.env</code> auf dem Server vor. Ohne Eintrag hier gilt die <code>.env</code>, ohne Eintrag dort der Standardwert. Mit «zurück auf .env» löschst du den Wert hier wieder.</div>
     <div class="table-wrap">
       <table class="form-table server-table">
         <thead><tr><th>Einstellung</th><th>Wert</th><th>Quelle</th></tr></thead>
-        <% for (const g of groups) { %>
+        <% groups.forEach((g, gi) => { const gk = `srv${gi}`; const own = g.fields.filter((f) => f.source === 'verwaltung').length; %>
         <tbody>
-          <tr class="group-row"><th colspan="3"><%= g.name %></th></tr>
+          <tr class="group-row"><th colspan="3"><button type="button" class="group-toggle" data-toggle-group="<%= gk %>" aria-expanded="false"><span class="chev" aria-hidden="true">▸</span> <%= g.name %></button> <span class="muted small">· <%= h.plural(g.fields.length, 'Wert', 'Werte') %><%= own ? ` · ${own} hier geändert` : '' %></span></th></tr>
           <% for (const f of g.fields) { const id = `v__${f.key}`; %>
-          <tr>
+          <tr data-group="<%= gk %>" hidden>
             <td class="server-label">
               <label for="<%= id %>"><%= f.label %></label>
               <code class="server-key"><%= f.key %></code>
@@ -48,7 +48,7 @@
           </tr>
           <% } %>
         </tbody>
-        <% } %>
+        <% }) %>
       </table>
     </div>
     <div class="section-foot">
@@ -57,8 +57,8 @@
     </div>
   </form>
   <div class="stack">
-    <div class="card">
-      <div class="card-head"><h2>Nur in der .env</h2></div>
+    <details class="card help-fold-card">
+      <summary class="card-head"><h2>Nur in der .env <span class="hint">Port, Datenordner …</span></h2><span class="btn btn-sm">Anzeigen</span></summary>
       <div class="card-body small">
         <p class="muted">Diese Werte braucht der Server, bevor er startet. Darum lassen sie sich nur in der Datei <code>.env</code> ändern, danach unter <a href="/verwaltung/system">System</a> neu starten.</p>
         <dl class="server-readonly">
@@ -71,7 +71,7 @@
           <% } %>
         </dl>
       </div>
-    </div>
+    </details>
     <form class="card" method="post" action="/verwaltung/server/testmail">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="card-head"><h2>Mailserver testen</h2></div>

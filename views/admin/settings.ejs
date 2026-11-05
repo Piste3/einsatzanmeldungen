@@ -1,5 +1,5 @@
 <%- include('../partials/head') %>
-<%- include('../partials/topbar', { crumbs: [['Einstellungen'], ['Allgemein']], heading: 'Einstellungen', showSearch: false }) %>
+<%- include('../partials/topbar', { crumbs: [['Einstellungen'], ['Allgemein']], heading: 'Allgemein', showSearch: false }) %>
 <%- include('_tabs') %>
 <form method="post" action="/verwaltung/einstellungen" class="grid grid-main">
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">

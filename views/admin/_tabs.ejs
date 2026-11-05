@@ -1,5 +1,14 @@
-<nav class="tabs">
-  <% for (const [href, label] of [['/verwaltung/benutzer', 'Benutzer'], ['/verwaltung/listen', 'Auswahllisten'], ['/verwaltung/vorlagen', 'Vorlagen'], ['/verwaltung/kalendertermin', 'Kalendertermin'], ['/verwaltung/bestaetigungsmail', 'Bestätigungsmail'], ['/verwaltung/einstellungen', 'Einstellungen'], ['/verwaltung/server', 'Server'], ['/verwaltung/system', 'System']]) { %>
-    <a href="<%= href %>" class="<%= path.startsWith(href) ? 'active' : '' %>"><%= label %></a>
-  <% } %>
+<%
+  const tabGroups = [
+    ['Inhalte', [['/verwaltung/listen', 'Auswahllisten'], ['/verwaltung/vorlagen', 'Vorlagen'], ['/verwaltung/kalendertermin', 'Kalendertermin'], ['/verwaltung/bestaetigungsmail', 'Bestätigungsmail']]],
+    ['Betrieb', [['/verwaltung/einstellungen', 'Allgemein'], ['/verwaltung/benutzer', 'Benutzer'], ['/verwaltung/server', 'Server'], ['/verwaltung/system', 'System']]],
+  ];
+%>
+<nav class="tabs tabs-grouped" aria-label="Einstellungen">
+  <% tabGroups.forEach(([groupLabel, items], gi) => { %>
+    <span class="tab-group-label<%= gi ? ' tab-group-sep' : '' %>"><%= groupLabel %></span>
+    <% for (const [href, label] of items) { %>
+      <a href="<%= href %>" class="<%= path.startsWith(href) ? 'active' : '' %>"><%= label %></a>
+    <% } %>
+  <% }) %>
 </nav>

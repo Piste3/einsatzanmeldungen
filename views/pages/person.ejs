@@ -33,12 +33,13 @@
     </div>
   </div>
   <div class="stack">
-    <div class="grid grid-2">
-      <% for (const [key, label, tone] of sections) { const items = groups[key]; %>
-        <div class="card">
-          <div class="card-head"><h2><%- h.badge(label, tone) %> <span class="hint"><%= h.plural(items.length, 'Einsatz', 'Einsätze') %></span></h2></div>
-          <div class="card-body">
-            <% if (!items.length) { %><span class="muted small"><%= key === 'unsicher' ? 'Zurzeit keine offenen Kontaktversuche.' : 'keine' %></span><% } %>
+    <% const totalItems = sections.reduce((n, [key]) => n + groups[key].length, 0); %>
+    <div class="card" id="naechste">
+      <div class="card-head"><h2>Nächste Einsätze <span class="hint"><%= totalItems ? sections.filter(([key]) => groups[key].length).map(([key, label]) => `${groups[key].length} ${label.toLowerCase()}`).join(' · ') : 'keine' %></span></h2></div>
+      <% if (!totalItems) { %><div class="empty">Keine anstehenden Einsätze.</div><% } %>
+      <% for (const [key, label, tone] of sections) { const items = groups[key]; if (!items.length) continue; %>
+          <div class="person-group-head"><%- h.badge(label, tone) %> <span class="hint"><%= h.plural(items.length, 'Einsatz', 'Einsätze') %></span></div>
+          <div class="card-body person-group">
             <% for (const it of items) { %>
               <div class="ev-item">
                 <div>
@@ -55,7 +56,6 @@
               </div>
             <% } %>
           </div>
-        </div>
       <% } %>
     </div>
     <details class="card collapse">

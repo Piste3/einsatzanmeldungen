@@ -43,22 +43,22 @@
   </div>
   <div class="stack">
     <div class="card">
-      <div class="card-head"><h2>Einbettung in ClubDesk</h2></div>
+      <div class="card-head"><h2>Postausgang <span class="hint">Anmeldebestätigungen</span></h2></div>
+      <% if (!outbox.length) { %><div class="empty">Noch keine E-Mails.</div><% } %>
+      <% const mailRow = (m) => `<div class="activity"><time>${h.escapeHtml(h.fmtRelative(m.created_at))}</time> ${h.escapeHtml(m.to_address)} · ${h.escapeHtml(m.subject)}
+          <span class="sub">${h.badge({ gesendet: 'gesendet', fehler: 'Fehler', offen: 'offen', nicht_konfiguriert: 'kein SMTP konfiguriert' }[m.status], { gesendet: 'green', fehler: 'red', offen: 'blue', nicht_konfiguriert: 'gray' }[m.status])} ${h.escapeHtml(m.error || '')}</span></div>`; %>
+      <% for (const m of outbox.slice(0, 10)) { %><%- mailRow(m) %><% } %>
+      <% if (outbox.length > 10) { %><details class="activity-more"><summary>Ältere anzeigen (<%= outbox.length - 10 %>)</summary><% for (const m of outbox.slice(10)) { %><%- mailRow(m) %><% } %></details><% } %>
+    </div>
+    <details class="card help-fold-card">
+      <summary class="card-head"><h2>Einbettung in ClubDesk <span class="hint">einmalig einrichten</span></h2><span class="btn btn-sm">Anzeigen</span></summary>
       <div class="card-body small">
         <p>Feste Adresse – ändert sich nie:</p>
         <input type="text" readonly value="<%= formUrl %>" data-select-on-focus>
         <p class="mt-s">Einmalig im ClubDesk-Baustein «Externe Inhalte» einbetten. Falls die Darstellung auf dem Handy nicht passt, genügt ein einfacher Link «Zur Anmeldung».</p>
         <p class="muted">Einbettung erlaubt für: <code><%= frameAncestors %></code> <% if (user && user.role === 'admin') { %>(ändern unter <a href="/verwaltung/server">Einstellungen › Server</a>)<% } else { %>(FORM_FRAME_ANCESTORS)<% } %></p>
       </div>
-    </div>
-    <div class="card">
-      <div class="card-head"><h2>Postausgang <span class="hint">Anmeldebestätigungen</span></h2></div>
-      <% if (!outbox.length) { %><div class="empty">Noch keine E-Mails.</div><% } %>
-      <% for (const m of outbox) { %>
-        <div class="activity"><time><%= h.fmtRelative(m.created_at) %></time> <%= m.to_address %> · <%= m.subject %>
-          <span class="sub"><%- h.badge({ gesendet: 'gesendet', fehler: 'Fehler', offen: 'offen', nicht_konfiguriert: 'kein SMTP konfiguriert' }[m.status], { gesendet: 'green', fehler: 'red', offen: 'blue', nicht_konfiguriert: 'gray' }[m.status]) %> <%= m.error || '' %></span></div>
-      <% } %>
-    </div>
+    </details>
   </div>
 </div>
 <%- include('../partials/foot') %>

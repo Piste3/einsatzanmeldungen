@@ -368,3 +368,21 @@ tr.group-row strong { font-weight: 600; }
   .todo-grid .todo:nth-child(odd) { border-right: 0; }
   .todo-next { margin-left: 0; }
 }
+/* Person: eine Liste «Nächste Einsätze» statt vier gleich grosser Karten */
+.person-group-head { display: flex; align-items: center; gap: 8px; padding: 10px 16px 0; }
+.person-group { padding-top: 6px; }
+.person-group + .person-group-head { border-top: 1px solid var(--line); margin-top: 4px; padding-top: 12px; }
+/* Rückmeldungen: Legende im Menü */
+.legend-row { align-items: center; gap: 10px; }
+.legend-menu { display: grid !important; grid-template-columns: auto 1fr; gap: 6px 8px; align-items: center; padding: 10px 12px; min-width: 240px; }
+.help-fold-card > summary { list-style: none; cursor: pointer; }
+.help-fold-card > summary::-webkit-details-marker { display: none; }
+.help-fold-card[open] > summary .btn { display: none; }
+.help-fold-card[open] > summary { border-bottom: 1px solid var(--line); }
+/* Einstellungen: Reiter in zwei Gruppen */
+.tabs-grouped { align-items: flex-end; }
+.tab-group-label { align-self: center; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--muted-2); padding: 0 6px 0 2px; }
+.tab-group-sep { margin-left: 14px; padding-left: 16px; border-left: 1px solid var(--line); }
+.server-table tr.group-row th { font-weight: 500; }
+.server-table tr.group-row th .muted { text-transform: none; letter-spacing: 0; font-weight: 400; }
+.server-table tr.group-row th .group-toggle { text-transform: none; letter-spacing: 0; }
