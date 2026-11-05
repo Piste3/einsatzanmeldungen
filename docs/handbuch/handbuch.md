@@ -72,7 +72,7 @@ Links steht die Navigation, rechts der Inhalt.
 | Klärungen | Anmeldungen, deren Name nicht sicher zugeordnet werden konnte. Die Zahl zeigt, wie viele offen sind |
 | Personen | Stammdaten mit Suche; pro Person eine eigene Seite |
 | Formulare | Eingänge des Anmeldeformulars, Fehler und Postausgang (Admin). Die Aufgebotsstelle sieht hier stattdessen **Formular-Vorschau**: das Anmeldeformular, wie es die Mitglieder sehen |
-| Einstellungen | Benutzer, Auswahllisten, Vorlagen, Kalendertermin, Bestätigungsmail, Einstellungen, System (Admin) |
+| Einstellungen | Zwei Gruppen (Admin): **Inhalte** mit Auswahllisten, Vorlagen, Kalendertermin und Bestätigungsmail; **Betrieb** mit Allgemein, Benutzer, Server und System |
 | Handbuch | Diese Anleitung, immer im Stand der installierten Version. Oben rechts: **Handbuch für Einsatzleiter** und **Als PDF** |
 
 ### Bedienung, die überall gleich ist
@@ -84,8 +84,9 @@ Links steht die Navigation, rechts der Inhalt.
 - **Die Stelle bleibt:** Nach dem Speichern kommt man an dieselbe Stelle der Seite zurück.
 - **Nichts geht verloren:** Hat ein anderer Teil der Seite noch ungespeicherte Eingaben, fragt der Einsatzplaner vor dem Speichern nach. Beim Verlassen einer Seite mit ungespeicherten Eingaben warnt der Browser.
 - **Gleichzeitig bearbeiten:** Bearbeitet jemand denselben Eintrag, steht oben ein Hinweis. Speichern zwei Personen gleichzeitig, zeigt der Einsatzplaner beide Stände an, statt still zu überschreiben.
-- **Ein Speichern-Knopf pro Tabelle:** Tabellen zum Bearbeiten (Schichten verwalten, Auswahllisten, Vorlagen) haben unten rechts einen einzigen **Speichern**-Knopf. Mehrere Zeilen ändern, in der leeren untersten Zeile etwas Neues eintragen, dann einmal speichern. Geänderte Zeilen sind links orange markiert, und unten steht «Ungespeicherte Änderungen».
-- **Export und Drucken:** Listen lassen sich als Excel oder CSV exportieren – genau mit den eingestellten Filtern – und drucken. Ausdrucke sind immer hell.
+- **Ein Speichern-Knopf pro Tabelle:** Tabellen zum Bearbeiten (Schichten bearbeiten, Auswahllisten, Vorlagen) haben unten rechts einen einzigen **Speichern**-Knopf. Mehrere Zeilen ändern, in der leeren untersten Zeile etwas Neues eintragen, dann einmal speichern. Geänderte Zeilen sind links orange markiert, und unten steht «Ungespeicherte Änderungen».
+- **Export und Drucken:** Listen lassen sich als Excel oder CSV exportieren – genau mit den eingestellten Filtern – und drucken. Ausdrucke sind immer hell. Beim Einsatz liegen Export, Drucken und Kalendertermin im Menü **Mehr ▾** oben rechts.
+- **Jede Seite ist gleich aufgebaut:** oben Titel und rechts der wichtigste Knopf, darunter was jetzt zu tun ist, dann Filter und Suche, dann der Inhalt. Hilfen und Dinge, die man nur einmal einrichtet, sind zugeklappt. Ein Klick klappt sie auf; eine zugeklappte Hilfe bleibt in diesem Browser zu.
 - **Handbuch als PDF:** Auf der Seite «Handbuch» öffnet **Als PDF** dieses Handbuch als gestaltetes PDF mit Inhaltsverzeichnis und Seitenzahlen – zum Drucken, Speichern oder Weiterschicken.
 - **Die Suche oben rechts** findet Personen, Einsätze und Anmeldungen.
 
@@ -104,11 +105,10 @@ Das Cockpit beantwortet jeden Tag die Frage: Was ist zu tun?
 
 ![Das Cockpit](bilder/02-cockpit.jpg)
 
-- **Kennzahlen:** neue Anmeldungen, unklare Namen, noch nicht erreichte Personen und die Tage bis zum nächsten Einsatz.
-- **Noch nicht bestätigt:** zuoberst links alle Anmeldungen für anstehende Einsätze mit Status «Neu eingegangen», «Rückfrage nötig» oder «Warteliste», nach Einsatz und Rang geordnet, mit Schicht, Quelle und Zeitpunkt. **Bestätigen** bestätigt direkt aus dem Cockpit. Ein Klick auf den Einsatz öffnet die Anmeldung dort.
+- **Zu tun** (ganz oben, über die ganze Breite): konkrete Hinweise, z. B. unklare Namen klären, Anmeldungen bestätigen, Personen nachfassen, ein voller Einsatz, der noch im Formular steht, oder ein Aufgebot, das noch nicht exportiert ist. Ein Klick öffnet die passende Seite. Sind es mehr als sechs Punkte, zeigt **weitere Punkte anzeigen** den Rest. Rechts im Kopf steht der nächste Einsatz.
+- **Noch nicht bestätigt:** links alle Anmeldungen für anstehende Einsätze mit Status «Neu eingegangen», «Rückfrage nötig» oder «Warteliste», nach Einsatz gruppiert und nach Rang geordnet, mit Schicht, Quelle und Zeitpunkt. **Bestätigen** bestätigt direkt aus dem Cockpit. Hat ein Einsatz mehrere neue Anmeldungen, bestätigt **Alle N neuen bestätigen** in der Zeile des Einsatzes alle auf einmal (mit Rückfrage). Ein Klick auf den Einsatznamen öffnet seine Anmeldungen.
 - **Anstehende Einsätze:** direkt darunter die Besetzung pro Schicht (Ist / Soll; grün = voll, gelb = teilweise, rot = viele fehlen), dazu wie viele Anmeldungen neu, unsicher oder offen sind. Ein Klick öffnet den Einsatz.
-- **Zu tun** (rechts): konkrete Hinweise, z. B. Anmeldungen bestätigen, Personen nachfassen, ein voller Einsatz, der noch im Formular steht, oder ein Aufgebot, das noch nicht exportiert ist.
-- **Letzte Aktivität** (rechts, unter «Zu tun»): wer sich wann angemeldet hat, wer wen angefragt und wer was bestätigt hat.
+- **Letzte Aktivität** (rechts): die acht neuesten Einträge, wer sich wann angemeldet hat, wer wen angefragt und wer was bestätigt hat. **Ältere anzeigen** zeigt weitere.
 
 ## 5 · Einen Einsatz anlegen und veröffentlichen
 
@@ -139,7 +139,7 @@ Die Liste zeigt alle Einsätze mit Datum, Antreten, Status, Besetzung und Einsat
 Dauert ein Einsatz mehrere Tage, bleibt das Feld **Datum** leer. Die Tage stehen dann bei den Schichten.
 
 1. Einsatz mit Name (und bei Bedarf Antretensort, Tenue …) anlegen, Datum leer lassen, **Als Entwurf speichern**.
-2. Im Reiter **Schichten** unter «Schichten verwalten» der ersten Schicht Name, Tag und Zeit geben. In der untersten Zeile die nächste Schicht mit ihrem Tag eintragen, dann einmal **Speichern**.
+2. Im Reiter **Schichten** unter «Schichten bearbeiten» (Knopf **Öffnen**) der ersten Schicht Name, Tag und Zeit geben. In der untersten Zeile die nächste Schicht mit ihrem Tag eintragen, dann einmal **Speichern**.
 3. **Veröffentlichen.** Ein Einsatz ganz ohne Datum, also weder beim Einsatz noch bei einer Schicht, lässt sich noch nicht veröffentlichen.
 
 ![Schichten an verschiedenen Tagen](bilder/44-schichten-mehrtaegig.jpg)
@@ -154,15 +154,14 @@ Aus den Schichten ergibt sich der Zeitraum des Einsatzes. Er steht überall dort
 
 Die Übersicht passt meist auf einen Bildschirm. Links steht, wie es um den Einsatz steht, rechts das, was man selten ändert.
 
-- **Lage** ganz oben: ein Satz, ob alle Schichten besetzt sind oder was noch fehlt, z. B. «Abendschicht: 1 SC, 3 TN». Hat eine Schicht mehr Leute als nötig, steht das in der zweiten Zeile. Rechts davon die offenen Arbeiten: neu, zu prüfen, bestätigt und ohne Rückmeldung. Ein Klick öffnet die passende Liste.
-- **Besetzung:** eine Tabelle mit einer Zeile pro Funktion (EL, SC, BF, TN) und einer Spalte pro Schicht. In jedem Feld Ist / Soll und darunter «voll», «1 fehlt» oder «2 zu viel». Die letzte Zeile zeigt das Total der Schicht mit Balken, bei externen Abteilungen z. B. «8 eigene + 6 extern». **Einteilen →** führt zum Reiter «Schichten», wo man die Funktionen zuweist (Kapitel 6).
+- **Lage** ganz oben: ein Satz, ob alle Schichten besetzt sind oder was noch fehlt, z. B. «Abendschicht: 1 SC, 3 TN». Hat eine Schicht mehr Leute als nötig, steht das in der zweiten Zeile. Fehlen noch Angaben, steht darunter **Noch offen:** mit den fehlenden Punkten, z. B. «Anmeldefrage», und der Link **Angaben ergänzen →**. Rechts davon die offenen Arbeiten: neu, zu prüfen, bestätigt und ohne Rückmeldung. Ein Klick öffnet die passende Liste.
+- **Besetzung:** eine Tabelle mit einer Zeile pro Funktion (EL, SC, BF, TN) und einer Spalte pro Schicht. In jedem Feld Ist / Soll und darunter «voll», «1 fehlt» oder «2 zu viel». Die letzte Zeile zeigt das Total der Schicht mit Balken, bei externen Abteilungen z. B. «8 eigene + 6 extern». **Einteilen →** führt zum Reiter «Schichten», wo man Schichten und Funktionen zuteilt (Kapitel 6).
 - **Angaben** des Einsatzes und wann das Aufgebot zuletzt exportiert wurde.
-- **Externe Abteilungen:** andere Abteilungen oder Vereine, die mit einer Anzahl Personen mithelfen (Kapitel 7).
-- **Status:** Entwurf → Veröffentlicht → Abgeschlossen, oder jederzeit Abgesagt. Nach dem Abschluss sind die Daten schreibgeschützt; Änderungen sind dann nur noch durch einen Admin mit Begründung möglich. Bei einer Absage bleiben alle Daten erhalten.
-- **Im Formular anzeigen** (in der Karte «Status»): schaltet den Einsatz im Anmeldeformular ein oder aus, z. B. wenn er voll ist.
-- **Checkliste:** zeigt, wie viele Punkte erledigt sind, und listet nur noch die offenen auf.
+- **Externe Abteilungen:** andere Abteilungen oder Vereine, die mit einer Anzahl Personen mithelfen (Kapitel 7). Gibt es keine, steht nur der Knopf **+ Externe Abteilung hinzufügen**.
+- **Status und Formular** (rechts): Entwurf → Veröffentlicht → Abgeschlossen, oder jederzeit Abgesagt. Nach dem Abschluss sind die Daten schreibgeschützt; Änderungen sind dann nur noch durch einen Admin mit Begründung möglich. Bei einer Absage bleiben alle Daten erhalten.
+- **Im Formular anzeigen** (in derselben Karte): schaltet den Einsatz im Anmeldeformular ein oder aus, z. B. wenn er voll ist. Darunter führt **So sieht der Einsatz im Formular aus →** zum Reiter «Formular».
 - **Einsatzleiter-Zugriff:** gibt den Einsatz für einen Einsatzleiter frei (Kapitel 15).
-- Oben gibt es **Kalendertermin** (Kapitel 16), **Drucken** bzw. **Export**, **Teilnehmerliste** (Kapitel 14) und **Bearbeiten**.
+- Oben rechts stehen drei Knöpfe: **Teilnehmerliste** (dunkel, Kapitel 14), **Bearbeiten** und **Mehr ▾**. Im Menü **Mehr** liegen der **Kalendertermin** (Kapitel 16), der Export der aktuellen Liste als Excel oder CSV, die Teilnehmerliste als Excel oder CSV mit **Auswahl anpassen …** und **Drucken**.
 - Was sonst geändert wurde, steht im Reiter **Verlauf**.
 
 ### Reiter «Formular»
@@ -196,7 +195,7 @@ Welche Funktionen es gibt, legt ein Admin unter Einstellungen › Auswahllisten 
 
 Das Soll gibt es **pro Schicht und Funktion**. Beim Anlegen oder unter **Bearbeiten** in der Karte **Schichten und Soll** steht eine Spalte pro Schicht; dort die Anzahl pro Funktion eintragen, z. B. Tagschicht 1 EL, 2 SC, 1 BF, 6 TN und Abendschicht 1 SC, 5 TN. Leer oder 0 heisst: braucht es nicht.
 
-Dasselbe geht im Reiter **Schichten** unter **Schichten verwalten**: eine Zeile pro Schicht mit den Spalten EL, SC, BF und TN, auch für eine neue Schicht. Die ganze Tabelle hat einen einzigen **Speichern**-Knopf (Kapitel 12).
+Dasselbe geht im Reiter **Schichten** unter **Schichten bearbeiten** (zugeklappt, Knopf **Öffnen**): eine Zeile pro Schicht mit den Spalten EL, SC, BF und TN, auch für eine neue Schicht. Die ganze Tabelle hat einen einzigen **Speichern**-Knopf (Kapitel 12).
 
 Das **Soll der Schicht** ist immer die Summe davon (im Beispiel 10 und 6) – ein separates Feld dafür gibt es nicht. Einsätze, die früher nur eine Soll-Anzahl pro Schicht hatten, wurden beim Update übernommen: Die Zahl steht jetzt bei den Einsatzteilnehmern.
 
@@ -206,17 +205,17 @@ Das **Soll der Schicht** ist immer die Summe davon (im Beispiel 10 und 6) – ei
 
 Es gibt drei Wege:
 
-- Im Reiter **Schichten**, Karte **Funktionen** (oder in der Übersicht über **Einteilen →**): unter jeder Funktion im Auswahlfeld **+ EL zuweisen …** (bzw. SC, BF) eine angemeldete Person wählen (tippen zum Suchen). Das **✕** beim Namen nimmt die Funktion wieder weg.
+- Im Reiter **Schichten** (oder in der Übersicht über **Einteilen →**): In jeder Zeile steht neben dem Status ein kleines Auswahlfeld mit der Funktion. Dort EL, SC, BF oder TN wählen. Zurück auf TN nimmt die Funktion wieder weg.
 - Im Reiter **Anmeldungen** in der Spalte **Funktion** direkt pro Zeile umstellen.
 - Im Reiter **Anmeldungen** mehrere ankreuzen und oben **Funktion zuweisen …** wählen.
 
 Wer keine Funktion zugewiesen hat, zählt automatisch als **Einsatzteilnehmer (TN)**. Du musst also nur EL, SC und BF einteilen.
 
-### Was die Karte «Funktionen» zeigt
+### Wo du Ist / Soll pro Funktion siehst
 
-- Pro Schicht und Funktion **Ist / Soll** mit Balken: grün = genau voll, gelb/rot = es fehlen noch welche, orange = zu viele (z. B. «2 / 1 · 1 zu viel»). Rechts beim Schichtnamen das Total der Schicht. Bei mehreren Schichten stehen nur die Funktionen, die in dieser Schicht ein Soll haben oder besetzt sind.
+- Im Reiter **Schichten** steht in jeder Schicht-Karte oben eine Zeile pro Funktion mit **Ist / Soll**, z. B. «EL 1/1 · SC 2/2 · TN 5/6»: grün = genau voll, gelb/rot = es fehlen noch welche, orange = zu viele. Fährt man mit der Maus darüber, steht z. B. «Sektorchef: 2 / 1 · 1 zu viel». Es stehen nur die Funktionen, die in dieser Schicht ein Soll haben oder besetzt sind. Dieselben Zahlen zeigt die Tabelle **Besetzung** in der Übersicht.
 - Es zählen wie bei der Besetzung die Anmeldungen mit Status Neu, Rückfrage oder Bestätigt, die der Schicht zugeteilt sind. Warteliste und Abmeldungen zählen nicht; Abgemeldete bekommen keine Funktion.
-- Die Funktion einer **Person** gilt für den ganzen Einsatz: Wer als SC eingeteilt ist und in der Tag- und der Abendschicht arbeitet, zählt in beiden Schichten als SC. Im Reiter «Schichten» steht das Kürzel (z. B. «SC») neben dem Namen und unter jeder Schicht die Zeile Ist / Soll pro Funktion.
+- Die Funktion einer **Person** gilt für den ganzen Einsatz: Wer als SC eingeteilt ist und in der Tag- und der Abendschicht arbeitet, zählt in beiden Schichten als SC. Im Reiter «Schichten» steht deshalb in beiden Schichten dasselbe Kürzel im Auswahlfeld.
 - **Externe Abteilungen** zählen mit ihrer Anzahl Personen in ihren Schichten – standardmässig als Einsatzteilnehmer. Stellt eine Abteilung z. B. den Busfahrer, beim Erfassen der Abteilung **Funktion** auf «BF» stellen (Kapitel 7).
 
 Die Funktionen stehen auch auf der **Teilnehmerliste** (Spalte «Fkt.» bzw. «Funktion» und oben «Funktionen (Ist/Soll)»), auf der Seite des Mitglieds, in der Einsatzliste beim Export und in der Ansicht der Einsatzleiter. Jede Zuweisung steht im Verlauf.
@@ -294,9 +293,11 @@ Jede Anmeldung landet automatisch beim richtigen Einsatz – egal ob sie über d
 
 - **Zähler pro Status** oben: ein Klick filtert die Liste.
 - **Sortierung:** «Rang: tief → hoch» (Standard), «Rang: hoch → tief», «Funktion, dann Rang» oder «neueste zuerst». Daneben das Suchfeld.
-- **Funktionen (Ist/Soll)** stehen über der Tabelle (pro Schicht), sobald beim Einsatz EL, SC oder BF vorkommen.
+- **Gruppen:** Die Tabelle zeigt oben **Zu bearbeiten** (neu eingegangen, unsichere Zuordnung, Rückfrage nötig), darunter **Bestätigt**. Warteliste, Abmeldungen und ungültige Anmeldungen stehen zugeklappt am Schluss; ein Klick auf die Zeile klappt sie auf. Ist oben ein Status gewählt, gibt es keine Gruppen.
+- **Funktionen (Ist/Soll)** stehen in der Kopfzeile der Tabelle rechts (pro Schicht), sobald beim Einsatz EL, SC oder BF vorkommen.
 - **Spalte «Funktion»:** EL, SC, BF oder TN direkt umstellen (Kapitel 6).
-- **Sammelaktionen:** mehrere Anmeldungen ankreuzen und gemeinsam bestätigen, den Status ändern, eine **Funktion zuweisen** oder exportieren.
+- **Sammelaktionen:** mehrere Anmeldungen ankreuzen. Erst dann erscheinen die Knöpfe zum gemeinsamen Bestätigen, Status ändern, **Funktion zuweisen** oder Exportieren. **Alle auswählen** kreuzt die ganze Liste an.
+- **Eingang:** wie die Anmeldung kam (Formular, Telefon …) und darunter wann. Unter dem Namen steht die Mannschaft; «manuell zugeordnet» oder «über Namensvariante» steht nur, wenn der Name nicht automatisch erkannt wurde.
 - **Bestätigen** direkt in der Zeile. Orange markierte Zeilen sind noch nicht bestätigt.
 - Bemerkungen der Mitglieder und Hinweise zur Verpflegung stehen in der Spalte «Bemerkung».
 
@@ -355,7 +356,7 @@ Der Reiter **Anfragen** zeigt alle aktiven Mitglieder, die sich für diesen Eins
 
 ![Einsatz › Anfragen](bilder/11-anfragen.jpg)
 
-**So geht Nachfassen** (steht auch oben im Reiter):
+**So geht Nachfassen** (steht auch oben im Reiter; ein Klick auf «Nachfassen» klappt die Hilfe zu, und sie bleibt in diesem Browser zu):
 
 1. Person anrufen oder per WhatsApp anschreiben. Die **Mobilnummer** ist ein Anruf-Link, das Sprechblasen-Symbol daneben öffnet direkt den **WhatsApp-Chat**.
 2. Mit **Erfassen** festhalten, wie es gelaufen ist (z. B. «nicht erreicht» oder «Nachricht gesendet»).
@@ -364,6 +365,7 @@ Der Reiter **Anfragen** zeigt alle aktiven Mitglieder, die sich für diesen Eins
 Weitere Hilfen im Reiter:
 
 - **Filter oben:** Ein Klick zeigt nur die Personen mit diesem Status, z. B. **Noch nicht angefragt** = alle, die noch niemand kontaktiert hat. **Alle** zeigt wieder die ganze Liste. Daneben Mannschaft, Sortierung nach Rang und Namenssuche.
+- **Gruppen:** Oben stehen die Personen, bei denen noch etwas offen ist (**Noch offen**). Darunter folgen unter **Erledigt** alle, die zugesagt, sich angemeldet oder abgesagt haben.
 - **Kontaktversuche** stehen mit Kanal (Tel / WA), Datum, Uhrzeit, wer es war, Ergebnis und Notiz.
 - Der **Pfeil** beim letzten Kontaktversuch nimmt ihn zurück, falls er falsch erfasst wurde. Hat er eine Anmeldung erzeugt, wird diese mitgelöscht.
 - **Mehrere auf einmal:** Hat man mehreren dieselbe WhatsApp geschickt, kreuzt man sie links an. Dann erscheint der Knopf **Kontakt für 3 Personen erfassen** (mit der Anzahl), und man erfasst den Kontakt für alle in einem Schritt. **Alle auswählen** kreuzt die ganze (gefilterte) Liste an.
@@ -395,8 +397,8 @@ Die meisten Einsätze haben nur eine Schicht für alle. Dann gibt es nichts zu v
 ![Einsatz › Schichten mit zwei Schichten](bilder/13-schichten.jpg)
 
 - Jede Schicht ist eine Spalte mit Zeit und Besetzung (Ist / Soll). Grün heisst voll. Darunter Ist / Soll pro Funktion, z. B. «EL 1/1 · SC 2/2 · TN 5/6».
-- **Funktionen:** darunter die Karte, in der man EL, SC und BF zuweist (Kapitel 6).
-- **Schichten verwalten** (unten): Name, Tag, Zeit und das Soll pro Funktion (Spalten EL, SC, BF, TN). Die Spalte «Soll» zeigt die Summe und rechnet beim Tippen mit. Die Tabelle hat **einen einzigen Speichern-Knopf** unten rechts: mehrere Schichten ändern, bei Bedarf in der untersten Zeile eine neue Schicht eintragen, dann einmal **Speichern**. Geänderte Zeilen sind links orange markiert, und der Fuss der Tabelle zeigt «Ungespeicherte Änderungen». **+ Hinzufügen** in der neuen Zeile speichert ebenfalls alles auf einmal. **Löschen** wirkt sofort pro Zeile (mit Rückfrage). Ist eine Zeile ungültig, z. B. eine angefangene neue Schicht ohne Namen, wird nichts gespeichert.
+- **Funktion pro Person:** In jeder Zeile wählt man im kleinen Auswahlfeld EL, SC, BF oder TN (Kapitel 6). Das zweite Auswahlfeld teilt die Person einer anderen Schicht zu.
+- **Schichten bearbeiten** (unten, zugeklappt; **Öffnen** klappt die Tabelle auf): Name, Tag, Zeit und das Soll pro Funktion (Spalten EL, SC, BF, TN). Die Spalte «Soll» zeigt die Summe und rechnet beim Tippen mit. Die Tabelle hat **einen einzigen Speichern-Knopf** unten rechts: mehrere Schichten ändern, bei Bedarf in der untersten Zeile eine neue Schicht eintragen, dann einmal **Speichern**. Geänderte Zeilen sind links orange markiert, und der Fuss der Tabelle zeigt «Ungespeicherte Änderungen». **Hinzufügen** in der neuen Zeile speichert ebenfalls alles auf einmal. **Löschen** wirkt sofort pro Zeile (mit Rückfrage). Ist eine Zeile ungültig, z. B. eine angefangene neue Schicht ohne Namen, wird nichts gespeichert.
 - **Noch keiner Schicht zugeteilt:** Anmeldungen ohne Schicht stehen oben und werden über «zuteilen …» eingeteilt.
 - **Umteilen** über das Auswahlfeld bei der Person. Eine Person kann auch mehreren Schichten zugeteilt sein («Tag + Abend»).
 - **+ Person aus Anmeldungen hinzufügen:** Name tippen und auswählen.
@@ -415,7 +417,7 @@ Die Seite **Rückmeldungen** beantwortet die wichtigste Frage der Aufgebotsstell
 
 - Mitglieder als Zeilen, Einsätze als Spalten. Kopfzeile und Namensspalte bleiben beim Scrollen stehen.
 - Im Spaltenkopf jedes Einsatzes steht die Besetzung als Balken, z. B. «11 / 16».
-- **Symbole:** ✓ An, ✕ Ab, ? Unsicher, leeres Feld = Offen. Dazu gibt es eigene Symbole für den genaueren Stand: ein grün gefülltes ✓ für eine bestätigte Anmeldung, eine Uhr für die Warteliste, eine blaue Sprechblase für «Nachricht gesendet, Antwort offen», ein gelbes Telefon für «angerufen, nicht erreicht», eine sprechende Person für «mündlich gefragt, weiss es noch nicht» und ! für «Rückfrage nötig». Die Legende über der Tabelle erklärt alle Symbole. Das Symbol zeigt immer nur den neuesten Stand.
+- **Symbole:** ✓ An, ✕ Ab, ? Unsicher, leeres Feld = Offen. Dazu gibt es eigene Symbole für den genaueren Stand: ein grün gefülltes ✓ für eine bestätigte Anmeldung, eine Uhr für die Warteliste, eine blaue Sprechblase für «Nachricht gesendet, Antwort offen», ein gelbes Telefon für «angerufen, nicht erreicht», eine sprechende Person für «mündlich gefragt, weiss es noch nicht» und ! für «Rückfrage nötig». Der Knopf **Legende ▾** rechts über der Tabelle erklärt alle Symbole. Das Symbol zeigt immer nur den neuesten Stand.
 - **Wer hat das gesetzt?** Fährt man mit der Maus über ein Feld, steht dort der letzte Eintrag mit Name und Zeit, z. B. «Zuletzt: Anmeldung: Bestätigt – Lena Meier, heute 14:20 (4 Einträge im Verlauf)». Hat sich jemand selbst über das Formular gemeldet, steht «Person selbst».
 - Ein Klick auf ein Feld öffnet immer das Fenster für einen Kontaktversuch, auch bei ✓ oder ✕. Oben steht der aktuelle Stand (z. B. «An · Anmeldung: Bestätigt · Formular · gesetzt von Lena Meier, heute 14:20») mit einem Link zur Anmeldung. Darunter folgt der **Verlauf** (siehe unten). Dort lässt sich auch **«Unsicher – weiss es noch nicht»** eintragen oder mit **Alles zurücksetzen** neu beginnen. Erfasst man bei einer bestehenden Anmeldung «Abgesagt», wird sie als zurückgezogen markiert. «Zugesagt» macht eine zurückgezogene Anmeldung wieder aktiv.
 - Unten stehen pro Einsatz die Summen An · Ab · Unsicher · Offen.
@@ -469,7 +471,7 @@ Namenssuche, Zeitraum (nächste 2 Wochen bis nächstes Jahr), Mannschaft, «Nur 
 ![Personen › Seite eines Mitglieds](bilder/17-person.jpg)
 
 - Links die wichtigsten **Stammdaten**.
-- Die Einsätze nach **Angemeldet, Abgemeldet, Unsicher und Offen**, jeweils mit Datum und wie die Rückmeldung kam.
+- Rechts die Liste **Nächste Einsätze**, gruppiert nach **Angemeldet, Abgemeldet, Unsicher und Offen**, jeweils mit Datum und wie die Rückmeldung kam. Leere Gruppen fallen weg.
 - Offene Einsätze lassen sich direkt mit **Anfrage erfassen** nachfassen.
 - **Frühere Einsätze** und der **Verlauf** sind zuklappbar. Die Seite lässt sich drucken und nach Excel exportieren.
 
@@ -490,9 +492,9 @@ Ein Klick auf **Teilnehmerliste** oben auf jeder Seite des Einsatzes öffnet sie
 
 ### Excel, CSV und Auswahl
 
-Der kleine Pfeil **▾** neben dem Knopf bietet die Liste auch als **Excel** oder **CSV** an, mit Essenseinschränkung und Details in getrennten Spalten. Externe Abteilungen kommen dort als eigene Zeilen mit Rang «extern» und einer Spalte «Anzahl» ans Ende.
+Das Menü **Mehr ▾** neben dem Knopf bietet die Liste unter «Teilnehmerliste» auch als **Excel** oder **CSV** an, mit Essenseinschränkung und Details in getrennten Spalten. Externe Abteilungen kommen dort als eigene Zeilen mit Rang «extern» und einer Spalte «Anzahl» ans Ende.
 
-**Auswahl anpassen …** (ebenfalls im Pfeil-Menü) zeigt die Liste in der App und lässt wählen:
+**Auswahl anpassen …** (ebenfalls im Menü **Mehr**) zeigt die Liste in der App und lässt wählen:
 
 - **Wer steht drauf:** «Angemeldete» (neu, Rückfrage und bestätigt – wie die Besetzung), «Nur bestätigte» oder «Angemeldete + Warteliste». Abmeldungen, Absagen und ungültige Anmeldungen stehen nie drauf.
 - **Schicht:** Hat der Einsatz mehrere Schichten, lässt sich die Liste auf eine Schicht einschränken; dann erscheinen auch nur die externen Abteilungen dieser Schicht. Sonst zeigt eine Spalte, wer in welcher Schicht ist.
@@ -543,11 +545,11 @@ Unter «Handbuch» sehen Einsatzleiter nur ihr eigenes, kurzes [Handbuch für Ei
 
 ## 16 · Das Aufgebot als Kalendertermin
 
-Ist ein Einsatz besetzt, erstellt die Aufgebotsstelle das Aufgebot mit einem Klick auf **Kalendertermin**. Heraus kommt eine Kalenderdatei (.ics), die sich in Outlook, Google Kalender oder Apple Kalender öffnen und weiterleiten lässt.
+Ist ein Einsatz besetzt, erstellt die Aufgebotsstelle das Aufgebot über **Mehr ▾ › Kalendertermin**. Heraus kommt eine Kalenderdatei (.ics), die sich in Outlook, Google Kalender oder Apple Kalender öffnen und weiterleiten lässt.
 
 ![Kalendertermin bei mehreren Schichten](bilder/18-kalendertermin.jpg)
 
-1. Den Einsatz öffnen und oben auf **Kalendertermin** klicken.
+1. Den Einsatz öffnen und oben rechts **Mehr ▾** öffnen. Zuoberst steht der **Kalendertermin**.
 2. Bei mehreren Schichten wählen: ein Termin für den ganzen Einsatz, ein Termin pro Schicht oder nur eine bestimmte Schicht.
 3. Die Datei öffnen oder weiterleiten.
 
@@ -632,7 +634,7 @@ Jede Person existiert genau einmal. Anmeldungen, Anfragen und Schichten verweise
 
 ## 18 · Für Admins
 
-Unter **Einstellungen** sorgt der Admin dafür, dass die Grundlagen stimmen.
+Unter **Einstellungen** sorgt der Admin dafür, dass die Grundlagen stimmen. Die Reiter sind in zwei Gruppen geteilt: **Inhalte** (Auswahllisten, Vorlagen, Kalendertermin, Bestätigungsmail) ändert, was Mitglieder und Aufgebotsstelle sehen. **Betrieb** (Allgemein, Benutzer, Server, System) hält den Einsatzplaner am Laufen.
 
 ### Benutzer
 
@@ -670,7 +672,7 @@ Die Liste **Externe Abteilungen** füllt sich auch von selbst, wenn bei einem Ei
 
 Bei den Anmeldefragen legt die Spalte **Standard** fest, welche Vorlage bei jedem neuen Einsatz schon vorausgewählt ist, samt Fragetext und Hilfetext. Mit «keiner» ist nichts vorausgewählt.
 
-> **Speichern pro Abschnitt:** In Auswahllisten, Vorlagen und bei «Schichten verwalten» hat jeder Abschnitt einen einzigen Speichern-Knopf. Mehrere Zeilen ändern, in der leeren Zeile etwas Neues eintragen, bei anderen «entfernen» ankreuzen – und dann einmal speichern. Geänderte Zeilen sind links orange markiert. Ränge, Mannschaften oder externe Abteilungen, die noch verwendet werden, lassen sich nicht entfernen, nur deaktivieren.
+> **Speichern pro Abschnitt:** In Auswahllisten, Vorlagen und bei «Schichten bearbeiten» hat jeder Abschnitt einen einzigen Speichern-Knopf. Mehrere Zeilen ändern, in der leeren Zeile etwas Neues eintragen, bei anderen «entfernen» ankreuzen – und dann einmal speichern. Geänderte Zeilen sind links orange markiert. Ränge, Mannschaften oder externe Abteilungen, die noch verwendet werden, lassen sich nicht entfernen, nur deaktivieren.
 
 ### Bestätigungsmail
 
@@ -678,9 +680,9 @@ Bei den Anmeldefragen legt die Spalte **Standard** fest, welche Vorlage bei jede
 
 Betreff und Text der Anmeldebestätigung mit denselben Bausteinen wie im Kalendertermin. Der Text lässt sich formatieren – Schriftart, Grösse, Fett, Kursiv, Farben, Listen, Tabellen und Links (siehe «Texte formatieren» in Kapitel 16). Die Mail geht formatiert raus, mit einer Klartext-Fassung für Mailprogramme ohne HTML. Mit **Vorschau** für einen echten Einsatz prüfen und eine **Testmail** an sich selbst schicken. Der Haken «beim Bestätigen automatisch senden» schaltet den Versand ein oder aus. Ohne eingerichteten Mailserver bleiben die Mails im Postausgang (unter «Formulare») und gehen raus, sobald er eingerichtet ist.
 
-### Einstellungen und Datensicherung
+### Allgemein und Datensicherung
 
-![Einstellungen › Einstellungen](bilder/26-einstellungen.jpg)
+![Einstellungen › Allgemein](bilder/26-einstellungen.jpg)
 
 - **Verein:** Vereinsname und Aufgebots-E-Mail (steht im Aufgebot).
 - **Anmeldeformular:** Titel, Einleitungstext und die Mindestzeit gegen Spam.
@@ -699,6 +701,7 @@ Die Grundeinstellungen des Servers standen früher nur in der Datei `.env` auf d
 
 So funktioniert es:
 
+- Die Werte sind in Gruppen zugeklappt. Ein Klick auf den Namen der Gruppe klappt sie auf. In der Gruppenzeile steht, wie viele Werte hier geändert sind.
 - Werte ändern und unten einmal **Speichern**. Sie gelten **sofort**, ein Neustart ist nicht nötig.
 - Die Spalte **Quelle** zeigt, woher ein Wert kommt: **Verwaltung** (hier gespeichert), **.env** (aus der Datei auf dem Server) oder **Standard**. Was hier gespeichert ist, geht der `.env` vor.
 - **Zurück auf .env** ankreuzen und speichern löscht den Wert hier wieder. Dann gilt wieder die `.env`.
@@ -707,7 +710,7 @@ So funktioniert es:
 
 Damit sich niemand aussperrt, prüft die Seite beim Speichern: Die Passwort-Anmeldung lässt sich nur ausschalten, wenn die Microsoft-Angaben vollständig sind und dein eigenes Konto Microsoft freigegeben hat. «Anmeldung nur über HTTPS» lässt sich nur einschalten, wenn du gerade über HTTPS verbunden bist.
 
-**Nur in der .env:** Port, Netzwerk-Schnittstelle, Datenordner, Datenbank-Datei und Betriebsart stehen rechts nur zum Ansehen. Der Server braucht sie, bevor er startet: Auf den Port leitet der Nginx Proxy Manager weiter, und im Datenordner liegt die Datenbank mit den Werten dieser Seite. Ein falscher Wert hier würde den Einsatzplaner unerreichbar machen, und man könnte ihn nicht mehr über den Browser zurückstellen. Diese Werte ändert man deshalb in der `.env` und startet danach unter **System** neu.
+**Nur in der .env:** Port, Netzwerk-Schnittstelle, Datenordner, Datenbank-Datei und Betriebsart stehen rechts zugeklappt (**Anzeigen**) und nur zum Ansehen. Der Server braucht sie, bevor er startet: Auf den Port leitet der Nginx Proxy Manager weiter, und im Datenordner liegt die Datenbank mit den Werten dieser Seite. Ein falscher Wert hier würde den Einsatzplaner unerreichbar machen, und man könnte ihn nicht mehr über den Browser zurückstellen. Diese Werte ändert man deshalb in der `.env` und startet danach unter **System** neu.
 
 > **Ausgesperrt?** Auf dem Server-PC im Ordner `betrieb\windows` doppelt auf `server-zuruecksetzen.cmd` klicken. Das löscht alle Werte dieser Seite und startet den Einsatzplaner neu. Danach gilt wieder die `.env`. Nur einzelne Werte: Namen anhängen, z. B. `server-zuruecksetzen.cmd AUTH_PROVIDERS`.
 
@@ -728,8 +731,8 @@ Gut zu wissen: Die hier gespeicherten Passwörter liegen in der Datenbank und da
 
 - Offene Einsätze im Formular, Absendungen, Spamverdacht und Fehler auf einen Blick.
 - **Formular-Eingang:** jede Absendung unverändert gespeichert – auch wenn eine Anmeldung später gelöscht wird.
-- **Einbettung in ClubDesk:** die feste Adresse des Formulars. Sie wird einmal im ClubDesk-Baustein eingebettet, danach ist auf ClubDesk nie wieder etwas zu tun.
-- **Postausgang:** versendete und wartende Anmeldebestätigungen.
+- **Postausgang** (rechts): die zehn neuesten versendeten und wartenden Anmeldebestätigungen. **Ältere anzeigen** zeigt den Rest.
+- **Einbettung in ClubDesk** (darunter, zugeklappt): die feste Adresse des Formulars. Sie wird einmal im ClubDesk-Baustein eingebettet, danach ist auf ClubDesk nie wieder etwas zu tun.
 
 ## 19 · Sicherheit und Zwei-Faktor-Anmeldung
 
@@ -862,13 +865,13 @@ Beim Einsatz das Datum leer lassen und im Reiter «Schichten» jeder Schicht ihr
 Ja. Jede Liste lässt sich drucken und als Excel- oder CSV-Datei exportieren, genau mit den eingestellten Filtern.
 
 **Wie bekomme ich eine Liste aller Teilnehmenden mit Telefon und Essenswünschen?**
-Im Einsatz oben auf **Teilnehmerliste** klicken – sie öffnet sich als PDF in einem neuen Tab. Excel, CSV und weitere Auswahl gibt es über den Pfeil daneben.
+Im Einsatz oben auf **Teilnehmerliste** klicken – sie öffnet sich als PDF in einem neuen Tab. Excel, CSV und weitere Auswahl gibt es im Menü **Mehr ▾** daneben.
 
 **Kann der Einsatzleiter selbst sehen, wer kommt?**
 Ja. Er braucht ein Konto mit der Rolle «Einsatzleiter», und die Aufgebotsstelle gibt ihm den Einsatz in der Übersicht unter «Einsatzleiter-Zugriff» frei. Dann sieht er Angaben und Teilnehmerliste – nur lesen.
 
 **Wie lege ich fest, wie viele EL, SC, BF und Einsatzteilnehmer es braucht?**
-Einsatz **Bearbeiten** › Karte **Schichten und Soll** (pro Schicht eine Spalte). Zuweisen im Reiter «Schichten» (Karte «Funktionen») oder im Reiter «Anmeldungen» in der Spalte «Funktion». Wer nichts zugewiesen hat, ist Einsatzteilnehmer.
+Einsatz **Bearbeiten** › Karte **Schichten und Soll** (pro Schicht eine Spalte). Zuweisen im Reiter «Schichten» (Auswahlfeld in der Zeile der Person) oder im Reiter «Anmeldungen» in der Spalte «Funktion». Wer nichts zugewiesen hat, ist Einsatzteilnehmer.
 
 **Ist die Funktion EL dasselbe wie die Rolle «Einsatzleiter»?**
 Nein. Die Funktion EL ist die Einteilung am Einsatz. Die Rolle «Einsatzleiter» ist ein Benutzerkonto mit Lesezugriff. Hat jemand beides, schlägt die Übersicht vor, ihm den Einsatz freizugeben.

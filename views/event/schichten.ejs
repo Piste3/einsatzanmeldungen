@@ -74,7 +74,7 @@
   <% if (closed) { %><input type="hidden" name="reason" value="" data-reason><% } %>
   <div class="table-wrap">
     <table class="form-table">
-      <thead><tr><th>Name</th><th>Datum</th><th>Beginn</th><th>Ende</th><% for (const f of fnCols) { %><th class="fn-col" title="Soll <%= f.name %>"><span class="fn-tag<%= f.is_default ? ' fn-default' : '' %>"><%= f.short %></span></th><% } %><th class="fn-col" title="Summe der Funktionen">Soll</th><th>Antretensort (optional)</th><th>Interne Bemerkung</th><th></th></tr></thead>
+      <thead><tr><th>Name</th><th>Datum</th><th>Beginn</th><th>Ende</th><% for (const f of fnCols) { %><th class="fn-col" title="Soll <%= f.name %>"><span class="fn-tag<%= f.is_default ? ' fn-default' : '' %>"><%= f.short %></span></th><% } %><th class="fn-col" title="Summe der Funktionen">Soll</th><th title="Leer = Antretensort des Einsatzes">Antretensort</th><th class="th-wrap">Interne Bemerkung</th><th></th></tr></thead>
       <tbody>
       <% for (const s of event.shifts) { const k = `__${s.id}`; %>
         <tr data-soll-row>
@@ -98,7 +98,7 @@
           <td class="fn-col"><strong data-soll-sum></strong></td>
           <td><input type="text" name="start_place__neu" placeholder="wie Einsatz" aria-label="Antretensort der neuen Schicht"></td>
           <td><input type="text" name="internal_note__neu" aria-label="Interne Bemerkung der neuen Schicht"></td>
-          <td class="nowrap"><button class="btn btn-sm" type="submit" data-add-shift title="Neue Schicht hinzufügen und alle Änderungen speichern">+ Hinzufügen</button></td>
+          <td class="nowrap"><button class="btn btn-sm" type="submit" data-add-shift title="Neue Schicht hinzufügen und alle Änderungen speichern">Hinzufügen</button></td>
         </tr>
       </tbody>
     </table>

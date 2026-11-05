@@ -386,3 +386,20 @@ tr.group-row strong { font-weight: 600; }
 .server-table tr.group-row th { font-weight: 500; }
 .server-table tr.group-row th .muted { text-transform: none; letter-spacing: 0; font-weight: 400; }
 .server-table tr.group-row th .group-toggle { text-transform: none; letter-spacing: 0; }
+#shifts-form .form-table input[type=date] { min-width: 0; width: 128px; }
+#shifts-form .form-table input[type=time] { min-width: 0; width: 100px; }
+#shifts-form .form-table input[type=text] { min-width: 0; width: 100%; }
+#shifts-form .form-table td:first-child input { min-width: 120px; }
+#shifts-form .form-table td:nth-last-child(2), #shifts-form .form-table td:nth-last-child(3) { min-width: 96px; }
+#shifts-form .form-table th.th-wrap { white-space: normal; }
+#shifts-form .form-table input[type=date] { width: 122px; }
+#shifts-form .form-table input[type=time] { width: 94px; }
+#shifts-form .form-table .fn-col input { width: 44px; }
+#shifts-form .form-table td:first-child input { min-width: 110px; }
+#shifts-form .form-table input[type=date] { width: 128px; }
+#shifts-form .form-table input[type=time] { width: 112px; }
+#shifts-form .form-table td:first-child input { min-width: 100px; }
+#shifts-form .form-table td:nth-last-child(2), #shifts-form .form-table td:nth-last-child(3) { min-width: 80px; }
+#shifts-form .form-table .fn-col input { width: 40px; padding-left: 4px; padding-right: 4px; text-align: center; }
+#shifts-form .form-table td:first-child input { min-width: 90px; }
+#shifts-form .form-table input[type=date] { width: 124px; }
