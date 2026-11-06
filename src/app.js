@@ -70,6 +70,7 @@ function createApp() {
   app.use(auth.loadSession);
   app.use(helpers.flashMiddleware);
   app.use(helpers.localsMiddleware);
+  app.use(require('./routes/handy').shellMiddleware);
   app.use(require('./routes/auth'));
 
   // Ab hier nur mit Login

@@ -1,4 +1,4 @@
-<!doctype html>
+<% if (typeof handyShell !== 'undefined' && handyShell) { %><%- include('../handy/_head', { barTitle: title || 'Profil', barSub: 'Profil', backHref: '/handy/profil', backLabel: 'Zurück zum Profil', navTab: 'profil' }) %><% } else { %><!doctype html>
 <html lang="de-CH"<% if (user && ["light", "dark"].includes(user.theme)) { %> data-theme="<%= user.theme %>"<% } %>>
 <head>
   <meta charset="utf-8">
@@ -61,3 +61,4 @@
   <main class="main" id="content">
     <% for (const f of flashes || []) { %><div class="flash flash-<%= f.type %>"><%= f.message %></div><% } %>
     <div class="hint-bar presence" id="presence"><span class="tag tag-yellow">Hinweis</span><span id="presence-text"></span></div>
+<% } %>

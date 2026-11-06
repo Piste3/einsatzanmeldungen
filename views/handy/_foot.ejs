@@ -1,9 +1,4 @@
 </main>
-<footer class="h-foot">
-  <span><%= user.display_name %></span>
-  <a href="/handy/ganze-ansicht">Ganze Ansicht</a>
-  <form method="post" action="/logout"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit">Abmelden</button></form>
-</footer>
 <div class="h-toast" id="h-toast" role="status" aria-live="polite" hidden></div>
 <%
   const tabNow = typeof navTab !== 'undefined' ? navTab : '';
@@ -12,9 +7,11 @@
   const navTabs = inEvent ? [
     ['anfragen', `/handy/einsatz/${event.id}`, 'Anfragen', 'phone'],
     ['anmeldungen', `/handy/einsatz/${event.id}/anmeldungen`, 'Anmeldungen', 'inbox'],
+    ['profil', '/handy/profil', 'Profil', 'user'],
   ] : [
     ['einsaetze', '/handy', 'Einsätze', 'calendar'],
     ['personen', '/handy/personen', 'Teilnehmer', 'users'],
+    ['profil', '/handy/profil', 'Profil', 'user'],
   ];
 %>
 <nav class="h-nav" aria-label="<%= inEvent ? 'Ansichten im Einsatz' : 'Ansichten' %>">
@@ -22,6 +19,7 @@
     <a href="<%= href %>" class="<%= tabNow === key ? 'active' : '' %>"<%- tabNow === key ? ' aria-current="page"' : '' %>><%- h.icon(ico) %><span><%= label %></span></a>
   <% } %>
 </nav>
+<% if (typeof withAppJs !== 'undefined' && withAppJs) { %><script src="/static/js/app.js?v=<%= v %>"></script><% } %>
 <script src="/static/js/handy.js?v=<%= v %>"></script>
 </body>
 </html>

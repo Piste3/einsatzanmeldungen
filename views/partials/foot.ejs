@@ -1,5 +1,7 @@
+<% if (typeof handyShell !== 'undefined' && handyShell) { %><%- include('../handy/_foot', { navTab: 'profil', withAppJs: true }) %><% } else { %>
   </main>
 </div>
 <script src="/static/js/app.js?v=<%= v %>"></script>
 </body>
 </html>
+<% } %>

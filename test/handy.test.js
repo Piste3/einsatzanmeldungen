@@ -204,6 +204,18 @@ test('Zurücksetzen stellt den Stand vorher wieder her', async () => {
   assert.equal(db.one('SELECT 1 AS x FROM registrations WHERE event_id = ? AND person_id = ?', ev, kai), undefined, 'erste Zusage zurückgesetzt: Anmeldung weg');
 });
 
+test('Profil: Konto, Darstellung, Ganze Ansicht, Abmelden; Konto-Seiten im Rahmen der Handy-App', async () => {
+  const cookie = await login('lena', 'Aufgebot-2026-x');
+  const page = await (await get('/handy/profil', cookie)).text();
+  for (const t of ['href="/konto/passwort"', 'href="/konto/2fa"', 'action="/konto/darstellung"', 'href="/handy/ganze-ansicht"', 'action="/logout"']) assert.ok(page.includes(t), t);
+  assert.match(page, /class="h-nav"[\s\S]*Einsätze[\s\S]*Teilnehmer[\s\S]*Profil/);
+  assert.doesNotMatch(page, /class="h-foot"/, 'keine Fusszeile mehr');
+  const pw = await (await getAs('/konto/passwort', cookie, IPHONE)).text();
+  assert.match(pw, /class="h-nav"/, 'Passwort-Seite mit Leiste unten');
+  assert.doesNotMatch(pw, /class="sidebar"/);
+  assert.match(await (await get('/konto/passwort', cookie)).text(), /class="sidebar"/, 'am PC wie bisher');
+});
+
 test('Einsatzleiter haben keine Handy-App', async () => {
   const cookie = await login('leiter', 'Kommando-Lauf-2026');
   assert.equal((await get('/handy', cookie)).status, 403);

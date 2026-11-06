@@ -411,7 +411,7 @@ Die Handy-App ist für die Übung oder den Einsatz gemacht. Du fragst die Leute 
 
 **Auf dem Handy kommt immer die Handy-App.** Der Einsatzplaner erkennt ein Handy und öffnet automatisch die passende Seite der Handy-App. Tablets und Computer zeigen weiter die normale Ansicht. Das Handbuch und die Kontoseiten öffnen sich auch auf dem Handy normal. Die Anmeldung ist dieselbe wie im Einsatzplaner.
 
-**Ganze Ansicht:** Unten auf jeder Seite der Handy-App steht **Ganze Ansicht**. Dieser Link zeigt eine Stunde lang den normalen Einsatzplaner, z. B. um einen Einsatz zu ändern. Danach oder mit dem Menüpunkt **Handy-App** kommt wieder die Handy-App.
+**Ganze Ansicht:** Im Reiter **Profil** steht **Ganze Ansicht**. Dieser Knopf zeigt eine Stunde lang den normalen Einsatzplaner, z. B. um einen Einsatz zu ändern. Danach oder mit dem Menüpunkt **Handy-App** kommt wieder die Handy-App.
 
 **Auf den Startbildschirm legen** (nur einmal nötig):
 
@@ -422,12 +422,12 @@ Danach steht **KKB Anfragen** mit dem orangen KKB-Symbol auf dem Startbildschirm
 
 #### Die Leiste unten
 
-Unten steht immer eine Leiste mit zwei Knöpfen. Mit ihr schaltest du zwischen den Ansichten um:
+Unten steht immer eine Leiste. Mit ihr schaltest du zwischen den Ansichten um:
 
 | Wo | Knöpfe in der Leiste |
 |---|---|
-| Ausserhalb eines Einsatzes | **Einsätze** und **Teilnehmer** |
-| Innerhalb eines Einsatzes | **Anfragen** und **Anmeldungen** |
+| Ausserhalb eines Einsatzes | **Einsätze**, **Teilnehmer** und **Profil** |
+| Innerhalb eines Einsatzes | **Anfragen**, **Anmeldungen** und **Profil** |
 
 Der Pfeil ‹ oben links führt aus dem Einsatz zurück zu den Einsätzen. Der Knopf ↻ oben rechts lädt die Seite neu. So siehst du auch Antworten, die andere inzwischen eingetragen haben.
 
@@ -490,6 +490,18 @@ Die Ansicht **Teilnehmer** zeigt alle aktiven Mitglieder, nach Rang sortiert. Re
 ![Handy-App: eine Person mit allen Einsätzen](bilder/51-handy-person.jpg)
 
 Ein Tipp auf eine Person zeigt alle kommenden Einsätze mit ihrem Stand. Oben stehen **Anrufen** und **WhatsApp**. Pro Einsatz trägst du die Antwort mit denselben Knöpfen ein wie bei den Anfragen. So fragst du eine Person für mehrere Einsätze auf einmal.
+
+#### Profil
+
+![Handy-App: Profil](bilder/53-handy-profil.jpg)
+
+Der Reiter **Profil** enthält alles zum eigenen Konto, wie unten links in der Seitenleiste am Computer:
+
+- **Passwort ändern** und **Zwei-Faktor-Anmeldung** öffnen dieselben Seiten wie am Computer, aber im Rahmen der Handy-App mit der Leiste unten. Neben der Zwei-Faktor-Anmeldung steht, ob sie eingerichtet ist.
+- **Darstellung:** **Wie System**, **Hell** oder **Dunkel**. Die Wahl gilt für dein Konto, also auch am Computer.
+- **Handbuch** öffnet dieses Handbuch.
+- **Ganze Ansicht** zeigt eine Stunde lang den normalen Einsatzplaner.
+- **Abmelden** meldet dich auf diesem Handy ab.
 
 Alles, was du in der Handy-App einträgst, steht sofort auch im Reiter **Anfragen**, in den **Anmeldungen**, in den **Rückmeldungen** und im **Verlauf** der Person. Einsatzleiter haben keinen Zugang zur Handy-App.
 
@@ -1012,7 +1024,7 @@ Nein. Die Funktion EL ist die Einteilung am Einsatz. Die Rolle «Einsatzleiter»
 Nein. In der Übersicht des Einsatzes unter **Externe Abteilungen** nur die Abteilung und die Anzahl Personen eintragen, bei Bedarf auch Essenseinschränkungen als Anzahl (z. B. 2 × vegetarisch). Sie zählen in der Besetzung und in der Verpflegung mit und stehen auf der Teilnehmerliste.
 
 **Funktioniert der Einsatzplaner auf dem Handy?**
-Ja. Auf dem Handy öffnet sich automatisch die **Handy-App** (Kapitel 11, «Mit dem Handy anfragen»). Auf dem Tablet erscheint die normale Ansicht. Die normale Ansicht gibt es auf dem Handy über **Ganze Ansicht** unten auf jeder Seite.
+Ja. Auf dem Handy öffnet sich automatisch die **Handy-App** (Kapitel 11, «Mit dem Handy anfragen»). Auf dem Tablet erscheint die normale Ansicht. Die normale Ansicht gibt es auf dem Handy im Reiter **Profil** über **Ganze Ansicht**.
 
 **Gibt es die Handy-App im App Store oder Play Store?**
 Nein. Die Handy-App läuft im Browser. Man legt sie über «Zum Startbildschirm hinzufügen» auf das Handy. Danach öffnet sie sich wie eine normale App. Updates kommen automatisch mit jedem Update des Einsatzplaners.

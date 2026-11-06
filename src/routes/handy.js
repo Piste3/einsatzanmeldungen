@@ -38,6 +38,12 @@ function handyTarget(path) {
   return '/handy';
 }
 
+// Konto-Seiten (Passwort, Zwei-Faktor) zeigt das Handy im Rahmen der Handy-App. Läuft vor den Login-Routen.
+function shellMiddleware(req, res, next) {
+  if (/^\/konto(\/|$)/.test(req.path) && isPhone(req) && req.cookies?.[PC_COOKIE] !== 'pc' && req.user?.role !== 'einsatzleiter') res.locals.handyShell = true;
+  next();
+}
+
 router.use((req, res, next) => {
   if (req.method !== 'GET' || req.xhr || !isPhone(req)) return next();
   if (KEEP_PC_PATHS.test(req.path) || req.query.format || req.cookies?.[PC_COOKIE] === 'pc') return next();
@@ -276,6 +282,11 @@ router.post('/handy/einsatz/:id/anmeldung/:rid/status', loadEvent, (req, res) =>
   res.redirect(`${back(req)}#r${reg.id}`);
 });
 
+// ---------- Profil: Konto, Darstellung, Ganze Ansicht, Abmelden ----------
+router.get('/handy/profil', (req, res) => {
+  res.render('handy/profil', { title: 'Profil', twofaOn: require('../auth/twofa').isEnabled(req.user) });
+});
+
 // ---------- Nach Teilnehmer: eine Person, alle kommenden Einsätze ----------
 router.get('/handy/personen', (req, res) => {
   const evts = upcoming();
@@ -307,3 +318,4 @@ router.get('/handy/personen/:pid', (req, res) => {
 module.exports = router;
 module.exports.answerOf = answerOf;
 module.exports.isPhone = isPhone;
+module.exports.shellMiddleware = shellMiddleware;

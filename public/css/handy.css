@@ -16,9 +16,6 @@ body.handy { background: var(--bg); color: var(--text); margin: 0; min-height: 1
 .h-main { flex: 1; width: 100%; max-width: 640px; margin: 0 auto; padding: 12px 12px 24px; box-sizing: border-box; }
 .h-main .flash { margin-bottom: 10px; }
 
-.h-foot { display: flex; align-items: center; gap: 16px; justify-content: center; flex-wrap: wrap; padding: 16px 12px; padding-bottom: max(16px, env(safe-area-inset-bottom)); border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
-.h-foot a, .h-foot button { color: var(--text-2); background: none; border: 0; font: inherit; padding: 10px 4px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
-.h-foot form { margin: 0; }
 
 .h-empty { text-align: center; padding: 32px 12px; color: var(--muted); }
 .h-empty .btn { margin-top: 8px; }
@@ -171,3 +168,27 @@ body.handy { padding-bottom: calc(60px + env(safe-area-inset-bottom)); }
 .h-contact-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .h-contact-btn { min-height: 48px; font-size: 15px; gap: 8px; }
 .h-contact-btn svg { width: 18px; height: 18px; }
+
+/* ---------- Profil ---------- */
+.h-profile { display: flex; align-items: center; gap: 14px; padding: 8px 2px 16px; }
+.h-profile strong { display: block; font-size: 18px; font-weight: 600; }
+.h-avatar { width: 52px; height: 52px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 600; font-size: 17px; flex: none; }
+.h-section { margin: 18px 2px 8px; font-size: 12.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.h-menu { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.h-menu li + li { border-top: 1px solid var(--line); }
+.h-menu a, .h-menu button { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; padding: 8px 14px; box-sizing: border-box; background: var(--card); border: 0; color: var(--text); font: inherit; font-size: 15.5px; text-align: left; text-decoration: none; cursor: pointer; }
+.h-menu a:active, .h-menu button:active { background: var(--hover); }
+.h-menu svg { width: 20px; height: 20px; flex: none; color: var(--muted); }
+.h-menu span { flex: 1; min-width: 0; }
+.h-menu small { display: block; font-size: 12.5px; color: var(--muted); }
+.h-menu .h-chev { flex: none; color: var(--muted); font-size: 20px; }
+.h-menu form { margin: 0; }
+.h-logout, .h-logout svg { color: var(--dot-red) !important; }
+.h-theme { margin: 0; }
+.h-theme .segmented { border-radius: 10px; }
+.h-theme .segmented button { min-height: 44px; border: 0; background: var(--paper); color: var(--text); font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; }
+.h-theme .segmented button + button { border-left: 1px solid var(--border-strong); }
+.h-theme .segmented button.is-on { background: var(--ink); color: var(--paper); }
+
+/* Konto-Seiten im Rahmen der Handy-App */
+body.handy .topbar { display: none; }
