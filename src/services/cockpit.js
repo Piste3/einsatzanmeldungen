@@ -25,7 +25,7 @@ function data() {
 
 // Anmeldungen, die noch nicht bestätigt sind (Neu, Rückfrage) – für anstehende Einsätze. Die Warteliste ist ein bewusster Entscheid und fehlt hier.
 function unconfirmed() {
-  const rows = db.all(`SELECT g.id, g.status, g.source, g.registered_at, g.remark, g.event_id, e.name AS event_name, e.date_from AS event_date, e.date_to AS event_date_to, e.status AS event_status,
+  const rows = db.all(`SELECT g.id, g.status, g.source, g.registered_at, g.remark, g.internal_note, g.event_id, e.name AS event_name, e.date_from AS event_date, e.date_to AS event_date_to, e.status AS event_status,
       p.id AS person_id, p.first_name, p.last_name, r.short AS rank_short,
       (SELECT group_concat(s.name, ', ') FROM shift_assignments a JOIN shifts s ON s.id = a.shift_id WHERE a.registration_id = g.id) AS shifts
     FROM registrations g JOIN events e ON e.id = g.event_id JOIN persons p ON p.id = g.person_id LEFT JOIN ranks r ON r.id = p.rank_id

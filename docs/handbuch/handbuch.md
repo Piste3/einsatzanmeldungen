@@ -109,6 +109,11 @@ Das Cockpit beantwortet jeden Tag die Frage: Was ist zu tun?
 
 - **Zu tun** (ganz oben, über die ganze Breite): konkrete Hinweise, z. B. unklare Namen klären, Anmeldungen bestätigen, Personen nachfassen, ein voller Einsatz, der noch im Formular steht, oder ein Aufgebot, das noch nicht exportiert ist. Ein Klick öffnet die passende Seite. Sind es mehr als sechs Punkte, zeigt **weitere Punkte anzeigen** den Rest. Rechts im Kopf steht der nächste Einsatz.
 - **Noch nicht bestätigt:** links alle Anmeldungen für anstehende Einsätze mit Status «Neu eingegangen» oder «Rückfrage nötig», nach Einsatz gruppiert. Die Warteliste steht nicht hier, weil sie ein bewusster Entscheid ist. Die Liste ist nach Rang geordnet, mit Schicht, Quelle und Zeitpunkt. **Bestätigen** bestätigt direkt aus dem Cockpit. Hat ein Einsatz mehrere neue Anmeldungen, bestätigt **Alle N neuen bestätigen** in der Zeile des Einsatzes alle auf einmal (mit Rückfrage). Ein Klick auf den Einsatznamen öffnet seine Anmeldungen.
+  Hat eine Anmeldung eine Bemerkung, steht sie in einer eigenen Zeile direkt unter der Person. Das Label zeigt, welche Bemerkung es ist:
+  - **Bemerkung** (grauer Strich): Diesen Text hat die Person selbst geschrieben, zum Beispiel im Formular.
+  - **Interne Bemerkung** (oranger Strich): Diesen Text hat die Aufgebotsstelle erfasst. Die Person sieht ihn nicht.
+
+  ![Noch nicht bestätigt mit Bemerkung und interner Bemerkung](bilder/02-cockpit-bemerkungen.jpg)
 - **Anstehende Einsätze:** direkt darunter die Besetzung pro Schicht (Ist / Soll; grün = voll, gelb = teilweise, rot = viele fehlen), dazu wie viele Anmeldungen neu, unsicher oder offen sind. Ein Klick öffnet den Einsatz.
 - **Letzte Aktivität** (rechts): die acht neuesten Einträge, wer sich wann angemeldet hat, wer wen angefragt und wer was bestätigt hat. **Ältere anzeigen** zeigt weitere.
 
