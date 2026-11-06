@@ -442,7 +442,7 @@ Unten steht immer eine Leiste. Mit ihr schaltest du zwischen den Ansichten um:
 - Nach 5 Minuten verfällt diese Erinnerung. Dann öffnet der Reiter wieder die Übersicht.
 - Ein Tipp auf den Reiter, in dem du schon bist, öffnet sofort die Übersicht.
 
-Der Pfeil ‹ oben links führt aus dem Einsatz zurück zu den Einsätzen. Der Knopf ↻ oben rechts lädt die Seite neu. So siehst du auch Antworten, die andere inzwischen eingetragen haben.
+Der Pfeil ‹ oben links führt aus dem Einsatz zurück zu den Einsätzen. **Live:** Trägt jemand anderes etwas ein, siehst du es sofort, ohne neu zu laden. Das gilt für Antworten, Anmeldungen, Zähler und die Einsatzliste. Die Karten bleiben dabei am Platz. Schreibst du gerade in einer Karte, z. B. eine Bemerkung, wartet diese Karte, bis du fertig bist. Der Knopf ↻ oben rechts lädt die ganze Seite neu und ordnet die Karten neu.
 
 #### Einsätze
 

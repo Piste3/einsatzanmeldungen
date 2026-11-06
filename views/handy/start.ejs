@@ -7,7 +7,7 @@
 <% if (!list.length) { %>
   <div class="h-empty"><p><%= hidden ? 'Im gewählten Zeitraum gibt es keinen Einsatz.' : 'Es gibt keinen laufenden oder kommenden Einsatz.' %></p></div>
 <% } %>
-<ul class="h-events">
+<ul class="h-events" data-live-part="events">
   <% for (const e of list) { const when = e.date_from === todayYmd ? 'Heute' : e.date_from < todayYmd ? 'Läuft' : h.fmtDaysUntil(e.date_from).replace(/^./, (c) => c.toUpperCase()); %>
     <li>
       <a class="h-event<%= e.id === currentEventId ? ' is-current' : '' %>" href="/handy/einsatz/<%= e.id %>">
@@ -19,5 +19,5 @@
     </li>
   <% } %>
 </ul>
-<%- include('_hidden', { hidden }) %>
+<div data-live-part="hidden"><%- include('_hidden', { hidden }) %></div>
 <%- include('_foot', { navTab: 'einsaetze' }) %>

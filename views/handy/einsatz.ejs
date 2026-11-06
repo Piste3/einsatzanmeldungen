@@ -19,7 +19,7 @@
     </div>
   </div>
   <% } %>
-  <nav class="h-tabs" aria-label="Anzeigen">
+  <nav class="h-tabs" aria-label="Anzeigen" data-live-part="tabs">
     <% for (const [key, label, n] of tabs) { %>
       <a class="<%= show === key ? 'active' : '' %>" href="<%= h.withQuery(base, { ...keep, zeige: key !== 'offen' ? key : undefined }) %>" <%= show === key ? 'aria-current=page' : '' %>><%= label %> <span><%= n %></span></a>
     <% } %>

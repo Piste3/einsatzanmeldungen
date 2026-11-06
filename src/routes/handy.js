@@ -102,6 +102,7 @@ function loadEvent(req, res, next) {
   req.event = e;
   res.locals.event = e;
   res.locals.currentEventId = e.id;
+  res.locals.liveTopics = [`event:${e.id}`];
   if (req.method === 'GET') res.cookie(EVENT_COOKIE, String(e.id), { httpOnly: true, sameSite: 'lax', path: '/handy', maxAge: 30 * 86400000 });
   next();
 }
@@ -213,7 +214,7 @@ router.post('/handy/filter', (req, res) => {
 router.get('/handy', (req, res) => {
   const f = filterOf(req);
   const list = upcoming(f).map((e) => ({ ...e, counts: eventCounts(e.id) }));
-  res.render('handy/start', { title: 'Einsatz wählen', list, todayYmd: today(), f, hidden: hiddenCount(list.length) });
+  res.render('handy/start', { title: 'Einsatz wählen', list, todayYmd: today(), f, hidden: hiddenCount(list.length), liveTopics: ['events'] });
 });
 
 function personList(e, query) {
@@ -403,7 +404,7 @@ router.get('/handy/personen', (req, res) => {
         AND status IN (${REG_COUNTING.map(() => '?').join(',')}) GROUP BY person_id`, ...ids, ...REG_COUNTING)) regs.set(x.person_id, x.n);
   }
   for (const p of list) p.angemeldet = regs.get(p.id) || 0;
-  res.render('handy/personen', { title: 'Personen', list, eventCount: evts.length, f, hidden: hiddenCount(evts.length) });
+  res.render('handy/personen', { title: 'Personen', list, eventCount: evts.length, f, hidden: hiddenCount(evts.length), liveTopics: ['events', 'persons'] });
 });
 
 router.get('/handy/personen/:pid', (req, res) => {
@@ -414,7 +415,7 @@ router.get('/handy/personen/:pid', (req, res) => {
   const evts = upcoming(f);
   const choices = feedback.shiftChoices(evts.map((e) => e.id));
   const cards = evts.map((e) => ({ e, r: cardRow(e, p.id), shifts: choices[e.id] || [], locked: locked(e, req.user) })).filter((c) => c.r);
-  res.render('handy/person', { title: `${p.first_name} ${p.last_name}`, p, cards, f, hidden: hiddenCount(evts.length) });
+  res.render('handy/person', { title: `${p.first_name} ${p.last_name}`, p, cards, f, hidden: hiddenCount(evts.length), liveTopics: [`person:${p.id}`, 'events'] });
 });
 
 module.exports = router;

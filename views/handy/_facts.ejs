@@ -10,7 +10,7 @@
 <% if (isCompact) { %>
   <% if (place || el) { %><span class="h-event-facts"><% if (place) { %><span><%- h.icon('pin') %><%= place %></span><% } %><% if (el) { %><span><%- h.icon('user') %>EL <%= el %></span><% } %></span><% } %>
 <% } else { %>
-<dl class="h-facts">
+<dl class="h-facts" data-live-part="facts">
   <div><dt><%- h.icon('calendar') %><span>Datum</span></dt><dd><%= h.fmtEventDate(fe, 'wd') %></dd></div>
   <div><dt><%- h.icon('clock') %><span>Zeit</span></dt><dd><%= time || 'offen' %></dd></div>
   <div><dt><%- h.icon('pin') %><span>Ort</span></dt><dd><%= place || 'offen' %></dd></div>

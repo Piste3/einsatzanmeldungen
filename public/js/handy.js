@@ -78,8 +78,9 @@
 
   // ---------- Suche nach Namen (sofort, ohne Neuladen) ----------
   const search = $('[data-h-search]');
+  let filter = () => {};
   if (search) {
-    const filter = () => {
+    filter = () => {
       const q = search.value.trim().toLowerCase();
       let shown = 0;
       $$('.hc').forEach((c) => { const hit = !q || c.dataset.name.includes(q); c.hidden = !hit; if (hit) shown += 1; });
@@ -145,7 +146,7 @@
   });
 
   // Zähler in den Reitern nachführen (Karten bleiben bis zum Neuladen am Platz)
-  const startAnswer = new Map($$('.hc[data-person]').map((c) => [c.dataset.person, answerOf(c)]));
+  let startAnswer = new Map($$('.hc[data-person]').map((c) => [c.dataset.person, answerOf(c)]));
   function answerOf(c) { return c.classList.contains('hc-kann') ? 'kann' : c.classList.contains('hc-kann_nicht') ? 'kann_nicht' : 'offen'; }
   function updateCounts() {
     const tabs = Object.fromEntries($$('.h-tabs a').map((a) => [new URL(a.href).searchParams.get('zeige') || 'offen', a.querySelector('span')]));
@@ -183,6 +184,83 @@
     b.hidden = false;
     b.onclick = async () => { installEvent.prompt(); await installEvent.userChoice; box.hidden = true; };
   });
+
+  // ---------- Live: Änderungen anderer sofort zeigen (WebSocket wie am PC) ----------
+  // Karten werden einzeln ausgetauscht und bleiben am Platz. Eine Karte, in der gerade jemand tippt
+  // (Bemerkung offen, Schichten offen, Feld aktiv), wartet, bis sie frei ist.
+  const liveTopics = (document.body.dataset.liveTopics || '').split(',').filter(Boolean);
+  const cardBusy = (c) => c.classList.contains('is-busy') || c.contains(document.activeElement)
+    || $$('details[open]', c).length > 0 || $$('[data-shift-panel]', c).some((p) => !p.hidden);
+  const pageBusy = () => $$('dialog[open]').length > 0 || $$('.hc').some((c) => c.classList.contains('is-busy'));
+  let liveWaiting = false;
+  async function liveRefresh() {
+    if (pageBusy()) { liveWaiting = true; return; }
+    let doc;
+    try {
+      const res = await fetch(location.href, { headers: { 'X-Live-Refresh': '1' }, credentials: 'same-origin' });
+      if (!res.ok || res.redirected) return;
+      doc = new DOMParser().parseFromString(await res.text(), 'text/html');
+    } catch { return; }
+    let waiting = false;
+    // Ganze Bereiche: Zähler, Einsatzliste, Personenliste, Angaben
+    for (const part of $$('[data-live-part]')) {
+      const next = doc.querySelector(`[data-live-part="${part.dataset.livePart}"]`);
+      if (!next || next.innerHTML === part.innerHTML) continue;
+      if (part.contains(document.activeElement)) { waiting = true; continue; }
+      part.innerHTML = next.innerHTML;
+    }
+    // Karten einzeln
+    const nextCards = new Map($$('.hc[id]', doc).filter((c) => !c.closest('[data-live-part]')).map((c) => [c.id, c]));
+    let prev = null;
+    for (const [id, next] of nextCards) {
+      const cur = document.getElementById(id);
+      if (!cur) {
+        // Neue Karte (z. B. neue Anmeldung): nach der vorherigen Karte einfügen
+        const list = prev ? prev.parentNode : $('[data-h-list]');
+        if (list) {
+          const node = document.importNode(next, true);
+          if (prev) prev.after(node); else list.prepend(node);
+          applyChannel(node); node.classList.add('is-saved'); setTimeout(() => node.classList.remove('is-saved'), 1200);
+          prev = node;
+        }
+        continue;
+      }
+      prev = cur;
+      if (next.outerHTML === cur.outerHTML.replace(/ data-ch="[^"]*"| is-saved/g, '')) continue;
+      if (cardBusy(cur)) { waiting = true; continue; }
+      const node = document.importNode(next, true);
+      if (cur.dataset.override) node.dataset.override = cur.dataset.override;
+      node.hidden = cur.hidden;
+      cur.replaceWith(node);
+      applyChannel(node);
+      prev = node;
+    }
+    // Rückgängig / Wiederholen oben
+    for (const kind of ['undo', 'redo']) {
+      const cur = $(`[data-h-step="${kind}"]`);
+      const next = doc.querySelector(`[data-h-step="${kind}"]`);
+      if (cur && next) { cur.hidden = next.hidden; cur.dataset.label = next.dataset.label; }
+    }
+    startAnswer = new Map($$('.hc[data-person]').map((c) => [c.dataset.person, answerOf(c)]));
+    $$('.h-tabs a span').forEach((el) => { delete el.dataset.base; });
+    filter();
+    liveWaiting = waiting;
+  }
+  setInterval(() => { if (liveWaiting) liveRefresh(); }, 2000);
+  let liveTimer = null;
+  function liveConnect(retry = 1000) {
+    if (!liveTopics.length || !('WebSocket' in window)) return;
+    const ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/live`);
+    ws.addEventListener('open', () => { retry = 1000; ws.send(JSON.stringify({ type: 'subscribe', topics: liveTopics })); });
+    ws.addEventListener('message', (ev) => {
+      let msg; try { msg = JSON.parse(ev.data); } catch { return; }
+      if (msg.type === 'changed' && msg.topics && msg.topics.length) { clearTimeout(liveTimer); liveTimer = setTimeout(liveRefresh, 300); }
+    });
+    ws.addEventListener('close', () => setTimeout(() => liveConnect(Math.min(retry * 2, 30000)), retry));
+  }
+  liveConnect();
+  // Nach dem Aufwecken des Handys (App im Hintergrund) einmal nachladen
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && liveTopics.length) liveRefresh(); });
 
   // Knöpfe «Rückgängig» und «Wiederholen» oben: eigene Aktionen spurlos zurücknehmen bzw. wiederherstellen, mit Rückfrage
   const undoForm = $('[data-h-step="undo"]');

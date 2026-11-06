@@ -26,6 +26,6 @@
 <div class="h-list">
   <% if (!cards.length) { %><div class="h-empty"><p><%= hidden ? "Im gewählten Zeitraum gibt es keinen Einsatz." : "Es gibt keinen laufenden oder kommenden Einsatz." %></p></div><% } %>
   <% for (const c of cards) { %><%- include('_person', { r: c.r, cardEvent: c.e, mode: 'person', shifts: c.shifts, locked: c.locked }) %><% } %>
-  <%- include('_hidden', { hidden }) %>
+  <div data-live-part="hidden"><%- include('_hidden', { hidden }) %></div>
 </div>
 <%- include('_foot', { navTab: 'personen' }) %>

@@ -9,13 +9,13 @@
 
 <div class="h-tools">
   <% if (shifts.length) { %>
-  <div class="h-occ" aria-label="Besetzung">
+  <div class="h-occ" aria-label="Besetzung" data-live-part="occ">
     <% for (const s of shifts) { %>
       <span class="h-occ-item h-occ-<%= s.tone %>"><span><%= s.name %></span><strong><%= s.ist %><%= s.soll ? ` / ${s.soll}` : '' %></strong></span>
     <% } %>
   </div>
   <% } %>
-  <nav class="h-tabs" aria-label="Anzeigen">
+  <nav class="h-tabs" aria-label="Anzeigen" data-live-part="tabs">
     <% for (const [key, label, n] of tabs) { %>
       <a class="<%= show === key ? 'active' : '' %>" href="<%= h.withQuery(base, { zeige: key !== 'alle' ? key : undefined }) %>"<%- show === key ? ' aria-current="page"' : '' %>><%= label %> <span><%= n %></span></a>
     <% } %>

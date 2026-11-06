@@ -4,7 +4,7 @@
     <input type="search" placeholder="Name suchen …" aria-label="Name suchen" data-h-search autocomplete="off">
   </div>
 </div>
-<ul class="h-people" data-h-list>
+<ul class="h-people" data-h-list data-live-part="people">
   <% for (const p of list) { const name = `${p.first_name} ${p.last_name}`; %>
     <li class="hc" data-name="<%= `${name} ${p.rank_short || ''}`.toLowerCase() %>">
       <a class="h-person" href="/handy/personen/<%= p.id %>">
