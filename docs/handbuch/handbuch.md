@@ -442,13 +442,21 @@ Unten steht immer eine Leiste. Mit ihr schaltest du zwischen den Ansichten um:
 - Nach 5 Minuten verfällt diese Erinnerung. Dann öffnet der Reiter wieder die Übersicht.
 - Ein Tipp auf den Reiter, in dem du schon bist, öffnet sofort die Übersicht.
 
-Der Pfeil ‹ oben links führt aus dem Einsatz zurück zu den Einsätzen. **Live:** Trägt jemand anderes etwas ein, siehst du es sofort, ohne neu zu laden. Das gilt für Antworten, Anmeldungen, Zähler und die Einsatzliste. Die Karten bleiben dabei am Platz. Schreibst du gerade in einer Karte, z. B. eine Bemerkung, wartet diese Karte, bis du fertig bist. Der Knopf ↻ oben rechts lädt die ganze Seite neu und ordnet die Karten neu.
+**Oben** steht der Titel der Seite. Der Pfeil ‹ führt zurück, z. B. aus einem Einsatz zu den Einsätzen. Der Knopf ↻ lädt die ganze Seite neu und ordnet die Karten neu.
+
+**Live:** Trägt jemand anderes etwas ein, siehst du es nach etwa einer Sekunde, ohne neu zu laden. Das gilt für Antworten, Anmeldungen, Zähler und die Einsatzliste. Die Karten bleiben dabei am Platz. Schreibst du gerade in einer Karte, z. B. eine Bemerkung, wartet diese Karte, bis du fertig bist. Holst du das Handy hervor, lädt die App einmal nach.
 
 #### Einsätze
 
 ![Handy-App: Einsätze](bilder/46-handy-einsaetze.jpg)
 
-Die Startseite zeigt die laufenden und kommenden Einsätze, der nächste zuerst. Welche Einsätze erscheinen, stellst du im Reiter **Filter** ein. Standard sind die nächsten 6 Monate mit Entwürfen. Unter dem Titel steht der gewählte Filter. Fehlen Einsätze wegen des Filters, steht unten z. B. «2 weitere Einsätze ausgeblendet». Ein Tipp darauf öffnet den Filter. Pro Einsatz stehen Datum, Zeit von Antreten bis Abtreten, Ort und Einsatzleitung (EL). Darunter steht, wie viele Personen angemeldet sind und bei wie vielen die Antwort noch offen ist. Der zuletzt geöffnete Einsatz hat links einen orangen Strich. Ein Tipp auf einen Einsatz öffnet seine **Anfragen**.
+Die Startseite zeigt die laufenden und kommenden Einsätze, der nächste zuerst. Ein Tipp auf einen Einsatz öffnet seine **Anfragen**.
+
+- Pro Einsatz stehen Datum, Zeit von Antreten bis Abtreten, Ort und Einsatzleitung (EL).
+- Darunter steht, wie viele Personen angemeldet sind und bei wie vielen die Antwort noch offen ist.
+- Der zuletzt geöffnete Einsatz hat links einen orangen Strich.
+- Welche Einsätze erscheinen, stellst du im Reiter **Filter** ein. Standard sind die nächsten 6 Monate mit Entwürfen. Unter dem Titel steht der gewählte Filter.
+- Fehlen Einsätze wegen des Filters, steht unten z. B. «2 weitere Einsätze ausgeblendet». Ein Tipp darauf öffnet den Filter.
 
 #### Anfragen
 
@@ -468,7 +476,7 @@ Die Startseite zeigt die laufenden und kommenden Einsätze, der nächste zuerst.
 | Nicht erreicht | Nur bei Telefon: niemand hat abgenommen | Bleibt unter «Noch offen» |
 | Gesendet | Nur bei WhatsApp: Nachricht geschickt, Antwort offen | Bleibt unter «Noch offen» |
 
-Die Antwort ist sofort gespeichert. Unten erscheint kurz eine Bestätigung, z. B. «David Suter: kann». Die Karte bleibt an ihrem Platz, bis du die Seite neu lädst.
+Die Antwort ist sofort gespeichert. Unten erscheint kurz eine Bestätigung, z. B. «David Suter: kann». Die Karte bleibt an ihrem Platz, bis du ↻ tippst. Die Zahlen in den Reitern stimmen sofort.
 
 ![Handy-App: Schichten bei «Kann»](bilder/48-handy-schichten.jpg)
 
@@ -491,7 +499,7 @@ Die Antwort ist sofort gespeichert. Unten erscheint kurz eine Bestätigung, z. B
 - Wurde eine Person ohne Anfrage von Hand angemeldet, z. B. am Computer mit «Person hinzufügen», steht **Zurücksetzen** ebenfalls in der Karte. Es löscht diese Anmeldung, wie am Computer «Löschen». Eine Anmeldung aus dem Formular lässt sich in der Handy-App nicht zurücksetzen.
 - Am Computer macht der Pfeil ↶ beim letzten Kontaktversuch im Reiter «Anfragen» dasselbe.
 
-**Filter:** **Noch offen**, **Kann**, **Kann nicht** und **Alle** filtern die Liste. Beim Öffnen steht **Noch offen**. **Name suchen** filtert sofort beim Tippen. Daneben lässt sich eine Mannschaft wählen.
+**Liste eingrenzen:** **Noch offen**, **Kann**, **Kann nicht** und **Alle** filtern die Liste. Beim Öffnen steht **Noch offen**. **Name suchen** filtert sofort beim Tippen. Daneben lässt sich eine Mannschaft wählen.
 
 #### Anmeldungen
 
@@ -510,11 +518,11 @@ Die Ansicht **Anmeldungen** zeigt dieselben Anmeldungen wie der Reiter «Anmeldu
 
 ![Handy-App: Personen](bilder/50-handy-personen.jpg)
 
-Die Ansicht **Personen** zeigt alle aktiven Mitglieder, nach Rang sortiert. Rechts steht, für wie viele kommende Einsätze die Person angemeldet ist. **Name suchen** filtert sofort beim Tippen.
+Die Ansicht **Personen** zeigt alle aktiven Mitglieder, der tiefste Rang zuerst. Rechts steht, für wie viele Einsätze die Person angemeldet ist. Es zählen die Einsätze im Filter. Unter dem Titel stehen die Zahl dieser Einsätze und der Filter. **Name suchen** filtert sofort beim Tippen.
 
 ![Handy-App: eine Person mit allen Einsätzen](bilder/51-handy-person.jpg)
 
-Ein Tipp auf eine Person zeigt alle kommenden Einsätze mit ihrem Stand. Oben stehen **Anrufen**, **WhatsApp** und «Gefragt per». Pro Einsatz trägst du die Antwort mit denselben Knöpfen ein wie bei den Anfragen. So fragst du eine Person für mehrere Einsätze auf einmal.
+Ein Tipp auf eine Person zeigt alle Einsätze im Filter mit ihrem Stand. Pro Einsatz stehen Datum, Zeit und Ort. Oben stehen **Anrufen**, **WhatsApp** und «Gefragt per». Pro Einsatz trägst du die Antwort mit denselben Knöpfen ein wie bei den Anfragen. So fragst du eine Person für mehrere Einsätze auf einmal.
 
 #### Filter
 
