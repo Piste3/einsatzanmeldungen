@@ -116,7 +116,7 @@
   </div>
   <div class="stack">
     <div class="card">
-      <div class="card-head"><h2>Status und Formular</h2><%- h.eventBadge(event.status) %></div>
+      <div class="card-head"><h2>Status und Formular</h2><%- h.eventState({ ...event, inForm }) %></div>
       <div class="card-body">
         <p class="small muted">Entwurf → Veröffentlicht → Abgeschlossen (oder jederzeit Abgesagt)</p>
         <div class="row">

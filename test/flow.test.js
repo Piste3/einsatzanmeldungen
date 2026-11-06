@@ -302,3 +302,15 @@ test('Kontakt mündlich: eigener Kanal, eigenes Icon, Zusage als Quelle «Mündl
   const r = inquiries.addAttempt(offen, anna, { channel: 'muendlich', result: 'zugesagt' }, system);
   assert.equal(registrations.get(r.registrationId).source, 'muendlich');
 });
+
+test('Status-Anzeige: aus dem Formular genommen heisst nicht mehr «Veröffentlicht»', () => {
+  const { offen, entwurf } = setup();
+  const h = require('../src/lib/view-helpers');
+  assert.match(h.eventState(events.get(offen)), />Im Formular</);
+  events.setShowInForm(offen, false, system);
+  const aus = h.eventState(events.get(offen));
+  assert.match(aus, />Nicht im Formular</);
+  assert.match(aus, /von Hand aus dem Formular genommen/);
+  assert.doesNotMatch(aus, />Veröffentlicht</);
+  assert.match(h.eventState(events.get(entwurf)), />Entwurf</);
+});

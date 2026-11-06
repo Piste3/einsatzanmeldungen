@@ -23,9 +23,9 @@
       <% for (const e of list) { %>
         <tr data-row-id="ev<%= e.id %>">
           <td class="nowrap"><%= h.fmtEventDate(e, 'wd') %></td>
-          <td><a href="/einsaetze/<%= e.id %>"><strong><%= e.name %></strong></a><% if (e.inForm) { %> <%- h.badge('im Formular', 'green') %><% } %></td>
+          <td><a href="/einsaetze/<%= e.id %>"><strong><%= e.name %></strong></a></td>
           <td><%= [e.start_time, e.start_place].filter(Boolean).join(' · ') || '–' %></td>
-          <td><%- h.eventBadge(e.status) %></td>
+          <td><%- h.eventState(e) %></td>
           <td><% for (const s of e.stats.shifts) { %><div class="occ"><div class="occ-head"><span><%= s.name %></span><strong><%= s.ist %> / <%= s.soll ?? '–' %></strong></div><div class="bar <%= s.tone %>"><span style="width:<%= h.pct(s.ist, s.soll) %>%"></span></div></div><% } %></td>
           <td class="center"><%= e.stats.neu || '–' %></td>
           <td class="center"><%= e.stats.bestaetigt || '–' %></td>

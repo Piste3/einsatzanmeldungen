@@ -19,6 +19,17 @@ function eventBadge(status) {
   return badge(s.label, s.tone);
 }
 
+// Status für Listen und Kopfzeile: Ein veröffentlichter Einsatz zeigt, ob er im Formular steht.
+// So gibt es nur eine Anzeige statt «Veröffentlicht» und dazu ein eigenes Abzeichen «im Formular».
+function eventState(e) {
+  if (e.status !== 'veroeffentlicht') return eventBadge(e.status);
+  const inForm = typeof e.inForm === 'boolean' ? e.inForm : require('../services/events').isInForm(e);
+  const [text, tone, title] = inForm
+    ? ['Im Formular', 'green', 'Veröffentlicht und im Anmeldeformular']
+    : ['Nicht im Formular', 'gray', e.show_in_form ? 'Veröffentlicht, letzte Schicht ist vorbei' : 'Veröffentlicht, von Hand aus dem Formular genommen'];
+  return `<span class="badge badge-${tone}" title="${escapeHtml(title)}">${escapeHtml(text)}</span>`;
+}
+
 // Link für WhatsApp (wa.me) aus einer Schweizer Mobilnummer, z. B. 079 123 45 67 -> 41791234567
 function waLink(mobile) {
   let d = String(mobile || '').replace(/[^\d+]/g, '');
@@ -108,7 +119,7 @@ function navMiddleware(req, res, next) {
 }
 
 module.exports = {
-  ...dates, labels, escapeHtml, badge, regBadge, eventBadge, inquiryBadge, waLink, feedbackBadge, rank, initials, personName, withQuery, pct, nl2br,
+  ...dates, labels, escapeHtml, badge, regBadge, eventBadge, eventState, inquiryBadge, waLink, feedbackBadge, rank, initials, personName, withQuery, pct, nl2br,
   plural, flash, flashMiddleware, localsMiddleware, navMiddleware, icon: require('./icons').icon,
   // Vorlage für den Text-Editor: alte Klartext-Vorlagen in HTML umwandeln
   editorHtml: (template, format) => (format === 'html' ? String(template || '') : require('./html').textToHtml(template)),

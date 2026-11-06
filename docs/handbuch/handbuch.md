@@ -118,6 +118,17 @@ Das Cockpit beantwortet jeden Tag die Frage: Was ist zu tun?
 
 Die Liste zeigt alle Einsätze mit Datum, Antreten, Status, Besetzung und Einsatzleitung. Oben lässt sich nach Status, Zeitraum und Name filtern. Ein Einsatz über mehrere Tage steht mit seinem Zeitraum in der Liste, z. B. «Sa 02.01. – So 03.01.2027», und wird bei jedem Zeitraum-Filter gefunden, der einen seiner Tage trifft.
 
+Die Spalte **Status** zeigt bei einem veröffentlichten Einsatz, ob er im Anmeldeformular steht:
+
+| Anzeige | Bedeutung |
+|---|---|
+| Entwurf | Noch nicht veröffentlicht. Der Einsatz steht nicht im Formular |
+| Im Formular | Veröffentlicht. Die Mitglieder können sich anmelden |
+| Nicht im Formular | Veröffentlicht, aber nicht im Formular: von Hand herausgenommen oder die letzte Schicht ist vorbei. Mit der Maus über die Anzeige fahren zeigt den Grund |
+| Abgeschlossen, Abgesagt | Der Einsatz ist erledigt |
+
+Dieselbe Anzeige steht im Kopf des Einsatzes und im Cockpit. Der Filter «Veröffentlicht» zeigt beide Fälle, im Formular und nicht im Formular.
+
 ### Neuer Einsatz
 
 Über **+ Neuer Einsatz** öffnet sich das Formular. Nur der Name ist Pflicht – alles andere darf später ergänzt werden.
@@ -159,7 +170,7 @@ Die Übersicht passt meist auf einen Bildschirm. Links steht, wie es um den Eins
 - **Angaben** des Einsatzes und wann das Aufgebot zuletzt exportiert wurde.
 - **Externe Abteilungen:** andere Abteilungen oder Vereine, die mit einer Anzahl Personen mithelfen (Kapitel 7). Gibt es keine, steht nur der Knopf **+ Externe Abteilung hinzufügen**.
 - **Status und Formular** (rechts): Entwurf → Veröffentlicht → Abgeschlossen, oder jederzeit Abgesagt. Nach dem Abschluss sind die Daten schreibgeschützt; Änderungen sind dann nur noch durch einen Admin mit Begründung möglich. Bei einer Absage bleiben alle Daten erhalten.
-- **Im Formular anzeigen** (in derselben Karte): schaltet den Einsatz im Anmeldeformular ein oder aus, z. B. wenn er voll ist. Darunter führt **So sieht der Einsatz im Formular aus →** zum Reiter «Formular».
+- **Im Formular anzeigen** (in derselben Karte): schaltet den Einsatz im Anmeldeformular ein oder aus, z. B. wenn er voll ist. Der Status bleibt dabei «Veröffentlicht». Die Anzeige wechselt aber auf «Nicht im Formular»: in der Karte, im Kopf des Einsatzes und in der Liste. Darunter führt **So sieht der Einsatz im Formular aus →** zum Reiter «Formular».
 - **Einsatzleiter-Zugriff:** gibt den Einsatz für einen Einsatzleiter frei (Kapitel 15).
 - Oben rechts stehen drei Knöpfe: **Teilnehmerliste** (dunkel, Kapitel 14), **Bearbeiten** und **Mehr ▾**. Im Menü **Mehr** liegen der **Kalendertermin** (Kapitel 16), der Export der aktuellen Liste als Excel oder CSV, die **Teilnehmerliste** (pro Schicht als PDF, als Excel oder CSV, **Auswahl anpassen …**), die **Verpflegungsliste** (ganzer Einsatz oder pro Schicht als PDF, **Ansehen und auswählen …**) und **Drucken**.
 - Was sonst geändert wurde, steht im Reiter **Verlauf**.

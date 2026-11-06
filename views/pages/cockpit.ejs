@@ -89,7 +89,7 @@
               <td>
                 <a href="/einsaetze/<%= e.id %>"><strong><%= e.name %></strong></a>
                 <span class="sub"><%= h.fmtEventDate(e, 'wd') %> · <%= h.plural(e.shifts.length, 'Schicht', 'Schichten') %></span>
-                <div class="mt-s"><% if (e.status === 'entwurf') { %><%- h.badge('Entwurf', 'gray') %><% } else if (e.inForm) { %><%- h.badge('im Formular', 'green') %><% } else { %><%- h.badge('nicht im Formular', 'gray') %><% } %></div>
+                <div class="mt-s"><%- h.eventState(e) %></div>
               </td>
               <td>
                 <% if (e.status === 'entwurf') { %><span class="muted small">noch nicht veröffentlicht</span><% } else { %>
