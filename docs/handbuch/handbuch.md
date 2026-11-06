@@ -464,6 +464,7 @@ Die Antwort ist sofort gespeichert. Unten erscheint kurz eine Bestätigung, z. B
 - Zurücksetzen löscht immer nur die letzte Antwort dieser Person für diesen Einsatz. Danach gilt wieder die Antwort davor, z. B. «Nicht erreicht» oder «Noch nicht gefragt».
 - Hat die Antwort «Kann» eine Anmeldung erstellt, wird diese Anmeldung ebenfalls gelöscht.
 - Hat die Antwort «Kann nicht» eine bestehende Anmeldung zurückgezogen, z. B. aus dem Formular, bekommt die Anmeldung ihren Status von vorher zurück. Eine bestätigte Anmeldung ist danach wieder bestätigt. Eine zweite Bestätigungsmail geht nicht hinaus.
+- Wurde eine Person ohne Anfrage von Hand angemeldet, z. B. am Computer mit «Person hinzufügen», steht **Zurücksetzen** ebenfalls in der Karte. Es löscht diese Anmeldung, wie am Computer «Löschen». Eine Anmeldung aus dem Formular lässt sich in der Handy-App nicht zurücksetzen.
 - Am Computer macht der Pfeil ↶ beim letzten Kontaktversuch im Reiter «Anfragen» dasselbe.
 
 **Filter:** **Noch offen**, **Kann**, **Kann nicht** und **Alle** filtern die Liste. Beim Öffnen steht **Noch offen**. **Name suchen** filtert sofort beim Tippen. Daneben lässt sich eine Mannschaft wählen.
