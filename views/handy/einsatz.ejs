@@ -4,7 +4,8 @@
   const here = h.withQuery(base, { ...keep, zeige: show !== 'offen' ? show : undefined });
   const tabs = [['offen', 'Noch offen', counts.offen], ['kann', 'Kann', counts.kann], ['kann_nicht', 'Kann nicht', counts.kann_nicht], ['alle', 'Alle', total]];
 %>
-<%- include('_head', { barTitle: event.name, barSub: h.fmtEventDate(event) + (event.start_time ? ` · ${event.start_time}` : ''), backHref: '/handy', navTab: 'anfragen' }) %>
+<%- include('_head', { barTitle: event.name, barSub: h.fmtEventDate(event, 'wd') + (event.start_time ? ` · ${[event.start_time, event.end_time].filter(Boolean).join('–')}` : ''), backHref: '/handy', navTab: 'anfragen' }) %>
+<%- include('_facts', { e: event }) %>
 <% if (locked) { %><div class="flash flash-info">Der Einsatz ist <%= h.labels.EVENT_STATUS[event.status].label.toLowerCase() %>. Antworten lassen sich nur noch ansehen.</div><% } %>
 
 <div class="h-tools">

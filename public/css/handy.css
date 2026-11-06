@@ -35,6 +35,15 @@ body.handy { background: var(--bg); color: var(--text); margin: 0; min-height: 1
 .h-event:active { background: var(--hover); }
 .h-event-when { font-size: 12.5px; color: var(--muted); }
 .h-event-name { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+.h-event-facts { display: flex; flex-wrap: wrap; gap: 2px 14px; font-size: 13px; color: var(--text-2); }
+.h-event-facts span { display: inline-flex; align-items: center; gap: 5px; min-width: 0; }
+.h-event-facts svg { width: 14px; height: 14px; flex: none; color: var(--muted); }
+.h-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; margin: 0 0 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); }
+.h-facts div { min-width: 0; }
+.h-facts dt { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--muted); }
+.h-facts dt svg { width: 14px; height: 14px; flex: none; }
+.h-facts dd { margin: 2px 0 0; font-size: 14.5px; font-weight: 500; overflow-wrap: anywhere; }
+.h-facts dd a { color: var(--text); text-decoration: underline; text-underline-offset: 2px; }
 .h-event-counts { font-size: 13px; color: var(--text-2); display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
 .h-event-counts strong { color: var(--orange-dark); font-weight: 600; }
 .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--dot-gray); }

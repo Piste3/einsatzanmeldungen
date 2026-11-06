@@ -23,7 +23,7 @@
     <% if (byPerson) { %>
     <div class="hc-who">
       <a class="hc-event-link" href="/handy/einsatz/<%= ev.id %>"><strong><%= ev.name %></strong></a>
-      <span class="hc-sub"><%= h.fmtEventDate(ev) %><%= ev.start_time ? ` · ${ev.start_time}` : '' %><%= ev.status === 'entwurf' ? ' · Entwurf' : '' %></span>
+      <span class="hc-sub"><%= h.fmtEventDate(ev, 'wd') %><%= ev.start_time ? ` · ${[ev.start_time, ev.end_time].filter(Boolean).join('–')}` : '' %><%= ev.start_place ? ` · ${ev.start_place}` : '' %><%= ev.status === 'entwurf' ? ' · Entwurf' : '' %></span>
     </div>
     <% } else { %>
     <div class="hc-who">

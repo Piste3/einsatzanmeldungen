@@ -448,11 +448,13 @@ Der Pfeil ‹ oben links führt aus dem Einsatz zurück zu den Einsätzen. Der K
 
 ![Handy-App: Einsätze](bilder/46-handy-einsaetze.jpg)
 
-Die Startseite zeigt die laufenden und kommenden Einsätze, der nächste zuerst. Welche Einsätze erscheinen, stellst du im Reiter **Filter** ein. Standard sind die nächsten 6 Monate mit Entwürfen. Unter dem Titel steht der gewählte Filter. Fehlen Einsätze wegen des Filters, steht unten z. B. «2 weitere Einsätze ausgeblendet». Ein Tipp darauf öffnet den Filter. Pro Einsatz steht, wie viele Personen angemeldet sind und bei wie vielen die Antwort noch offen ist. Der zuletzt geöffnete Einsatz hat links einen orangen Strich. Ein Tipp auf einen Einsatz öffnet seine **Anfragen**.
+Die Startseite zeigt die laufenden und kommenden Einsätze, der nächste zuerst. Welche Einsätze erscheinen, stellst du im Reiter **Filter** ein. Standard sind die nächsten 6 Monate mit Entwürfen. Unter dem Titel steht der gewählte Filter. Fehlen Einsätze wegen des Filters, steht unten z. B. «2 weitere Einsätze ausgeblendet». Ein Tipp darauf öffnet den Filter. Pro Einsatz stehen Datum, Zeit von Antreten bis Abtreten, Ort und Einsatzleitung (EL). Darunter steht, wie viele Personen angemeldet sind und bei wie vielen die Antwort noch offen ist. Der zuletzt geöffnete Einsatz hat links einen orangen Strich. Ein Tipp auf einen Einsatz öffnet seine **Anfragen**.
 
 #### Anfragen
 
 ![Handy-App: Anfragen](bilder/47-handy-anfragen.jpg)
+
+**Angaben zum Einsatz.** Oben in **Anfragen** und **Anmeldungen** steht ein Kasten mit Datum, Zeit, Ort und EL. Ein Tipp auf den Namen der Einsatzleitung ruft sie an.
 
 **«Gefragt per» wählen.** Oben wählst du, wie du fragst: **Mündlich**, **Telefon** oder **WhatsApp**. Die App merkt sich die Wahl auf diesem Handy. Tippst du in einer Karte auf den Hörer oder die Sprechblase, gilt für diese Person automatisch Telefon bzw. WhatsApp.
 

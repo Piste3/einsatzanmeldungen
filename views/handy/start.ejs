@@ -11,8 +11,9 @@
   <% for (const e of list) { const when = e.date_from === todayYmd ? 'Heute' : e.date_from < todayYmd ? 'Läuft' : h.fmtDaysUntil(e.date_from).replace(/^./, (c) => c.toUpperCase()); %>
     <li>
       <a class="h-event<%= e.id === currentEventId ? ' is-current' : '' %>" href="/handy/einsatz/<%= e.id %>">
-        <span class="h-event-when"><%= when %> · <%= h.fmtEventDate(e) %><% if (e.start_time) { %> · <%= e.start_time %><% } %></span>
+        <span class="h-event-when"><%= when %> · <%= h.fmtEventDate(e, 'wd') %><% if (e.start_time) { %> · <%= [e.start_time, e.end_time].filter(Boolean).join('–') %><% } %></span>
         <span class="h-event-name"><%= e.name %><% if (e.status === 'entwurf') { %> <span class="badge badge-gray">Entwurf</span><% } %></span>
+        <%- include('_facts', { e, compact: true }) %>
         <span class="h-event-counts"><span class="dot dot-green"></span><%= e.counts.angemeldet %> angemeldet · <strong><%= e.counts.offen %> noch offen</strong></span>
       </a>
     </li>

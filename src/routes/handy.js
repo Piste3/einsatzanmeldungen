@@ -186,8 +186,10 @@ function filterOf(req) {
 function upcoming(f = DEFAULT_FILTER) {
   const t = today();
   const days = RANGES[f.zeit].days;
-  return db.all(`SELECT * FROM events WHERE status IN (${f.entwurf ? "'veroeffentlicht','entwurf'" : "'veroeffentlicht'"}) AND date_to >= ?${days ? ' AND date_from <= ?' : ''}
-    ORDER BY date_from, start_time, id`, t, ...(days ? [addDays(t, days)] : []));
+  return db.all(`SELECT e.*, p.first_name AS leader_first, p.last_name AS leader_last, p.mobile AS leader_mobile, r.short AS leader_rank
+    FROM events e LEFT JOIN persons p ON p.id = e.leader_person_id LEFT JOIN ranks r ON r.id = p.rank_id
+    WHERE e.status IN (${f.entwurf ? "'veroeffentlicht','entwurf'" : "'veroeffentlicht'"}) AND e.date_to >= ?${days ? ' AND e.date_from <= ?' : ''}
+    ORDER BY e.date_from, e.start_time, e.id`, t, ...(days ? [addDays(t, days)] : []));
 }
 const hiddenCount = (shown) => upcoming({ zeit: 'alle', entwurf: true }).length - shown;
 

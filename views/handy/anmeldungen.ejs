@@ -3,7 +3,8 @@
   const here = h.withQuery(base, { zeige: show !== 'alle' ? show : undefined });
   const tabs = [['alle', 'Angemeldet', counts.offen + counts.bestaetigt], ['offen', 'Zu bearbeiten', counts.offen], ['bestaetigt', 'Bestätigt', counts.bestaetigt], ['uebrige', 'Übrige', counts.uebrige]];
 %>
-<%- include('_head', { barTitle: event.name, barSub: h.fmtEventDate(event) + (event.start_time ? ` · ${event.start_time}` : ''), backHref: '/handy', navTab: 'anmeldungen' }) %>
+<%- include('_head', { barTitle: event.name, barSub: h.fmtEventDate(event, 'wd') + (event.start_time ? ` · ${[event.start_time, event.end_time].filter(Boolean).join('–')}` : ''), backHref: '/handy', navTab: 'anmeldungen' }) %>
+<%- include('_facts', { e: event }) %>
 <% if (locked) { %><div class="flash flash-info">Der Einsatz ist <%= h.labels.EVENT_STATUS[event.status].label.toLowerCase() %>. Anmeldungen lassen sich nur noch ansehen.</div><% } %>
 
 <div class="h-tools">
