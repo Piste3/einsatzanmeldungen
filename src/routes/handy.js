@@ -270,6 +270,19 @@ router.post('/handy/einsatz/:id/zuruecknehmen', loadEvent, (req, res) => {
   res.redirect(`${back(req)}#p${personId}`);
 });
 
+// Interne Bemerkung zur letzten Antwort
+router.post('/handy/einsatz/:id/notiz', loadEvent, (req, res) => {
+  const personId = Number(req.body.person_id);
+  try {
+    inquiries.setAttemptNote(req.event.id, Number(req.body.attempt_id), req.body.note, req.user);
+  } catch (err) {
+    if (!req.xhr) throw err;
+    return res.status(400).type('text').send(err.messages ? err.messages.join(' ') : 'Speichern ging nicht. Bitte neu laden.');
+  }
+  if (req.xhr) return renderCard(req, res, personId);
+  res.redirect(`${back(req)}#${req.body.ansicht === 'person' ? `e${req.event.id}` : `p${personId}`}`);
+});
+
 // ---------- Anmeldungen (wie am PC, nur lesen und bestätigen) ----------
 const REG_GROUPS = {
   offen: { label: 'Zu bearbeiten', st: ['neu', 'unsicher', 'rueckfrage'] },

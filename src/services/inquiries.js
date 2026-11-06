@@ -254,6 +254,34 @@ function removeAttempt(eventId, attemptId, user) {
   return { regRemoved };
 }
 
+// Interne Bemerkung zum letzten Kontaktversuch (Handy-App). Steht am PC im Reiter «Anfragen» beim Versuch und im Verlauf.
+// Bei «Kann» mit Anmeldung geht sie auch in die interne Bemerkung der Anmeldung, wenn dort nichts anderes steht.
+function setAttemptNote(eventId, attemptId, note, user) {
+  const a = db.one(`SELECT a.*, i.event_id, i.person_id, i.registration_id FROM contact_attempts a JOIN inquiries i ON i.id = a.inquiry_id WHERE a.id = ?`, attemptId);
+  if (!a || a.event_id !== eventId) throw new ValidationError(['Diese Antwort gibt es nicht mehr. Bitte neu laden.']);
+  const event = db.one('SELECT * FROM events WHERE id = ?', eventId);
+  if (event.status === 'abgeschlossen' && user.role !== 'admin') throw new ValidationError(['Der Einsatz ist abgeschlossen.']);
+  const text = String(note || '').trim().slice(0, 500) || null;
+  if (text === (a.note || null)) return { changed: false };
+  const person = db.one('SELECT * FROM persons WHERE id = ?', a.person_id);
+  db.tx(() => {
+    db.run('UPDATE contact_attempts SET note = ? WHERE id = ?', text, a.id);
+    if (a.result === 'zugesagt' && a.registration_id) {
+      const reg = db.one('SELECT id, internal_note FROM registrations WHERE id = ?', a.registration_id);
+      if (reg && (!reg.internal_note || reg.internal_note === a.note)) {
+        db.run('UPDATE registrations SET internal_note = ?, version = version + 1, updated_at = ?, updated_by = ? WHERE id = ?', text, nowIso(), user.id, reg.id);
+      }
+    }
+    audit.log({
+      entity: 'inquiry', entityId: a.inquiry_id, eventId, personId: a.person_id, action: 'attempt_note',
+      summary: `${user.display_name} hat die interne Bemerkung bei ${person.first_name} ${person.last_name} geändert · ${event.name}`,
+      details: { versuch_id: a.id, notiz: { alt: a.note || null, neu: text } }, user,
+    });
+  });
+  live.notify(`event:${eventId}`, 'feedback', `person:${a.person_id}`);
+  return { changed: true };
+}
+
 function attemptLabel(a) {
   return `${CHANNEL[a.channel].short} ${fmtLocal(a.contacted_at).slice(0, 6)} ${a.contacted_at.slice(11, 16)}`;
 }
@@ -283,4 +311,4 @@ function resetPerson(eventId, personId, user) {
   });
 }
 
-module.exports = { listForEvent, rowFor, openCount, forPerson, addAttempt, setStatus, removeAttempt, resetPerson, attemptLabel };
+module.exports = { listForEvent, rowFor, openCount, forPerson, addAttempt, setStatus, removeAttempt, resetPerson, attemptLabel, setAttemptNote };

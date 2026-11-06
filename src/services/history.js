@@ -88,6 +88,8 @@ function entryFromAudit(a) {
     }
     case 'inquiry:status':
       return { ...base, state: stateOfResult(d.status?.neu), text: `Anfrage: ${INQUIRY_STATUS[d.status?.neu]?.label || d.status?.neu}` };
+    case 'inquiry:attempt_note':
+      return { ...base, text: 'Interne Bemerkung geändert', note: d.notiz?.neu || null };
     case 'inquiry:attempt_delete':
       return { ...base, text: `Kontaktversuch zurückgenommen${d.kanal ? ` (${CHANNEL[d.kanal]?.label})` : ''}` };
     case 'inquiry:reset':

@@ -237,6 +237,38 @@ test('Von Hand eingetragene Anmeldung lässt sich zurücksetzen, Formular-Anmeld
   assert.equal(db.one('SELECT 1 AS x FROM registrations WHERE id = ?', rid), undefined, 'Anmeldung gelöscht');
 });
 
+test('Interne Bemerkung zur Antwort', async () => {
+  const db = require('../src/db');
+  const persons = require('../src/services/persons');
+  const events = require('../src/services/events');
+  const { today, addDays } = require('../src/lib/dates');
+  const ev = events.create({ name: 'Übung Notiz', date: addDays(today(), 6), start_time: '08:00', end_time: '12:00' }, system);
+  const ida = persons.create({ first_name: 'Ida', last_name: 'Intern', status: 'aktiv' }, system);
+  const cookie = await login('lena', 'Aufgebot-2026-x');
+  let page = await (await get(`/handy/einsatz/${ev}`, cookie)).text();
+  const csrf = page.match(/name="_csrf" value="([^"]+)"/)[1];
+  const post = (path, body) => fetch(`${base}/handy/einsatz/${ev}/${path}`, {
+    method: 'POST', redirect: 'manual',
+    headers: { cookie, 'content-type': 'application/x-www-form-urlencoded', 'x-requested-with': 'XMLHttpRequest' },
+    body: new URLSearchParams({ _csrf: csrf, person_id: String(ida), ...body }),
+  });
+  let card = await (await post('antwort', { antwort: 'kann', channel: 'muendlich' })).text();
+  assert.match(card, /Interne Bemerkung schreiben/);
+  const attempt = card.match(/action="\/handy\/einsatz\/\d+\/notiz"[\s\S]*?name="attempt_id" value="(\d+)"/)[1];
+  card = await (await post('notiz', { attempt_id: attempt, note: '  kommt erst ab 10 Uhr ' })).text();
+  assert.match(card, /kommt erst ab 10 Uhr<\/span>/);
+  assert.equal(db.one('SELECT note FROM contact_attempts WHERE id = ?', Number(attempt)).note, 'kommt erst ab 10 Uhr');
+  assert.equal(db.one('SELECT internal_note FROM registrations WHERE event_id = ? AND person_id = ?', ev, ida).internal_note, 'kommt erst ab 10 Uhr', 'auch in der Anmeldung');
+  // Am PC im Reiter Anfragen beim Versuch sichtbar
+  assert.match(await (await get(`/einsaetze/${ev}/anfragen?status=`, cookie)).text(), /«kommt erst ab 10 Uhr»/);
+  // Leeren
+  await post('notiz', { attempt_id: attempt, note: '' });
+  assert.equal(db.one('SELECT note FROM contact_attempts WHERE id = ?', Number(attempt)).note, null);
+  assert.equal(db.one('SELECT internal_note FROM registrations WHERE event_id = ? AND person_id = ?', ev, ida).internal_note, null);
+  const bad = await post('notiz', { attempt_id: '999999', note: 'x' });
+  assert.equal(bad.status, 400);
+});
+
 test('Filter: Zeitraum und Entwürfe einstellen', async () => {
   const db = require('../src/db');
   const events = require('../src/services/events');

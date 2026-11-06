@@ -131,6 +131,7 @@
       fresh.classList.add('is-saved');
       setTimeout(() => fresh.classList.remove('is-saved'), 1200);
       const ans = btn && btn.name === 'antwort' ? btn.value : null;
+      if (form.dataset.hKind === 'note') { toast(`${who}: Bemerkung gespeichert`); return; }
       if (form.dataset.hKind === 'reg') { toast(`${who}: ${(btn && btn.dataset.doneText) || 'gespeichert'}`); return; }
       toast(ans ? `${who}: ${ANSWER_TEXT[ans] || 'gespeichert'}` : `${who}: zurückgesetzt`);
       updateCounts();

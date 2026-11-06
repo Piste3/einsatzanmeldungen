@@ -64,6 +64,16 @@
     <% } %>
   </form>
   <% } %>
+  <% if (last && !locked) { %>
+  <details class="hc-note"<%= typeof openNote !== 'undefined' && openNote ? ' open' : '' %>>
+    <summary><%- h.icon('chat') %><span><% if (last.note) { %><small>Interne Bemerkung</small><%= last.note %><% } else { %>Interne Bemerkung schreiben<% } %></span></summary>
+    <form method="post" action="/handy/einsatz/<%= ev.id %>/notiz" data-h-form data-h-kind="note">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="person_id" value="<%= r.person_id %>"><% if (byPerson) { %><input type="hidden" name="ansicht" value="person"><% } %><input type="hidden" name="attempt_id" value="<%= last.id %>"><input type="hidden" name="back" value="<%= backUrl %>">
+      <textarea name="note" aria-label="Interne Bemerkung für <%= name %>" rows="2" maxlength="500" placeholder="z. B. kommt erst ab 10 Uhr"><%= last.note || '' %></textarea>
+      <button type="submit" class="btn btn-primary">Bemerkung speichern</button>
+    </form>
+  </details>
+  <% } %>
   <% if ((last || manualReg) && !locked) { %>
   <form method="post" action="/handy/einsatz/<%= ev.id %>/zuruecknehmen" class="hc-reset" data-h-form data-h-kind="reset"
     data-confirm-title="<%= last ? 'Antwort zurücksetzen?' : 'Anmeldung zurücksetzen?' %>" data-confirm="<%= last ? resetText : manualText %>" data-confirm-ok="Ja, zurücksetzen">

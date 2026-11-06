@@ -462,6 +462,13 @@ Die Antwort ist sofort gespeichert. Unten erscheint kurz eine Bestätigung, z. B
 
 **Einsatz mit mehreren Schichten:** Nach **Kann** fragt die App, für welche Schichten die Person kann. Ankreuzen und **Kann – speichern** tippen. Ist die Schicht noch offen, nichts ankreuzen. Zuteilen geht später auch am Computer unter «Schichten».
 
+**Interne Bemerkung:** Nach einer Antwort steht in der Karte **Interne Bemerkung schreiben**. Ein Tipp darauf öffnet ein Textfeld, z. B. für «kommt erst ab 10 Uhr». **Bemerkung speichern** speichert sie. Danach steht die Bemerkung in der Karte. Ein Tipp darauf ändert sie. Ein leeres Feld löscht sie.
+
+![Handy-App: interne Bemerkung](bilder/55-handy-bemerkung.jpg)
+
+- Die Bemerkung gehört zur letzten Antwort. Am Computer steht sie im Reiter «Anfragen» in «…» beim Kontaktversuch. Sie erscheint auch im Verlauf.
+- Bei «Kann» mit Anmeldung steht die Bemerkung zusätzlich als **interne Bemerkung** der Anmeldung im Reiter «Anmeldungen». Steht dort schon eine andere interne Bemerkung, bleibt diese unverändert.
+
 **Falsch getippt?** Nach einer Antwort steht unten in der Karte **Zurücksetzen**. Die App fragt zuerst nach: «Antwort zurücksetzen?». Sie zeigt, welche Antwort gelöscht wird und was danach wieder gilt. Erst **Ja, zurücksetzen** löscht die Antwort.
 
 ![Handy-App: Antwort zurücksetzen](bilder/52-handy-zuruecksetzen.jpg)
