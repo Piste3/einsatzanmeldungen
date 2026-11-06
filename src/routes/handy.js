@@ -9,6 +9,8 @@ const feedback = require('../services/feedback');
 const { ValidationError } = require('../services/errors');
 const registrations = require('../services/registrations');
 const persons = require('../services/persons');
+const undo = require('../services/undo');
+const { flash } = require('../lib/view-helpers');
 const { ConflictError } = require('../services/errors');
 const { today, addDays, fmtDate } = require('../lib/dates');
 const { REG_STATUS, REG_STATUS_MANUAL, REG_COUNTING, DIET } = require('../lib/labels');
@@ -117,6 +119,25 @@ router.use('/handy', (req, res, next) => {
   next();
 });
 
+// Knopf «Rückgängig» oben: letzte eigene Aktion der letzten 30 Minuten
+router.use('/handy', (req, res, next) => {
+  if (req.method === 'GET' && req.user) res.locals.handyUndo = undo.last(req.user);
+  next();
+});
+
+router.post('/handy/rueckgaengig', (req, res) => {
+  const b = String(req.body.back || '');
+  const target = /^\/handy(\/|$|\?)/.test(b) ? b : '/handy';
+  try {
+    const r = undo.undoLast(req.user);
+    flash(res, 'success', `Rückgängig gemacht: ${r.label}.${r.mailSent ? ' Die Bestätigungsmail war schon verschickt.' : ''}`);
+  } catch (err) {
+    if (!err.messages) throw err;
+    flash(res, 'error', err.messages.join(' '));
+  }
+  res.redirect(target);
+});
+
 // Reiter der Leiste unten
 router.get('/handy/anfragen', (req, res) => {
   const id = currentEventId(req);
@@ -219,7 +240,21 @@ function cardRow(e, personId) {
   return r;
 }
 
+// Nach einer Aktion per Script: der Knopf «Rückgängig» oben bekommt die neue letzte Aktion
+function undoHeader(req, res) {
+  const u = undo.last(req.user);
+  if (u) res.set('X-H-Undo', encodeURIComponent(u.label));
+}
+
+function personName(id) {
+  const p = db.one('SELECT first_name, last_name FROM persons WHERE id = ?', id);
+  return p ? `${p.first_name} ${p.last_name}` : 'Person';
+}
+
+const ANSWER_LABEL = { kann: 'Kann', kann_nicht: 'Kann nicht', unsicher: 'Weiss nicht', nicht_erreicht: 'Nicht erreicht', gesendet: 'WhatsApp gesendet' };
+
 function renderCard(req, res, personId) {
+  undoHeader(req, res);
   const e = req.event;
   const r = cardRow(e, personId);
   if (!r) return res.status(404).send('');
@@ -241,7 +276,8 @@ router.post('/handy/einsatz/:id/antwort', loadEvent, (req, res) => {
   try {
     if (!result) throw new ValidationError(['Bitte eine Antwort wählen.']);
     const channel = ['telefon', 'whatsapp', 'muendlich'].includes(req.body.channel) ? req.body.channel : 'muendlich';
-    inquiries.addAttempt(req.event.id, personId, { channel, result, shift_ids: req.body.shift_ids, note: req.body.note }, req.user);
+    undo.record(req.user, { eventId: req.event.id, personId }, `«${ANSWER_LABEL[req.body.antwort]}» für ${personName(personId)} · ${req.event.name}`,
+      () => inquiries.addAttempt(req.event.id, personId, { channel, result, shift_ids: req.body.shift_ids, note: req.body.note }, req.user));
   } catch (err) {
     if (!req.xhr) throw err;
     return res.status(400).type('text').send(err.messages ? err.messages.join(' ') : 'Speichern ging nicht. Bitte neu laden.');
@@ -254,6 +290,7 @@ router.post('/handy/einsatz/:id/antwort', loadEvent, (req, res) => {
 router.post('/handy/einsatz/:id/zuruecknehmen', loadEvent, (req, res) => {
   const personId = Number(req.body.person_id);
   try {
+    undo.record(req.user, { eventId: req.event.id, personId }, `Zurücksetzen bei ${personName(personId)} · ${req.event.name}`, () => {
     if (req.body.attempt_id) inquiries.removeAttempt(req.event.id, Number(req.body.attempt_id), req.user);
     else {
       // Von Hand eingetragene Anmeldung ohne Kontaktversuch: löschen wie am PC. Formular-Anmeldungen bleiben.
@@ -262,6 +299,7 @@ router.post('/handy/einsatz/:id/zuruecknehmen', loadEvent, (req, res) => {
       if (reg.source === 'formular') throw new ValidationError(['Eine Anmeldung aus dem Formular lässt sich hier nicht zurücksetzen.']);
       registrations.remove(reg.id, req.user);
     }
+    });
   } catch (err) {
     if (!req.xhr) throw err;
     return res.status(400).type('text').send(err.messages ? err.messages.join(' ') : 'Zurücksetzen ging nicht. Bitte neu laden.');
@@ -274,7 +312,8 @@ router.post('/handy/einsatz/:id/zuruecknehmen', loadEvent, (req, res) => {
 router.post('/handy/einsatz/:id/notiz', loadEvent, (req, res) => {
   const personId = Number(req.body.person_id);
   try {
-    inquiries.setAttemptNote(req.event.id, Number(req.body.attempt_id), req.body.note, req.user);
+    undo.record(req.user, { eventId: req.event.id, personId }, `Bemerkung bei ${personName(personId)} · ${req.event.name}`,
+      () => inquiries.setAttemptNote(req.event.id, Number(req.body.attempt_id), req.body.note, req.user));
   } catch (err) {
     if (!req.xhr) throw err;
     return res.status(400).type('text').send(err.messages ? err.messages.join(' ') : 'Speichern ging nicht. Bitte neu laden.');
@@ -323,7 +362,8 @@ router.post('/handy/einsatz/:id/anmeldung/:rid/status', loadEvent, (req, res) =>
   try {
     if (!reg || reg.event_id !== req.event.id) throw new ValidationError(['Anmeldung nicht gefunden.']);
     if (!REG_STATUS[to]) throw new ValidationError(['Unbekannter Status.']);
-    registrations.setStatus(reg.id, to, req.user, { expected: req.body.expected || null });
+    undo.record(req.user, { eventId: req.event.id, personId: reg.person_id, regId: reg.id }, `«${REG_STATUS[to].label}» für ${registrations.personLabel(reg)} · ${req.event.name}`,
+      () => registrations.setStatus(reg.id, to, req.user, { expected: req.body.expected || null }));
   } catch (err) {
     if (!req.xhr) throw err;
     const text = err instanceof ConflictError ? 'Jemand anderes hat diese Anmeldung inzwischen geändert. Bitte neu laden.'
@@ -331,6 +371,7 @@ router.post('/handy/einsatz/:id/anmeldung/:rid/status', loadEvent, (req, res) =>
     return res.status(400).type('text').send(text);
   }
   if (req.xhr) {
+    undoHeader(req, res);
     return res.render('handy/_registration', { r: regCard(req.event, registrations.get(reg.id), req.user), locked: locked(req.event, req.user), statusOptions: REG_STATUS_MANUAL });
   }
   res.redirect(`${back(req)}#r${reg.id}`);

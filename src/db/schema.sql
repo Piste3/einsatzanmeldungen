@@ -403,3 +403,19 @@ CREATE TABLE IF NOT EXISTS trusted_devices (
   expires_at TEXT NOT NULL,
   user_agent TEXT
 );
+
+-- Handy-App «Rückgängig»: Stand vor den letzten eigenen Aktionen (wird nach 30 Minuten gelöscht)
+CREATE TABLE IF NOT EXISTS handy_undo (
+  id INTEGER PRIMARY KEY,
+  user_id INTEGER NOT NULL,
+  label TEXT NOT NULL,
+  event_id INTEGER NOT NULL,
+  person_id INTEGER,
+  reg_id INTEGER,
+  snapshot TEXT NOT NULL,
+  audit_from INTEGER NOT NULL,
+  audit_to INTEGER NOT NULL,
+  mail_from INTEGER NOT NULL,
+  created_ms INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_handy_undo_user ON handy_undo(user_id, id);

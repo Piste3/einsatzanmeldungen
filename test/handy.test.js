@@ -269,6 +269,67 @@ test('Interne Bemerkung zur Antwort', async () => {
   assert.equal(bad.status, 400);
 });
 
+test('Rückgängig: letzte eigene Aktion spurlos zurücknehmen', async () => {
+  const db = require('../src/db');
+  const persons = require('../src/services/persons');
+  const events = require('../src/services/events');
+  const registrations = require('../src/services/registrations');
+  const { today, addDays } = require('../src/lib/dates');
+  const ev = events.create({ name: 'Übung Spurlos', date: addDays(today(), 8), start_time: '08:00', end_time: '12:00' }, system);
+  const uwe = persons.create({ first_name: 'Uwe', last_name: 'Undo', status: 'aktiv' }, system);
+  const fia = persons.create({ first_name: 'Fia', last_name: 'Fest', status: 'aktiv' }, system);
+  const fid = registrations.create({ eventId: ev, personId: fia, matchType: 'auto', source: 'formular', answer: 'ja', wishes: [], user: system });
+  const cookie = await login('lena', 'Aufgebot-2026-x');
+  let page = await (await get(`/handy/einsatz/${ev}`, cookie)).text();
+  const csrf = page.match(/name="_csrf" value="([^"]+)"/)[1];
+  const post = (path, body, xhr = true) => fetch(`${base}${path}`, {
+    method: 'POST', redirect: 'manual',
+    headers: { cookie, 'content-type': 'application/x-www-form-urlencoded', ...(xhr ? { 'x-requested-with': 'XMLHttpRequest' } : {}) },
+    body: new URLSearchParams({ _csrf: csrf, ...body }),
+  });
+  const auditBefore = db.one('SELECT COUNT(*) AS n FROM audit_log WHERE event_id = ?', ev).n;
+
+  // «Kann» erzeugt Anfrage, Versuch, Anmeldung und Verlauf. Rückgängig entfernt alles.
+  const res = await post(`/handy/einsatz/${ev}/antwort`, { person_id: String(uwe), antwort: 'kann', channel: 'muendlich' });
+  assert.match(decodeURIComponent(res.headers.get('x-h-undo') || ''), /«Kann» für Uwe Undo/);
+  assert.ok(db.one('SELECT 1 AS x FROM registrations WHERE event_id = ? AND person_id = ?', ev, uwe));
+  page = await (await get(`/handy/einsatz/${ev}`, cookie)).text();
+  assert.match(page, /data-label="«Kann» für Uwe Undo/);
+  const back = await post('/handy/rueckgaengig', { back: `/handy/einsatz/${ev}` }, false);
+  assert.equal(back.status, 302);
+  assert.equal(back.headers.get('location'), `/handy/einsatz/${ev}`);
+  assert.equal(db.one('SELECT 1 AS x FROM registrations WHERE event_id = ? AND person_id = ?', ev, uwe), undefined);
+  assert.equal(db.one('SELECT 1 AS x FROM inquiries WHERE event_id = ? AND person_id = ?', ev, uwe), undefined);
+  assert.equal(db.one('SELECT COUNT(*) AS n FROM audit_log WHERE event_id = ?', ev).n, auditBefore, 'keine Spur im Verlauf');
+
+  // «Kann nicht» zieht die Formular-Anmeldung zurück. Rückgängig holt sie mit Version und Status zurück.
+  const before = db.one('SELECT * FROM registrations WHERE id = ?', fid);
+  await post(`/handy/einsatz/${ev}/antwort`, { person_id: String(fia), antwort: 'kann_nicht', channel: 'telefon' });
+  assert.equal(db.one('SELECT status FROM registrations WHERE id = ?', fid).status, 'zurueckgezogen');
+  await post('/handy/rueckgaengig', {}, false);
+  assert.deepEqual(db.one('SELECT * FROM registrations WHERE id = ?', fid), before);
+  assert.equal(db.one('SELECT 1 AS x FROM inquiries WHERE event_id = ? AND person_id = ?', ev, fia), undefined);
+
+  // Status in «Anmeldungen» setzen und zurücknehmen
+  await post(`/handy/einsatz/${ev}/anmeldung/${fid}/status`, { status: 'bestaetigt', expected: before.status });
+  assert.equal(db.one('SELECT status FROM registrations WHERE id = ?', fid).status, 'bestaetigt');
+  await post('/handy/rueckgaengig', {}, false);
+  assert.equal(db.one('SELECT status FROM registrations WHERE id = ?', fid).status, before.status);
+  assert.equal(db.one('SELECT COUNT(*) AS n FROM audit_log WHERE event_id = ?', ev).n, auditBefore);
+
+  // Hat danach jemand anderes geändert, wird nichts überschrieben
+  await post(`/handy/einsatz/${ev}/antwort`, { person_id: String(uwe), antwort: 'unsicher', channel: 'muendlich' });
+  const other = db.one("SELECT * FROM users WHERE username = 'leiter'");
+  require('../src/services/inquiries').addAttempt(ev, uwe, { channel: 'telefon', result: 'zugesagt' }, other);
+  const refused = await post('/handy/rueckgaengig', {}, false);
+  assert.equal(refused.status, 302);
+  assert.equal(db.one('SELECT status FROM inquiries WHERE event_id = ? AND person_id = ?', ev, uwe).status, 'zugesagt', 'Änderung von anderen bleibt');
+
+  const flashCookie = (refused.headers.get('set-cookie') || '').split(';')[0];
+  page = await (await get(`/handy/einsatz/${ev}`, `${cookie}; ${flashCookie}`)).text();
+  assert.match(page, /Rückgängig geht nicht mehr/);
+});
+
 test('Filter: Zeitraum und Entwürfe einstellen', async () => {
   const db = require('../src/db');
   const events = require('../src/services/events');

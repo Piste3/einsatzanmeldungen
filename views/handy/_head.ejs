@@ -18,6 +18,12 @@
     <span class="logo">KKB</span>
   <% } %>
   <div class="h-bar-title"><%= barTitle || 'Anfragen' %><% if (typeof barSub !== 'undefined' && barSub) { %><span><%= barSub %></span><% } %></div>
+  <% const hu = typeof handyUndo !== 'undefined' ? handyUndo : null; %>
+  <form method="post" action="/handy/rueckgaengig" class="h-undo" data-h-undo<%= hu ? '' : ' hidden' %>
+    data-confirm-title="Letzte Aktion rückgängig machen?" data-label="<%= hu ? hu.label : '' %>">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="back" value="/handy">
+    <button class="h-bar-btn" type="submit" aria-label="Letzte Aktion rückgängig machen" title="Rückgängig"><%- h.icon('undo') %></button>
+  </form>
   <button class="h-bar-btn" type="button" data-reload aria-label="Neu laden" title="Neu laden">↻</button>
 </header>
 <main class="h-main">

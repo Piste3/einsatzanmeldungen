@@ -127,6 +127,8 @@
       const fresh = tpl.content.firstElementChild;
       if (!fresh) { location.reload(); return; }
       card.replaceWith(fresh);
+      const undoLabel = res.headers.get('X-H-Undo');
+      if (undoLabel) setUndo(decodeURIComponent(undoLabel));
       applyChannel(fresh);
       fresh.classList.add('is-saved');
       setTimeout(() => fresh.classList.remove('is-saved'), 1200);
@@ -180,6 +182,23 @@
     b.hidden = false;
     b.onclick = async () => { installEvent.prompt(); await installEvent.userChoice; box.hidden = true; };
   });
+
+  // Knopf «Rückgängig» oben: letzte eigene Aktion spurlos zurücknehmen, mit Rückfrage
+  const undoForm = $('[data-h-undo]');
+  function setUndo(label) {
+    if (!undoForm) return;
+    undoForm.dataset.label = label;
+    undoForm.hidden = false;
+  }
+  if (undoForm) {
+    undoForm.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const ok = await ask(`${undoForm.dataset.label}. Die Änderung wird ganz entfernt, auch aus dem Verlauf.`, { title: undoForm.dataset.confirmTitle, ok: 'Ja, rückgängig' });
+      if (!ok) return;
+      undoForm.querySelector('input[name=back]').value = location.pathname + location.search;
+      undoForm.submit();
+    });
+  }
 
   // Reiter merken sich die letzte Seite für 5 Minuten (z. B. eine offene Person unter «Personen»).
   // Ein Tipp auf den Reiter, in dem man schon ist, führt zur Übersicht.
