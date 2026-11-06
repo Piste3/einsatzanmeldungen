@@ -220,10 +220,17 @@ router.post('/handy/einsatz/:id/antwort', loadEvent, (req, res) => {
 router.post('/handy/einsatz/:id/zuruecknehmen', loadEvent, (req, res) => {
   const personId = Number(req.body.person_id);
   try {
-    inquiries.removeAttempt(req.event.id, Number(req.body.attempt_id), req.user);
+    if (req.body.attempt_id) inquiries.removeAttempt(req.event.id, Number(req.body.attempt_id), req.user);
+    else {
+      // Von Hand eingetragene Anmeldung ohne Kontaktversuch: löschen wie am PC. Formular-Anmeldungen bleiben.
+      const reg = registrations.get(Number(req.body.reg_id));
+      if (!reg || reg.event_id !== req.event.id || reg.person_id !== personId) throw new ValidationError(['Die Anmeldung gibt es nicht mehr. Bitte neu laden.']);
+      if (reg.source === 'formular') throw new ValidationError(['Eine Anmeldung aus dem Formular lässt sich hier nicht zurücksetzen.']);
+      registrations.remove(reg.id, req.user);
+    }
   } catch (err) {
     if (!req.xhr) throw err;
-    return res.status(400).type('text').send(err.messages ? err.messages.join(' ') : 'Rückgängig machen ging nicht. Bitte neu laden.');
+    return res.status(400).type('text').send(err.messages ? err.messages.join(' ') : 'Zurücksetzen ging nicht. Bitte neu laden.');
   }
   if (req.xhr) return renderCard(req, res, personId);
   res.redirect(`${back(req)}#p${personId}`);

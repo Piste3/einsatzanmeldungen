@@ -11,6 +11,9 @@
   const fromForm = r.reg_id && r.reg_source === 'formular';
   const prevText = prevAttempt ? `«${RESULT_TEXT[prevAttempt.result]}»` : fromForm ? '«angemeldet über Formular»' : '«Noch nicht gefragt»';
   const resetText = last ? `Die Antwort «${RESULT_TEXT[last.result]}» für ${name} wird gelöscht. Danach steht wieder ${prevText}.${last.result === 'zugesagt' && r.registration_id && !fromForm && !prevAttempt ? ' Die daraus erstellte Anmeldung wird ebenfalls gelöscht.' : ''}` : '';
+  // Ohne Kontaktversuch, aber von Hand eingetragen (z. B. am PC «Person hinzufügen»): Zurücksetzen löscht diese Anmeldung
+  const manualReg = !last && r.reg_id && r.reg_source && r.reg_source !== 'formular' ? r.reg_id : null;
+  const manualText = manualReg ? `Die Anmeldung «${r.label.text}» für ${name} wurde von Hand eingetragen (${h.labels.SOURCE[r.reg_source] || r.reg_source}). Sie wird gelöscht. Danach steht wieder «Noch nicht gefragt».` : '';
   const ev = typeof cardEvent !== 'undefined' && cardEvent ? cardEvent : event;
   const byPerson = typeof mode !== 'undefined' && mode === 'person';
   const backUrl = typeof back !== 'undefined' ? back : byPerson ? `/handy/personen/${r.person_id}` : `/handy/einsatz/${ev.id}`;
@@ -61,10 +64,10 @@
     <% } %>
   </form>
   <% } %>
-  <% if (last && !locked) { %>
+  <% if ((last || manualReg) && !locked) { %>
   <form method="post" action="/handy/einsatz/<%= ev.id %>/zuruecknehmen" class="hc-reset" data-h-form data-h-kind="reset"
-    data-confirm-title="Antwort zurücksetzen?" data-confirm="<%= resetText %>" data-confirm-ok="Ja, zurücksetzen">
-    <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="person_id" value="<%= r.person_id %>"><% if (byPerson) { %><input type="hidden" name="ansicht" value="person"><% } %><input type="hidden" name="attempt_id" value="<%= last.id %>"><input type="hidden" name="back" value="<%= backUrl %>">
+    data-confirm-title="<%= last ? 'Antwort zurücksetzen?' : 'Anmeldung zurücksetzen?' %>" data-confirm="<%= last ? resetText : manualText %>" data-confirm-ok="Ja, zurücksetzen">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="person_id" value="<%= r.person_id %>"><% if (byPerson) { %><input type="hidden" name="ansicht" value="person"><% } %><% if (last) { %><input type="hidden" name="attempt_id" value="<%= last.id %>"><% } else { %><input type="hidden" name="reg_id" value="<%= manualReg %>"><% } %><input type="hidden" name="back" value="<%= backUrl %>">
     <button type="submit" class="hc-reset-btn" title="Falsch getippt? Die letzte Antwort zurücksetzen"><%- h.icon('undo') %> Zurücksetzen</button>
   </form>
   <% } %>

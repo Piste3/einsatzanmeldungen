@@ -204,6 +204,39 @@ test('Zurücksetzen stellt den Stand vorher wieder her', async () => {
   assert.equal(db.one('SELECT 1 AS x FROM registrations WHERE event_id = ? AND person_id = ?', ev, kai), undefined, 'erste Zusage zurückgesetzt: Anmeldung weg');
 });
 
+test('Von Hand eingetragene Anmeldung lässt sich zurücksetzen, Formular-Anmeldung nicht', async () => {
+  const db = require('../src/db');
+  const persons = require('../src/services/persons');
+  const events = require('../src/services/events');
+  const registrations = require('../src/services/registrations');
+  const { today, addDays } = require('../src/lib/dates');
+  const ev = events.create({ name: 'Parkdienst Halle', date: addDays(today(), 9), start_time: '08:00', end_time: '12:00' }, system);
+  const max = persons.create({ first_name: 'Max', last_name: 'Manuell', status: 'aktiv' }, system);
+  const fe = persons.create({ first_name: 'Fee', last_name: 'Formular', status: 'aktiv' }, system);
+  const rid = registrations.create({ eventId: ev, personId: max, matchType: 'manuell', source: 'manuell', answer: 'ja', wishes: [], user: system });
+  const fid = registrations.create({ eventId: ev, personId: fe, matchType: 'auto', source: 'formular', answer: 'ja', wishes: [], user: system });
+  const cookie = await login('lena', 'Aufgebot-2026-x');
+
+  const page = await (await get(`/handy/personen/${max}`, cookie)).text();
+  assert.match(page, /Anmeldung zurücksetzen\?/);
+  assert.match(page, new RegExp(`name="reg_id" value="${rid}"`));
+  assert.doesNotMatch(await (await get(`/handy/personen/${fe}`, cookie)).text(), /hc-reset-btn/, 'Formular: kein Zurücksetzen');
+
+  const csrf = page.match(/name="_csrf" value="([^"]+)"/)[1];
+  const post = (body) => fetch(`${base}/handy/einsatz/${ev}/zuruecknehmen`, {
+    method: 'POST', redirect: 'manual',
+    headers: { cookie, 'content-type': 'application/x-www-form-urlencoded', 'x-requested-with': 'XMLHttpRequest' },
+    body: new URLSearchParams({ _csrf: csrf, ansicht: 'person', ...body }),
+  });
+  const bad = await post({ person_id: String(fe), reg_id: String(fid) });
+  assert.equal(bad.status, 400);
+  assert.ok(db.one('SELECT 1 AS x FROM registrations WHERE id = ?', fid), 'Formular-Anmeldung bleibt');
+  const ok = await post({ person_id: String(max), reg_id: String(rid) });
+  assert.equal(ok.status, 200);
+  assert.match(await ok.text(), /Noch nicht gefragt/);
+  assert.equal(db.one('SELECT 1 AS x FROM registrations WHERE id = ?', rid), undefined, 'Anmeldung gelöscht');
+});
+
 test('Profil: Konto, Darstellung, Ganze Ansicht, Abmelden; Konto-Seiten im Rahmen der Handy-App', async () => {
   const cookie = await login('lena', 'Aufgebot-2026-x');
   const page = await (await get('/handy/profil', cookie)).text();
