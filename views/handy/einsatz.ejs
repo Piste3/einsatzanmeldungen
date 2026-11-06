@@ -1,0 +1,41 @@
+<%
+  const base = `/handy/einsatz/${event.id}`;
+  const keep = { team: filters.team || undefined, sort: filters.sort !== 'rang' ? filters.sort : undefined };
+  const here = h.withQuery(base, { ...keep, zeige: show !== 'offen' ? show : undefined });
+  const tabs = [['offen', 'Noch offen', counts.offen], ['kann', 'Kann', counts.kann], ['kann_nicht', 'Kann nicht', counts.kann_nicht], ['alle', 'Alle', total]];
+%>
+<%- include('_head', { barTitle: event.name, barSub: h.fmtEventDate(event) + (event.start_time ? ` · ${event.start_time}` : ''), backHref: '/handy' }) %>
+<% if (locked) { %><div class="flash flash-info">Der Einsatz ist <%= h.labels.EVENT_STATUS[event.status].label.toLowerCase() %>. Antworten lassen sich nur noch ansehen.</div><% } %>
+
+<div class="h-tools">
+  <% if (!locked) { %>
+  <div class="h-channel" role="radiogroup" aria-label="Gefragt per">
+    <span class="h-label">Gefragt per</span>
+    <div class="segmented">
+      <input type="radio" name="h-channel" id="hch-md" value="muendlich" checked><label for="hch-md">Mündlich</label>
+      <input type="radio" name="h-channel" id="hch-tel" value="telefon"><label for="hch-tel">Telefon</label>
+      <input type="radio" name="h-channel" id="hch-wa" value="whatsapp"><label for="hch-wa">WhatsApp</label>
+    </div>
+  </div>
+  <% } %>
+  <nav class="h-tabs" aria-label="Anzeigen">
+    <% for (const [key, label, n] of tabs) { %>
+      <a class="<%= show === key ? 'active' : '' %>" href="<%= h.withQuery(base, { ...keep, zeige: key !== 'offen' ? key : undefined }) %>" <%= show === key ? 'aria-current=page' : '' %>><%= label %> <span><%= n %></span></a>
+    <% } %>
+  </nav>
+  <form class="h-filter" method="get" action="<%= base %>">
+    <% if (show !== 'offen') { %><input type="hidden" name="zeige" value="<%= show %>"><% } %>
+    <input type="search" placeholder="Name suchen …" aria-label="Name suchen" data-h-search autocomplete="off">
+    <select name="team" aria-label="Mannschaft" data-h-autosubmit><option value="">Alle Mannschaften</option><% for (const t of teams) { %><option value="<%= t.id %>" <%= Number(filters.team) === t.id ? 'selected' : '' %>><%= t.name %></option><% } %></select>
+    <noscript><button class="btn btn-sm" type="submit">Filtern</button></noscript>
+  </form>
+</div>
+
+<div class="h-list" data-h-list>
+  <% if (!list.length) { %>
+    <div class="h-empty"><p><%= show === 'offen' ? (total ? 'Alle haben geantwortet.' : 'Es gibt keine aktiven Mitglieder.') : 'Hier steht noch niemand.' %></p></div>
+  <% } %>
+  <% for (const r of list) { %><%- include('_person', { r, back: here }) %><% } %>
+  <div class="h-empty" data-h-nohit hidden><p>Kein Name passt zur Suche.</p></div>
+</div>
+<%- include('_foot') %>

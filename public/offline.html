@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Keine Verbindung · KKB Anfragen</title>
+  <meta name="color-scheme" content="light dark">
+  <style>
+    :root { --ink: #18181b; --paper: #ffffff; --stone: #6b6b70; --signal: #e8732a; }
+    @media (prefers-color-scheme: dark) { :root { --ink: #ededed; --paper: #0c0c0d; --stone: #9a9aa1; } }
+    body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--paper); color: var(--ink); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; padding: 16px; box-sizing: border-box; text-align: center; }
+    .logo { display: inline-flex; width: 48px; height: 48px; border-radius: 12px; background: var(--signal); color: #fff; font-weight: 800; font-size: 14px; align-items: center; justify-content: center; }
+    p { color: var(--stone); max-width: 300px; margin: 8px auto 20px; }
+    a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; border-radius: 10px; background: var(--ink); color: var(--paper); text-decoration: none; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div>
+    <span class="logo">KKB</span>
+    <h1>Keine Verbindung</h1>
+    <p>Das Handy ist nicht mit dem Internet verbunden. Antworten lassen sich erst wieder mit Verbindung eintragen.</p>
+    <a href="/handy">Nochmals versuchen</a>
+  </div>
+</body>
+</html>

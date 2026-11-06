@@ -57,6 +57,15 @@ function createApp() {
   // Öffentliches Anmeldeformular (ohne Login)
   app.use('/forms', require('./routes/public-form'));
   app.get('/health', (req, res) => res.json({ ok: true }));
+  // Handy-App: Manifest und Service Worker ohne Login (der Browser lädt sie ohne Cookies)
+  app.get('/manifest.webmanifest', (req, res) => {
+    res.type('application/manifest+json').setHeader('Cache-Control', 'no-cache');
+    res.sendFile(path.join(__dirname, '..', 'public', 'manifest.webmanifest'));
+  });
+  app.get('/sw.js', (req, res) => {
+    res.type('application/javascript').setHeader('Cache-Control', 'no-cache');
+    res.sendFile(path.join(__dirname, '..', 'public', 'js', 'sw.js'));
+  });
 
   app.use(auth.loadSession);
   app.use(helpers.flashMiddleware);
@@ -68,6 +77,7 @@ function createApp() {
   app.use(auth.csrfProtect);
   app.use(helpers.navMiddleware);
   app.use(require('./routes/leader')); // Einsatzleiter: nur freigegebene Einsätze
+  app.use(require('./routes/handy'));
   app.use(require('./routes/cockpit'));
   app.use(require('./routes/events'));
   app.use(require('./routes/registrations'));

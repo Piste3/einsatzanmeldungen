@@ -45,6 +45,7 @@
       <% } else if (!isLeader) { %>
         <a href="/forms/anmeldung?vorschau=1" target="_blank" rel="noopener"><%- h.icon('eye', 'nav-icon') %>Formular-Vorschau</a>
       <% } %>
+      <% if (!isLeader) { %><a href="/handy"><%- h.icon('phone', 'nav-icon') %>Handy-App</a><% } %>
       <a href="/handbuch" class="<%= path.startsWith('/handbuch') ? 'active' : '' %>"><%- h.icon('book', 'nav-icon') %>Handbuch</a>
     </nav>
     <div class="sidebar-user">

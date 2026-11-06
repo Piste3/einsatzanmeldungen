@@ -1,0 +1,118 @@
+/* Handy-App «Anfragen»: liegt über app.css und ruhig.css und nutzt deren Farben.
+   Grosse Tippflächen (mind. 44 px), eine Spalte, keine Seitenleiste. */
+
+[hidden] { display: none !important; }
+
+body.handy { background: var(--bg); color: var(--text); margin: 0; min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; -webkit-tap-highlight-color: transparent; }
+
+/* Kopfleiste */
+.h-bar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 10px; padding: 8px 12px; padding-top: max(8px, env(safe-area-inset-top)); background: var(--paper); border-bottom: 1px solid var(--line); }
+.h-bar .logo { flex: none; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; width: 34px; height: 34px; border-radius: 9px; font-size: 11px; }
+.h-bar-title { flex: 1; min-width: 0; font-weight: 600; font-size: 16px; line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.h-bar-title span { display: block; font-weight: 400; font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; }
+.h-bar-btn { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 0; border-radius: 10px; background: none; color: var(--text); font: inherit; font-size: 26px; line-height: 1; text-decoration: none; cursor: pointer; }
+.h-bar-btn:active { background: var(--hover-2); }
+
+.h-main { flex: 1; width: 100%; max-width: 640px; margin: 0 auto; padding: 12px 12px 24px; box-sizing: border-box; }
+.h-main .flash { margin-bottom: 10px; }
+
+.h-foot { display: flex; align-items: center; gap: 16px; justify-content: center; flex-wrap: wrap; padding: 16px 12px; padding-bottom: max(16px, env(safe-area-inset-bottom)); border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+.h-foot a, .h-foot button { color: var(--text-2); background: none; border: 0; font: inherit; padding: 10px 4px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.h-foot form { margin: 0; }
+
+.h-empty { text-align: center; padding: 32px 12px; color: var(--muted); }
+.h-empty .btn { margin-top: 8px; }
+
+/* Hinweis «Als App speichern» */
+.h-install { position: relative; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px 44px 12px 14px; margin-bottom: 12px; border: 1px solid var(--orange-border); background: var(--orange-soft); border-radius: var(--radius); font-size: 13.5px; }
+.h-install p { margin: 0; flex: 1 1 200px; }
+.h-x { position: absolute; top: 2px; right: 2px; width: 44px; height: 44px; border: 0; background: none; color: var(--muted); font-size: 22px; cursor: pointer; }
+
+/* Einsätze */
+.h-events { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.h-event { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); color: var(--text); text-decoration: none; }
+.h-event:active { background: var(--hover); }
+.h-event-when { font-size: 12.5px; color: var(--muted); }
+.h-event-name { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+.h-event-counts { font-size: 13px; color: var(--text-2); display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.h-event-counts strong { color: var(--orange-dark); font-weight: 600; }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--dot-gray); }
+.dot.dot-green { background: var(--dot-green); }
+.dot.dot-red { background: var(--dot-red); }
+
+/* Werkzeuge über der Liste */
+.h-tools { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+.h-channel { display: flex; flex-direction: column; gap: 4px; }
+.h-label { font-size: 12px; color: var(--muted); }
+.h-channel .segmented { border-radius: 10px; }
+.h-channel .segmented label { padding: 0; min-height: 44px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 500; }
+.h-tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 3px; border-radius: 11px; background: var(--gray-bg); }
+.h-tabs a { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 44px; border-radius: 8px; font-size: 12.5px; font-weight: 500; color: var(--text-2); text-decoration: none; line-height: 1.2; text-align: center; }
+.h-tabs a span { font-family: var(--mono); font-size: 13px; color: var(--muted); }
+.h-tabs a.active { background: var(--paper); color: var(--text); box-shadow: 0 0 0 1px var(--line); }
+.h-tabs a.active span { color: var(--text); }
+.h-filter { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; }
+.h-filter input { flex: 1 1 150px; }
+.h-filter select { flex: 1 1 170px; }
+.h-filter input, .h-filter select { min-width: 0; min-height: 44px; font-size: 16px; box-sizing: border-box; }
+
+/* Personenkarte */
+.h-list { display: flex; flex-direction: column; gap: 8px; }
+.hc { border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); padding: 12px 12px 12px 14px; scroll-margin-top: 70px; transition: background-color 0.6s; }
+.hc.hc-kann { border-left: 3px solid var(--dot-green); }
+.hc.hc-kann_nicht { border-left: 3px solid var(--dot-red); }
+.hc.is-saved { background: var(--orange-soft); }
+.hc.is-busy { opacity: 0.6; pointer-events: none; }
+.hc-top { display: flex; align-items: flex-start; gap: 8px; }
+.hc-who { flex: 1; min-width: 0; }
+.hc-who strong { display: block; font-size: 16px; font-weight: 600; }
+.hc-who .rank { min-width: 0; font-size: 12.5px; }
+.hc-sub { display: block; font-size: 12.5px; color: var(--muted); margin-top: 1px; }
+.hc-contact { display: flex; gap: 6px; flex: none; }
+.h-round { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--border-strong); color: var(--text); background: var(--paper); }
+.h-round:active { background: var(--hover-2); }
+.h-round svg { width: 20px; height: 20px; }
+.hc-state { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 12.5px; color: var(--muted); }
+.hc-state .badge { font-size: 12px; flex: none; }
+.hc-last { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hc-undo { margin: 0 0 0 auto; flex: none; }
+.hc-undo-btn { display: inline-flex; align-items: center; gap: 4px; min-height: 36px; padding: 0 8px; border: 0; background: none; color: var(--muted); font: inherit; font-size: 12.5px; cursor: pointer; border-radius: 8px; }
+.hc-undo-btn svg { width: 14px; height: 14px; }
+.hc-undo-btn:active { background: var(--hover-2); }
+.hc-form { margin: 10px 0 0; }
+.hc-answers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.h-ans { min-height: 48px; padding: 0 4px; white-space: nowrap; border-radius: 10px; border: 1px solid var(--border-strong); background: var(--paper); color: var(--text); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; touch-action: manipulation; }
+.h-ans:active { background: var(--hover-2); }
+.h-ans-kann { border-color: color-mix(in srgb, var(--dot-green) 55%, var(--border-strong)); color: var(--green-text, var(--text)); }
+.h-ans-kann_nicht { border-color: color-mix(in srgb, var(--dot-red) 45%, var(--border-strong)); color: var(--red-text, var(--text)); }
+.h-ans.is-on { box-shadow: inset 0 0 0 2px currentColor; }
+.h-ans-kann.is-on { background: var(--green-bg); }
+.h-ans-kann_nicht.is-on { background: var(--red-bg); }
+.h-ans-unsicher.is-on, .h-ans-nicht_erreicht.is-on { background: var(--yellow-bg); }
+.h-ans-gesendet.is-on { background: var(--blue-bg); }
+/* «Nicht erreicht» nur beim Telefon, «Gesendet» nur bei WhatsApp */
+.hc-answers .only-tel, .hc-answers .only-wa { display: none; }
+.hc[data-ch="telefon"] .only-tel, .hc[data-ch="whatsapp"] .only-wa { display: block; }
+.hc[data-ch="telefon"] .hc-answers, .hc[data-ch="whatsapp"] .hc-answers { grid-template-columns: 1fr 1fr; }
+.hc-shifts { margin: 10px 0 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; display: flex; flex-direction: column; gap: 4px; }
+.hc-shifts legend { font-size: 13px; font-weight: 600; padding: 0 4px; }
+.hc-shifts .check { min-height: 40px; align-items: center; font-size: 14.5px; }
+.hc-shifts .check input { width: 20px; height: 20px; margin: 0; }
+.hc-hint { margin: 0; font-size: 12px; color: var(--muted); }
+.hc-shift-foot { display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px; }
+.hc-shift-foot .btn { min-height: 44px; }
+
+/* Meldung unten */
+.h-toast { position: fixed; left: 50%; bottom: max(16px, env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 40; max-width: calc(100% - 32px); box-sizing: border-box; padding: 10px 16px; border-radius: 10px; background: var(--ink); color: var(--paper); font-size: 14px; }
+.h-toast.is-error { background: var(--dot-red); color: #fff; }
+
+/* Bestätigung im eigenen Fenster */
+.h-dialog { border: 1px solid var(--line); border-radius: 14px; padding: 18px; max-width: min(360px, calc(100% - 32px)); background: var(--paper); color: var(--text); }
+.h-dialog::backdrop { background: rgba(0, 0, 0, 0.4); }
+.h-dialog p { margin: 0 0 16px; font-size: 15px; }
+.h-dialog div { display: flex; gap: 8px; justify-content: flex-end; }
+.h-dialog .btn { min-height: 44px; }
+
+@media (max-width: 359px) { .h-ans { font-size: 13.5px; } .hc { padding-left: 12px; padding-right: 10px; } }
+
+@media (prefers-reduced-motion: reduce) { .hc { transition: none; } }

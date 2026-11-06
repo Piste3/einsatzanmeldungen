@@ -39,6 +39,8 @@ Der Einsatzplaner läuft im Browser – auf dem Computer, dem Tablet oder dem Ha
 
 **Auf dem Handy** öffnet der Knopf ☰ oben links das Menü. Tabellen erscheinen dort als Karten: pro Person oder Einsatz ein Block mit den Angaben untereinander. Die Rückmeldungen-Tabelle lässt sich seitwärts wischen. Für grössere Arbeiten wie Schichten planen oder Einstellungen ist der Computer bequemer.
 
+**Zum Anfragen an einer Übung** gibt es die **Handy-App**. Sie ist eine schlanke Ansicht nur für das Anfragen und lässt sich auf den Startbildschirm legen. Mehr dazu in Kapitel 11 unter «Mit dem Handy anfragen».
+
 ### Anmelden
 
 ![Die Anmeldeseite](bilder/01-login.jpg)
@@ -402,6 +404,53 @@ Oben im Fenster steht der **Verlauf** dieser Person für den Einsatz: alle Konta
 | Selbst gemeldet | Hat sich inzwischen selbst angemeldet | Erledigt, steht am Schluss der Liste |
 
 > **Beispiel:** David Suter wurde am 26.10. und am 27.10. von Lena Meier angerufen, beide Male ohne Erfolg. Am Abend schreibt Anna Roth ihm per WhatsApp und erfasst das. Am nächsten Tag sieht die ganze Aufgebotsstelle, dass er schon zweimal angerufen und einmal angeschrieben wurde – niemand ruft ihn ein drittes Mal an.
+
+### Mit dem Handy anfragen (Handy-App)
+
+Die Handy-App ist für die Übung oder den Einsatz gemacht. Du fragst die Leute direkt vor Ort oder rufst sie an. Danach tippst du die Antwort ein. Einsätze lassen sich in der Handy-App nicht bearbeiten. Dafür bleibt die ganze Ansicht.
+
+**Öffnen:** Im Menü auf **Handy-App** tippen oder die Adresse **einsatz.holmium.ch/handy** öffnen. Die Anmeldung ist dieselbe wie im Einsatzplaner.
+
+**Auf den Startbildschirm legen** (nur einmal nötig):
+
+- **iPhone:** Die Adresse in Safari öffnen. Unten auf **Teilen** tippen, dann **Zum Home-Bildschirm**.
+- **Android:** Die Adresse in Chrome öffnen. Oben im Menü ⋮ auf **Zum Startbildschirm hinzufügen** oder **App installieren** tippen. Manchmal zeigt die Startseite der Handy-App dafür direkt den Knopf **Installieren**.
+
+Danach steht **KKB Anfragen** mit dem orangen KKB-Symbol auf dem Startbildschirm. Die App öffnet sich ohne Adressleiste wie eine normale App. Sie braucht eine Internetverbindung. Ohne Verbindung zeigt sie die Meldung «Keine Verbindung».
+
+![Handy-App: Einsatz wählen](bilder/46-handy-einsaetze.jpg)
+
+**1. Einsatz wählen.** Die Startseite zeigt die laufenden und kommenden Einsätze, der nächste zuerst. Pro Einsatz steht, wie viele Personen können, nicht können und noch offen sind.
+
+![Handy-App: Personen anfragen](bilder/47-handy-anfragen.jpg)
+
+**2. «Gefragt per» wählen.** Oben wählst du, wie du fragst: **Mündlich**, **Telefon** oder **WhatsApp**. Die App merkt sich die Wahl auf diesem Handy. Tippst du in einer Karte auf den Hörer oder die Sprechblase, gilt für diese Person automatisch Telefon bzw. WhatsApp.
+
+**3. Antwort eintragen.** Jede Person hat eine eigene Karte mit grossen Knöpfen:
+
+| Knopf | Bedeutung | Was danach passiert |
+|---|---|---|
+| Kann | Die Person kommt | Es entsteht eine Anmeldung mit der Quelle Mündlich, Telefon oder WhatsApp |
+| Kann nicht | Die Person kommt nicht | Eine bestehende Anmeldung wird zurückgezogen |
+| Weiss nicht | Die Person weiss es noch nicht | Bleibt unter «Noch offen» |
+| Nicht erreicht | Nur bei Telefon: niemand hat abgenommen | Bleibt unter «Noch offen» |
+| Gesendet | Nur bei WhatsApp: Nachricht geschickt, Antwort offen | Bleibt unter «Noch offen» |
+
+Die Antwort ist sofort gespeichert. Unten erscheint kurz eine Bestätigung, z. B. «David Suter: kann». Die Karte bleibt an ihrem Platz, bis du die Seite neu lädst. Der Knopf ↻ oben rechts lädt die Liste neu. So siehst du auch Antworten, die andere inzwischen eingetragen haben.
+
+![Handy-App: Schichten bei «Kann»](bilder/48-handy-schichten.jpg)
+
+**Einsatz mit mehreren Schichten:** Nach **Kann** fragt die App, für welche Schichten die Person kann. Ankreuzen und **Kann – speichern** tippen. Ist die Schicht noch offen, nichts ankreuzen. Zuteilen geht später auch am Computer unter «Schichten».
+
+**Falsch getippt?** In der Karte auf **Rückgängig** tippen. Das macht den letzten Eintrag dieser Person rückgängig. Hat dieser Eintrag eine Anmeldung erstellt, wird sie ebenfalls gelöscht. Vorher fragt die App nach.
+
+**Weitere Hilfen:**
+
+- **Noch offen**, **Kann**, **Kann nicht** und **Alle** filtern die Liste. Beim Öffnen steht **Noch offen**.
+- **Name suchen** filtert sofort beim Tippen. Daneben lässt sich eine Mannschaft wählen.
+- Unten stehen **Ganze Ansicht** (der normale Einsatzplaner) und **Abmelden**.
+
+Alles, was du in der Handy-App einträgst, steht sofort auch im Reiter **Anfragen**, in den **Rückmeldungen** und im **Verlauf** der Person. Einsatzleiter haben keinen Zugang zur Handy-App.
 
 ## 12 · Schichten besetzen
 
@@ -922,7 +971,10 @@ Nein. Die Funktion EL ist die Einteilung am Einsatz. Die Rolle «Einsatzleiter»
 Nein. In der Übersicht des Einsatzes unter **Externe Abteilungen** nur die Abteilung und die Anzahl Personen eintragen, bei Bedarf auch Essenseinschränkungen als Anzahl (z. B. 2 × vegetarisch). Sie zählen in der Besetzung und in der Verpflegung mit und stehen auf der Teilnehmerliste.
 
 **Funktioniert der Einsatzplaner auf dem Handy?**
-Ja. Er ist für den Computer gemacht, lässt sich aber auch auf Tablet und Handy bedienen – etwa um unterwegs einen Anruf zu erfassen.
+Ja. Er ist für den Computer gemacht, lässt sich aber auch auf Tablet und Handy bedienen. Zum Anfragen an einer Übung gibt es die **Handy-App** unter einsatz.holmium.ch/handy (Kapitel 11, «Mit dem Handy anfragen»).
+
+**Gibt es die Handy-App im App Store oder Play Store?**
+Nein. Die Handy-App läuft im Browser. Man legt sie über «Zum Startbildschirm hinzufügen» auf das Handy. Danach öffnet sie sich wie eine normale App. Updates kommen automatisch mit jedem Update des Einsatzplaners.
 
 **Kann ich das Handbuch ausdrucken oder weiterschicken?**
 Ja. Auf der Seite «Handbuch» oben rechts **Als PDF** klicken. Es öffnet sich das gestaltete Handbuch mit Titelseite, Inhaltsverzeichnis und Seitenzahlen in einem neuen Tab; von dort drucken, speichern oder weiterschicken. Das Handbuch für Einsatzleiter gibt es genauso als eigenes PDF.

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="de-CH"<% if (user && ["light", "dark"].includes(user.theme)) { %> data-theme="<%= user.theme %>"<% } %>>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="csrf-token" content="<%= csrfToken %>">
+  <title><%= title ? title + ' · ' : '' %>KKB Anfragen</title>
+  <%- include('_app-meta') %>
+  <link rel="stylesheet" href="/static/css/app.css?v=<%= v %>">
+  <link rel="stylesheet" href="/static/css/ruhig.css?v=<%= v %>">
+  <link rel="stylesheet" href="/static/css/handy.css?v=<%= v %>">
+</head>
+<body class="handy">
+<header class="h-bar">
+  <% if (typeof backHref !== 'undefined' && backHref) { %>
+    <a class="h-bar-btn" href="<%= backHref %>" aria-label="Zurück zu den Einsätzen">‹</a>
+  <% } else { %>
+    <span class="logo">KKB</span>
+  <% } %>
+  <div class="h-bar-title"><%= barTitle || 'Anfragen' %><% if (typeof barSub !== 'undefined' && barSub) { %><span><%= barSub %></span><% } %></div>
+  <button class="h-bar-btn" type="button" data-reload aria-label="Neu laden" title="Neu laden">↻</button>
+</header>
+<main class="h-main">
+  <% for (const f of flashes || []) { %><div class="flash flash-<%= f.type %>"><%= f.message %></div><% } %>

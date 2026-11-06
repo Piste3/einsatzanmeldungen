@@ -1,0 +1,55 @@
+<%
+  const name = `${r.first_name} ${r.last_name}`;
+  const tel = r.mobile ? r.mobile.replace(/[^\d+]/g, '') : '';
+  const wa = h.waLink(r.mobile);
+  const last = r.attempts.at(-1);
+  const lastText = last ? `${h.labels.CHANNEL[last.channel].short}${last.contacted_at.slice(0, 10) === h.today() ? '' : ` ${h.fmtDateShort(last.contacted_at.slice(0, 10))}`} ${last.contacted_at.slice(11, 16)} · ${last.sent_by_name}` : '';
+  const viaReg = r.state === 'angemeldet' && r.reg_source ? `über ${h.labels.SOURCE[r.reg_source] || r.reg_source}` : '';
+  const btn = (key, text, cls = '') => `<button class="h-ans h-ans-${key} ${cls} ${r.answer === key || (r.answer === 'offen' && r.state === { unsicher: 'unsicher', nicht_erreicht: 'nicht_erreicht', gesendet: 'whatsapp' }[key]) ? 'is-on' : ''}" type="submit" name="antwort" value="${key}"${key === 'kann' && shifts.length ? ' data-shift-ask' : ''}>${text}</button>`;
+  const backUrl = typeof back !== 'undefined' ? back : `/handy/einsatz/${event.id}`;
+%>
+<article class="hc hc-<%= r.answer %>" id="p<%= r.person_id %>" data-name="<%= `${name} ${r.rank_short || ''}`.toLowerCase() %>" data-person="<%= r.person_id %>" data-who="<%= name %>">
+  <div class="hc-top">
+    <div class="hc-who">
+      <strong><%- h.rank(r.rank_short) %><%= name %></strong>
+      <% if (r.teams) { %><span class="hc-sub"><%= r.teams %></span><% } %>
+    </div>
+    <div class="hc-contact">
+      <% if (tel) { %><a class="h-round" href="tel:<%= tel %>" data-set-channel="telefon" aria-label="<%= name %> anrufen" title="Anrufen"><%- h.icon('phone') %></a><% } %>
+      <% if (wa) { %><a class="h-round" href="<%= wa %>" target="_blank" rel="noopener" data-set-channel="whatsapp" aria-label="<%= name %> per WhatsApp schreiben" title="WhatsApp"><%- h.icon('chat') %></a><% } %>
+    </div>
+  </div>
+  <div class="hc-state">
+    <span class="badge badge-<%= r.label.tone %>"><%= r.label.text %></span>
+    <% if (lastText) { %><span class="hc-last"><%= lastText %></span><% } else if (viaReg) { %><span class="hc-last"><%= viaReg %></span><% } %>
+    <% if (last && !locked) { %>
+      <form method="post" action="/handy/einsatz/<%= event.id %>/zuruecknehmen" class="hc-undo" data-h-form data-confirm="<%= last.result === 'zugesagt' && r.registration_id ? 'Letzten Eintrag rückgängig machen? Die Anmeldung wird ebenfalls gelöscht.' : 'Letzten Eintrag rückgängig machen?' %>">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="person_id" value="<%= r.person_id %>"><input type="hidden" name="attempt_id" value="<%= last.id %>"><input type="hidden" name="back" value="<%= backUrl %>">
+        <button type="submit" class="hc-undo-btn" title="Falsch getippt? Letzten Eintrag rückgängig machen"><%- h.icon('undo') %> Rückgängig</button>
+      </form>
+    <% } %>
+  </div>
+  <% if (!locked) { %>
+  <form method="post" action="/handy/einsatz/<%= event.id %>/antwort" class="hc-form" data-h-form>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="person_id" value="<%= r.person_id %>">
+    <input type="hidden" name="channel" value="muendlich" data-channel-input>
+    <input type="hidden" name="back" value="<%= backUrl %>">
+    <div class="hc-answers">
+      <%- btn('kann', 'Kann') %>
+      <%- btn('kann_nicht', 'Kann nicht') %>
+      <%- btn('unsicher', 'Weiss nicht') %>
+      <%- btn('nicht_erreicht', 'Nicht erreicht', 'only-tel') %>
+      <%- btn('gesendet', 'Gesendet', 'only-wa') %>
+    </div>
+    <% if (shifts.length) { %>
+    <fieldset class="hc-shifts" data-shift-panel hidden>
+      <legend>Für welche Schichten?</legend>
+      <% for (const s of shifts) { %><label class="check"><input type="checkbox" name="shift_ids" value="<%= s.id %>"> <span><%= s.name %><% if (s.time) { %> <span class="muted"><%= s.time %></span><% } %></span></label><% } %>
+      <p class="hc-hint">Leer lassen, wenn die Schicht noch offen ist.</p>
+      <div class="hc-shift-foot"><button class="btn btn-ghost" type="button" data-shift-cancel>Abbrechen</button><button class="btn btn-primary" type="submit" name="antwort" value="kann">Kann – speichern</button></div>
+    </fieldset>
+    <% } %>
+  </form>
+  <% } %>
+</article>

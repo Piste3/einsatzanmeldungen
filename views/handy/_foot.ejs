@@ -1,0 +1,10 @@
+</main>
+<footer class="h-foot">
+  <span><%= user.display_name %></span>
+  <a href="/">Ganze Ansicht</a>
+  <form method="post" action="/logout"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit">Abmelden</button></form>
+</footer>
+<div class="h-toast" id="h-toast" role="status" aria-live="polite" hidden></div>
+<script src="/static/js/handy.js?v=<%= v %>"></script>
+</body>
+</html>
