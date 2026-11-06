@@ -39,7 +39,7 @@ Der Einsatzplaner läuft im Browser – auf dem Computer, dem Tablet oder dem Ha
 
 **In der ganzen Ansicht auf dem Handy** öffnet der Knopf ☰ oben links das Menü. Tabellen erscheinen dort als Karten: pro Person oder Einsatz ein Block mit den Angaben untereinander. Die Rückmeldungen-Tabelle lässt sich seitwärts wischen. Für grössere Arbeiten wie Schichten planen oder Einstellungen ist der Computer bequemer.
 
-**Auf dem Handy** öffnet sich automatisch die **Handy-App**. Sie ist eine schlanke Ansicht für die Übung: Anfragen, Anmeldungen und Teilnehmer. Sie lässt sich auf den Startbildschirm legen. Mehr dazu in Kapitel 11 unter «Mit dem Handy anfragen».
+**Auf dem Handy** öffnet sich automatisch die **Handy-App**. Sie ist eine schlanke Ansicht für die Übung: Anfragen, Anmeldungen und Personen. Sie lässt sich auf den Startbildschirm legen. Mehr dazu in Kapitel 11 unter «Mit dem Handy anfragen».
 
 ### Anmelden
 
@@ -426,7 +426,7 @@ Unten steht immer eine Leiste. Mit ihr schaltest du zwischen den Ansichten um:
 
 | Wo | Knöpfe in der Leiste |
 |---|---|
-| Ausserhalb eines Einsatzes | **Einsätze**, **Teilnehmer** und **Profil** |
+| Ausserhalb eines Einsatzes | **Einsätze**, **Personen** und **Profil** |
 | Innerhalb eines Einsatzes | **Anfragen**, **Anmeldungen** und **Profil** |
 
 Der Pfeil ‹ oben links führt aus dem Einsatz zurück zu den Einsätzen. Der Knopf ↻ oben rechts lädt die Seite neu. So siehst du auch Antworten, die andere inzwischen eingetragen haben.
@@ -480,13 +480,13 @@ Die Ansicht **Anmeldungen** zeigt dieselben Anmeldungen wie der Reiter «Anmeldu
 - Jede Karte zeigt Status, Quelle und Zeit, Schicht, Funktion, Bemerkung, interne Bemerkung und Verpflegung.
 - **Bestätigen** bestätigt die Anmeldung. **Status ändern** setzt einen anderen Status, z. B. Warteliste oder Zurückgezogen.
 - **Teilnehmerliste PDF** öffnet die Teilnehmerliste für diesen Einsatz.
-- Unklare Namen ordnest du am Computer unter «Klärungen» zu. Ein Tipp auf einen Namen öffnet die Person in der Ansicht **Teilnehmer**.
+- Unklare Namen ordnest du am Computer unter «Klärungen» zu. Ein Tipp auf einen Namen öffnet die Person in der Ansicht **Personen**.
 
-#### Teilnehmer (nach Person)
+#### Personen
 
-![Handy-App: Teilnehmer](bilder/50-handy-teilnehmer.jpg)
+![Handy-App: Personen](bilder/50-handy-personen.jpg)
 
-Die Ansicht **Teilnehmer** zeigt alle aktiven Mitglieder, nach Rang sortiert. Rechts steht, für wie viele kommende Einsätze die Person angemeldet ist. **Name suchen** filtert sofort beim Tippen.
+Die Ansicht **Personen** zeigt alle aktiven Mitglieder, nach Rang sortiert. Rechts steht, für wie viele kommende Einsätze die Person angemeldet ist. **Name suchen** filtert sofort beim Tippen.
 
 ![Handy-App: eine Person mit allen Einsätzen](bilder/51-handy-person.jpg)
 

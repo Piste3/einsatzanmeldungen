@@ -3,14 +3,14 @@
 <%
   const tabNow = typeof navTab !== 'undefined' ? navTab : '';
   const inEvent = ['anfragen', 'anmeldungen'].includes(tabNow) && typeof event !== 'undefined' && event;
-  // Ausserhalb eines Einsatzes: Einsätze und Teilnehmer. Innerhalb: Anfragen und Anmeldungen dieses Einsatzes.
+  // Ausserhalb eines Einsatzes: Einsätze und Personen. Innerhalb: Anfragen und Anmeldungen dieses Einsatzes.
   const navTabs = inEvent ? [
     ['anfragen', `/handy/einsatz/${event.id}`, 'Anfragen', 'phone'],
     ['anmeldungen', `/handy/einsatz/${event.id}/anmeldungen`, 'Anmeldungen', 'inbox'],
     ['profil', '/handy/profil', 'Profil', 'user'],
   ] : [
     ['einsaetze', '/handy', 'Einsätze', 'calendar'],
-    ['personen', '/handy/personen', 'Teilnehmer', 'users'],
+    ['personen', '/handy/personen', 'Personen', 'users'],
     ['profil', '/handy/profil', 'Profil', 'user'],
   ];
 %>

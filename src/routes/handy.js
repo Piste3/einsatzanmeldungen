@@ -294,7 +294,7 @@ router.get('/handy/profil', (req, res) => {
   res.render('handy/profil', { title: 'Profil', twofaOn: require('../auth/twofa').isEnabled(req.user) });
 });
 
-// ---------- Nach Teilnehmer: eine Person, alle kommenden Einsätze ----------
+// ---------- Personen: eine Person, alle kommenden Einsätze ----------
 router.get('/handy/personen', (req, res) => {
   const evts = upcoming();
   const ids = evts.map((e) => e.id);
@@ -309,7 +309,7 @@ router.get('/handy/personen', (req, res) => {
         AND status IN (${REG_COUNTING.map(() => '?').join(',')}) GROUP BY person_id`, ...ids, ...REG_COUNTING)) regs.set(x.person_id, x.n);
   }
   for (const p of list) p.angemeldet = regs.get(p.id) || 0;
-  res.render('handy/personen', { title: 'Nach Teilnehmer', list, eventCount: evts.length });
+  res.render('handy/personen', { title: 'Personen', list, eventCount: evts.length });
 });
 
 router.get('/handy/personen/:pid', (req, res) => {

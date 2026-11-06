@@ -127,7 +127,7 @@ test('Auf dem Handy kommt immer die Handy-App', async () => {
   assert.match((await getAs('/handy', `${cookie}; ${pcCookie}`, IPHONE)).headers.get('set-cookie') || '', /kkb_ansicht=;/);
 });
 
-test('Handy-App: Anmeldungen ansehen und bestätigen, Ansicht nach Teilnehmer', async () => {
+test('Handy-App: Anmeldungen ansehen und bestätigen, Ansicht Personen', async () => {
   const db = require('../src/db');
   const persons = require('../src/services/persons');
   const events = require('../src/services/events');
@@ -155,10 +155,10 @@ test('Handy-App: Anmeldungen ansehen und bestätigen, Ansicht nach Teilnehmer', 
   assert.match(await ok.text(), /Bestätigt/);
   assert.equal(db.one('SELECT status FROM registrations WHERE id = ?', rid).status, 'bestaetigt');
 
-  // Nach Teilnehmer: Liste und eine Person mit allen kommenden Einsätzen
+  // Personen: Liste und eine Person mit allen kommenden Einsätzen
   const list = await (await get('/handy/personen', cookie)).text();
   assert.match(list, new RegExp(`href="/handy/personen/${tom}"`));
-  assert.match(list, /class="h-nav"[\s\S]*Einsätze[\s\S]*Teilnehmer/, 'Leiste ausserhalb');
+  assert.match(list, /class="h-nav"[\s\S]*Einsätze[\s\S]*Personen/, 'Leiste ausserhalb');
   const person = await (await get(`/handy/personen/${tom}`, cookie)).text();
   assert.match(person, /Übung Bruderholz/);
   assert.match(person, /Übung Allschwil/);
@@ -241,7 +241,7 @@ test('Profil: Konto, Darstellung, Ganze Ansicht, Abmelden; Konto-Seiten im Rahme
   const cookie = await login('lena', 'Aufgebot-2026-x');
   const page = await (await get('/handy/profil', cookie)).text();
   for (const t of ['href="/konto/passwort"', 'href="/konto/2fa"', 'action="/konto/darstellung"', 'href="/handy/ganze-ansicht"', 'action="/logout"']) assert.ok(page.includes(t), t);
-  assert.match(page, /class="h-nav"[\s\S]*Einsätze[\s\S]*Teilnehmer[\s\S]*Profil/);
+  assert.match(page, /class="h-nav"[\s\S]*Einsätze[\s\S]*Personen[\s\S]*Profil/);
   assert.doesNotMatch(page, /class="h-foot"/, 'keine Fusszeile mehr');
   const pw = await (await getAs('/konto/passwort', cookie, IPHONE)).text();
   assert.match(pw, /class="h-nav"/, 'Passwort-Seite mit Leiste unten');
