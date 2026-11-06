@@ -317,6 +317,16 @@ test('Rückgängig: letzte eigene Aktion spurlos zurücknehmen', async () => {
   assert.equal(db.one('SELECT status FROM registrations WHERE id = ?', fid).status, before.status);
   assert.equal(db.one('SELECT COUNT(*) AS n FROM audit_log WHERE event_id = ?', ev).n, auditBefore);
 
+  // Wiederholen stellt die Bestätigung samt Verlauf wieder her, Rückgängig nimmt sie wieder zurück
+  page = await (await get(`/handy/einsatz/${ev}`, cookie)).text();
+  assert.match(page, /data-h-step="redo"\s+data-confirm-title="Wiederholen\?" data-label="«Bestätigt» für/);
+  await post('/handy/wiederholen', {}, false);
+  assert.equal(db.one('SELECT status FROM registrations WHERE id = ?', fid).status, 'bestaetigt');
+  assert.ok(db.one('SELECT COUNT(*) AS n FROM audit_log WHERE event_id = ?', ev).n > auditBefore, 'Verlauf wieder da');
+  await post('/handy/rueckgaengig', {}, false);
+  assert.equal(db.one('SELECT status FROM registrations WHERE id = ?', fid).status, before.status);
+  assert.equal(db.one('SELECT COUNT(*) AS n FROM audit_log WHERE event_id = ?', ev).n, auditBefore);
+
   // Hat danach jemand anderes geändert, wird nichts überschrieben
   await post(`/handy/einsatz/${ev}/antwort`, { person_id: String(uwe), antwort: 'unsicher', channel: 'muendlich' });
   const other = db.one("SELECT * FROM users WHERE username = 'leiter'");

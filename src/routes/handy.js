@@ -119,24 +119,27 @@ router.use('/handy', (req, res, next) => {
   next();
 });
 
-// Knopf «Rückgängig» oben: letzte eigene Aktion der letzten 30 Minuten
+// Knöpfe «Rückgängig» und «Wiederholen» oben: eigene Aktionen der letzten 30 Minuten
 router.use('/handy', (req, res, next) => {
-  if (req.method === 'GET' && req.user) res.locals.handyUndo = undo.last(req.user);
+  if (req.method === 'GET' && req.user) res.locals.handySteps = undo.state(req.user);
   next();
 });
 
-router.post('/handy/rueckgaengig', (req, res) => {
-  const b = String(req.body.back || '');
-  const target = /^\/handy(\/|$|\?)/.test(b) ? b : '/handy';
-  try {
-    const r = undo.undoLast(req.user);
-    flash(res, 'success', `Rückgängig gemacht: ${r.label}.${r.mailSent ? ' Die Bestätigungsmail war schon verschickt.' : ''}`);
-  } catch (err) {
-    if (!err.messages) throw err;
-    flash(res, 'error', err.messages.join(' '));
-  }
-  res.redirect(target);
-});
+function stepRoute(fn, done) {
+  return (req, res) => {
+    const b = String(req.body.back || '');
+    const target = /^\/handy(\/|$|\?)/.test(b) ? b : '/handy';
+    try {
+      flash(res, 'success', done(fn(req.user)));
+    } catch (err) {
+      if (!err.messages) throw err;
+      flash(res, 'error', err.messages.join(' '));
+    }
+    res.redirect(target);
+  };
+}
+router.post('/handy/rueckgaengig', stepRoute(undo.undoLast, (r) => `Rückgängig gemacht: ${r.label}.${r.mailSent ? ' Die Bestätigungsmail war schon verschickt.' : ''}`));
+router.post('/handy/wiederholen', stepRoute(undo.redoNext, (r) => `Wiederholt: ${r.label}.`));
 
 // Reiter der Leiste unten
 router.get('/handy/anfragen', (req, res) => {
@@ -244,8 +247,8 @@ function cardRow(e, personId) {
 
 // Nach einer Aktion per Script: der Knopf «Rückgängig» oben bekommt die neue letzte Aktion
 function undoHeader(req, res) {
-  const u = undo.last(req.user);
-  if (u) res.set('X-H-Undo', encodeURIComponent(u.label));
+  const st = undo.state(req.user);
+  if (st.undo) res.set('X-H-Undo', encodeURIComponent(st.undo));
 }
 
 function personName(id) {

@@ -129,6 +129,7 @@
       card.replaceWith(fresh);
       const undoLabel = res.headers.get('X-H-Undo');
       if (undoLabel) setUndo(decodeURIComponent(undoLabel));
+      if (redoForm) redoForm.hidden = true; // neue Aktion: nichts mehr zum Wiederholen
       applyChannel(fresh);
       fresh.classList.add('is-saved');
       setTimeout(() => fresh.classList.remove('is-saved'), 1200);
@@ -183,20 +184,26 @@
     b.onclick = async () => { installEvent.prompt(); await installEvent.userChoice; box.hidden = true; };
   });
 
-  // Knopf «Rückgängig» oben: letzte eigene Aktion spurlos zurücknehmen, mit Rückfrage
-  const undoForm = $('[data-h-undo]');
+  // Knöpfe «Rückgängig» und «Wiederholen» oben: eigene Aktionen spurlos zurücknehmen bzw. wiederherstellen, mit Rückfrage
+  const undoForm = $('[data-h-step="undo"]');
+  const redoForm = $('[data-h-step="redo"]');
   function setUndo(label) {
     if (!undoForm) return;
     undoForm.dataset.label = label;
     undoForm.hidden = false;
   }
-  if (undoForm) {
-    undoForm.addEventListener('submit', async (ev) => {
+  const STEP_TEXT = {
+    undo: ['Die Änderung wird ganz entfernt, auch aus dem Verlauf.', 'Ja, rückgängig'],
+    redo: ['Die rückgängig gemachte Änderung wird wiederhergestellt.', 'Ja, wiederholen'],
+  };
+  for (const form of [undoForm, redoForm]) {
+    if (!form) continue;
+    form.addEventListener('submit', async (ev) => {
       ev.preventDefault();
-      const ok = await ask(`${undoForm.dataset.label}. Die Änderung wird ganz entfernt, auch aus dem Verlauf.`, { title: undoForm.dataset.confirmTitle, ok: 'Ja, rückgängig' });
-      if (!ok) return;
-      undoForm.querySelector('input[name=back]').value = location.pathname + location.search;
-      undoForm.submit();
+      const [text, ok] = STEP_TEXT[form.dataset.hStep];
+      if (!(await ask(`${form.dataset.label}. ${text}`, { title: form.dataset.confirmTitle, ok }))) return;
+      form.querySelector('input[name=back]').value = location.pathname + location.search;
+      form.submit();
     });
   }
 

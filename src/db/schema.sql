@@ -404,18 +404,22 @@ CREATE TABLE IF NOT EXISTS trusted_devices (
   user_agent TEXT
 );
 
--- Handy-App «Rückgängig»: Stand vor den letzten eigenen Aktionen (wird nach 30 Minuten gelöscht)
-CREATE TABLE IF NOT EXISTS handy_undo (
+-- Handy-App «Rückgängig» / «Wiederholen»: Stand vor und nach den letzten eigenen Aktionen (wird nach 30 Minuten gelöscht)
+DROP TABLE IF EXISTS handy_undo;
+CREATE TABLE IF NOT EXISTS handy_steps (
   id INTEGER PRIMARY KEY,
   user_id INTEGER NOT NULL,
   label TEXT NOT NULL,
   event_id INTEGER NOT NULL,
   person_id INTEGER,
   reg_id INTEGER,
-  snapshot TEXT NOT NULL,
-  audit_from INTEGER NOT NULL,
-  audit_to INTEGER NOT NULL,
+  before_snap TEXT NOT NULL,   -- Stand vor der Aktion (für Rückgängig)
+  after_snap TEXT,             -- Stand nach der Aktion, gesetzt beim Rückgängigmachen (für Wiederholen)
+  audit_ids TEXT NOT NULL,     -- Verlaufseinträge der Aktion
+  audit_rows TEXT,             -- gelöschte Verlaufseinträge, gesetzt beim Rückgängigmachen
   mail_from INTEGER NOT NULL,
+  undone INTEGER NOT NULL DEFAULT 0,
+  done_at TEXT NOT NULL,
   created_ms INTEGER NOT NULL
 );
-CREATE INDEX IF NOT EXISTS idx_handy_undo_user ON handy_undo(user_id, id);
+CREATE INDEX IF NOT EXISTS idx_handy_steps_user ON handy_steps(user_id, undone, id);
