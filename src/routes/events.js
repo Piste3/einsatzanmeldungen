@@ -320,8 +320,14 @@ router.get('/einsaetze/:id/verpflegungsliste', loadEvent, (req, res) => {
 // Reiter «Anfragen»
 router.get('/einsaetze/:id/anfragen', loadEvent, (req, res) => {
   const e = req.event;
-  const filters = { status: req.query.status || '', team: req.query.team || '', q: req.query.q || '', sort: req.query.sort === 'rang_ab' ? 'rang_ab' : 'rang' };
-  const list = inquiries.listForEvent(e.id, filters);
+  // Standard: «Noch nicht angefragt»; «alle» zeigt alle. Ist niemand mehr offen, zeigt der Standard alle.
+  const asked = req.query.status;
+  const filters = { status: asked === undefined ? 'offen' : asked === 'alle' ? '' : asked, team: req.query.team || '', q: req.query.q || '', sort: req.query.sort === 'rang_ab' ? 'rang_ab' : 'rang' };
+  let list = inquiries.listForEvent(e.id, filters);
+  if (asked === undefined && !list.counts.offen) {
+    filters.status = '';
+    list = inquiries.listForEvent(e.id, filters);
+  }
   const format = wantsExport(req);
   if (format) {
     return sendTable(res, format, `Anfragen ${e.name}`, [

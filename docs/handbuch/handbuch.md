@@ -365,6 +365,8 @@ Gross- und Kleinschreibung, Leerzeichen, Umlaute (ä/ae) und vertauschte Vor- un
 
 Der Reiter **Anfragen** zeigt alle aktiven Mitglieder, die sich für diesen Einsatz noch nicht gemeldet haben, und alle, die schon angefragt wurden. Die Zahl im Reiter ist dieselbe wie bei der Gruppe **Noch offen**: noch nicht angefragt, nicht erreicht, WhatsApp ohne Antwort und unsicher.
 
+Beim Öffnen ist der Filter **Noch nicht angefragt** gewählt. So siehst du zuerst, wen noch niemand gefragt hat. **Alle** zeigt die ganze Liste. Ist niemand mehr ohne Anfrage, zeigt der Reiter gleich alle.
+
 ![Einsatz › Anfragen](bilder/11-anfragen.jpg)
 
 **So geht Nachfassen** (steht auch oben im Reiter; ein Klick auf «Nachfassen» klappt die Hilfe zu, und sie bleibt in diesem Browser zu):
@@ -426,7 +428,7 @@ Die Seite **Rückmeldungen** beantwortet die wichtigste Frage der Aufgebotsstell
 
 ![Rückmeldungen als Tabelle](bilder/14-rueckmeldungen.jpg)
 
-- Mitglieder als Zeilen, Einsätze als Spalten. Kopfzeile und Namensspalte bleiben beim Scrollen stehen.
+- Mitglieder als Zeilen, Einsätze als Spalten. Kopfzeile und Namensspalte bleiben beim Scrollen stehen. Am Handy ist die Namensspalte schmal und zeigt nur Rang und Name. So sind mehr Schichten sichtbar. Die Filter stehen untereinander.
 - Im Spaltenkopf jedes Einsatzes steht die Besetzung als Balken, z. B. «11 / 16». Sie zählt gleich wie der Reiter «Schichten» und die Übersicht: Anmeldungen mit Status Neu, Rückfrage oder Bestätigt. Die Warteliste zählt nicht.
 - **Symbole:** ✓ An, ✕ Ab, ? Unsicher, leeres Feld = Offen. Dazu gibt es eigene Symbole für den genaueren Stand: ein grün gefülltes ✓ für eine bestätigte Anmeldung, eine Uhr für die Warteliste, eine blaue Sprechblase für «Nachricht gesendet, Antwort offen», ein gelbes Telefon für «angerufen, nicht erreicht», eine sprechende Person für «mündlich gefragt, weiss es noch nicht» und ! für «Rückfrage nötig». Die **Legende** direkt über der Tabelle erklärt alle Symbole. Sie ist immer sichtbar, in beiden Ansichten. Das Symbol zeigt immer nur den neuesten Stand.
 - **Wer hat das gesetzt?** Fährt man mit der Maus über ein Feld, steht dort der letzte Eintrag mit Name und Zeit, z. B. «Zuletzt: Anmeldung: Bestätigt – Lena Meier, heute 14:20 (4 Einträge im Verlauf)». Hat sich jemand selbst über das Formular gemeldet, steht «Person selbst».
@@ -671,7 +673,7 @@ Jede Person existiert genau einmal. Anmeldungen, Anfragen und Schichten verweise
 
 ## 18 · Für Admins
 
-Unter **Einstellungen** sorgt der Admin dafür, dass die Grundlagen stimmen. Die Reiter sind in zwei Gruppen geteilt: **Inhalte** (Auswahllisten, Vorlagen, Kalendertermin, Bestätigungsmail) ändert, was Mitglieder und Aufgebotsstelle sehen. **Betrieb** (Allgemein, Benutzer, Server, System) hält den Einsatzplaner am Laufen.
+Unter **Einstellungen** sorgt der Admin dafür, dass die Grundlagen stimmen. Die Reiter sind in zwei Gruppen geteilt: **Inhalte** (Auswahllisten, Vorlagen, Kalendertermin, Bestätigungsmail) ändert, was Mitglieder und Aufgebotsstelle sehen. **Betrieb** (Allgemein, Benutzer, Server, System) hält den Einsatzplaner am Laufen. Ein Klick auf **Einstellungen** öffnet den ersten Reiter, die Auswahllisten.
 
 ### Benutzer
 

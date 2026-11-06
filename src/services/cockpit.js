@@ -53,7 +53,7 @@ function todos(rows, kpis) {
       }
     }
     if (s.neu) list.push({ tag: 'Bestätigen', tone: 'blue', text: `${e.name}: ${s.neu} neue Anmeldung${s.neu === 1 ? '' : 'en'} bestätigen`, href: `/einsaetze/${e.id}/anmeldungen?status=neu` });
-    if (s.inquiryOpen) list.push({ tag: 'Nachfassen', tone: 'blue', text: `${e.name}: ${s.inquiryOpen} Person${s.inquiryOpen === 1 ? '' : 'en'} noch nicht erreicht`, href: `/einsaetze/${e.id}/anfragen` });
+    if (s.inquiryOpen) list.push({ tag: 'Nachfassen', tone: 'blue', text: `${e.name}: ${s.inquiryOpen} Person${s.inquiryOpen === 1 ? '' : 'en'} noch nicht erreicht`, href: `/einsaetze/${e.id}/anfragen?status=alle` });
     const days = e.date_from ? daysUntil(e.date_from) : null;
     if (e.status === 'veroeffentlicht' && days !== null && days <= 7 && s.bestaetigt && !e.calendar_sent_at) {
       list.push({ tag: 'Aufgebot', tone: 'gray', text: `Kalendertermin ${e.name} noch nicht exportiert`, href: `/einsaetze/${e.id}` });

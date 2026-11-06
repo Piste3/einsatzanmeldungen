@@ -414,3 +414,14 @@ tr.group-row strong { font-weight: 600; }
   .fn-grid input { width: 60px; }
   .fn-sum { width: 60px; }
 }
+
+/* Rückmeldungen am Handy: schmale Namensspalte (bleibt beim seitlichen Schieben stehen), Filter je auf voller Breite */
+@media (max-width: 760px) {
+  .fb-filters > input[type=search], .fb-filters > select { flex: 1 1 100%; min-width: 0; height: auto; min-height: 44px; line-height: 1.3; }
+  .fb-matrix .fb-name { min-width: 96px; width: 104px; max-width: 112px; padding-left: 8px !important; padding-right: 6px !important; }
+  .fb-matrix td.fb-name strong { display: block; font-size: 13px; line-height: 1.25; overflow-wrap: break-word; }
+  .fb-matrix td.fb-name .rank { display: block; font-size: 11px; margin: 0 0 1px; width: auto; }
+  .fb-matrix td.fb-name .sub { display: none; }
+  .fb-matrix tfoot td.fb-name { font-size: 11px; }
+  .fb-ev { min-width: 76px; max-width: 92px; padding: 8px 4px !important; }
+}

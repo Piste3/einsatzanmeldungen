@@ -22,7 +22,8 @@ const twofaOptions = require('../auth/twofa').REMEMBER_OPTIONS;
 const msEnabled = () => Boolean(auth.provider('microsoft'));
 router.use('/verwaltung', auth.requireAdmin);
 
-router.get('/verwaltung', (req, res) => res.redirect('/verwaltung/benutzer'));
+// Einstellungen öffnen beim ersten Reiter (Auswahllisten), nicht bei Benutzer
+router.get('/verwaltung', (req, res) => res.redirect('/verwaltung/listen'));
 
 function personOptions() {
   return db.all(`SELECT p.id, p.first_name, p.last_name, r.short AS rank_short FROM persons p LEFT JOIN ranks r ON r.id = p.rank_id

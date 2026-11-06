@@ -48,6 +48,8 @@ test('Anmeldung und Rollen', async () => {
   assert.equal((await get('/', admin.cookie)).status, 200);
   for (const p of ['/verwaltung/benutzer/neu', '/verwaltung/benutzer/1']) assert.equal((await get(p, admin.cookie)).status, 200, p);
   assert.equal((await get('/verwaltung/benutzer', admin.cookie)).status, 200);
+  // Einstellungen öffnen beim ersten Reiter, nicht bei Benutzer
+  assert.equal((await get('/verwaltung', admin.cookie)).headers.get('location'), '/verwaltung/listen');
 
   const lena = await login('lena', 'Aufgebot-2026-x');
   assert.equal((await get('/einsaetze', lena.cookie)).status, 200);
