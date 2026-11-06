@@ -180,5 +180,29 @@
     b.onclick = async () => { installEvent.prompt(); await installEvent.userChoice; box.hidden = true; };
   });
 
+  // Reiter merken sich die letzte Seite für 5 Minuten (z. B. eine offene Person unter «Personen»).
+  // Ein Tipp auf den Reiter, in dem man schon ist, führt zur Übersicht.
+  const TAB_OF = { einsaetze: 'einsaetze', anfragen: 'einsaetze', anmeldungen: 'einsaetze', personen: 'personen' };
+  const KEEP_MS = 5 * 60 * 1000;
+  const pageTab = TAB_OF[document.body.dataset.hPage];
+  let toRoot = false;
+  const remember = () => { if (pageTab && !toRoot) store.set(`h-tab-${pageTab}`, JSON.stringify({ path: location.pathname + location.search, t: Date.now() })); };
+  remember();
+  window.addEventListener('pagehide', remember);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') remember(); });
+  document.querySelectorAll('.h-nav a[data-h-tab]').forEach((a) => {
+    const tab = a.dataset.hTab;
+    if (!['einsaetze', 'personen'].includes(tab)) return;
+    a.addEventListener('click', (e) => {
+      if (pageTab === tab) { toRoot = true; store.set(`h-tab-${tab}`, ''); return; }
+      let saved = null;
+      try { saved = JSON.parse(store.get(`h-tab-${tab}`) || 'null'); } catch { saved = null; }
+      if (saved && saved.path && Date.now() - saved.t < KEEP_MS && saved.path.startsWith('/handy')) {
+        e.preventDefault();
+        location.href = saved.path;
+      }
+    });
+  });
+
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
 })();

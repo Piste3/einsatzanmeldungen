@@ -237,6 +237,45 @@ test('Von Hand eingetragene Anmeldung lässt sich zurücksetzen, Formular-Anmeld
   assert.equal(db.one('SELECT 1 AS x FROM registrations WHERE id = ?', rid), undefined, 'Anmeldung gelöscht');
 });
 
+test('Filter: Zeitraum und Entwürfe einstellen', async () => {
+  const db = require('../src/db');
+  const events = require('../src/services/events');
+  const { today, addDays } = require('../src/lib/dates');
+  const weit = events.create({ name: 'Tattoo Parking', date: addDays(today(), 280), start_time: '18:00', end_time: '23:00' }, system);
+  const nah = events.create({ name: 'Probe Nah', date: addDays(today(), 4), start_time: '18:00', end_time: '21:00' }, system);
+  db.run("UPDATE events SET status = 'veroeffentlicht' WHERE id = ?", weit);
+  const vorbei = events.create({ name: 'Vorbei Alt', date: addDays(today(), -3), start_time: '18:00', end_time: '21:00' }, system);
+  db.run("UPDATE events SET status = 'veroeffentlicht' WHERE id = ?", vorbei);
+  const cookie = await login('lena', 'Aufgebot-2026-x');
+
+  // Standard: 6 Monate mit Entwürfen. Der weite Einsatz fehlt, ein Hinweis zeigt ihn als ausgeblendet.
+  let start = await (await get('/handy', cookie)).text();
+  assert.match(start, /Nächste 6 Monate/);
+  assert.match(start, /Probe Nah/);
+  assert.doesNotMatch(start, /Tattoo Parking/);
+  assert.match(start, /weiterer Einsatz ausgeblendet|weitere Einsätze ausgeblendet/);
+  assert.match(start, /class="h-nav"[\s\S]*Einsätze[\s\S]*Personen[\s\S]*Filter[\s\S]*Profil/);
+
+  const page = await (await get('/handy/filter', cookie)).text();
+  assert.match(page, /name="zeit" value="6" checked/);
+  const csrf = page.match(/name="_csrf" value="([^"]+)"/)[1];
+  const res = await fetch(`${base}/handy/filter`, {
+    method: 'POST', redirect: 'manual', headers: { cookie, 'content-type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ _csrf: csrf, zeit: '12', entwurf: '0' }),
+  });
+  assert.equal(res.status, 302);
+  const set = (res.headers.get('set-cookie') || '').split(';')[0];
+  assert.match(set, /^kkb_handy_filter=/);
+  const both = `${cookie}; ${set}`;
+  start = await (await get('/handy', both)).text();
+  assert.match(start, /Nächste 12 Monate · ohne Entwürfe/);
+  assert.match(start, /Tattoo Parking/);
+  assert.doesNotMatch(start, /Probe Nah/, 'Entwurf ausgeblendet');
+  assert.doesNotMatch(start, /Vorbei Alt/, 'vergangene nie');
+  assert.match(await (await get('/handy/filter', both)).text(), /name="zeit" value="12" checked/);
+  assert.match(await (await get('/handy/personen', both)).text(), /Nächste 12 Monate · ohne Entwürfe/);
+});
+
 test('Profil: Konto, Darstellung, Ganze Ansicht, Abmelden; Konto-Seiten im Rahmen der Handy-App', async () => {
   const cookie = await login('lena', 'Aufgebot-2026-x');
   const page = await (await get('/handy/profil', cookie)).text();

@@ -10,7 +10,7 @@ const { ValidationError } = require('../services/errors');
 const registrations = require('../services/registrations');
 const persons = require('../services/persons');
 const { ConflictError } = require('../services/errors');
-const { today, addDays } = require('../lib/dates');
+const { today, addDays, fmtDate } = require('../lib/dates');
 const { REG_STATUS, REG_STATUS_MANUAL, REG_COUNTING, DIET } = require('../lib/labels');
 const { BY_RANK } = require('../lib/sorting');
 
@@ -106,7 +106,7 @@ function loadEvent(req, res, next) {
 
 // Gemerkter Einsatz, sonst der nächste
 function currentEventId(req) {
-  const list = upcoming();
+  const list = upcoming(filterOf(req));
   const saved = Number(req.cookies?.[EVENT_COOKIE]);
   if (saved && (list.some((e) => e.id === saved) || events.get(saved))) return saved;
   return list[0]?.id || null;
@@ -142,18 +142,52 @@ function eventCounts(eventId) {
   };
 }
 
-function upcoming() {
-  const t = today();
-  return db.all(`SELECT * FROM events WHERE status IN ('veroeffentlicht','entwurf') AND date_to >= ? AND date_from <= ?
-    ORDER BY date_from, start_time, id`, t, addDays(t, 183));
+// ---------- Filter: welche Einsätze die Handy-App zeigt (pro Handy, als Cookie) ----------
+const FILTER_COOKIE = 'kkb_handy_filter';
+const RANGES = {
+  1: { days: 31, label: 'Nächster Monat' },
+  3: { days: 92, label: 'Nächste 3 Monate' },
+  6: { days: 183, label: 'Nächste 6 Monate' },
+  12: { days: 366, label: 'Nächste 12 Monate' },
+  alle: { days: null, label: 'Alle kommenden' },
+};
+const DEFAULT_FILTER = { zeit: '6', entwurf: true };
+
+function filterOf(req) {
+  const q = new URLSearchParams(String(req.cookies?.[FILTER_COOKIE] || ''));
+  const zeit = RANGES[q.get('zeit')] ? q.get('zeit') : DEFAULT_FILTER.zeit;
+  const entwurf = q.has('entwurf') ? q.get('entwurf') !== '0' : DEFAULT_FILTER.entwurf;
+  const label = `${RANGES[zeit].label}${entwurf ? '' : ' · ohne Entwürfe'}`;
+  return { zeit, entwurf, label, isDefault: zeit === DEFAULT_FILTER.zeit && entwurf === DEFAULT_FILTER.entwurf };
 }
+
+// Laufende und kommende Einsätze nach Filter. Vergangene, abgeschlossene und abgesagte nie.
+function upcoming(f = DEFAULT_FILTER) {
+  const t = today();
+  const days = RANGES[f.zeit].days;
+  return db.all(`SELECT * FROM events WHERE status IN (${f.entwurf ? "'veroeffentlicht','entwurf'" : "'veroeffentlicht'"}) AND date_to >= ?${days ? ' AND date_from <= ?' : ''}
+    ORDER BY date_from, start_time, id`, t, ...(days ? [addDays(t, days)] : []));
+}
+const hiddenCount = (shown) => upcoming({ zeit: 'alle', entwurf: true }).length - shown;
+
+router.get('/handy/filter', (req, res) => {
+  const t = today();
+  const ranges = Object.entries(RANGES).map(([key, r]) => ({ key, label: r.label, until: r.days ? fmtDate(addDays(t, r.days)) : '' }));
+  res.render('handy/filter', { title: 'Filter', f: filterOf(req), ranges, total: upcoming({ zeit: 'alle', entwurf: true }).length });
+});
+
+router.post('/handy/filter', (req, res) => {
+  const zeit = RANGES[req.body.zeit] ? String(req.body.zeit) : DEFAULT_FILTER.zeit;
+  const entwurf = req.body.entwurf === '0' ? '0' : '1';
+  res.cookie(FILTER_COOKIE, new URLSearchParams({ zeit, entwurf }).toString(), { httpOnly: true, sameSite: 'lax', path: '/handy', maxAge: 365 * 86400000 });
+  res.redirect('/handy');
+});
 
 // Startseite: laufende und kommende Einsätze (heute zuerst)
 router.get('/handy', (req, res) => {
-  const t = today();
-  const list = db.all(`SELECT * FROM events WHERE status IN ('veroeffentlicht','entwurf') AND date_to >= ? AND date_from <= ?
-    ORDER BY date_from, start_time, id`, t, addDays(t, 183)).map((e) => ({ ...e, counts: eventCounts(e.id) }));
-  res.render('handy/start', { title: 'Einsatz wählen', list, todayYmd: t });
+  const f = filterOf(req);
+  const list = upcoming(f).map((e) => ({ ...e, counts: eventCounts(e.id) }));
+  res.render('handy/start', { title: 'Einsatz wählen', list, todayYmd: today(), f, hidden: hiddenCount(list.length) });
 });
 
 function personList(e, query) {
@@ -296,7 +330,8 @@ router.get('/handy/profil', (req, res) => {
 
 // ---------- Personen: eine Person, alle kommenden Einsätze ----------
 router.get('/handy/personen', (req, res) => {
-  const evts = upcoming();
+  const f = filterOf(req);
+  const evts = upcoming(f);
   const ids = evts.map((e) => e.id);
   const list = db.all(`SELECT p.id, p.first_name, p.last_name, r.short AS rank_short,
       (SELECT group_concat(t.name, ', ') FROM person_teams pt JOIN teams t ON t.id = pt.team_id WHERE pt.person_id = p.id) AS teams
@@ -309,17 +344,18 @@ router.get('/handy/personen', (req, res) => {
         AND status IN (${REG_COUNTING.map(() => '?').join(',')}) GROUP BY person_id`, ...ids, ...REG_COUNTING)) regs.set(x.person_id, x.n);
   }
   for (const p of list) p.angemeldet = regs.get(p.id) || 0;
-  res.render('handy/personen', { title: 'Personen', list, eventCount: evts.length });
+  res.render('handy/personen', { title: 'Personen', list, eventCount: evts.length, f, hidden: hiddenCount(evts.length) });
 });
 
 router.get('/handy/personen/:pid', (req, res) => {
   const p = db.one('SELECT p.*, r.short AS rank_short FROM persons p LEFT JOIN ranks r ON r.id = p.rank_id WHERE p.id = ?', Number(req.params.pid));
   if (!p) return res.status(404).render('handy/fehler', { title: 'Nicht gefunden', message: 'Diese Person gibt es nicht.' });
   p.teams = db.all('SELECT t.name FROM person_teams pt JOIN teams t ON t.id = pt.team_id WHERE pt.person_id = ? ORDER BY t.sort, t.name', p.id).map((t) => t.name).join(', ');
-  const evts = upcoming();
+  const f = filterOf(req);
+  const evts = upcoming(f);
   const choices = feedback.shiftChoices(evts.map((e) => e.id));
   const cards = evts.map((e) => ({ e, r: cardRow(e, p.id), shifts: choices[e.id] || [], locked: locked(e, req.user) })).filter((c) => c.r);
-  res.render('handy/person', { title: `${p.first_name} ${p.last_name}`, p, cards });
+  res.render('handy/person', { title: `${p.first_name} ${p.last_name}`, p, cards, f, hidden: hiddenCount(evts.length) });
 });
 
 module.exports = router;

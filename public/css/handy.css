@@ -190,5 +190,18 @@ body.handy { padding-bottom: calc(60px + env(safe-area-inset-bottom)); }
 .h-theme .segmented button + button { border-left: 1px solid var(--border-strong); }
 .h-theme .segmented button.is-on { background: var(--ink); color: var(--paper); }
 
+/* ---------- Filter ---------- */
+.h-choice label { display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 8px 14px; background: var(--card); font-size: 15.5px; cursor: pointer; }
+.h-choice input { width: 20px; height: 20px; margin: 0; flex: none; accent-color: var(--ink); }
+.h-choice label:has(input:checked) { font-weight: 600; }
+.h-choice small { font-weight: 400; }
+.h-note { margin: 16px 2px; font-size: 13.5px; line-height: 1.45; color: var(--muted); }
+.h-filter-save { width: 100%; min-height: 48px; font-size: 15.5px; }
+.h-hidden { display: flex; align-items: center; gap: 12px; margin-top: 12px; min-height: 52px; padding: 8px 14px; border: 1px dashed var(--border-strong); border-radius: var(--radius); color: var(--text-2); text-decoration: none; font-size: 14.5px; }
+.h-hidden svg { width: 18px; height: 18px; flex: none; color: var(--muted); }
+.h-hidden span { flex: 1; }
+.h-hidden small { display: block; font-size: 12.5px; color: var(--muted); }
+.h-hidden .h-chev { flex: none; color: var(--muted); font-size: 20px; }
+
 /* Konto-Seiten im Rahmen der Handy-App */
 body.handy .topbar { display: none; }

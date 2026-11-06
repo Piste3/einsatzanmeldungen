@@ -1,11 +1,11 @@
-<%- include('_head', { barTitle: 'Einsätze', barSub: 'Einsatz wählen', navTab: 'einsaetze' }) %>
+<%- include('_head', { barTitle: 'Einsätze', barSub: f.label, navTab: 'einsaetze' }) %>
 <div class="h-install" data-install hidden>
   <p><strong>Als App speichern:</strong> <span data-install-text>Im Browser-Menü «Zum Startbildschirm hinzufügen» wählen.</span></p>
   <button class="btn btn-sm" type="button" data-install-btn hidden>Installieren</button>
   <button class="h-x" type="button" data-install-close aria-label="Hinweis schliessen">×</button>
 </div>
 <% if (!list.length) { %>
-  <div class="h-empty"><p>Es gibt keinen laufenden oder kommenden Einsatz.</p></div>
+  <div class="h-empty"><p><%= hidden ? 'Im gewählten Zeitraum gibt es keinen Einsatz.' : 'Es gibt keinen laufenden oder kommenden Einsatz.' %></p></div>
 <% } %>
 <ul class="h-events">
   <% for (const e of list) { const when = e.date_from === todayYmd ? 'Heute' : e.date_from < todayYmd ? 'Läuft' : h.fmtDaysUntil(e.date_from).replace(/^./, (c) => c.toUpperCase()); %>
@@ -18,4 +18,5 @@
     </li>
   <% } %>
 </ul>
+<%- include('_hidden', { hidden }) %>
 <%- include('_foot', { navTab: 'einsaetze' }) %>

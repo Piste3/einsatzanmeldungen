@@ -1,0 +1,21 @@
+<%- include('_head', { barTitle: 'Filter', barSub: 'Welche Einsätze erscheinen', navTab: 'filter' }) %>
+<form method="post" action="/handy/filter" class="h-filterform">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+  <h2 class="h-section">Zeitraum</h2>
+  <ul class="h-menu h-choice">
+    <% for (const r of ranges) { %>
+    <li><label><input type="radio" name="zeit" value="<%= r.key %>"<%= f.zeit === r.key ? ' checked' : '' %>><span><%= r.label %><small><%= r.until ? `Beginn bis ${r.until}` : `alle ${total} kommenden Einsätze` %></small></span></label></li>
+    <% } %>
+  </ul>
+
+  <h2 class="h-section">Entwürfe</h2>
+  <ul class="h-menu h-choice">
+    <li><label><input type="radio" name="entwurf" value="1"<%= f.entwurf ? ' checked' : '' %>><span>Anzeigen<small>mit dem Zeichen «Entwurf»</small></span></label></li>
+    <li><label><input type="radio" name="entwurf" value="0"<%= f.entwurf ? '' : ' checked' %>><span>Ausblenden<small>nur veröffentlichte Einsätze</small></span></label></li>
+  </ul>
+
+  <p class="h-note">Der Filter gilt für «Einsätze» und «Personen» auf diesem Handy. Vergangene, abgeschlossene und abgesagte Einsätze zeigt die Handy-App nie.</p>
+  <button class="btn btn-primary h-filter-save" type="submit">Filter anwenden</button>
+</form>
+<%- include('_foot', { navTab: 'filter' }) %>

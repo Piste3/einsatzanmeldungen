@@ -3,7 +3,7 @@
 <%
   const tabNow = typeof navTab !== 'undefined' ? navTab : '';
   const inEvent = ['anfragen', 'anmeldungen'].includes(tabNow) && typeof event !== 'undefined' && event;
-  // Ausserhalb eines Einsatzes: Einsätze und Personen. Innerhalb: Anfragen und Anmeldungen dieses Einsatzes.
+  // Ausserhalb eines Einsatzes: Einsätze, Personen und Filter. Innerhalb: Anfragen und Anmeldungen dieses Einsatzes.
   const navTabs = inEvent ? [
     ['anfragen', `/handy/einsatz/${event.id}`, 'Anfragen', 'phone'],
     ['anmeldungen', `/handy/einsatz/${event.id}/anmeldungen`, 'Anmeldungen', 'inbox'],
@@ -11,12 +11,13 @@
   ] : [
     ['einsaetze', '/handy', 'Einsätze', 'calendar'],
     ['personen', '/handy/personen', 'Personen', 'users'],
+    ['filter', '/handy/filter', 'Filter', 'filter'],
     ['profil', '/handy/profil', 'Profil', 'user'],
   ];
 %>
 <nav class="h-nav" aria-label="<%= inEvent ? 'Ansichten im Einsatz' : 'Ansichten' %>">
   <% for (const [key, href, label, ico] of navTabs) { %>
-    <a href="<%= href %>" class="<%= tabNow === key ? 'active' : '' %>"<%- tabNow === key ? ' aria-current="page"' : '' %>><%- h.icon(ico) %><span><%= label %></span></a>
+    <a href="<%= href %>" data-h-tab="<%= key %>" class="<%= tabNow === key ? 'active' : '' %>"<%- tabNow === key ? ' aria-current="page"' : '' %>><%- h.icon(ico) %><span><%= label %></span></a>
   <% } %>
 </nav>
 <% if (typeof withAppJs !== 'undefined' && withAppJs) { %><script src="/static/js/app.js?v=<%= v %>"></script><% } %>

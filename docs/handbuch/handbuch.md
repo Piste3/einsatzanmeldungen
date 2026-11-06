@@ -426,14 +426,19 @@ Unten steht immer eine Leiste. Mit ihr schaltest du zwischen den Ansichten um:
 
 | Wo | Knöpfe in der Leiste |
 |---|---|
-| Ausserhalb eines Einsatzes | **Einsätze**, **Personen** und **Profil** |
+| Ausserhalb eines Einsatzes | **Einsätze**, **Personen**, **Filter** und **Profil** |
 | Innerhalb eines Einsatzes | **Anfragen**, **Anmeldungen** und **Profil** |
+
+**Die Reiter merken sich die letzte Seite.** Beispiel: Du hast unter **Personen** Edoardo offen. Du tippst kurz auf **Profil** und dann wieder auf **Personen**. Dann ist Edoardo wieder offen. Das gilt auch für **Einsätze**: Ein Tipp darauf öffnet wieder den zuletzt offenen Einsatz mit Anfragen oder Anmeldungen.
+
+- Nach 5 Minuten verfällt diese Erinnerung. Dann öffnet der Reiter wieder die Übersicht.
+- Ein Tipp auf den Reiter, in dem du schon bist, öffnet sofort die Übersicht.
 
 Der Pfeil ‹ oben links führt aus dem Einsatz zurück zu den Einsätzen. Der Knopf ↻ oben rechts lädt die Seite neu. So siehst du auch Antworten, die andere inzwischen eingetragen haben.
 
 ![Handy-App: Einsätze](bilder/46-handy-einsaetze.jpg)
 
-**Einsätze:** Die Startseite zeigt die laufenden und kommenden Einsätze, der nächste zuerst. Pro Einsatz steht, wie viele Personen angemeldet sind und bei wie vielen die Antwort noch offen ist. Der zuletzt geöffnete Einsatz hat links einen orangen Strich. Ein Tipp auf einen Einsatz öffnet seine **Anfragen**.
+**Einsätze:** Die Startseite zeigt die laufenden und kommenden Einsätze, der nächste zuerst. Welche Einsätze erscheinen, stellst du im Reiter **Filter** ein. Standard sind die nächsten 6 Monate mit Entwürfen. Unter dem Titel steht der gewählte Filter. Fehlen Einsätze wegen des Filters, steht unten z. B. «2 weitere Einsätze ausgeblendet». Ein Tipp darauf öffnet den Filter. Pro Einsatz steht, wie viele Personen angemeldet sind und bei wie vielen die Antwort noch offen ist. Der zuletzt geöffnete Einsatz hat links einen orangen Strich. Ein Tipp auf einen Einsatz öffnet seine **Anfragen**.
 
 #### Anfragen
 
@@ -491,6 +496,18 @@ Die Ansicht **Personen** zeigt alle aktiven Mitglieder, nach Rang sortiert. Rech
 ![Handy-App: eine Person mit allen Einsätzen](bilder/51-handy-person.jpg)
 
 Ein Tipp auf eine Person zeigt alle kommenden Einsätze mit ihrem Stand. Oben stehen **Anrufen** und **WhatsApp**. Pro Einsatz trägst du die Antwort mit denselben Knöpfen ein wie bei den Anfragen. So fragst du eine Person für mehrere Einsätze auf einmal.
+
+#### Filter
+
+![Handy-App: Filter](bilder/54-handy-filter.jpg)
+
+Der Reiter **Filter** bestimmt, welche Einsätze unter **Einsätze** und **Personen** erscheinen.
+
+- **Zeitraum:** Nächster Monat, nächste 3 Monate, nächste 6 Monate, nächste 12 Monate oder alle kommenden. Neben jeder Wahl steht das Datum, bis zu dem ein Einsatz beginnen darf.
+- **Entwürfe:** Anzeigen oder ausblenden. Ausblenden zeigt nur veröffentlichte Einsätze.
+- **Filter anwenden** speichert die Wahl und öffnet die Einsätze.
+
+Der Filter gilt nur auf diesem Handy und bleibt gespeichert. Vergangene, abgeschlossene und abgesagte Einsätze zeigt die Handy-App nie.
 
 #### Profil
 
