@@ -1,4 +1,4 @@
-<%- include('_head', { barTitle: 'Anfragen', barSub: 'Einsatz wählen' }) %>
+<%- include('_head', { barTitle: 'Einsätze', barSub: 'Einsatz wählen', navTab: 'einsaetze' }) %>
 <div class="h-install" data-install hidden>
   <p><strong>Als App speichern:</strong> <span data-install-text>Im Browser-Menü «Zum Startbildschirm hinzufügen» wählen.</span></p>
   <button class="btn btn-sm" type="button" data-install-btn hidden>Installieren</button>
@@ -10,12 +10,12 @@
 <ul class="h-events">
   <% for (const e of list) { const when = e.date_from === todayYmd ? 'Heute' : e.date_from < todayYmd ? 'Läuft' : h.fmtDaysUntil(e.date_from).replace(/^./, (c) => c.toUpperCase()); %>
     <li>
-      <a class="h-event" href="/handy/einsatz/<%= e.id %>">
+      <a class="h-event<%= e.id === currentEventId ? ' is-current' : '' %>" href="/handy/einsatz/<%= e.id %>">
         <span class="h-event-when"><%= when %> · <%= h.fmtEventDate(e) %><% if (e.start_time) { %> · <%= e.start_time %><% } %></span>
         <span class="h-event-name"><%= e.name %><% if (e.status === 'entwurf') { %> <span class="badge badge-gray">Entwurf</span><% } %></span>
-        <span class="h-event-counts"><span class="dot dot-green"></span><%= e.counts.kann %> kann · <span class="dot dot-red"></span><%= e.counts.kann_nicht %> kann nicht · <strong><%= e.counts.offen %> noch offen</strong></span>
+        <span class="h-event-counts"><span class="dot dot-green"></span><%= e.counts.angemeldet %> angemeldet · <strong><%= e.counts.offen %> noch offen</strong></span>
       </a>
     </li>
   <% } %>
 </ul>
-<%- include('_foot') %>
+<%- include('_foot', { navTab: 'einsaetze' }) %>

@@ -1,0 +1,62 @@
+<%
+  const known = Boolean(r.person_id);
+  const name = known ? `${r.first_name} ${r.last_name}` : `«${r.entered_name}»`;
+  const tel = r.mobile ? r.mobile.replace(/[^\d+]/g, '') : '';
+  const wa = h.waLink(r.mobile);
+  const inactive = ['zurueckgezogen', 'abgesagt', 'ungueltig'].includes(r.status);
+  const backUrl = typeof back !== 'undefined' ? back : `/handy/einsatz/${r.event_id}/anmeldungen`;
+  const others = known && !locked ? statusOptions.filter((st) => st !== r.status && st !== 'bestaetigt') : [];
+  const action = `/handy/einsatz/${r.event_id}/anmeldung/${r.id}/status`;
+  const tone = inactive ? 'kann_nicht' : r.status === 'bestaetigt' ? 'kann' : 'offen';
+%>
+<article class="hc hc-<%= tone %>" id="r<%= r.id %>" data-name="<%= `${name} ${r.entered_name || ''} ${r.rank_short || ''}`.toLowerCase() %>" data-who="<%= known ? name : r.entered_name %>">
+  <div class="hc-top">
+    <div class="hc-who">
+      <% if (known) { %>
+        <a class="hc-person-link" href="/handy/personen/<%= r.person_id %>"><strong><%- h.rank(r.rank_short) %><%= name %></strong></a>
+        <% if (r.teams) { %><span class="hc-sub"><%= r.teams %></span><% } %>
+      <% } else { %>
+        <strong><%= name %></strong>
+        <span class="hc-sub hc-warn"><%= r.match_info || 'keine sichere Zuordnung' %> · am PC unter «Klärungen» zuordnen</span>
+      <% } %>
+    </div>
+    <div class="hc-contact">
+      <% if (tel) { %><a class="h-round" href="tel:<%= tel %>" aria-label="<%= name %> anrufen" title="Anrufen"><%- h.icon('phone') %></a><% } %>
+      <% if (wa) { %><a class="h-round" href="<%= wa %>" target="_blank" rel="noopener" aria-label="<%= name %> per WhatsApp schreiben" title="WhatsApp"><%- h.icon('chat') %></a><% } %>
+    </div>
+  </div>
+  <div class="hc-state">
+    <%- h.regBadge(r.status) %>
+    <span class="hc-last"><%= h.labels.SOURCE[r.source] %> · <%= h.fmtRelative(r.registered_at) %></span>
+  </div>
+  <dl class="hc-facts">
+    <% if (r.shiftText) { %><div><dt>Schicht</dt><dd><%= r.shiftText %></dd></div><% } %>
+    <% if (known && !inactive && r.func) { %><div><dt>Funktion</dt><dd><%= r.func.short %> · <%= r.func.name %></dd></div><% } %>
+    <% if (r.remark) { %><div><dt>Bemerkung</dt><dd><%= r.remark %></dd></div><% } %>
+    <% if (r.internal_note) { %><div><dt>Intern</dt><dd><%= r.internal_note %></dd></div><% } %>
+    <% if (r.dietText) { %><div><dt>Verpflegung</dt><dd><%= r.dietText %></dd></div><% } %>
+  </dl>
+  <% if (known && !locked) { %>
+  <div class="hc-reg-actions">
+    <% if (['neu', 'rueckfrage', 'warteliste', 'unsicher'].includes(r.status)) { %>
+      <form method="post" action="<%= action %>" data-h-form data-h-kind="reg">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="status" value="bestaetigt"><input type="hidden" name="expected" value="<%= r.status %>"><input type="hidden" name="back" value="<%= backUrl %>">
+        <button class="h-ans h-ans-kann" type="submit" data-done-text="bestätigt">Bestätigen</button>
+      </form>
+    <% } %>
+    <% if (others.length) { %>
+    <details class="hc-more">
+      <summary>Status ändern</summary>
+      <div class="hc-more-list">
+        <% for (const st of others) { %>
+          <form method="post" action="<%= action %>" data-h-form data-h-kind="reg">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="status" value="<%= st %>"><input type="hidden" name="expected" value="<%= r.status %>"><input type="hidden" name="back" value="<%= backUrl %>">
+            <button type="submit" data-done-text="<%= h.labels.REG_STATUS[st].label %>">→ <%= h.labels.REG_STATUS[st].label %></button>
+          </form>
+        <% } %>
+      </div>
+    </details>
+    <% } %>
+  </div>
+  <% } %>
+</article>

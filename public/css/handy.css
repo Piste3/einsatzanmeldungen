@@ -116,3 +116,55 @@ body.handy { background: var(--bg); color: var(--text); margin: 0; min-height: 1
 @media (max-width: 359px) { .h-ans { font-size: 13.5px; } .hc { padding-left: 12px; padding-right: 10px; } }
 
 @media (prefers-reduced-motion: reduce) { .hc { transition: none; } }
+
+/* ---------- Leiste unten (wie in einer App) ---------- */
+body.handy { padding-bottom: calc(60px + env(safe-area-inset-bottom)); }
+.h-nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; background: var(--paper); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom); }
+.h-nav a { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 58px; color: var(--muted); text-decoration: none; font-size: 11px; font-weight: 500; }
+.h-nav a svg { width: 22px; height: 22px; }
+.h-nav a.active { color: var(--text); font-weight: 600; }
+.h-nav a.active svg { color: var(--signal); }
+.h-nav a:active { background: var(--hover); }
+.h-toast { bottom: calc(72px + env(safe-area-inset-bottom)); }
+.h-event.is-current { border-color: var(--border-strong); box-shadow: inset 3px 0 0 var(--signal); }
+
+/* ---------- Anmeldungen ---------- */
+.h-occ { display: flex; flex-wrap: wrap; gap: 6px; }
+.h-occ-item { display: inline-flex; align-items: baseline; gap: 6px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 9px; font-size: 13px; color: var(--text-2); }
+.h-occ-item strong { font-family: var(--mono); font-size: 13px; }
+.h-occ-green strong { color: var(--dot-green); }
+.h-occ-yellow strong, .h-occ-orange strong { color: var(--orange-dark); }
+.h-occ-red strong { color: var(--dot-red); }
+.h-pdf { flex: 0 0 auto; min-height: 44px; }
+.hc-person-link, .hc-event-link { color: inherit; text-decoration: none; }
+.hc-warn { color: var(--orange-dark); }
+.hc-facts { margin: 8px 0 0; display: flex; flex-direction: column; gap: 3px; font-size: 13.5px; }
+.hc-facts div { display: flex; gap: 8px; }
+.hc-facts dt { flex: 0 0 86px; color: var(--muted); }
+.hc-facts dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.hc-facts:empty { display: none; }
+.hc-reg-actions { display: flex; gap: 8px; margin-top: 10px; align-items: flex-start; flex-wrap: wrap; }
+.hc-reg-actions form { margin: 0; flex: 1 1 140px; }
+.hc-reg-actions .h-ans { width: 100%; }
+.hc-more { flex: 1 1 140px; }
+.hc-more summary { list-style: none; display: flex; align-items: center; justify-content: center; min-height: 48px; border: 1px solid var(--border-strong); border-radius: 10px; font-size: 14.5px; font-weight: 500; cursor: pointer; }
+.hc-more summary::-webkit-details-marker { display: none; }
+.hc-more[open] summary { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.hc-more-list { border: 1px solid var(--border-strong); border-top: 0; border-radius: 0 0 10px 10px; overflow: hidden; }
+.hc-more-list form { margin: 0; }
+.hc-more-list button { display: block; width: 100%; min-height: 44px; padding: 0 12px; text-align: left; border: 0; border-top: 1px solid var(--line); background: var(--paper); color: var(--text); font: inherit; font-size: 14.5px; cursor: pointer; }
+.hc-more-list form:first-child button { border-top: 0; }
+
+/* ---------- Teilnehmer ---------- */
+.h-people { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.h-people .hc { padding: 0; }
+.h-person { display: flex; align-items: center; gap: 10px; padding: 10px 14px; min-height: 44px; color: var(--text); text-decoration: none; }
+.h-person:active { background: var(--hover); }
+.h-person-name { flex: 1; min-width: 0; }
+.h-person-name strong { font-size: 15.5px; font-weight: 600; }
+.h-person-count { flex: none; display: flex; flex-direction: column; align-items: flex-end; font-family: var(--mono); font-size: 16px; color: var(--muted); line-height: 1.1; }
+.h-person-count small { font-family: var(--font); font-size: 11px; }
+.h-person-count.has { color: var(--dot-green); }
+.h-contact-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.h-contact-btn { min-height: 48px; font-size: 15px; gap: 8px; }
+.h-contact-btn svg { width: 18px; height: 18px; }

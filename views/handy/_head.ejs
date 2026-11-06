@@ -13,7 +13,7 @@
 <body class="handy">
 <header class="h-bar">
   <% if (typeof backHref !== 'undefined' && backHref) { %>
-    <a class="h-bar-btn" href="<%= backHref %>" aria-label="Zurück zu den Einsätzen">‹</a>
+    <a class="h-bar-btn" href="<%= backHref %>" aria-label="<%= typeof backLabel !== 'undefined' ? backLabel : 'Einsatz wechseln' %>">‹</a>
   <% } else { %>
     <span class="logo">KKB</span>
   <% } %>

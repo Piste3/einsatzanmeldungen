@@ -1,15 +1,61 @@
 'use strict';
-// Handy-App: schlanke Ansicht zum Anfragen an einer Übung.
-// Nur zwei Seiten: Einsatz wählen und Personen anfragen. Einsätze lassen sich hier nicht bearbeiten.
+// Handy-App: schlanke Ansicht für die Übung. Einsatz wählen, Personen anfragen, Anmeldungen ansehen und bestätigen,
+// eine Person mit allen kommenden Einsätzen. Einsätze lassen sich hier nicht bearbeiten.
 const express = require('express');
 const db = require('../db');
 const events = require('../services/events');
 const inquiries = require('../services/inquiries');
 const feedback = require('../services/feedback');
 const { ValidationError } = require('../services/errors');
+const registrations = require('../services/registrations');
+const persons = require('../services/persons');
+const { ConflictError } = require('../services/errors');
 const { today, addDays } = require('../lib/dates');
+const { REG_STATUS, REG_STATUS_MANUAL, REG_COUNTING, DIET } = require('../lib/labels');
+const { BY_RANK } = require('../lib/sorting');
 
 const router = express.Router();
+
+// ---------- Auf dem Handy immer die Handy-App ----------
+// Handys erkennt der Einsatzplaner am Browser (Tablets nicht). «Ganze Ansicht» schaltet für eine Stunde auf die PC-Ansicht.
+const PHONE = /iPhone|iPod|Android.*Mobile|Mobile.*Firefox|Windows Phone|BlackBerry|Opera Mini/i;
+const PC_COOKIE = 'kkb_ansicht';
+const KEEP_PC_PATHS = /^\/(handy|handbuch|konto|static|forms|logout)(\/|$)/;
+
+function isPhone(req) {
+  return PHONE.test(String(req.get('user-agent') || ''));
+}
+
+// Passende Seite in der Handy-App für eine Seite des Einsatzplaners
+function handyTarget(path) {
+  let m = path.match(/^\/einsaetze\/(\d+)\/anmeldungen$/);
+  if (m) return `/handy/einsatz/${m[1]}/anmeldungen`;
+  m = path.match(/^\/einsaetze\/(\d+)(\/.*)?$/);
+  if (m) return `/handy/einsatz/${m[1]}`;
+  m = path.match(/^\/personen\/(\d+)$/);
+  if (m) return `/handy/personen/${m[1]}`;
+  if (path === '/personen' || path.startsWith('/rueckmeldungen')) return '/handy/personen';
+  return '/handy';
+}
+
+router.use((req, res, next) => {
+  if (req.method !== 'GET' || req.xhr || !isPhone(req)) return next();
+  if (KEEP_PC_PATHS.test(req.path) || req.query.format || req.cookies?.[PC_COOKIE] === 'pc') return next();
+  if (!req.accepts('html')) return next();
+  res.redirect(handyTarget(req.path));
+});
+
+// «Ganze Ansicht»: eine Stunde lang die PC-Ansicht zeigen
+router.get('/handy/ganze-ansicht', (req, res) => {
+  res.cookie(PC_COOKIE, 'pc', { httpOnly: true, sameSite: 'lax', path: '/', maxAge: 3600 * 1000 });
+  res.redirect('/');
+});
+
+// Jeder Aufruf der Handy-App schaltet wieder auf die Handy-Ansicht
+router.use('/handy', (req, res, next) => {
+  if (req.method === 'GET' && req.cookies?.[PC_COOKIE]) res.clearCookie(PC_COOKIE, { path: '/' });
+  next();
+});
 
 // Antworten in der Handy-App: Knopf → Ergebnis des Kontaktversuchs
 const ANSWERS = { kann: 'zugesagt', kann_nicht: 'abgesagt', unsicher: 'unsicher', nicht_erreicht: 'nicht_erreicht', gesendet: 'whatsapp' };
@@ -39,13 +85,41 @@ function locked(e, user) {
   return (e.status === 'abgeschlossen' && user.role !== 'admin') || e.status === 'abgesagt';
 }
 
+// Der gewählte Einsatz gilt für die Reiter «Anfragen» und «Anmeldungen» in der Leiste unten
+const EVENT_COOKIE = 'kkb_handy_einsatz';
+
 function loadEvent(req, res, next) {
   const e = events.get(Number(req.params.id));
   if (!e) return res.status(404).render('handy/fehler', { title: 'Nicht gefunden', message: 'Diesen Einsatz gibt es nicht.' });
   req.event = e;
   res.locals.event = e;
+  res.locals.currentEventId = e.id;
+  if (req.method === 'GET') res.cookie(EVENT_COOKIE, String(e.id), { httpOnly: true, sameSite: 'lax', path: '/handy', maxAge: 30 * 86400000 });
   next();
 }
+
+// Gemerkter Einsatz, sonst der nächste
+function currentEventId(req) {
+  const list = upcoming();
+  const saved = Number(req.cookies?.[EVENT_COOKIE]);
+  if (saved && (list.some((e) => e.id === saved) || events.get(saved))) return saved;
+  return list[0]?.id || null;
+}
+
+router.use('/handy', (req, res, next) => {
+  if (res.locals.currentEventId === undefined) res.locals.currentEventId = Number(req.cookies?.[EVENT_COOKIE]) || null;
+  next();
+});
+
+// Reiter der Leiste unten
+router.get('/handy/anfragen', (req, res) => {
+  const id = currentEventId(req);
+  res.redirect(id ? `/handy/einsatz/${id}` : '/handy');
+});
+router.get('/handy/anmeldungen', (req, res) => {
+  const id = currentEventId(req);
+  res.redirect(id ? `/handy/einsatz/${id}/anmeldungen` : '/handy');
+});
 
 function countAnswers(list) {
   const c = { offen: 0, kann: 0, kann_nicht: 0 };
@@ -53,11 +127,26 @@ function countAnswers(list) {
   return c;
 }
 
+// Zahlen pro Einsatz: angemeldet (zählt zur Besetzung) und noch offen (wie im Reiter Anfragen)
+function eventCounts(eventId) {
+  const ph = REG_COUNTING.map(() => '?').join(',');
+  return {
+    angemeldet: db.one(`SELECT COUNT(*) AS n FROM registrations WHERE event_id = ? AND status IN (${ph})`, eventId, ...REG_COUNTING).n,
+    offen: inquiries.openCount(eventId),
+  };
+}
+
+function upcoming() {
+  const t = today();
+  return db.all(`SELECT * FROM events WHERE status IN ('veroeffentlicht','entwurf') AND date_to >= ? AND date_from <= ?
+    ORDER BY date_from, start_time, id`, t, addDays(t, 183));
+}
+
 // Startseite: laufende und kommende Einsätze (heute zuerst)
 router.get('/handy', (req, res) => {
   const t = today();
   const list = db.all(`SELECT * FROM events WHERE status IN ('veroeffentlicht','entwurf') AND date_to >= ? AND date_from <= ?
-    ORDER BY date_from, start_time, id`, t, addDays(t, 183)).map((e) => ({ ...e, counts: countAnswers(inquiries.listForEvent(e.id)) }));
+    ORDER BY date_from, start_time, id`, t, addDays(t, 183)).map((e) => ({ ...e, counts: eventCounts(e.id) }));
   res.render('handy/start', { title: 'Einsatz wählen', list, todayYmd: t });
 });
 
@@ -82,13 +171,22 @@ router.get('/handy/einsatz/:id', loadEvent, (req, res) => {
   });
 });
 
-function renderCard(req, res, personId) {
-  const e = req.event;
-  const r = inquiries.listForEvent(e.id).find((x) => x.person_id === personId);
-  if (!r) return res.status(404).send('');
+function cardRow(e, personId) {
+  const r = inquiries.rowFor(e.id, personId);
+  if (!r) return null;
   r.answer = answerOf(r);
   r.label = stateLabel(r);
-  res.render('handy/_person', { r, locked: locked(e, req.user), shifts: feedback.shiftChoices([e.id])[e.id] || [] });
+  return r;
+}
+
+function renderCard(req, res, personId) {
+  const e = req.event;
+  const r = cardRow(e, personId);
+  if (!r) return res.status(404).send('');
+  res.render('handy/_person', {
+    r, cardEvent: e, mode: req.body.ansicht === 'person' ? 'person' : 'einsatz',
+    locked: locked(e, req.user), shifts: feedback.shiftChoices([e.id])[e.id] || [],
+  });
 }
 
 function back(req) {
@@ -125,5 +223,87 @@ router.post('/handy/einsatz/:id/zuruecknehmen', loadEvent, (req, res) => {
   res.redirect(`${back(req)}#p${personId}`);
 });
 
+// ---------- Anmeldungen (wie am PC, nur lesen und bestätigen) ----------
+const REG_GROUPS = {
+  offen: { label: 'Zu bearbeiten', st: ['neu', 'unsicher', 'rueckfrage'] },
+  bestaetigt: { label: 'Bestätigt', st: ['bestaetigt'] },
+  uebrige: { label: 'Übrige', st: ['warteliste', 'zurueckgezogen', 'abgesagt', 'ungueltig'] },
+};
+
+function regCard(e, r, user) {
+  if (r.person_id) {
+    const p = db.one('SELECT diet_category, diet_text, mobile FROM persons WHERE id = ?', r.person_id) || {};
+    r.mobile = p.mobile;
+    const has = p.diet_category || p.diet_text;
+    r.dietText = !has ? '' : persons.canSeeDiet(user, r.person_id) ? [DIET[p.diet_category], p.diet_text].filter(Boolean).join(': ') : 'Hinweis vorhanden';
+  }
+  const shiftName = (id) => (e.shifts.find((s) => s.id === id) || {}).name;
+  r.shiftText = r.answer === 'nein' ? '' : r.assigned.length ? r.assigned.map((a) => a.name).join(' + ') : r.wishes.length ? `Wunsch: ${r.wishes.map(shiftName).filter(Boolean).join(' + ')}` : '';
+  return r;
+}
+
+router.get('/handy/einsatz/:id/anmeldungen', loadEvent, (req, res) => {
+  const e = req.event;
+  const all = registrations.listForEvent(e.id, { sort: req.query.sort === 'rang_ab' ? 'rang_ab' : 'rang' });
+  const counts = { offen: 0, bestaetigt: 0, uebrige: 0 };
+  const groupOf = (r) => Object.keys(REG_GROUPS).find((k) => REG_GROUPS[k].st.includes(r.status)) || 'uebrige';
+  for (const r of all) counts[groupOf(r)] += 1;
+  const show = ['offen', 'bestaetigt', 'uebrige', 'alle'].includes(req.query.zeige) ? req.query.zeige : 'alle';
+  const list = (show === 'alle' ? all.filter((r) => groupOf(r) !== 'uebrige') : all.filter((r) => groupOf(r) === show)).map((r) => regCard(e, r, req.user));
+  res.render('handy/anmeldungen', {
+    title: `${e.name} · Anmeldungen`, list, counts, total: all.length, show, groups: REG_GROUPS,
+    shifts: events.stats(e).shifts, locked: locked(e, req.user), statusOptions: REG_STATUS_MANUAL,
+  });
+});
+
+// Status einer Anmeldung setzen (Bestätigen usw.)
+router.post('/handy/einsatz/:id/anmeldung/:rid/status', loadEvent, (req, res) => {
+  const reg = registrations.get(Number(req.params.rid));
+  const to = String(req.body.status || '');
+  try {
+    if (!reg || reg.event_id !== req.event.id) throw new ValidationError(['Anmeldung nicht gefunden.']);
+    if (!REG_STATUS[to]) throw new ValidationError(['Unbekannter Status.']);
+    registrations.setStatus(reg.id, to, req.user, { expected: req.body.expected || null });
+  } catch (err) {
+    if (!req.xhr) throw err;
+    const text = err instanceof ConflictError ? 'Jemand anderes hat diese Anmeldung inzwischen geändert. Bitte neu laden.'
+      : err.messages ? err.messages.join(' ') : 'Speichern ging nicht. Bitte neu laden.';
+    return res.status(400).type('text').send(text);
+  }
+  if (req.xhr) {
+    return res.render('handy/_registration', { r: regCard(req.event, registrations.get(reg.id), req.user), locked: locked(req.event, req.user), statusOptions: REG_STATUS_MANUAL });
+  }
+  res.redirect(`${back(req)}#r${reg.id}`);
+});
+
+// ---------- Nach Teilnehmer: eine Person, alle kommenden Einsätze ----------
+router.get('/handy/personen', (req, res) => {
+  const evts = upcoming();
+  const ids = evts.map((e) => e.id);
+  const list = db.all(`SELECT p.id, p.first_name, p.last_name, r.short AS rank_short,
+      (SELECT group_concat(t.name, ', ') FROM person_teams pt JOIN teams t ON t.id = pt.team_id WHERE pt.person_id = p.id) AS teams
+    FROM persons p LEFT JOIN ranks r ON r.id = p.rank_id WHERE p.status = 'aktiv' ORDER BY ${BY_RANK}`);
+  // Zahl der kommenden Einsätze, für die die Person angemeldet ist
+  const regs = new Map();
+  if (ids.length) {
+    const ph = ids.map(() => '?').join(',');
+    for (const x of db.all(`SELECT person_id, COUNT(*) AS n FROM registrations WHERE event_id IN (${ph}) AND person_id IS NOT NULL
+        AND status IN (${REG_COUNTING.map(() => '?').join(',')}) GROUP BY person_id`, ...ids, ...REG_COUNTING)) regs.set(x.person_id, x.n);
+  }
+  for (const p of list) p.angemeldet = regs.get(p.id) || 0;
+  res.render('handy/personen', { title: 'Nach Teilnehmer', list, eventCount: evts.length });
+});
+
+router.get('/handy/personen/:pid', (req, res) => {
+  const p = db.one('SELECT p.*, r.short AS rank_short FROM persons p LEFT JOIN ranks r ON r.id = p.rank_id WHERE p.id = ?', Number(req.params.pid));
+  if (!p) return res.status(404).render('handy/fehler', { title: 'Nicht gefunden', message: 'Diese Person gibt es nicht.' });
+  p.teams = db.all('SELECT t.name FROM person_teams pt JOIN teams t ON t.id = pt.team_id WHERE pt.person_id = ? ORDER BY t.sort, t.name', p.id).map((t) => t.name).join(', ');
+  const evts = upcoming();
+  const choices = feedback.shiftChoices(evts.map((e) => e.id));
+  const cards = evts.map((e) => ({ e, r: cardRow(e, p.id), shifts: choices[e.id] || [], locked: locked(e, req.user) })).filter((c) => c.r);
+  res.render('handy/person', { title: `${p.first_name} ${p.last_name}`, p, cards });
+});
+
 module.exports = router;
 module.exports.answerOf = answerOf;
+module.exports.isPhone = isPhone;

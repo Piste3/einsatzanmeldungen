@@ -101,6 +101,79 @@ test('Handy-App: Einsatz wählen, Antwort eintragen, rückgängig machen', async
   assert.match(await bad.text(), /Antwort wählen/);
 });
 
+const IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1';
+const getAs = (path, cookie, ua) => fetch(`${base}${path}`, { headers: { ...(cookie ? { cookie } : {}), 'user-agent': ua }, redirect: 'manual' });
+
+test('Auf dem Handy kommt immer die Handy-App', async () => {
+  const cookie = await login('lena', 'Aufgebot-2026-x');
+  const cases = [['/', '/handy'], ['/einsaetze', '/handy'], ['/einsaetze/5/anmeldungen', '/handy/einsatz/5/anmeldungen'],
+    ['/einsaetze/5/schichten', '/handy/einsatz/5'], ['/personen/3', '/handy/personen/3'], ['/rueckmeldungen', '/handy/personen']];
+  for (const [from, to] of cases) {
+    const r = await getAs(from, cookie, IPHONE);
+    assert.equal(r.status, 302, from);
+    assert.equal(r.headers.get('location'), to, from);
+  }
+  // Handbuch, Konto und Exporte bleiben erreichbar; Tablet und PC bleiben bei der normalen Ansicht
+  assert.equal((await getAs('/handbuch', cookie, IPHONE)).status, 200);
+  assert.equal((await getAs('/konto/passwort', cookie, IPHONE)).status, 200);
+  assert.equal((await getAs('/', cookie, 'Mozilla/5.0 (iPad; CPU OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Safari/604.1')).status, 200);
+  assert.equal((await get('/', cookie)).status, 200);
+  // «Ganze Ansicht» schaltet für eine Stunde um, die Handy-App schaltet zurück
+  const pc = await getAs('/handy/ganze-ansicht', cookie, IPHONE);
+  assert.equal(pc.headers.get('location'), '/');
+  const pcCookie = pc.headers.get('set-cookie').split(';')[0];
+  assert.match(pc.headers.get('set-cookie'), /Max-Age=3600/);
+  assert.equal((await getAs('/einsaetze', `${cookie}; ${pcCookie}`, IPHONE)).status, 200);
+  assert.match((await getAs('/handy', `${cookie}; ${pcCookie}`, IPHONE)).headers.get('set-cookie') || '', /kkb_ansicht=;/);
+});
+
+test('Handy-App: Anmeldungen ansehen und bestätigen, Ansicht nach Teilnehmer', async () => {
+  const db = require('../src/db');
+  const persons = require('../src/services/persons');
+  const events = require('../src/services/events');
+  const registrations = require('../src/services/registrations');
+  const { today, addDays } = require('../src/lib/dates');
+  const tom = persons.create({ first_name: 'Tom', last_name: 'Tambour', status: 'aktiv', mobile: '079 222 33 44' }, system);
+  const ev = events.create({ name: 'Übung Bruderholz', date: addDays(today(), 3), start_time: '09:00', end_time: '12:00' }, system);
+  const ev2 = events.create({ name: 'Übung Allschwil', date: addDays(today(), 9), start_time: '09:00', end_time: '12:00' }, system);
+  db.run("UPDATE events SET status = 'veroeffentlicht' WHERE id IN (?, ?)", ev, ev2);
+  const rid = registrations.create({ eventId: ev, personId: tom, matchType: 'auto', source: 'formular', answer: 'ja', wishes: [], remark: 'Komme später', user: system });
+  const cookie = await login('lena', 'Aufgebot-2026-x');
+
+  const page = await (await get(`/handy/einsatz/${ev}/anmeldungen`, cookie)).text();
+  assert.match(page, /Tom Tambour/);
+  assert.match(page, /Komme später/);
+  assert.match(page, /Neu eingegangen/);
+  assert.match(page, /Teilnehmerliste PDF/);
+  assert.match(page, /class="h-nav"[\s\S]*Anfragen[\s\S]*Anmeldungen/, 'Leiste im Einsatz');
+  const csrf = page.match(/name="_csrf" value="([^"]+)"/)[1];
+  const ok = await fetch(`${base}/handy/einsatz/${ev}/anmeldung/${rid}/status`, {
+    method: 'POST', headers: { cookie, 'content-type': 'application/x-www-form-urlencoded', 'x-requested-with': 'XMLHttpRequest' },
+    body: new URLSearchParams({ _csrf: csrf, status: 'bestaetigt', expected: 'neu' }),
+  });
+  assert.equal(ok.status, 200);
+  assert.match(await ok.text(), /Bestätigt/);
+  assert.equal(db.one('SELECT status FROM registrations WHERE id = ?', rid).status, 'bestaetigt');
+
+  // Nach Teilnehmer: Liste und eine Person mit allen kommenden Einsätzen
+  const list = await (await get('/handy/personen', cookie)).text();
+  assert.match(list, new RegExp(`href="/handy/personen/${tom}"`));
+  assert.match(list, /class="h-nav"[\s\S]*Einsätze[\s\S]*Teilnehmer/, 'Leiste ausserhalb');
+  const person = await (await get(`/handy/personen/${tom}`, cookie)).text();
+  assert.match(person, /Übung Bruderholz/);
+  assert.match(person, /Übung Allschwil/);
+  assert.match(person, /über Formular/);
+  // Antwort für den zweiten Einsatz direkt bei der Person
+  const ans = await fetch(`${base}/handy/einsatz/${ev2}/antwort`, {
+    method: 'POST', headers: { cookie, 'content-type': 'application/x-www-form-urlencoded', 'x-requested-with': 'XMLHttpRequest' },
+    body: new URLSearchParams({ _csrf: csrf, person_id: String(tom), antwort: 'kann', channel: 'muendlich', ansicht: 'person' }),
+  });
+  const card = await ans.text();
+  assert.match(card, new RegExp(`id="e${ev2}"`));
+  assert.match(card, /Übung Allschwil/);
+  assert.ok(db.one('SELECT 1 FROM registrations WHERE event_id = ? AND person_id = ?', ev2, tom));
+});
+
 test('Einsatzleiter haben keine Handy-App', async () => {
   const cookie = await login('leiter', 'Kommando-Lauf-2026');
   assert.equal((await get('/handy', cookie)).status, 403);

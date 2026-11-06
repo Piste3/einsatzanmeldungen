@@ -59,6 +59,12 @@
 
   document.addEventListener('click', (ev) => {
     const set = ev.target.closest('[data-set-channel]');
+    const setAll = ev.target.closest('[data-set-channel-all]');
+    if (setAll) {
+      const r = radios.find((x) => x.value === setAll.dataset.setChannelAll);
+      if (r && !r.checked) { r.checked = true; r.dispatchEvent(new Event('change')); }
+      return;
+    }
     if (set) {
       const card = set.closest('.hc');
       if (card) { card.dataset.override = set.dataset.setChannel; applyChannel(card); }
@@ -80,7 +86,7 @@
       if (none) none.hidden = !(q && !shown);
     };
     search.addEventListener('input', filter);
-    search.form.addEventListener('submit', (e) => { if (document.activeElement === search) { e.preventDefault(); search.blur(); } });
+    if (search.form) search.form.addEventListener('submit', (e) => { if (document.activeElement === search) { e.preventDefault(); search.blur(); } });
   }
   $$('[data-h-autosubmit]').forEach((s) => s.addEventListener('change', () => s.form.submit()));
 
@@ -124,6 +130,7 @@
       fresh.classList.add('is-saved');
       setTimeout(() => fresh.classList.remove('is-saved'), 1200);
       const ans = btn && btn.name === 'antwort' ? btn.value : null;
+      if (form.dataset.hKind === 'reg') { toast(`${who}: ${(btn && btn.dataset.doneText) || 'gespeichert'}`); return; }
       toast(ans ? `${who}: ${ANSWER_TEXT[ans] || 'gespeichert'}` : `${who}: rückgängig gemacht`);
       updateCounts();
     } catch {
@@ -133,13 +140,13 @@
   });
 
   // Zähler in den Reitern nachführen (Karten bleiben bis zum Neuladen am Platz)
-  const startAnswer = new Map($$('.hc').map((c) => [c.dataset.person, answerOf(c)]));
+  const startAnswer = new Map($$('.hc[data-person]').map((c) => [c.dataset.person, answerOf(c)]));
   function answerOf(c) { return c.classList.contains('hc-kann') ? 'kann' : c.classList.contains('hc-kann_nicht') ? 'kann_nicht' : 'offen'; }
   function updateCounts() {
     const tabs = Object.fromEntries($$('.h-tabs a').map((a) => [new URL(a.href).searchParams.get('zeige') || 'offen', a.querySelector('span')]));
-    if (!tabs.offen) return;
+    if (!tabs.offen || !radios.length || !$('.hc[data-person]')) return;
     const delta = { offen: 0, kann: 0, kann_nicht: 0 };
-    for (const c of $$('.hc')) {
+    for (const c of $$('.hc[data-person]')) {
       const before = startAnswer.get(c.dataset.person);
       const now = answerOf(c);
       if (before && before !== now) { delta[before] -= 1; delta[now] += 1; }

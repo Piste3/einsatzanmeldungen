@@ -86,6 +86,22 @@ function listForEvent(eventId, { status = '', team = '', q = '', sort = 'rang' }
   return Object.assign(out, { counts, total });
 }
 
+// Eine Zeile wie im Reiter «Anfragen», aber für genau eine Person – auch wenn sie sich selbst angemeldet hat
+function rowFor(eventId, personId) {
+  const r = db.one(`SELECT p.id AS person_id, p.first_name, p.last_name, p.mobile, p.email, p.status AS person_status, r.short AS rank_short,
+      (SELECT group_concat(t.name, ', ') FROM person_teams pt JOIN teams t ON t.id = pt.team_id WHERE pt.person_id = p.id) AS teams,
+      i.id AS inquiry_id, coalesce(i.status, 'offen') AS inquiry_status, i.registration_id, i.version AS inquiry_version,
+      g.id AS reg_id, g.status AS reg_status, g.source AS reg_source
+    FROM persons p LEFT JOIN ranks r ON r.id = p.rank_id
+    LEFT JOIN inquiries i ON i.person_id = p.id AND i.event_id = ?
+    LEFT JOIN registrations g ON g.id = (SELECT id FROM registrations WHERE event_id = ? AND person_id = p.id AND status <> 'ungueltig' ORDER BY id DESC LIMIT 1)
+    WHERE p.id = ?`, eventId, eventId, personId);
+  if (!r) return null;
+  r.attempts = r.inquiry_id ? attemptsFor([r.inquiry_id]).get(r.inquiry_id) || [] : [];
+  r.state = rowState(r);
+  return r;
+}
+
 function forPerson(personId) {
   const rows = db.all(`SELECT i.*, e.name AS event_name, e.date_from AS event_date, e.date_to AS event_date_to FROM inquiries i JOIN events e ON e.id = i.event_id WHERE i.person_id = ?`, personId);
   const attempts = attemptsFor(rows.map((r) => r.id));
@@ -251,4 +267,4 @@ function resetPerson(eventId, personId, user) {
   });
 }
 
-module.exports = { listForEvent, openCount, forPerson, addAttempt, setStatus, removeAttempt, resetPerson, attemptLabel };
+module.exports = { listForEvent, rowFor, openCount, forPerson, addAttempt, setStatus, removeAttempt, resetPerson, attemptLabel };

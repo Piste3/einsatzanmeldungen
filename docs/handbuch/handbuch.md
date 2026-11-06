@@ -37,9 +37,9 @@ Jeder Einsatz durchläuft dieselben Schritte. Die Mitglieder sehen davon nur ein
 
 Der Einsatzplaner läuft im Browser – auf dem Computer, dem Tablet oder dem Handy. Es muss nichts installiert werden.
 
-**Auf dem Handy** öffnet der Knopf ☰ oben links das Menü. Tabellen erscheinen dort als Karten: pro Person oder Einsatz ein Block mit den Angaben untereinander. Die Rückmeldungen-Tabelle lässt sich seitwärts wischen. Für grössere Arbeiten wie Schichten planen oder Einstellungen ist der Computer bequemer.
+**In der ganzen Ansicht auf dem Handy** öffnet der Knopf ☰ oben links das Menü. Tabellen erscheinen dort als Karten: pro Person oder Einsatz ein Block mit den Angaben untereinander. Die Rückmeldungen-Tabelle lässt sich seitwärts wischen. Für grössere Arbeiten wie Schichten planen oder Einstellungen ist der Computer bequemer.
 
-**Zum Anfragen an einer Übung** gibt es die **Handy-App**. Sie ist eine schlanke Ansicht nur für das Anfragen und lässt sich auf den Startbildschirm legen. Mehr dazu in Kapitel 11 unter «Mit dem Handy anfragen».
+**Auf dem Handy** öffnet sich automatisch die **Handy-App**. Sie ist eine schlanke Ansicht für die Übung: Anfragen, Anmeldungen und Teilnehmer. Sie lässt sich auf den Startbildschirm legen. Mehr dazu in Kapitel 11 unter «Mit dem Handy anfragen».
 
 ### Anmelden
 
@@ -407,26 +407,41 @@ Oben im Fenster steht der **Verlauf** dieser Person für den Einsatz: alle Konta
 
 ### Mit dem Handy anfragen (Handy-App)
 
-Die Handy-App ist für die Übung oder den Einsatz gemacht. Du fragst die Leute direkt vor Ort oder rufst sie an. Danach tippst du die Antwort ein. Einsätze lassen sich in der Handy-App nicht bearbeiten. Dafür bleibt die ganze Ansicht.
+Die Handy-App ist für die Übung oder den Einsatz gemacht. Du fragst die Leute direkt vor Ort oder rufst sie an. Danach tippst du die Antwort ein. Du siehst auch die Anmeldungen eines Einsatzes und alle Einsätze einer Person. Einsätze lassen sich in der Handy-App nicht bearbeiten.
 
-**Öffnen:** Im Menü auf **Handy-App** tippen oder die Adresse **einsatz.holmium.ch/handy** öffnen. Die Anmeldung ist dieselbe wie im Einsatzplaner.
+**Auf dem Handy kommt immer die Handy-App.** Der Einsatzplaner erkennt ein Handy und öffnet automatisch die passende Seite der Handy-App. Tablets und Computer zeigen weiter die normale Ansicht. Das Handbuch und die Kontoseiten öffnen sich auch auf dem Handy normal. Die Anmeldung ist dieselbe wie im Einsatzplaner.
+
+**Ganze Ansicht:** Unten auf jeder Seite der Handy-App steht **Ganze Ansicht**. Dieser Link zeigt eine Stunde lang den normalen Einsatzplaner, z. B. um einen Einsatz zu ändern. Danach oder mit dem Menüpunkt **Handy-App** kommt wieder die Handy-App.
 
 **Auf den Startbildschirm legen** (nur einmal nötig):
 
-- **iPhone:** Die Adresse in Safari öffnen. Unten auf **Teilen** tippen, dann **Zum Home-Bildschirm**.
-- **Android:** Die Adresse in Chrome öffnen. Oben im Menü ⋮ auf **Zum Startbildschirm hinzufügen** oder **App installieren** tippen. Manchmal zeigt die Startseite der Handy-App dafür direkt den Knopf **Installieren**.
+- **iPhone:** einsatz.holmium.ch in Safari öffnen. Unten auf **Teilen** tippen, dann **Zum Home-Bildschirm**.
+- **Android:** einsatz.holmium.ch in Chrome öffnen. Oben im Menü ⋮ auf **Zum Startbildschirm hinzufügen** oder **App installieren** tippen. Manchmal zeigt die Startseite der Handy-App dafür direkt den Knopf **Installieren**.
 
 Danach steht **KKB Anfragen** mit dem orangen KKB-Symbol auf dem Startbildschirm. Die App öffnet sich ohne Adressleiste wie eine normale App. Sie braucht eine Internetverbindung. Ohne Verbindung zeigt sie die Meldung «Keine Verbindung».
 
-![Handy-App: Einsatz wählen](bilder/46-handy-einsaetze.jpg)
+#### Die Leiste unten
 
-**1. Einsatz wählen.** Die Startseite zeigt die laufenden und kommenden Einsätze, der nächste zuerst. Pro Einsatz steht, wie viele Personen können, nicht können und noch offen sind.
+Unten steht immer eine Leiste mit zwei Knöpfen. Mit ihr schaltest du zwischen den Ansichten um:
 
-![Handy-App: Personen anfragen](bilder/47-handy-anfragen.jpg)
+| Wo | Knöpfe in der Leiste |
+|---|---|
+| Ausserhalb eines Einsatzes | **Einsätze** und **Teilnehmer** |
+| Innerhalb eines Einsatzes | **Anfragen** und **Anmeldungen** |
 
-**2. «Gefragt per» wählen.** Oben wählst du, wie du fragst: **Mündlich**, **Telefon** oder **WhatsApp**. Die App merkt sich die Wahl auf diesem Handy. Tippst du in einer Karte auf den Hörer oder die Sprechblase, gilt für diese Person automatisch Telefon bzw. WhatsApp.
+Der Pfeil ‹ oben links führt aus dem Einsatz zurück zu den Einsätzen. Der Knopf ↻ oben rechts lädt die Seite neu. So siehst du auch Antworten, die andere inzwischen eingetragen haben.
 
-**3. Antwort eintragen.** Jede Person hat eine eigene Karte mit grossen Knöpfen:
+![Handy-App: Einsätze](bilder/46-handy-einsaetze.jpg)
+
+**Einsätze:** Die Startseite zeigt die laufenden und kommenden Einsätze, der nächste zuerst. Pro Einsatz steht, wie viele Personen angemeldet sind und bei wie vielen die Antwort noch offen ist. Der zuletzt geöffnete Einsatz hat links einen orangen Strich. Ein Tipp auf einen Einsatz öffnet seine **Anfragen**.
+
+#### Anfragen
+
+![Handy-App: Anfragen](bilder/47-handy-anfragen.jpg)
+
+**«Gefragt per» wählen.** Oben wählst du, wie du fragst: **Mündlich**, **Telefon** oder **WhatsApp**. Die App merkt sich die Wahl auf diesem Handy. Tippst du in einer Karte auf den Hörer oder die Sprechblase, gilt für diese Person automatisch Telefon bzw. WhatsApp.
+
+**Antwort eintragen.** Jede Person hat eine eigene Karte mit grossen Knöpfen:
 
 | Knopf | Bedeutung | Was danach passiert |
 |---|---|---|
@@ -436,7 +451,7 @@ Danach steht **KKB Anfragen** mit dem orangen KKB-Symbol auf dem Startbildschirm
 | Nicht erreicht | Nur bei Telefon: niemand hat abgenommen | Bleibt unter «Noch offen» |
 | Gesendet | Nur bei WhatsApp: Nachricht geschickt, Antwort offen | Bleibt unter «Noch offen» |
 
-Die Antwort ist sofort gespeichert. Unten erscheint kurz eine Bestätigung, z. B. «David Suter: kann». Die Karte bleibt an ihrem Platz, bis du die Seite neu lädst. Der Knopf ↻ oben rechts lädt die Liste neu. So siehst du auch Antworten, die andere inzwischen eingetragen haben.
+Die Antwort ist sofort gespeichert. Unten erscheint kurz eine Bestätigung, z. B. «David Suter: kann». Die Karte bleibt an ihrem Platz, bis du die Seite neu lädst.
 
 ![Handy-App: Schichten bei «Kann»](bilder/48-handy-schichten.jpg)
 
@@ -444,13 +459,32 @@ Die Antwort ist sofort gespeichert. Unten erscheint kurz eine Bestätigung, z. B
 
 **Falsch getippt?** In der Karte auf **Rückgängig** tippen. Das macht den letzten Eintrag dieser Person rückgängig. Hat dieser Eintrag eine Anmeldung erstellt, wird sie ebenfalls gelöscht. Vorher fragt die App nach.
 
-**Weitere Hilfen:**
+**Filter:** **Noch offen**, **Kann**, **Kann nicht** und **Alle** filtern die Liste. Beim Öffnen steht **Noch offen**. **Name suchen** filtert sofort beim Tippen. Daneben lässt sich eine Mannschaft wählen.
 
-- **Noch offen**, **Kann**, **Kann nicht** und **Alle** filtern die Liste. Beim Öffnen steht **Noch offen**.
-- **Name suchen** filtert sofort beim Tippen. Daneben lässt sich eine Mannschaft wählen.
-- Unten stehen **Ganze Ansicht** (der normale Einsatzplaner) und **Abmelden**.
+#### Anmeldungen
 
-Alles, was du in der Handy-App einträgst, steht sofort auch im Reiter **Anfragen**, in den **Rückmeldungen** und im **Verlauf** der Person. Einsatzleiter haben keinen Zugang zur Handy-App.
+![Handy-App: Anmeldungen](bilder/49-handy-anmeldungen.jpg)
+
+Die Ansicht **Anmeldungen** zeigt dieselben Anmeldungen wie der Reiter «Anmeldungen» am Computer, als Karten:
+
+- Oben steht die **Besetzung** pro Schicht (Ist / Soll).
+- **Angemeldet** zeigt alle, die zu bearbeiten oder bestätigt sind. **Zu bearbeiten**, **Bestätigt** und **Übrige** (Warteliste, abgemeldet, ungültig) filtern die Liste.
+- Jede Karte zeigt Status, Quelle und Zeit, Schicht, Funktion, Bemerkung, interne Bemerkung und Verpflegung.
+- **Bestätigen** bestätigt die Anmeldung. **Status ändern** setzt einen anderen Status, z. B. Warteliste oder Zurückgezogen.
+- **Teilnehmerliste PDF** öffnet die Teilnehmerliste für diesen Einsatz.
+- Unklare Namen ordnest du am Computer unter «Klärungen» zu. Ein Tipp auf einen Namen öffnet die Person in der Ansicht **Teilnehmer**.
+
+#### Teilnehmer (nach Person)
+
+![Handy-App: Teilnehmer](bilder/50-handy-teilnehmer.jpg)
+
+Die Ansicht **Teilnehmer** zeigt alle aktiven Mitglieder, nach Rang sortiert. Rechts steht, für wie viele kommende Einsätze die Person angemeldet ist. **Name suchen** filtert sofort beim Tippen.
+
+![Handy-App: eine Person mit allen Einsätzen](bilder/51-handy-person.jpg)
+
+Ein Tipp auf eine Person zeigt alle kommenden Einsätze mit ihrem Stand. Oben stehen **Anrufen** und **WhatsApp**. Pro Einsatz trägst du die Antwort mit denselben Knöpfen ein wie bei den Anfragen. So fragst du eine Person für mehrere Einsätze auf einmal.
+
+Alles, was du in der Handy-App einträgst, steht sofort auch im Reiter **Anfragen**, in den **Anmeldungen**, in den **Rückmeldungen** und im **Verlauf** der Person. Einsatzleiter haben keinen Zugang zur Handy-App.
 
 ## 12 · Schichten besetzen
 
@@ -971,7 +1005,7 @@ Nein. Die Funktion EL ist die Einteilung am Einsatz. Die Rolle «Einsatzleiter»
 Nein. In der Übersicht des Einsatzes unter **Externe Abteilungen** nur die Abteilung und die Anzahl Personen eintragen, bei Bedarf auch Essenseinschränkungen als Anzahl (z. B. 2 × vegetarisch). Sie zählen in der Besetzung und in der Verpflegung mit und stehen auf der Teilnehmerliste.
 
 **Funktioniert der Einsatzplaner auf dem Handy?**
-Ja. Er ist für den Computer gemacht, lässt sich aber auch auf Tablet und Handy bedienen. Zum Anfragen an einer Übung gibt es die **Handy-App** unter einsatz.holmium.ch/handy (Kapitel 11, «Mit dem Handy anfragen»).
+Ja. Auf dem Handy öffnet sich automatisch die **Handy-App** (Kapitel 11, «Mit dem Handy anfragen»). Auf dem Tablet erscheint die normale Ansicht. Die normale Ansicht gibt es auf dem Handy über **Ganze Ansicht** unten auf jeder Seite.
 
 **Gibt es die Handy-App im App Store oder Play Store?**
 Nein. Die Handy-App läuft im Browser. Man legt sie über «Zum Startbildschirm hinzufügen» auf das Handy. Danach öffnet sie sich wie eine normale App. Updates kommen automatisch mit jedem Update des Einsatzplaners.

@@ -1,10 +1,27 @@
 </main>
 <footer class="h-foot">
   <span><%= user.display_name %></span>
-  <a href="/">Ganze Ansicht</a>
+  <a href="/handy/ganze-ansicht">Ganze Ansicht</a>
   <form method="post" action="/logout"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button type="submit">Abmelden</button></form>
 </footer>
 <div class="h-toast" id="h-toast" role="status" aria-live="polite" hidden></div>
+<%
+  const tabNow = typeof navTab !== 'undefined' ? navTab : '';
+  const inEvent = ['anfragen', 'anmeldungen'].includes(tabNow) && typeof event !== 'undefined' && event;
+  // Ausserhalb eines Einsatzes: Einsätze und Teilnehmer. Innerhalb: Anfragen und Anmeldungen dieses Einsatzes.
+  const navTabs = inEvent ? [
+    ['anfragen', `/handy/einsatz/${event.id}`, 'Anfragen', 'phone'],
+    ['anmeldungen', `/handy/einsatz/${event.id}/anmeldungen`, 'Anmeldungen', 'inbox'],
+  ] : [
+    ['einsaetze', '/handy', 'Einsätze', 'calendar'],
+    ['personen', '/handy/personen', 'Teilnehmer', 'users'],
+  ];
+%>
+<nav class="h-nav" aria-label="<%= inEvent ? 'Ansichten im Einsatz' : 'Ansichten' %>">
+  <% for (const [key, href, label, ico] of navTabs) { %>
+    <a href="<%= href %>" class="<%= tabNow === key ? 'active' : '' %>"<%- tabNow === key ? ' aria-current="page"' : '' %>><%- h.icon(ico) %><span><%= label %></span></a>
+  <% } %>
+</nav>
 <script src="/static/js/handy.js?v=<%= v %>"></script>
 </body>
 </html>
