@@ -245,7 +245,7 @@ function applyWishes(regId, eventId, wishes, user) {
 }
 
 // Statuswechsel als Einzelaktion: prüft den erwarteten Vorzustand statt der ganzen Version
-function setStatus(id, to, user, { expected = null, silent = false } = {}) {
+function setStatus(id, to, user, { expected = null, silent = false, mail = true } = {}) {
   if (!REG_STATUS_MANUAL.includes(to) && to !== 'ungueltig') throw new ValidationError(['Dieser Status kann nicht von Hand gesetzt werden.']);
   const reg = get(id);
   if (!reg) throw new ValidationError(['Anmeldung nicht gefunden.']);
@@ -278,7 +278,7 @@ function setStatus(id, to, user, { expected = null, silent = false } = {}) {
       details: { status: { alt: reg.status, neu: to } }, user,
     });
   }
-  if (to === 'bestaetigt') {
+  if (to === 'bestaetigt' && mail) {
     // Automatische Anmeldebestätigung per E-Mail (sofern hinterlegt)
     require('./calendar').sendConfirmation(id, user).catch((err) => console.error('Bestätigung fehlgeschlagen:', err));
   }

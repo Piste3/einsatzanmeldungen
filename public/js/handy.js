@@ -21,20 +21,21 @@
   }
 
   // ---------- Eigene Rückfrage statt confirm() ----------
-  function ask(text) {
+  function ask(text, { title = '', ok = 'Ja' } = {}) {
     return new Promise((resolve) => {
       if (typeof HTMLDialogElement === 'undefined') return resolve(window.confirm(text));
       const d = document.createElement('dialog');
       d.className = 'h-dialog';
       const p = document.createElement('p'); p.textContent = text;
+      const h = document.createElement('h2'); h.textContent = title;
       const row = document.createElement('div');
       const no = document.createElement('button'); no.type = 'button'; no.className = 'btn btn-ghost'; no.textContent = 'Abbrechen';
-      const yes = document.createElement('button'); yes.type = 'button'; yes.className = 'btn btn-primary'; yes.textContent = 'Ja, rückgängig machen';
+      const yes = document.createElement('button'); yes.type = 'button'; yes.className = 'btn btn-danger'; yes.textContent = ok;
       const close = (v) => { d.close(); d.remove(); resolve(v); };
       no.addEventListener('click', () => close(false));
       yes.addEventListener('click', () => close(true));
       d.addEventListener('cancel', (e) => { e.preventDefault(); close(false); });
-      row.append(no, yes); d.append(p, row); document.body.append(d);
+      row.append(no, yes); if (title) d.append(h); d.append(p, row); document.body.append(d);
       d.showModal(); yes.focus();
     });
   }
@@ -103,7 +104,7 @@
       const panel = $('[data-shift-panel]', form);
       if (panel) { panel.hidden = false; panel.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); return; }
     }
-    if (form.dataset.confirm && !(await ask(form.dataset.confirm))) return;
+    if (form.dataset.confirm && !(await ask(form.dataset.confirm, { title: form.dataset.confirmTitle, ok: form.dataset.confirmOk || 'Ja' }))) return;
     const body = new URLSearchParams();
     for (const [k, v] of new FormData(form)) body.append(k, v);
     if (btn && btn.name) body.append(btn.name, btn.value);
@@ -131,7 +132,7 @@
       setTimeout(() => fresh.classList.remove('is-saved'), 1200);
       const ans = btn && btn.name === 'antwort' ? btn.value : null;
       if (form.dataset.hKind === 'reg') { toast(`${who}: ${(btn && btn.dataset.doneText) || 'gespeichert'}`); return; }
-      toast(ans ? `${who}: ${ANSWER_TEXT[ans] || 'gespeichert'}` : `${who}: rückgängig gemacht`);
+      toast(ans ? `${who}: ${ANSWER_TEXT[ans] || 'gespeichert'}` : `${who}: zurückgesetzt`);
       updateCounts();
     } catch {
       card.classList.remove('is-busy');

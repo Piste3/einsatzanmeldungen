@@ -5,7 +5,7 @@ const audit = require('./audit');
 const live = require('../lib/live');
 const registrations = require('./registrations');
 const { nowIso, localNow, fmtLocal } = require('../lib/dates');
-const { INQUIRY_STATUS, ATTEMPT_RESULT, CHANNEL } = require('../lib/labels');
+const { INQUIRY_STATUS, ATTEMPT_RESULT, CHANNEL, REG_STATUS_MANUAL } = require('../lib/labels');
 const { ValidationError } = require('./errors');
 const { rankOrder } = require('../lib/sorting');
 
@@ -139,9 +139,11 @@ function addAttempt(eventId, personId, input, user) {
 
   return db.tx(() => {
     const inq = ensureInquiry(eventId, personId, user);
-    db.run(`INSERT INTO contact_attempts (inquiry_id, channel, contacted_at, sent_by_user_id, sent_by_name, result, note, created_at, created_by)
+    // Stand der Anmeldung vorher: Beim Zurücknehmen dieses Versuchs wird er wiederhergestellt
+    const regBefore = db.one("SELECT id, status FROM registrations WHERE event_id = ? AND person_id = ? AND status <> 'ungueltig'", eventId, personId);
+    const attemptId = Number(db.run(`INSERT INTO contact_attempts (inquiry_id, channel, contacted_at, sent_by_user_id, sent_by_name, result, note, created_at, created_by)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, inq.id, channel, contactedAt, sentByUser?.id || null, sentByName, result,
-    String(input.note || '').trim() || null, nowIso(), user.id);
+    String(input.note || '').trim() || null, nowIso(), user.id).lastInsertRowid);
     // whatsapp als Ergebnis eines Telefonanrufs ergibt keinen Sinn -> Kanal entscheidet
     let status = result;
     if (result === 'whatsapp' && channel === 'telefon') status = 'nicht_erreicht';
@@ -175,7 +177,10 @@ function addAttempt(eventId, personId, input, user) {
     audit.log({
       entity: 'inquiry', entityId: inq.id, eventId, personId, action: 'attempt',
       summary: `${sentByName} hat ${person.first_name} ${person.last_name} per ${CHANNEL[channel].label} angefragt (${resultText}) · ${event.name}`,
-      details: { kanal: channel, zeitpunkt: fmtLocal(contactedAt), ergebnis: result, gesendet_von: sentByName, erfasst_von: user.display_name, notiz: String(input.note || '').trim() || null }, user,
+      details: {
+        kanal: channel, zeitpunkt: fmtLocal(contactedAt), ergebnis: result, gesendet_von: sentByName, erfasst_von: user.display_name, notiz: String(input.note || '').trim() || null,
+        versuch_id: attemptId, anmeldung_vorher: regBefore ? { id: regBefore.id, status: regBefore.status } : null,
+      }, user,
     });
     live.notify(`event:${eventId}`, 'feedback', `person:${personId}`);
     return { inquiryId: inq.id, registrationId };
@@ -215,10 +220,21 @@ function removeAttempt(eventId, attemptId, user) {
   if (last.id !== a.id) throw new ValidationError(['Nur der letzte Kontaktversuch lässt sich zurücknehmen.']);
   const person = db.one('SELECT * FROM persons WHERE id = ?', a.person_id);
   let regRemoved = false;
+  // Stand der Anmeldung vor diesem Versuch (seit 06.11.2026 im Verlauf gespeichert)
+  const logged = db.one("SELECT details FROM audit_log WHERE action = 'attempt' AND json_extract(details, '$.versuch_id') = ? ORDER BY id DESC LIMIT 1", a.id);
+  const before = logged ? JSON.parse(logged.details || '{}').anmeldung_vorher : null;
   db.tx(() => {
-    if (a.result === 'zugesagt' && a.registration_id) {
+    // Nur eine Anmeldung löschen, die dieser Versuch selbst erstellt hat
+    if (a.result === 'zugesagt' && a.registration_id && !(logged && before)) {
       const reg = db.one('SELECT * FROM registrations WHERE id = ?', a.registration_id);
       if (reg && reg.source !== 'formular') { registrations.remove(reg.id, user); regRemoved = true; }
+    }
+    // Hat der Versuch eine bestehende Anmeldung zurückgezogen oder wieder aktiviert, den alten Status zurückholen
+    if (before && !regRemoved) {
+      const reg = db.one('SELECT id, status FROM registrations WHERE id = ?', before.id);
+      if (reg && reg.status !== before.status && REG_STATUS_MANUAL.includes(before.status)) {
+        registrations.setStatus(reg.id, before.status, user, { expected: reg.status, mail: false }); // keine zweite Bestätigungsmail
+      }
     }
     db.run('DELETE FROM contact_attempts WHERE id = ?', a.id);
     const prev = db.one('SELECT * FROM contact_attempts WHERE inquiry_id = ? ORDER BY contacted_at DESC, id DESC LIMIT 1', a.inquiry_id);

@@ -6,6 +6,11 @@
   const lastText = last ? `${h.labels.CHANNEL[last.channel].short}${last.contacted_at.slice(0, 10) === h.today() ? '' : ` ${h.fmtDateShort(last.contacted_at.slice(0, 10))}`} ${last.contacted_at.slice(11, 16)} · ${last.sent_by_name}` : '';
   const viaReg = r.state === 'angemeldet' && r.reg_source ? `über ${h.labels.SOURCE[r.reg_source] || r.reg_source}` : '';
   const btn = (key, text, cls = '') => `<button class="h-ans h-ans-${key} ${cls} ${r.answer === key || (r.answer === 'offen' && r.state === { unsicher: 'unsicher', nicht_erreicht: 'nicht_erreicht', gesendet: 'whatsapp' }[key]) ? 'is-on' : ''}" type="submit" name="antwort" value="${key}"${key === 'kann' && shifts.length ? ' data-shift-ask' : ''}>${text}</button>`;
+  const RESULT_TEXT = { zugesagt: 'Kann', abgesagt: 'Kann nicht', unsicher: 'Weiss nicht', nicht_erreicht: 'Nicht erreicht', whatsapp: 'WhatsApp gesendet' };
+  const prevAttempt = r.attempts.length > 1 ? r.attempts.at(-2) : null;
+  const fromForm = r.reg_id && r.reg_source === 'formular';
+  const prevText = prevAttempt ? `«${RESULT_TEXT[prevAttempt.result]}»` : fromForm ? '«angemeldet über Formular»' : '«Noch nicht gefragt»';
+  const resetText = last ? `Die Antwort «${RESULT_TEXT[last.result]}» für ${name} wird gelöscht. Danach steht wieder ${prevText}.${last.result === 'zugesagt' && r.registration_id && !fromForm && !prevAttempt ? ' Die daraus erstellte Anmeldung wird ebenfalls gelöscht.' : ''}` : '';
   const ev = typeof cardEvent !== 'undefined' && cardEvent ? cardEvent : event;
   const byPerson = typeof mode !== 'undefined' && mode === 'person';
   const backUrl = typeof back !== 'undefined' ? back : byPerson ? `/handy/personen/${r.person_id}` : `/handy/einsatz/${ev.id}`;
@@ -31,12 +36,6 @@
   <div class="hc-state">
     <span class="badge badge-<%= r.label.tone %>"><%= r.label.text %></span>
     <% if (lastText) { %><span class="hc-last"><%= lastText %></span><% } else if (viaReg) { %><span class="hc-last"><%= viaReg %></span><% } %>
-    <% if (last && !locked) { %>
-      <form method="post" action="/handy/einsatz/<%= ev.id %>/zuruecknehmen" class="hc-undo" data-h-form data-confirm="<%= last.result === 'zugesagt' && r.registration_id ? 'Letzten Eintrag rückgängig machen? Die Anmeldung wird ebenfalls gelöscht.' : 'Letzten Eintrag rückgängig machen?' %>">
-        <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="person_id" value="<%= r.person_id %>"><% if (byPerson) { %><input type="hidden" name="ansicht" value="person"><% } %><input type="hidden" name="attempt_id" value="<%= last.id %>"><input type="hidden" name="back" value="<%= backUrl %>">
-        <button type="submit" class="hc-undo-btn" title="Falsch getippt? Letzten Eintrag rückgängig machen"><%- h.icon('undo') %> Rückgängig</button>
-      </form>
-    <% } %>
   </div>
   <% if (!locked) { %>
   <form method="post" action="/handy/einsatz/<%= ev.id %>/antwort" class="hc-form" data-h-form>
@@ -60,6 +59,13 @@
       <div class="hc-shift-foot"><button class="btn btn-ghost" type="button" data-shift-cancel>Abbrechen</button><button class="btn btn-primary" type="submit" name="antwort" value="kann">Kann – speichern</button></div>
     </fieldset>
     <% } %>
+  </form>
+  <% } %>
+  <% if (last && !locked) { %>
+  <form method="post" action="/handy/einsatz/<%= ev.id %>/zuruecknehmen" class="hc-reset" data-h-form data-h-kind="reset"
+    data-confirm-title="Antwort zurücksetzen?" data-confirm="<%= resetText %>" data-confirm-ok="Ja, zurücksetzen">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="person_id" value="<%= r.person_id %>"><% if (byPerson) { %><input type="hidden" name="ansicht" value="person"><% } %><input type="hidden" name="attempt_id" value="<%= last.id %>"><input type="hidden" name="back" value="<%= backUrl %>">
+    <button type="submit" class="hc-reset-btn" title="Falsch getippt? Die letzte Antwort zurücksetzen"><%- h.icon('undo') %> Zurücksetzen</button>
   </form>
   <% } %>
 </article>

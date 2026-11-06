@@ -174,6 +174,36 @@ test('Handy-App: Anmeldungen ansehen und bestätigen, Ansicht nach Teilnehmer', 
   assert.ok(db.one('SELECT 1 FROM registrations WHERE event_id = ? AND person_id = ?', ev2, tom));
 });
 
+test('Zurücksetzen stellt den Stand vorher wieder her', async () => {
+  const db = require('../src/db');
+  const persons = require('../src/services/persons');
+  const events = require('../src/services/events');
+  const registrations = require('../src/services/registrations');
+  const inquiries = require('../src/services/inquiries');
+  const { today, addDays } = require('../src/lib/dates');
+  const user = db.one("SELECT * FROM users WHERE username = 'lena'");
+  const ev = events.create({ name: 'Übung Rhein', date: addDays(today(), 5), start_time: '09:00', end_time: '12:00' }, system);
+  const lastAttempt = (pid) => db.one('SELECT a.id FROM contact_attempts a JOIN inquiries i ON i.id = a.inquiry_id WHERE i.event_id = ? AND i.person_id = ? ORDER BY a.id DESC LIMIT 1', ev, pid).id;
+
+  // Über das Formular angemeldet, aus Versehen «Kann nicht» getippt: Zurücksetzen holt die Anmeldung zurück
+  const fia = persons.create({ first_name: 'Fia', last_name: 'Formular', status: 'aktiv' }, system);
+  const rid = registrations.create({ eventId: ev, personId: fia, matchType: 'auto', source: 'formular', answer: 'ja', wishes: [], user: system });
+  registrations.setStatus(rid, 'bestaetigt', system);
+  inquiries.addAttempt(ev, fia, { channel: 'muendlich', result: 'abgesagt' }, user);
+  assert.equal(db.one('SELECT status FROM registrations WHERE id = ?', rid).status, 'zurueckgezogen');
+  inquiries.removeAttempt(ev, lastAttempt(fia), user);
+  assert.equal(db.one('SELECT status FROM registrations WHERE id = ?', rid).status, 'bestaetigt');
+
+  // Zweimal «Kann»: Zurücksetzen des zweiten lässt die Anmeldung aus dem ersten stehen
+  const kai = persons.create({ first_name: 'Kai', last_name: 'Kann', status: 'aktiv' }, system);
+  inquiries.addAttempt(ev, kai, { channel: 'telefon', result: 'zugesagt' }, user);
+  inquiries.addAttempt(ev, kai, { channel: 'muendlich', result: 'zugesagt' }, user);
+  inquiries.removeAttempt(ev, lastAttempt(kai), user);
+  assert.ok(db.one('SELECT 1 FROM registrations WHERE event_id = ? AND person_id = ?', ev, kai), 'Anmeldung bleibt');
+  inquiries.removeAttempt(ev, lastAttempt(kai), user);
+  assert.equal(db.one('SELECT 1 AS x FROM registrations WHERE event_id = ? AND person_id = ?', ev, kai), undefined, 'erste Zusage zurückgesetzt: Anmeldung weg');
+});
+
 test('Einsatzleiter haben keine Handy-App', async () => {
   const cookie = await login('leiter', 'Kommando-Lauf-2026');
   assert.equal((await get('/handy', cookie)).status, 403);

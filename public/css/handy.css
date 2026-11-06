@@ -75,10 +75,10 @@ body.handy { background: var(--bg); color: var(--text); margin: 0; min-height: 1
 .hc-state { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 12.5px; color: var(--muted); }
 .hc-state .badge { font-size: 12px; flex: none; }
 .hc-last { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.hc-undo { margin: 0 0 0 auto; flex: none; }
-.hc-undo-btn { display: inline-flex; align-items: center; gap: 4px; min-height: 36px; padding: 0 8px; border: 0; background: none; color: var(--muted); font: inherit; font-size: 12.5px; cursor: pointer; border-radius: 8px; }
-.hc-undo-btn svg { width: 14px; height: 14px; }
-.hc-undo-btn:active { background: var(--hover-2); }
+.hc-reset { margin: 8px 0 0; display: flex; justify-content: flex-end; }
+.hc-reset-btn { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border: 1px dashed var(--border-strong); background: none; color: var(--text-2); font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; border-radius: 10px; }
+.hc-reset-btn svg { width: 16px; height: 16px; }
+.hc-reset-btn:active { background: var(--hover-2); }
 .hc-form { margin: 10px 0 0; }
 .hc-answers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
 .h-ans { min-height: 48px; padding: 0 4px; white-space: nowrap; border-radius: 10px; border: 1px solid var(--border-strong); background: var(--paper); color: var(--text); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; touch-action: manipulation; }
@@ -104,12 +104,15 @@ body.handy { background: var(--bg); color: var(--text); margin: 0; min-height: 1
 
 /* Meldung unten */
 .h-toast { position: fixed; left: 50%; bottom: max(16px, env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 40; max-width: calc(100% - 32px); box-sizing: border-box; padding: 10px 16px; border-radius: 10px; background: var(--ink); color: var(--paper); font-size: 14px; }
+.h-toast { width: max-content; text-align: center; }
 .h-toast.is-error { background: var(--dot-red); color: #fff; }
 
 /* Bestätigung im eigenen Fenster */
-.h-dialog { border: 1px solid var(--line); border-radius: 14px; padding: 18px; max-width: min(360px, calc(100% - 32px)); background: var(--paper); color: var(--text); }
+.h-dialog { position: fixed; inset: 0; margin: auto; height: fit-content; box-sizing: border-box; border: 1px solid var(--line); border-radius: 14px; padding: 18px; max-width: min(360px, calc(100% - 32px)); background: var(--paper); color: var(--text); }
 .h-dialog::backdrop { background: rgba(0, 0, 0, 0.4); }
-.h-dialog p { margin: 0 0 16px; font-size: 15px; }
+.h-dialog h2 { margin: 0 0 8px; font-size: 17px; }
+.h-dialog p { margin: 0 0 16px; font-size: 15px; line-height: 1.45; color: var(--text-2); }
+.h-dialog .btn-danger { background: var(--dot-red); border-color: var(--dot-red); color: #fff; }
 .h-dialog div { display: flex; gap: 8px; justify-content: flex-end; }
 .h-dialog .btn { min-height: 44px; }
 

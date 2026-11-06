@@ -382,7 +382,7 @@ Weitere Hilfen im Reiter:
 - **Filter oben:** Ein Klick zeigt nur die Personen mit diesem Status, z. B. **Noch nicht angefragt** = alle, die noch niemand kontaktiert hat. **Alle** zeigt wieder die ganze Liste. Daneben Mannschaft, Sortierung nach Rang und Namenssuche.
 - **Gruppen:** Oben stehen die Personen, bei denen noch etwas offen ist (**Noch offen**). Darunter folgen unter **Erledigt** alle, die zugesagt, sich angemeldet oder abgesagt haben.
 - **Kontaktversuche** stehen mit Kanal (Tel / WA), Datum, Uhrzeit, wer es war, Ergebnis und Notiz.
-- Der **Pfeil** beim letzten Kontaktversuch nimmt ihn zurück, falls er falsch erfasst wurde. Hat er eine Anmeldung erzeugt, wird diese mitgelöscht.
+- Der **Pfeil** beim letzten Kontaktversuch nimmt ihn zurück, falls er falsch erfasst wurde. Hat er eine Anmeldung erzeugt, wird diese mitgelöscht. Hat er eine bestehende Anmeldung zurückgezogen, bekommt sie ihren Status von vorher zurück.
 - **Mehrere auf einmal:** Hat man mehreren dieselbe WhatsApp geschickt, kreuzt man sie links an. Dann erscheint der Knopf **Kontakt für 3 Personen erfassen** (mit der Anzahl), und man erfasst den Kontakt für alle in einem Schritt. **Alle auswählen** kreuzt die ganze (gefilterte) Liste an.
 
 ![Kontaktversuch erfassen](bilder/12-kontaktversuch.jpg)
@@ -457,7 +457,14 @@ Die Antwort ist sofort gespeichert. Unten erscheint kurz eine Bestätigung, z. B
 
 **Einsatz mit mehreren Schichten:** Nach **Kann** fragt die App, für welche Schichten die Person kann. Ankreuzen und **Kann – speichern** tippen. Ist die Schicht noch offen, nichts ankreuzen. Zuteilen geht später auch am Computer unter «Schichten».
 
-**Falsch getippt?** In der Karte auf **Rückgängig** tippen. Das macht den letzten Eintrag dieser Person rückgängig. Hat dieser Eintrag eine Anmeldung erstellt, wird sie ebenfalls gelöscht. Vorher fragt die App nach.
+**Falsch getippt?** Nach einer Antwort steht unten in der Karte **Zurücksetzen**. Die App fragt zuerst nach: «Antwort zurücksetzen?». Sie zeigt, welche Antwort gelöscht wird und was danach wieder gilt. Erst **Ja, zurücksetzen** löscht die Antwort.
+
+![Handy-App: Antwort zurücksetzen](bilder/52-handy-zuruecksetzen.jpg)
+
+- Zurücksetzen löscht immer nur die letzte Antwort dieser Person für diesen Einsatz. Danach gilt wieder die Antwort davor, z. B. «Nicht erreicht» oder «Noch nicht gefragt».
+- Hat die Antwort «Kann» eine Anmeldung erstellt, wird diese Anmeldung ebenfalls gelöscht.
+- Hat die Antwort «Kann nicht» eine bestehende Anmeldung zurückgezogen, z. B. aus dem Formular, bekommt die Anmeldung ihren Status von vorher zurück. Eine bestätigte Anmeldung ist danach wieder bestätigt. Eine zweite Bestätigungsmail geht nicht hinaus.
+- Am Computer macht der Pfeil ↶ beim letzten Kontaktversuch im Reiter «Anfragen» dasselbe.
 
 **Filter:** **Noch offen**, **Kann**, **Kann nicht** und **Alle** filtern die Liste. Beim Öffnen steht **Noch offen**. **Name suchen** filtert sofort beim Tippen. Daneben lässt sich eine Mannschaft wählen.
 
