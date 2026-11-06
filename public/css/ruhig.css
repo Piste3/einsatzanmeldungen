@@ -372,9 +372,10 @@ tr.group-row strong { font-weight: 600; }
 .person-group-head { display: flex; align-items: center; gap: 8px; padding: 10px 16px 0; }
 .person-group { padding-top: 6px; }
 .person-group + .person-group-head { border-top: 1px solid var(--line); margin-top: 4px; padding-top: 12px; }
-/* Rückmeldungen: Legende im Menü */
-.legend-row { align-items: center; gap: 10px; }
-.legend-menu { display: grid !important; grid-template-columns: auto 1fr; gap: 6px 8px; align-items: center; padding: 10px 12px; min-width: 240px; }
+/* Rückmeldungen: Legende immer sichtbar, eine Zeile über der Tabelle */
+.fb-legend { gap: 6px 14px; color: var(--muted); }
+.fb-legend-title { font-weight: 600; color: var(--text); }
+.fb-legend-item { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
 .help-fold-card > summary { list-style: none; cursor: pointer; }
 .help-fold-card > summary::-webkit-details-marker { display: none; }
 .help-fold-card[open] > summary .btn { display: none; }

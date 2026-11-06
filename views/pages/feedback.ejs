@@ -47,20 +47,29 @@
   <% } %>
   <label class="check"><input type="checkbox" name="drafts" value="1" <%= filters.drafts === '1' ? 'checked' : '' %>> Entwürfe</label>
 </form>
-<div class="row-between mb">
+<div class="row-between mb-s">
   <div class="segmented-links">
     <a class="<%= filters.view === 'tabelle' ? 'active' : '' %>" href="<%= h.withQuery('/rueckmeldungen', query, { view: 'tabelle' }) %>">Tabelle</a>
     <a class="<%= filters.view === 'einsatz' ? 'active' : '' %>" href="<%= h.withQuery('/rueckmeldungen', query, { view: 'einsatz' }) %>">Pro Einsatz</a>
   </div>
-  <div class="row small legend-row">
-  <span class="muted"><%= events.length %> Einsätze · <%= rows.length %><%= rows.length !== allCount ? ` von ${allCount}` : '' %> Mitglieder</span>
-  <details class="menu">
-  <summary class="btn btn-sm">Legende ▾</summary>
-  <div class="menu-list legend legend-menu small">
-    <span class="fb fb-an">✓</span> An <span class="fb fb-an fb-d-bestaetigt">✓</span> Bestätigt <span class="fb fb-an fb-d-warteliste"><%- DSYM.warteliste %></span> Warteliste <span class="fb fb-ab">✕</span> Ab <span class="fb fb-unsicher fb-d-whatsapp"><%- DSYM.whatsapp %></span> Nachricht gesendet <span class="fb fb-unsicher fb-d-telefon"><%- DSYM.telefon %></span> Nicht erreicht <span class="fb fb-unsicher fb-d-muendlich"><%- DSYM.muendlich %></span> Mündlich gefragt <span class="fb fb-unsicher">?</span> Unsicher <span class="fb fb-unsicher fb-d-rueckfrage">!</span> Rückfrage <span class="fb fb-offen"></span> Offen<% if (columns.some((c) => c.shift)) { %> <span class="fb fb-schicht_offen">✓</span> An, ohne Schicht <span class="fb fb-andere">–</span> Andere Schicht<% } %>
-  </div>
-  </details>
-  </div>
+  <span class="muted small"><%= events.length %> Einsätze · <%= rows.length %><%= rows.length !== allCount ? ` von ${allCount}` : '' %> Mitglieder</span>
+</div>
+<div class="legend small fb-legend mb" aria-label="Legende">
+  <span class="fb-legend-title">Legende</span>
+  <span class="fb-legend-item"><span class="fb fb-an">✓</span> An</span>
+  <span class="fb-legend-item"><span class="fb fb-an fb-d-bestaetigt">✓</span> Bestätigt</span>
+  <span class="fb-legend-item"><span class="fb fb-an fb-d-warteliste"><%- DSYM.warteliste %></span> Warteliste</span>
+  <span class="fb-legend-item"><span class="fb fb-ab">✕</span> Ab</span>
+  <span class="fb-legend-item"><span class="fb fb-unsicher fb-d-whatsapp"><%- DSYM.whatsapp %></span> Nachricht gesendet</span>
+  <span class="fb-legend-item"><span class="fb fb-unsicher fb-d-telefon"><%- DSYM.telefon %></span> Nicht erreicht</span>
+  <span class="fb-legend-item"><span class="fb fb-unsicher fb-d-muendlich"><%- DSYM.muendlich %></span> Mündlich gefragt</span>
+  <span class="fb-legend-item"><span class="fb fb-unsicher">?</span> Unsicher</span>
+  <span class="fb-legend-item"><span class="fb fb-unsicher fb-d-rueckfrage">!</span> Rückfrage</span>
+  <span class="fb-legend-item"><span class="fb fb-offen"></span> Offen</span>
+  <% if (columns.some((c) => c.shift)) { %>
+  <span class="fb-legend-item"><span class="fb fb-schicht_offen">✓</span> An, ohne Schicht</span>
+  <span class="fb-legend-item"><span class="fb fb-andere">–</span> Andere Schicht</span>
+  <% } %>
 </div>
 
 <% if (!events.length) { %>
