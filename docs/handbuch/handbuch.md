@@ -37,9 +37,9 @@ Jeder Einsatz durchläuft dieselben Schritte. Die Mitglieder sehen davon nur ein
 
 Der Einsatzplaner läuft im Browser – auf dem Computer, dem Tablet oder dem Handy. Es muss nichts installiert werden.
 
-**In der ganzen Ansicht auf dem Handy** öffnet der Knopf ☰ oben links das Menü. Tabellen erscheinen dort als Karten: pro Person oder Einsatz ein Block mit den Angaben untereinander. Die Rückmeldungen-Tabelle lässt sich seitwärts wischen. Für grössere Arbeiten wie Schichten planen oder Einstellungen ist der Computer bequemer.
-
 **Auf dem Handy** öffnet sich automatisch die **Handy-App**. Sie ist eine schlanke Ansicht für die Übung: Anfragen, Anmeldungen und Personen. Sie lässt sich auf den Startbildschirm legen. Mehr dazu in Kapitel 11 unter «Mit dem Handy anfragen».
+
+**Die ganze Ansicht auf dem Handy** (in der Handy-App unter Profil › **Ganze Ansicht**): Der Knopf ☰ oben links öffnet das Menü. Tabellen erscheinen als Karten, pro Person oder Einsatz ein Block mit den Angaben untereinander. Die Rückmeldungen-Tabelle lässt sich seitwärts wischen. Für grössere Arbeiten wie Schichten planen oder Einstellungen ist der Computer bequemer.
 
 ### Anmelden
 
@@ -75,6 +75,7 @@ Links steht die Navigation, rechts der Inhalt.
 | Personen | Stammdaten mit Suche; pro Person eine eigene Seite |
 | Formulare | Eingänge des Anmeldeformulars, Fehler und Postausgang (Admin). Die Aufgebotsstelle sieht hier stattdessen **Formular-Vorschau**: das Anmeldeformular, wie es die Mitglieder sehen |
 | Einstellungen | Zwei Gruppen (Admin): **Inhalte** mit Auswahllisten, Vorlagen, Kalendertermin und Bestätigungsmail; **Betrieb** mit Allgemein, Benutzer, Server und System |
+| Handy-App | Öffnet die Handy-App im Browser, z. B. um sie am Computer anzusehen (Kapitel 11) |
 | Handbuch | Diese Anleitung, immer im Stand der installierten Version. Oben rechts: **Handbuch für Einsatzleiter** und **Als PDF** |
 
 ### Bedienung, die überall gleich ist
@@ -147,8 +148,7 @@ Dieselbe Anzeige steht im Kopf des Einsatzes und im Cockpit. Der Filter «Veröf
 - **Einsatzleitung:** aus den Personen wählen (tippen zum Suchen). Rang und Telefonnummer kommen so automatisch ins Aufgebot.
 - **Tenue:** mit einem Klick eine Vorlage übernehmen, z. B. «Uniform orange + VD», und bei Bedarf anpassen.
 - **Beschreibung** ist für die Mitglieder im Formular sichtbar, die **interne Bemerkung** nur für die Aufgebotsstelle.
-- **Schichten:** Eine Schicht für den ganzen Einsatz wird automatisch angelegt. Weitere Schichten kommen nach dem Speichern dazu.
-- **Schichten und Soll:** pro Schicht, wie viele Einsatzleiter (EL), Sektorchefs (SC), Busfahrer (BF) und Einsatzteilnehmer (TN) es braucht. Leer lassen, was es nicht braucht. Die Summe ist das Soll der Schicht (Kapitel 6).
+- **Schichten und Soll:** Eine Schicht für den ganzen Einsatz wird automatisch angelegt. Hier steht, wie viele Einsatzleiter (EL), Sektorchefs (SC), Busfahrer (BF) und Einsatzteilnehmer (TN) es braucht. Leer lassen, was es nicht braucht. Die Summe ist das Soll der Schicht (Kapitel 6). Weitere Schichten fügst du nach dem Speichern im Reiter «Schichten» hinzu.
 - **Anmeldeformular:** Anmeldefrage aus einer Vorlage wählen und Text und Hilfetext anpassen. Die Standard-Vorlage (Einstellungen › Vorlagen) ist bei neuen Einsätzen schon ausgewählt.
 - **Als Entwurf speichern** oder direkt **Veröffentlichen** – dann erscheint der Einsatz sofort im Anmeldeformular.
 
@@ -162,7 +162,7 @@ Dauert ein Einsatz mehrere Tage, bleibt das Feld **Datum** leer. Die Tage stehen
 
 ![Schichten an verschiedenen Tagen](bilder/44-schichten-mehrtaegig.jpg)
 
-Aus den Schichten ergibt sich der Zeitraum des Einsatzes. Er steht überall dort, wo sonst das Datum steht: in der Einsatzliste, im Cockpit, in den Rückmeldungen (Filter wie «nächste 3 Monate» eingeschlossen), auf der Teilnehmerliste, im Anmeldeformular und im Baustein `{einsatz.datum}` von Kalendertermin und Bestätigungsmail. Bei den Schichten steht dann jeweils der Tag vor der Zeit, z. B. «Sa 02.01. 10:00–18:00». Die Übersicht zeigt beim Datum «aus den Schichten».
+Aus den Schichten ergibt sich der Zeitraum des Einsatzes. Er steht überall dort, wo sonst das Datum steht: in der Einsatzliste, im Cockpit, in den Rückmeldungen (Filter wie «nächste 3 Monate» eingeschlossen), auf der Teilnehmerliste, im Anmeldeformular und im Baustein `{{einsatz.datum}}` von Kalendertermin und Bestätigungsmail. Bei den Schichten steht dann jeweils der Tag vor der Zeit, z. B. «Sa 02.01. 10:00–18:00». Die Übersicht zeigt beim Datum «aus den Schichten».
 
 > **Gut zu wissen:** Ein Datum beim Einsatz bleibt möglich und ist bei eintägigen Einsätzen weiterhin der einfachste Weg. Bestehende Einsätze ändern sich nicht. Ein Einsatz, der noch gar kein Datum hat, steht im Cockpit mit dem Hinweis «hat noch kein Datum».
 
@@ -176,7 +176,7 @@ Die Übersicht passt meist auf einen Bildschirm. Links steht, wie es um den Eins
 - **Besetzung:** eine Tabelle mit einer Zeile pro Funktion (EL, SC, BF, TN) und einer Spalte pro Schicht. In jedem Feld Ist / Soll und darunter «voll», «1 fehlt» oder «2 zu viel». Die letzte Zeile zeigt das Total der Schicht mit Balken, bei externen Abteilungen z. B. «8 eigene + 6 extern». **Einteilen →** führt zum Reiter «Schichten», wo man Schichten und Funktionen zuteilt (Kapitel 6).
 - **Angaben** des Einsatzes und wann das Aufgebot zuletzt exportiert wurde.
 - **Externe Abteilungen:** andere Abteilungen oder Vereine, die mit einer Anzahl Personen mithelfen (Kapitel 7). Gibt es keine, steht nur der Knopf **+ Externe Abteilung hinzufügen**.
-- **Status und Formular** (rechts): Entwurf → Veröffentlicht → Abgeschlossen, oder jederzeit Abgesagt. Nach dem Abschluss sind die Daten schreibgeschützt; Änderungen sind dann nur noch durch einen Admin mit Begründung möglich. Bei einer Absage bleiben alle Daten erhalten.
+- **Status und Formular** (rechts): Entwurf → Veröffentlicht → Abgeschlossen, oder jederzeit Abgesagt. Nach dem Abschluss sind die Daten schreibgeschützt; Änderungen sind dann nur noch durch einen Admin mit Begründung möglich. Ein abgesagter Einsatz verschwindet sofort aus dem Formular, seine Daten bleiben aber erhalten.
 - **Im Formular anzeigen** (in derselben Karte): schaltet den Einsatz im Anmeldeformular ein oder aus, z. B. wenn er voll ist. Der Status bleibt dabei «Veröffentlicht». Die Anzeige wechselt aber auf «Nicht im Formular»: in der Karte, im Kopf des Einsatzes und in der Liste. Darunter führt **So sieht der Einsatz im Formular aus →** zum Reiter «Formular».
 - **Einsatzleiter-Zugriff:** gibt den Einsatz für einen Einsatzleiter frei (Kapitel 15).
 - Oben rechts stehen drei Knöpfe: **Teilnehmerliste** (dunkel, Kapitel 14), **Bearbeiten** und **Mehr ▾**. Im Menü **Mehr** liegen der **Kalendertermin** (Kapitel 16), der Export der aktuellen Liste als Excel oder CSV, die **Teilnehmerliste** (pro Schicht als PDF, als Excel oder CSV, **Auswahl anpassen …**), die **Verpflegungsliste** (ganzer Einsatz oder pro Schicht als PDF, **Ansehen und auswählen …**) und **Drucken**.
@@ -213,9 +213,9 @@ Welche Funktionen es gibt, legt ein Admin unter Einstellungen › Auswahllisten 
 
 Das Soll gibt es **pro Schicht und Funktion**. Beim Anlegen oder unter **Bearbeiten** in der Karte **Schichten und Soll** steht eine Spalte pro Schicht; dort die Anzahl pro Funktion eintragen, z. B. Tagschicht 1 EL, 2 SC, 1 BF, 6 TN und Abendschicht 1 SC, 5 TN. Leer oder 0 heisst: braucht es nicht.
 
-Dasselbe geht im Reiter **Schichten** unter **Schichten bearbeiten** (zugeklappt, Knopf **Öffnen**): eine Zeile pro Schicht mit den Spalten EL, SC, BF und TN, auch für eine neue Schicht. Die ganze Tabelle hat einen einzigen **Speichern**-Knopf (Kapitel 12).
+Dasselbe geht im Reiter **Schichten** unter **Schichten bearbeiten**: eine Zeile pro Schicht mit den Spalten EL, SC, BF und TN, auch für eine neue Schicht (Kapitel 12).
 
-Das **Soll der Schicht** ist immer die Summe davon (im Beispiel 10 und 6) – ein separates Feld dafür gibt es nicht. Einsätze, die früher nur eine Soll-Anzahl pro Schicht hatten, wurden beim Update übernommen: Die Zahl steht jetzt bei den Einsatzteilnehmern.
+Das **Soll der Schicht** ist immer die Summe davon (im Beispiel 10 und 6). Ein eigenes Feld dafür gibt es nicht.
 
 ### Funktionen zuweisen
 
@@ -297,7 +297,8 @@ Die Bestätigungsseite erscheint erst, wenn die Anmeldung sicher gespeichert ist
 | Situation | Was passiert |
 |---|---|
 | Einsatz wird veröffentlicht | Er erscheint sofort im Formular. Auf ClubDesk ist nichts zu tun |
-| Einsatz ist voll oder abgesagt | Die Aufgebotsstelle nimmt ihn mit dem Schalter «Im Formular anzeigen» heraus. Das Cockpit erinnert daran |
+| Einsatz ist voll | Die Aufgebotsstelle nimmt ihn mit dem Schalter «Im Formular anzeigen» heraus. Das Cockpit erinnert daran |
+| Einsatz wird abgesagt | Er verschwindet sofort aus dem Formular |
 | Letzte Schicht ist vorbei | Der Einsatz verschwindet automatisch aus dem Formular |
 | Einzelne Schicht ist vorbei | Diese Schicht wird nicht mehr angeboten |
 
@@ -345,7 +346,7 @@ Mit **+ Anmeldung erfassen** lässt sich eine Anmeldung per Telefon, WhatsApp od
 | Warteliste | Gültig, aber die Schichten sind voll | nein |
 | Bestätigt | Teilnahme verbindlich bestätigt | ja |
 | Zurückgezogen | Hat sich wieder abgemeldet | nein |
-| Abgesagt | Hat abgesagt | nein |
+| Abgesagt | Hat abgesagt, z. B. im Formular mit «Nein» | nein |
 | Ungültig | z. B. Test- oder Spass-Anmeldung | nein |
 
 > **Nach dem Bestätigen** erhält das Mitglied automatisch eine Anmeldebestätigung per E-Mail, sofern eine Adresse hinterlegt ist und die Bestätigungsmail eingeschaltet ist (Kapitel 18).
@@ -384,17 +385,17 @@ Beim Öffnen ist der Filter **Noch nicht angefragt** gewählt. So siehst du zuer
 
 Weitere Hilfen im Reiter:
 
-- **Filter oben:** Ein Klick zeigt nur die Personen mit diesem Status, z. B. **Noch nicht angefragt** = alle, die noch niemand kontaktiert hat. **Alle** zeigt wieder die ganze Liste. Daneben Mannschaft, Sortierung nach Rang und Namenssuche.
+- **Filter oben:** Ein Klick zeigt nur die Personen mit diesem Status, z. B. «Nicht erreicht». Daneben stehen Mannschaft, Sortierung nach Rang und die Namenssuche.
 - **Gruppen:** Oben stehen die Personen, bei denen noch etwas offen ist (**Noch offen**). Darunter folgen unter **Erledigt** alle, die zugesagt, sich angemeldet oder abgesagt haben.
 - **Kontaktversuche** stehen mit Kanal (Tel / WA), Datum, Uhrzeit, wer es war, Ergebnis und Notiz.
-- Der **Pfeil** beim letzten Kontaktversuch nimmt ihn zurück, falls er falsch erfasst wurde. Hat er eine Anmeldung erzeugt, wird diese mitgelöscht. Hat er eine bestehende Anmeldung zurückgezogen, bekommt sie ihren Status von vorher zurück.
+- Der **Pfeil ↶** beim letzten Kontaktversuch nimmt nur diesen Versuch zurück, falls er falsch erfasst wurde. Hat er eine Anmeldung erzeugt, wird diese mitgelöscht. Hat er eine bestehende Anmeldung zurückgezogen, bekommt sie ihren Status von vorher zurück.
 - **Mehrere auf einmal:** Hat man mehreren dieselbe WhatsApp geschickt, kreuzt man sie links an. Dann erscheint der Knopf **Kontakt für 3 Personen erfassen** (mit der Anzahl), und man erfasst den Kontakt für alle in einem Schritt. **Alle auswählen** kreuzt die ganze (gefilterte) Liste an.
 
 ![Kontaktversuch erfassen](bilder/12-kontaktversuch.jpg)
 
 Oben im Fenster steht der **Verlauf** dieser Person für den Einsatz: alle Kontakte, Rückmeldungen und Statuswechsel mit Name und Zeit (mehr dazu in Kapitel 13). Darunter wählt man den Kanal **Telefon**, **WhatsApp** oder **Mündlich** (z. B. im Training oder am Einsatz direkt gefragt), Datum und Uhrzeit (vorausgefüllt mit jetzt), **Gesendet von** (vorausgefüllt mit dem eigenen Namen, änderbar), das Ergebnis und eine Notiz. Bei «Mündlich» gibt es nur die Ergebnisse Zugesagt, Unsicher und Abgesagt. Eine mündliche Zusage erstellt eine Anmeldung mit der Quelle «Mündlich». In den Listen steht der Kanal kurz als Tel, WA oder Mdl. Bei «Zugesagt» und einem Einsatz mit mehreren Schichten wählt man zusätzlich die Schichten.
 
-**Alles zurücksetzen:** Unten links im Fenster löscht **Alles zurücksetzen** für diese Person und diesen Einsatz alle Kontaktversuche, die Rückmeldung bzw. Anmeldung und die Schichtzuteilung. Die Person steht danach wieder als «Noch nicht angefragt» in der Liste. Vorher fragt der Einsatzplaner nach. Ein Formular-Eingang bleibt unter «Formulare» gespeichert. Bei Personen, die schon zugesagt haben oder selbst gemeldet sind, steht dafür in der Anfragen-Liste rechts das Symbol ↶. Einen einzelnen falsch erfassten Kontaktversuch nimmt man dagegen mit dem ↶ direkt neben dem Versuch zurück.
+**Alles zurücksetzen:** Unten links im Fenster löscht **Alles zurücksetzen** für diese Person und diesen Einsatz alle Kontaktversuche, die Rückmeldung bzw. Anmeldung und die Schichtzuteilung. Die Person steht danach wieder als «Noch nicht angefragt» in der Liste. Vorher fragt der Einsatzplaner nach. Ein Formular-Eingang bleibt unter «Formulare» gespeichert. Bei Personen, die schon zugesagt haben oder selbst gemeldet sind, steht dafür in der Anfragen-Liste ganz rechts ebenfalls ein ↶.
 
 ### Das Ergebnis einer Anfrage
 
@@ -414,14 +415,16 @@ Oben im Fenster steht der **Verlauf** dieser Person für den Einsatz: alle Konta
 
 Die Handy-App ist für die Übung oder den Einsatz gemacht. Du fragst die Leute direkt vor Ort oder rufst sie an. Danach tippst du die Antwort ein. Du siehst auch die Anmeldungen eines Einsatzes und alle Einsätze einer Person. Einsätze lassen sich in der Handy-App nicht bearbeiten.
 
-**Auf dem Handy kommt immer die Handy-App.** Der Einsatzplaner erkennt ein Handy und öffnet automatisch die passende Seite der Handy-App. Tablets und Computer zeigen weiter die normale Ansicht. Das Handbuch und die Kontoseiten öffnen sich auch auf dem Handy normal. Die Anmeldung ist dieselbe wie im Einsatzplaner.
+**Auf dem Handy kommt immer die Handy-App.** Der Einsatzplaner erkennt ein Handy und öffnet automatisch die passende Seite der Handy-App. Tablets und Computer zeigen weiter die normale Ansicht. Das Handbuch öffnet sich auch auf dem Handy normal. Die Kontoseiten erscheinen im Rahmen der Handy-App (Reiter «Profil»). Die Anmeldung ist dieselbe wie im Einsatzplaner.
 
 **Ganze Ansicht:** Im Reiter **Profil** steht **Ganze Ansicht**. Dieser Knopf zeigt eine Stunde lang den normalen Einsatzplaner, z. B. um einen Einsatz zu ändern. Danach oder mit dem Menüpunkt **Handy-App** kommt wieder die Handy-App.
 
 **Auf den Startbildschirm legen** (nur einmal nötig):
 
 - **iPhone:** einsatz.holmium.ch in Safari öffnen. Unten auf **Teilen** tippen, dann **Zum Home-Bildschirm**.
-- **Android:** einsatz.holmium.ch in Chrome öffnen. Oben im Menü ⋮ auf **Zum Startbildschirm hinzufügen** oder **App installieren** tippen. Manchmal zeigt die Startseite der Handy-App dafür direkt den Knopf **Installieren**.
+- **Android:** einsatz.holmium.ch in Chrome öffnen. Oben im Menü ⋮ auf **Zum Startbildschirm hinzufügen** oder **App installieren** tippen.
+
+Die Startseite der Handy-App zeigt dazu oben einen Hinweis. Auf Android steht dort manchmal direkt der Knopf **Installieren**. Das × blendet den Hinweis aus.
 
 Danach steht **KKB Anfragen** mit dem orangen KKB-Symbol auf dem Startbildschirm. Die App öffnet sich ohne Adressleiste wie eine normale App. Sie braucht eine Internetverbindung. Ohne Verbindung zeigt sie die Meldung «Keine Verbindung».
 
@@ -441,9 +444,11 @@ Unten steht immer eine Leiste. Mit ihr schaltest du zwischen den Ansichten um:
 
 Der Pfeil ‹ oben links führt aus dem Einsatz zurück zu den Einsätzen. Der Knopf ↻ oben rechts lädt die Seite neu. So siehst du auch Antworten, die andere inzwischen eingetragen haben.
 
+#### Einsätze
+
 ![Handy-App: Einsätze](bilder/46-handy-einsaetze.jpg)
 
-**Einsätze:** Die Startseite zeigt die laufenden und kommenden Einsätze, der nächste zuerst. Welche Einsätze erscheinen, stellst du im Reiter **Filter** ein. Standard sind die nächsten 6 Monate mit Entwürfen. Unter dem Titel steht der gewählte Filter. Fehlen Einsätze wegen des Filters, steht unten z. B. «2 weitere Einsätze ausgeblendet». Ein Tipp darauf öffnet den Filter. Pro Einsatz steht, wie viele Personen angemeldet sind und bei wie vielen die Antwort noch offen ist. Der zuletzt geöffnete Einsatz hat links einen orangen Strich. Ein Tipp auf einen Einsatz öffnet seine **Anfragen**.
+Die Startseite zeigt die laufenden und kommenden Einsätze, der nächste zuerst. Welche Einsätze erscheinen, stellst du im Reiter **Filter** ein. Standard sind die nächsten 6 Monate mit Entwürfen. Unter dem Titel steht der gewählte Filter. Fehlen Einsätze wegen des Filters, steht unten z. B. «2 weitere Einsätze ausgeblendet». Ein Tipp darauf öffnet den Filter. Pro Einsatz steht, wie viele Personen angemeldet sind und bei wie vielen die Antwort noch offen ist. Der zuletzt geöffnete Einsatz hat links einen orangen Strich. Ein Tipp auf einen Einsatz öffnet seine **Anfragen**.
 
 #### Anfragen
 
@@ -507,7 +512,7 @@ Die Ansicht **Personen** zeigt alle aktiven Mitglieder, nach Rang sortiert. Rech
 
 ![Handy-App: eine Person mit allen Einsätzen](bilder/51-handy-person.jpg)
 
-Ein Tipp auf eine Person zeigt alle kommenden Einsätze mit ihrem Stand. Oben stehen **Anrufen** und **WhatsApp**. Pro Einsatz trägst du die Antwort mit denselben Knöpfen ein wie bei den Anfragen. So fragst du eine Person für mehrere Einsätze auf einmal.
+Ein Tipp auf eine Person zeigt alle kommenden Einsätze mit ihrem Stand. Oben stehen **Anrufen**, **WhatsApp** und «Gefragt per». Pro Einsatz trägst du die Antwort mit denselben Knöpfen ein wie bei den Anfragen. So fragst du eine Person für mehrere Einsätze auf einmal.
 
 #### Filter
 
@@ -530,7 +535,7 @@ Der Reiter **Profil** enthält alles zum eigenen Konto, wie unten links in der S
 - **Passwort ändern** und **Zwei-Faktor-Anmeldung** öffnen dieselben Seiten wie am Computer, aber im Rahmen der Handy-App mit der Leiste unten. Neben der Zwei-Faktor-Anmeldung steht, ob sie eingerichtet ist.
 - **Darstellung:** **Wie System**, **Hell** oder **Dunkel**. Die Wahl gilt für dein Konto, also auch am Computer.
 - **Handbuch** öffnet dieses Handbuch.
-- **Ganze Ansicht** zeigt eine Stunde lang den normalen Einsatzplaner.
+- **Ganze Ansicht** zeigt eine Stunde lang den normalen Einsatzplaner (siehe oben).
 - **Abmelden** meldet dich auf diesem Handy ab.
 
 Alles, was du in der Handy-App einträgst, steht sofort auch im Reiter **Anfragen**, in den **Anmeldungen**, in den **Rückmeldungen** und im **Verlauf** der Person. Einsatzleiter haben keinen Zugang zur Handy-App.
@@ -543,7 +548,7 @@ Die meisten Einsätze haben nur eine Schicht für alle. Dann gibt es nichts zu v
 
 - Jede Schicht ist eine Spalte mit Zeit und Besetzung (Ist / Soll). Grün heisst voll. Darunter Ist / Soll pro Funktion, z. B. «EL 1/1 · SC 2/2 · TN 5/6».
 - **Funktion pro Person:** In jeder Zeile wählt man im kleinen Auswahlfeld EL, SC, BF oder TN (Kapitel 6). Das zweite Auswahlfeld teilt die Person einer anderen Schicht zu.
-- **Schichten bearbeiten** (unten, zugeklappt; **Öffnen** klappt die Tabelle auf): Name, Tag, Zeit und das Soll pro Funktion (Spalten EL, SC, BF, TN). Die Spalte «Soll» zeigt die Summe und rechnet beim Tippen mit. Die Tabelle hat **einen einzigen Speichern-Knopf** unten rechts: mehrere Schichten ändern, bei Bedarf in der untersten Zeile eine neue Schicht eintragen, dann einmal **Speichern**. Geänderte Zeilen sind links orange markiert, und der Fuss der Tabelle zeigt «Ungespeicherte Änderungen». **Hinzufügen** in der neuen Zeile speichert ebenfalls alles auf einmal. **Löschen** wirkt sofort pro Zeile (mit Rückfrage). Ist eine Zeile ungültig, z. B. eine angefangene neue Schicht ohne Namen, wird nichts gespeichert.
+- **Schichten bearbeiten** (unten, zugeklappt; **Öffnen** klappt die Tabelle auf): Name, Tag, Zeit, das Soll pro Funktion (Spalten EL, SC, BF, TN), Antretensort und interne Bemerkung. Die Spalte «Soll» zeigt die Summe und rechnet beim Tippen mit. Gespeichert wird wie in jeder Tabelle mit einem Knopf unten rechts (Kapitel 3). Eine neue Schicht trägst du in der untersten Zeile ein. **Hinzufügen** in dieser Zeile speichert ebenfalls alles auf einmal. **Löschen** wirkt sofort pro Zeile (mit Rückfrage). Ist eine Zeile ungültig, z. B. eine angefangene neue Schicht ohne Namen, wird nichts gespeichert.
 - **Noch keiner Schicht zugeteilt:** Anmeldungen ohne Schicht stehen oben und werden über «zuteilen …» eingeteilt.
 - **Umteilen** über das Auswahlfeld bei der Person. Eine Person kann auch mehreren Schichten zugeteilt sein («Tag + Abend»).
 - **+ Person aus Anmeldungen hinzufügen:** Name tippen und auswählen.
@@ -560,9 +565,9 @@ Die Seite **Rückmeldungen** beantwortet die wichtigste Frage der Aufgebotsstell
 
 ![Rückmeldungen als Tabelle](bilder/14-rueckmeldungen.jpg)
 
-- Mitglieder als Zeilen, Einsätze als Spalten. Kopfzeile und Namensspalte bleiben beim Scrollen stehen. Am Handy ist die Namensspalte schmal und zeigt nur Rang und Name. So sind mehr Schichten sichtbar. Die Filter stehen untereinander.
+- Mitglieder als Zeilen, Einsätze als Spalten. Kopfzeile und Namensspalte bleiben beim Scrollen stehen. In der ganzen Ansicht am Handy ist die Namensspalte schmal und zeigt nur Rang und Name. So sind mehr Schichten sichtbar.
 - Im Spaltenkopf jedes Einsatzes steht die Besetzung als Balken, z. B. «11 / 16». Sie zählt gleich wie der Reiter «Schichten» und die Übersicht: Anmeldungen mit Status Neu, Rückfrage oder Bestätigt. Die Warteliste zählt nicht.
-- **Symbole:** ✓ An, ✕ Ab, ? Unsicher, leeres Feld = Offen. Dazu gibt es eigene Symbole für den genaueren Stand: ein grün gefülltes ✓ für eine bestätigte Anmeldung, eine Uhr für die Warteliste, eine blaue Sprechblase für «Nachricht gesendet, Antwort offen», ein gelbes Telefon für «angerufen, nicht erreicht», eine sprechende Person für «mündlich gefragt, weiss es noch nicht» und ! für «Rückfrage nötig». Die **Legende** direkt über der Tabelle erklärt alle Symbole. Sie ist immer sichtbar, in beiden Ansichten. Das Symbol zeigt immer nur den neuesten Stand.
+- **Symbole:** Die **Legende** direkt über der Tabelle erklärt alle Symbole (Tabelle unten). Sie ist immer sichtbar, in beiden Ansichten. Das Symbol zeigt immer nur den neuesten Stand.
 - **Wer hat das gesetzt?** Fährt man mit der Maus über ein Feld, steht dort der letzte Eintrag mit Name und Zeit, z. B. «Zuletzt: Anmeldung: Bestätigt – Lena Meier, heute 14:20 (4 Einträge im Verlauf)». Hat sich jemand selbst über das Formular gemeldet, steht «Person selbst».
 - Ein Klick auf ein Feld öffnet immer das Fenster für einen Kontaktversuch, auch bei ✓ oder ✕. Oben steht der aktuelle Stand (z. B. «An · Anmeldung: Bestätigt · Formular · gesetzt von Lena Meier, heute 14:20») mit einem Link zur Anmeldung. Darunter folgt der **Verlauf** (siehe unten). Dort lässt sich auch **«Unsicher – weiss es noch nicht»** eintragen oder mit **Alles zurücksetzen** neu beginnen. Erfasst man bei einer bestehenden Anmeldung «Abgesagt», wird sie als zurückgezogen markiert. «Zugesagt» macht eine zurückgezogene Anmeldung wieder aktiv.
 - Unten stehen pro Einsatz die Summen An · Ab · Unsicher · Offen.
@@ -570,31 +575,7 @@ Die Seite **Rückmeldungen** beantwortet die wichtigste Frage der Aufgebotsstell
 - **Einsätze mit mehreren Schichten** haben eine Spalte pro Schicht, mit eigener Besetzung (z. B. «Tagschicht 8 / 10 · 1 ohne Schicht»). «ohne Schicht» heisst: zugesagt, aber noch keiner Schicht zugeteilt. ✓ heisst: für diese Schicht angemeldet oder eingeteilt. – heisst: angemeldet, aber für eine andere Schicht. Ein gestricheltes ✓ heisst: zugesagt, aber die Schicht ist noch nicht festgelegt. Ab, Unsicher und Offen gelten für alle Schichten des Einsatzes.
 - Klickt man in einer Schicht-Spalte auf ein offenes Feld und wählt **«Zugesagt»**, ist diese Schicht schon angekreuzt. Weitere Schichten lassen sich dazu wählen, oder man lässt die Auswahl leer und teilt später unter «Schichten» zu. Das gilt genauso beim Erfassen unter Einsatz › Anfragen und auf der Seite eines Mitglieds.
 
-### Verlauf pro Person und Einsatz
-
-![Verlauf im Fenster der Rückmeldungen](bilder/44-verlauf-rueckmeldung.jpg)
-
-Der Verlauf sammelt alles, was bei dieser Person für diesen Einsatz passiert ist, die neuesten Einträge stehen oben. Jeder Eintrag zeigt, was passiert ist, wer es getan hat und wann:
-
-- Anmeldungen und Abmeldungen über das Formular («Person selbst»), per Telefon, WhatsApp oder von Hand erfasst
-- jeder Kontaktversuch mit Kanal und Ergebnis, z. B. «WhatsApp: Nachricht gesendet, Antwort offen», mit Notiz. Wurde der Kontakt für jemand anderen erfasst, steht zusätzlich «erfasst von …».
-- jeder Statuswechsel der Anmeldung (bestätigt, Warteliste, Rückfrage, zurückgezogen …) und jede Änderung der Schicht
-- verschickte Bestätigungsmails, Zurücknehmen eines Kontaktversuchs und «Alles zurücksetzen»
-
-Das Symbol links entspricht dem Stand nach diesem Eintrag. Ein Punkt bedeutet, dass der Eintrag den Stand nicht verändert hat, z. B. bei einer Mail. Der Eintrag, der den aktuellen Stand gesetzt hat, ist mit **aktueller Stand** markiert. Ein nachträglich erfasster Kontaktversuch steht beim Zeitpunkt, an dem angerufen oder geschrieben wurde. Der Verlauf enthält auch alles, was vor dieser Funktion erfasst wurde.
-
-**Verlauf löschen:** Der Knopf **Verlauf löschen** oben rechts im Verlauf löscht alle Einträge dieser Person für diesen Einsatz bis auf den neuesten, also den Eintrag mit «aktueller Stand». Vorher fragt der Einsatzplaner nach. Rückmeldung, Anmeldung und Schichten bleiben dabei unverändert, und auch das Symbol in der Tabelle bleibt gleich. Der Knopf erscheint erst ab zwei Einträgen. Danach steht im Fenster, wer den Verlauf wann gelöscht hat, und neue Einträge erscheinen wieder wie gewohnt. Die gelöschten Einträge verschwinden auch auf der Seite des Mitglieds (Kontaktversuche pro Einsatz und Verlauf) und in der Liste unter Einsatz › Anfragen. Nur im Reiter «Verlauf» des Einsatzes bleibt alles vollständig, mit dem Vermerk, wer gelöscht hat. Soll auch der Stand selbst weg, nimmt man **Alles zurücksetzen**: Das löscht Kontaktversuche, Rückmeldung und Schichtzuteilung, lässt den Verlauf aber stehen. Für einen ganz neuen Anfang klickt man beides.
- Derselbe Verlauf erscheint beim Erfassen unter Einsatz › Anfragen und auf der Seite eines Mitglieds.
-
-### Ansicht «Pro Einsatz»
-
-![Rückmeldungen pro Einsatz](bilder/15-rueckmeldungen-pro-einsatz.jpg)
-
-Eine Karte pro Einsatz mit den Namen, gruppiert nach An, Unsicher, Ab und Offen. Bei mehreren Schichten steht «An» aufgeteilt nach Schicht, jeweils mit Besetzung, dazu «An, ohne Schicht» mit Link zum Zuteilen und die **Warteliste** mit dem Hinweis «zählt nicht». Ein Klick auf einen offenen Namen erfasst direkt eine Anfrage. Fährt man mit der Maus über einen Namen, steht dort, wer den Stand zuletzt gesetzt hat und wann. Diese Ansicht ist besonders übersichtlich, wenn viele Einsätze anstehen.
-
-### Filter
-
-Namenssuche, Zeitraum (nächste 2 Wochen bis nächstes Jahr), Mannschaft, «Nur mit offenen Einsätzen» oder «Nur mit Unsicheren», Sortierung (Rang tief → hoch oder hoch → tief, nach Name, meiste offen zuerst) und «Entwürfe» einblenden.
+**Die Symbole:**
 
 | Anzeige | Bedeutung |
 |---|---|
@@ -610,6 +591,33 @@ Namenssuche, Zeitraum (nächste 2 Wochen bis nächstes Jahr), Mannschaft, «Nur 
 | Offen | Noch keine Rückmeldung und noch nicht angefragt |
 | Andere Schicht (–) | Angemeldet, aber für eine andere Schicht dieses Einsatzes |
 | An, ohne Schicht (gestricheltes ✓) | Zugesagt, Schicht noch nicht festgelegt |
+
+### Verlauf pro Person und Einsatz
+
+![Verlauf im Fenster der Rückmeldungen](bilder/44-verlauf-rueckmeldung.jpg)
+
+Der Verlauf sammelt alles, was bei dieser Person für diesen Einsatz passiert ist, die neuesten Einträge stehen oben. Jeder Eintrag zeigt, was passiert ist, wer es getan hat und wann:
+
+- Anmeldungen und Abmeldungen über das Formular («Person selbst»), per Telefon, WhatsApp oder von Hand erfasst
+- jeder Kontaktversuch mit Kanal und Ergebnis, z. B. «WhatsApp: Nachricht gesendet, Antwort offen», mit Notiz. Wurde der Kontakt für jemand anderen erfasst, steht zusätzlich «erfasst von …».
+- jeder Statuswechsel der Anmeldung (bestätigt, Warteliste, Rückfrage, zurückgezogen …) und jede Änderung der Schicht
+- verschickte Bestätigungsmails, Zurücknehmen eines Kontaktversuchs und «Alles zurücksetzen»
+
+Das Symbol links entspricht dem Stand nach diesem Eintrag. Ein Punkt bedeutet, dass der Eintrag den Stand nicht verändert hat, z. B. bei einer Mail. Der Eintrag, der den aktuellen Stand gesetzt hat, ist mit **aktueller Stand** markiert. Ein nachträglich erfasster Kontaktversuch steht beim Zeitpunkt, an dem angerufen oder geschrieben wurde. Der Verlauf enthält auch alles, was vor dieser Funktion erfasst wurde.
+
+**Verlauf löschen:** Der Knopf **Verlauf löschen** oben rechts im Verlauf löscht alle Einträge dieser Person für diesen Einsatz bis auf den neuesten, also den Eintrag mit «aktueller Stand». Vorher fragt der Einsatzplaner nach. Rückmeldung, Anmeldung und Schichten bleiben dabei unverändert, und auch das Symbol in der Tabelle bleibt gleich. Der Knopf erscheint erst ab zwei Einträgen. Danach steht im Fenster, wer den Verlauf wann gelöscht hat, und neue Einträge erscheinen wieder wie gewohnt. Die gelöschten Einträge verschwinden auch auf der Seite des Mitglieds (Kontaktversuche pro Einsatz und Verlauf) und in der Liste unter Einsatz › Anfragen. Nur im Reiter «Verlauf» des Einsatzes bleibt alles vollständig, mit dem Vermerk, wer gelöscht hat. Soll auch der Stand selbst weg, nimmt man **Alles zurücksetzen**: Das löscht Kontaktversuche, Rückmeldung und Schichtzuteilung, lässt den Verlauf aber stehen. Für einen ganz neuen Anfang klickt man beides.
+
+Derselbe Verlauf erscheint beim Erfassen unter Einsatz › Anfragen und auf der Seite eines Mitglieds.
+
+### Ansicht «Pro Einsatz»
+
+![Rückmeldungen pro Einsatz](bilder/15-rueckmeldungen-pro-einsatz.jpg)
+
+Eine Karte pro Einsatz mit den Namen, gruppiert nach An, Unsicher, Ab und Offen. Bei mehreren Schichten steht «An» aufgeteilt nach Schicht, jeweils mit Besetzung, dazu «An, ohne Schicht» mit Link zum Zuteilen und die **Warteliste** mit dem Hinweis «zählt nicht». Ein Klick auf einen offenen Namen erfasst direkt eine Anfrage. Fährt man mit der Maus über einen Namen, steht dort, wer den Stand zuletzt gesetzt hat und wann. Diese Ansicht ist besonders übersichtlich, wenn viele Einsätze anstehen.
+
+### Filter
+
+Namenssuche, Zeitraum (nächste 2 Wochen bis nächstes Jahr), Mannschaft, «Nur mit offenen Einsätzen» oder «Nur mit Unsicheren», Sortierung (Rang tief → hoch oder hoch → tief, nach Name, meiste offen zuerst) und «Entwürfe» einblenden.
 
 ### Die Seite eines Mitglieds
 
@@ -737,16 +745,18 @@ Unter **Einstellungen › Kalendertermin** legt der Admin einmal fest, wie das A
 | Baustein | Beispiel |
 |---|---|
 | `{{einsatz.name}}` | 554. Basler Herbstmesse |
-| `{{einsatz.datum_kurz}}` | 03.11. |
+| `{{einsatz.datum}}` · `{{einsatz.datum_kurz}}` | Dienstag, 10. November 2026 · 10.11. (bei mehreren Tagen der Zeitraum) |
+| `{{einsatz.beschreibung}}` | Verkehrsdienst rund um die Messe. |
 | `{{schicht.name}}` | Tagschicht |
-| `{{antreten.datum}}` · `{{antreten.zeit}}` · `{{antreten.ort}}` | Dienstag, 3. November 2026 · 13:30 · Tramhaltestelle «Clarastrasse» |
+| `{{antreten.datum}}` · `{{antreten.zeit}}` · `{{antreten.ort}}` | Dienstag, 10. November 2026 · 13:30 · Tramhaltestelle «Clarastrasse» |
 | `{{abtreten.datum}}` · `{{abtreten.zeit}}` · `{{abtreten.ort}}` | wie Antreten, mit der Endzeit |
-| `{{einsatzleitung}}` | Fw Marco Rüegg (079 …) |
+| `{{einsatzleitung}}` · `{{einsatzleitung.name}}` · `{{einsatzleitung.telefon}}` | Fw Marco Rüegg (079 …) · Fw Marco Rüegg · 079 … |
 | `{{einsatz.tenue}}` | Uniform (orange), VD-Material, VD-Jacke |
 | `{{teilnehmende.liste}}` · `{{teilnehmende.anzahl}}` | Namen der Bestätigten · Anzahl |
 | `{{verein.aufgebot_email}}` | aufgebot@kkb.ch |
 | `{{absender}}` | Rang und Name der Person, die exportiert |
 | `{{zusatzfeld.Name}}` | jedes Zusatzfeld eines Einsatzes, z. B. Transport |
+| `{{person.vorname}}` · `{{person.nachname}}` | Jonas · Frei (nur in der Bestätigungsmail) |
 
 Optionen: Zeilen mit leerem Baustein weglassen, Bestätigte als Teilnehmende eintragen, Erinnerung z. B. einen Tag vorher.
 
@@ -820,10 +830,8 @@ Konten anlegen, Rolle wählen (Admin, Aufgebotsstelle oder Einsatzleiter) und mi
   - **Pflicht für dieses Konto:** Die Person muss die 2FA beim nächsten Login einrichten. Vorher kommt sie nirgends hin.
   - **Code verlangen:** bei jedem Login, oder einmal pro Tag, Woche, Monat bzw. 3 Monate pro Gerät. Gilt für alle, die 2FA eingerichtet haben – auch freiwillig.
   - **2FA zurücksetzen,** z. B. wenn jemand sein Handy verloren hat. Danach richtet die Person sie neu ein.
-- **Microsoft-Anmeldung** (nur sichtbar, wenn sie auf dem Server eingerichtet ist, mehr in Kapitel 20): E-Mail-Adresse des Microsoft-Kontos eintragen und «Mit dem Microsoft-Konto dieser E-Mail-Adresse anmelden erlaubt» ankreuzen. Beim ersten Login wird das Konto fest mit diesem Microsoft-Konto verknüpft. Häkchen entfernen oder E-Mail ändern löst die Verknüpfung.
-  - **Mit Benutzername und Passwort anmelden erlaubt:** Ausschalten heisst, dass die Person nur noch mit Microsoft hineinkommt. Mindestens eine Anmeldeart muss erlaubt bleiben. Das eigene Passwort-Login lässt sich erst abschalten, wenn man sich einmal erfolgreich mit Microsoft angemeldet hat.
-  - **Notausgang:** Wird die Microsoft-Anmeldung ausgeschaltet (unter **Einstellungen › Server** nur «Passwort» ankreuzen), gilt das Passwort wieder für alle.
-- **Rolle Einsatzleiter:** Das Konto sieht nur Einsätze, die die Aufgebotsstelle freigibt (Kapitel 15). Verknüpft man das Konto mit der Person aus den Stammdaten, wird es bei Einsätzen mit dieser Einsatzleitung zum Freigeben vorgeschlagen. Wechselt das Konto später in eine andere Rolle, verfallen seine Freigaben.
+- **Microsoft-Anmeldung** (nur sichtbar, wenn sie auf dem Server eingerichtet ist): E-Mail-Adresse und die Häkchen für Microsoft und Passwort. Mindestens eine Anmeldeart muss erlaubt bleiben. Alles Weitere steht in Kapitel 20.
+- **Rolle Einsatzleiter:** Das Konto sieht nur Einsätze, die die Aufgebotsstelle freigibt (Kapitel 15).
 - **Konto aktiv** ausschalten sperrt den Zugang, ohne Daten zu löschen.
 - **Benutzerkonto löschen** entfernt das Konto endgültig. Was die Person erfasst hat (Anmeldungen, Kontaktversuche, Verlauf), bleibt mit ihrem Namen erhalten, ebenso die verknüpfte Person in den Stammdaten. Das eigene Konto und den letzten aktiven Admin kann man nicht löschen.
 
@@ -843,7 +851,7 @@ Die Liste **Externe Abteilungen** füllt sich auch von selbst, wenn bei einem Ei
 
 Bei den Anmeldefragen legt die Spalte **Standard** fest, welche Vorlage bei jedem neuen Einsatz schon vorausgewählt ist, samt Fragetext und Hilfetext. Mit «keiner» ist nichts vorausgewählt.
 
-> **Speichern pro Abschnitt:** In Auswahllisten, Vorlagen und bei «Schichten bearbeiten» hat jeder Abschnitt einen einzigen Speichern-Knopf. Mehrere Zeilen ändern, in der leeren Zeile etwas Neues eintragen, bei anderen «entfernen» ankreuzen – und dann einmal speichern. Geänderte Zeilen sind links orange markiert. Ränge, Mannschaften oder externe Abteilungen, die noch verwendet werden, lassen sich nicht entfernen, nur deaktivieren.
+> **Speichern pro Abschnitt:** Jeder Abschnitt hat einen einzigen Speichern-Knopf (Kapitel 3). Zum Löschen bei der Zeile «entfernen» ankreuzen und speichern. Ränge, Mannschaften oder externe Abteilungen, die noch verwendet werden, lassen sich nicht entfernen, nur deaktivieren.
 
 ### Bestätigungsmail
 
@@ -1018,7 +1026,7 @@ In den Rückmeldungen mit der Maus über das Feld fahren: Dort stehen der letzte
 Nein. Jede Anmeldung wird von der Aufgebotsstelle bestätigt. Erst dann erhält das Mitglied seine Anmeldebestätigung.
 
 **Was ist, wenn ein Einsatz voll ist?**
-Das Cockpit weist darauf hin. Den Einsatz mit dem Schalter «Im Formular anzeigen» herausnehmen. Weitere Anmeldungen kommen auf die Warteliste.
+Das Cockpit weist darauf hin. Den Einsatz mit dem Schalter «Im Formular anzeigen» herausnehmen. Wer sich trotzdem noch meldet, setzt du von Hand auf die Warteliste («…» › Warteliste).
 
 **Ich habe einen Kontaktversuch bei der falschen Person erfasst.**
 Im Reiter «Anfragen» beim letzten Kontaktversuch auf den Pfeil klicken. Er wird zurückgenommen, eine daraus erstellte Anmeldung ebenfalls.
