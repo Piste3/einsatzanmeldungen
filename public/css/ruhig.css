@@ -433,3 +433,25 @@ tr.group-row strong { font-weight: 600; }
 .empty-state h2 { margin: 2px 0 4px; font-size: 15px; font-weight: 600; }
 .empty-state p { margin: 0; color: var(--muted); font-size: 13.5px; line-height: 1.5; }
 @media (max-width: 760px) { .empty-state { padding: 20px; column-gap: 14px; } }
+
+/* Rückmeldungen: andere Schicht – gleiche Zeit (geht nicht) oder zeitlich möglich */
+.fb-andere.fb-d-ueberschneidung { background: var(--border-soft); color: var(--muted); border-color: var(--border-strong); font-weight: 800; }
+.fb-andere.fb-d-frei { background: var(--card); color: var(--green); border: 1.5px dotted var(--green); font-weight: 800; }
+
+/* Fenster beim längeren Darüberfahren */
+.hover-tip { position: absolute; z-index: 60; max-width: 340px; padding: 10px 12px; border-radius: 10px; background: var(--card); color: var(--text); border: 1px solid var(--border-strong); box-shadow: 0 8px 24px rgba(0, 0, 0, .18); font-size: 12.5px; line-height: 1.4; pointer-events: none; display: flex; flex-direction: column; gap: 2px; }
+.hover-tip[hidden] { display: none; }
+.hover-tip strong { font-size: 13px; }
+.hover-tip .tip-sub, .hover-tip .tip-last, .hover-tip .tip-hint { color: var(--muted); }
+.hover-tip .tip-state { font-weight: 600; margin-top: 2px; }
+.hover-tip .tip-hint { font-size: 11.5px; margin-top: 4px; }
+.tip-shifts { list-style: none; margin: 6px 0 2px; padding: 0; display: grid; grid-template-columns: auto auto auto auto; gap: 3px 10px; align-items: baseline; }
+.tip-shifts li { display: contents; }
+.tip-shifts .tip-sh { font-weight: 600; }
+.tip-shifts .tip-when { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tip-shifts .tip-num { color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tip-shifts li.is-here > span { color: var(--orange-dark, var(--orange)); }
+.tip-tag { font-style: normal; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.tip-mine { color: var(--green); }
+.tip-clash { color: var(--muted); }
+.shift-clash { color: var(--muted); font-size: 12px; font-weight: 600; }

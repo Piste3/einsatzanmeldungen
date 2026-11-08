@@ -76,6 +76,23 @@
     if (cancel) { cancel.closest('[data-shift-panel]').hidden = true; }
   });
 
+  // ---------- Schichten wählen: zeigen, welche sich zeitlich mit den gewählten überschneiden ----------
+  document.addEventListener('change', (ev) => {
+    const panel = ev.target.closest('[data-shift-panel]');
+    if (!panel || !ev.target.matches('input[name="shift_ids"]')) return;
+    const boxes = $$('input[name="shift_ids"]', panel);
+    const on = boxes.filter((b) => b.checked && b.dataset.from);
+    boxes.forEach((b) => {
+      const hit = !b.checked && b.dataset.from ? on.filter((o) => b.dataset.from < o.dataset.to && o.dataset.from < b.dataset.to) : [];
+      const label = b.closest('label');
+      const hint = label.querySelector('[data-clash]');
+      if (!hint) return;
+      hint.hidden = !hit.length;
+      hint.textContent = hit.length ? `gleiche Zeit wie ${hit.map((o) => o.dataset.name).join(', ')}` : '';
+      label.classList.toggle('is-clash', hit.length > 0);
+    });
+  });
+
   // ---------- Suche nach Namen (sofort, ohne Neuladen) ----------
   const search = $('[data-h-search]');
   let filter = () => {};

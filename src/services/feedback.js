@@ -31,6 +31,32 @@ function detailOf(c) {
   return null;
 }
 
+// Zeitraum einer Schicht als vergleichbare Texte (YYYY-MM-DDTHH:MM); ohne Ende gilt das Tagesende, ohne Beginn null
+function shiftSpan(sh) {
+  if (!sh?.starts_at) return null;
+  return { from: sh.starts_at, to: sh.ends_at || `${sh.starts_at.slice(0, 10)}T23:59` };
+}
+
+/** Überschneiden sich zwei Schichten zeitlich? null = unbekannt (eine Schicht hat keine Zeit) */
+function shiftsOverlap(a, b) {
+  const x = shiftSpan(a);
+  const y = shiftSpan(b);
+  if (!x || !y) return null;
+  return x.from < y.to && y.from < x.to;
+}
+
+/**
+ * Andere Schicht: Kann die Person zeitlich trotzdem in diese Schicht?
+ * ueberschneidung = mindestens eine ihrer Schichten liegt in derselben Zeit, frei = keine Überschneidung, null = Zeiten fehlen
+ */
+function otherShiftDetail(shift, mineIds, eventShifts) {
+  const mine = eventShifts.filter((sh) => mineIds.has(sh.id));
+  const res = mine.map((sh) => shiftsOverlap(shift, sh));
+  if (res.includes(true)) return 'ueberschneidung';
+  if (res.length && res.every((r) => r === false)) return 'frei';
+  return null;
+}
+
 /** Zustand einer Person für einen Einsatz aus Anmeldung und Anfrage ableiten */
 function cellState(reg, inq) {
   const c = baseState(reg, inq);
@@ -126,14 +152,23 @@ function matrix({ team = '', period = '3m', sort = 'rang', includeDrafts = false
     const cells = columns.map((col) => {
       const base = byEvent.get(col.event.id);
       let state = base.state;
+      let detail = base.detail;
+      let mine = null;
       if (col.shift && state === 'an') {
-        const mine = shiftsOf(base.reg, col.event);
+        mine = shiftsOf(base.reg, col.event);
         state = !mine.size ? 'schicht_offen' : mine.has(col.shift.id) ? 'an' : 'andere';
+        if (state === 'andere') detail = otherShiftDetail(col.shift, mine, col.event.shifts);
+        else if (state !== base.state) detail = null;
       }
       colTotals[col.key][state]++;
       // zählt zur Besetzung dieser Schicht (gleiche Regel wie e.istByShift)
       const counts = Boolean(col.shift && base.reg && REG_COUNTING.includes(base.reg.status) && assigned.get(base.reg.id)?.has(col.shift.id));
-      return { ...base, state, detail: state === base.state ? base.detail : null, shiftId: col.shift?.id || null, counts };
+      // für das Fenster beim Darüberfahren: in welchen Schichten die Person ist, eingeteilt oder nur gewünscht
+      const mineInfo = mine && mine.size ? {
+        ids: [...mine], kind: assigned.has(base.reg.id) ? 'eingeteilt' : 'gewünscht',
+        clash: col.event.shifts.filter((sh) => !mine.has(sh.id) && otherShiftDetail(sh, mine, col.event.shifts) === 'ueberschneidung').map((sh) => sh.id),
+      } : null;
+      return { ...base, state, detail, mine: mineInfo, shiftId: col.shift?.id || null, counts };
     });
     return { person: p, cells, eventCells, openCount: eventCells.filter((c) => c.state === 'offen').length };
   });
@@ -160,10 +195,11 @@ function shiftChoices(eventIds) {
   // Bei Schichten an verschiedenen Tagen steht der Tag vor der Zeit
   const multi = new Set(db.all(`SELECT id, date_from, date_to FROM events WHERE id IN (${ph})`, ...ids).filter(isMultiDay).map((e) => e.id));
   for (const sh of db.all(`SELECT id, event_id, name, starts_at, ends_at FROM shifts WHERE event_id IN (${ph}) ORDER BY sort, starts_at, id`, ...ids)) {
-    (out[sh.event_id] ||= []).push({ id: sh.id, name: sh.name, time: fmtShiftWhen(sh, multi.has(sh.event_id)) });
+    const sp = shiftSpan(sh);
+    (out[sh.event_id] ||= []).push({ id: sh.id, name: sh.name, time: fmtShiftWhen(sh, multi.has(sh.event_id)), from: sp?.from || '', to: sp?.to || '' });
   }
   for (const k of Object.keys(out)) if (out[k].length < 2) delete out[k];
   return out;
 }
 
-module.exports = { matrix, cellState, upcomingEvents, shiftChoices, PERIODS };
+module.exports = { matrix, cellState, shiftsOverlap, otherShiftDetail, upcomingEvents, shiftChoices, PERIODS };

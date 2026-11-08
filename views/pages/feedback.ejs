@@ -4,9 +4,9 @@
   actions: `<button class="btn" type="button" data-print>Drucken</button><a class="btn" href="${h.escapeHtml(h.withQuery('/rueckmeldungen', query, { format: 'xlsx' }))}">Excel</a><a class="btn" href="${h.escapeHtml(h.withQuery('/rueckmeldungen', query, { format: 'csv' }))}">CSV</a>`,
 }) %>
 <%
-  const SYM = { an: '✓', ab: '✕', unsicher: '?', offen: '', andere: '–', schicht_offen: '✓' };
+  const SYM = { an: '✓', ab: '✕', unsicher: '?', offen: '', andere: '·', schicht_offen: '✓' };
   // eigenes Icon für den genaueren Stand (z. B. Nachricht gesendet, bestätigt)
-  const DSYM = { bestaetigt: '✓', warteliste: h.icon('clock', 'fb-ico'), whatsapp: h.icon('chat', 'fb-ico'), telefon: h.icon('phone', 'fb-ico'), muendlich: h.icon('voice', 'fb-ico'), rueckfrage: '!' };
+  const DSYM = { bestaetigt: '✓', warteliste: h.icon('clock', 'fb-ico'), whatsapp: h.icon('chat', 'fb-ico'), telefon: h.icon('phone', 'fb-ico'), muendlich: h.icon('voice', 'fb-ico'), rueckfrage: '!', ueberschneidung: '–', frei: '+' };
   const sym = (c) => (c.detail ? DSYM[c.detail] : h.escapeHtml(SYM[c.state]));
   const stateLabel = (c) => (c.detail ? h.labels.FEEDBACK_DETAIL[c.detail].label : h.labels.FEEDBACK[c.state].label);
   // wer den Stand gesetzt hat und wann (letzter Historie-Eintrag)
@@ -20,6 +20,23 @@
     if (c.inq) parts.push(`Anfrage: ${(h.labels.INQUIRY_ROW[c.inq.status] || h.labels.INQUIRY_STATUS[c.inq.status]).label}`);
     if (c.last) parts.push(`gesetzt von ${setBy(c)}`);
     return parts.join(' · ');
+  };
+  // Fenster beim längeren Darüberfahren (data-tip): Schichten des Einsatzes mit Tag und Zeit
+  const esc = h.escapeHtml;
+  const shiftWhen = (sh, e) => h.fmtShiftWhen(sh, h.isMultiDay(e)) || 'Zeit fehlt';
+  const shiftList = (e, { here = null, mine = null } = {}) => `<ul class="tip-shifts">${e.shifts.map((sh) => {
+    const isMine = mine && mine.ids.includes(sh.id);
+    const clash = mine && mine.clash.includes(sh.id);
+    const tag = isMine ? `<em class="tip-tag tip-mine">${mine.kind}</em>` : clash ? '<em class="tip-tag tip-clash">gleiche Zeit</em>' : '<em class="tip-tag"></em>';
+    const ist = e.istByShift[sh.id] || 0;
+    return `<li class="${here && here.id === sh.id ? 'is-here' : ''}${isMine ? ' is-mine' : ''}${clash ? ' is-clash' : ''}"><span class="tip-sh">${esc(sh.name)}</span><span class="tip-when">${esc(shiftWhen(sh, e))}</span><span class="tip-num">${ist}${sh.target_count ? ` / ${sh.target_count}` : ''}</span>${tag}</li>`;
+  }).join('')}</ul>`;
+  const headTip = (col) => `<strong>${esc(col.event.name)}</strong><span class="tip-sub">${esc(h.fmtEventDate(col.event, 'short'))}</span>${col.shift ? shiftList(col.event, { here: col.shift }) : ''}`;
+  const cellTip = (c, col, p) => {
+    let out = `<strong>${esc(`${p.first_name} ${p.last_name}`)}</strong><span class="tip-sub">${esc(col.event.name)}${col.shift ? ` · ${esc(col.shift.name)}` : ''}</span><span class="tip-state">${esc(stateLabel(c))}</span>`;
+    if (col.shift) out += shiftList(col.event, { here: col.shift, mine: c.mine });
+    if (c.last) out += `<span class="tip-last">Zuletzt: ${esc(c.last.text)} – ${esc(setBy(c))}${c.last.count > 1 ? ` (${c.last.count} Einträge)` : ''}</span>`;
+    return `${out}<span class="tip-hint">Klicken für Verlauf und Kontaktversuch</span>`;
   };
   const shiftTime = (sh) => (sh.starts_at && sh.ends_at ? `${sh.starts_at.slice(11, 16)}–${sh.ends_at.slice(11, 16)}` : '');
   // Kopf: bei Schichten an verschiedenen Tagen steht über jeder Schichtspalte ihr Tag, sonst das Einsatzdatum
@@ -68,7 +85,9 @@
   <span class="fb-legend-item"><span class="fb fb-offen"></span> Offen</span>
   <% if (columns.some((c) => c.shift)) { %>
   <span class="fb-legend-item"><span class="fb fb-schicht_offen">✓</span> An, ohne Schicht</span>
-  <span class="fb-legend-item"><span class="fb fb-andere">–</span> Andere Schicht</span>
+  <span class="fb-legend-item"><span class="fb fb-andere fb-d-ueberschneidung">–</span> Andere Schicht, gleiche Zeit</span>
+  <span class="fb-legend-item"><span class="fb fb-andere fb-d-frei">+</span> Andere Schicht, zeitlich möglich</span>
+  <% if (rows.some((r) => r.cells.some((c) => c.state === 'andere' && !c.detail))) { %><span class="fb-legend-item"><span class="fb fb-andere">·</span> Andere Schicht, Zeit fehlt</span><% } %>
   <% } %>
 </div>
 
@@ -82,7 +101,7 @@
         <tr>
           <th class="fb-name">Mitglied</th>
           <% for (const col of columns) { const e = col.event; const t = totals[e.id]; %>
-            <th class="fb-ev <%= col.shift ? 'fb-shift' : '' %> <%= col.first ? 'fb-first' : '' %>" title="<%= e.name %> · <%= colDate(col) %><%= col.shift ? ` · ${col.shift.name} ${shiftTime(col.shift)}` : '' %>">
+            <th class="fb-ev <%= col.shift ? 'fb-shift' : '' %> <%= col.first ? 'fb-first' : '' %>" aria-label="<%= e.name %> · <%= colDate(col) %><%= col.shift ? ` · ${col.shift.name} ${shiftTime(col.shift)}` : '' %>" data-tip="<%= headTip(col) %>">
               <a href="/einsaetze/<%= e.id %><%= col.shift ? '/schichten' : '' %>">
                 <span class="dt"><%= h.fmtEventDate(e, 'short') %></span>
                 <span class="ev"><%= e.name %></span>
@@ -106,7 +125,7 @@
           <td class="fb-name"><%- h.rank(p.rank_short) %><a href="/personen/<%= p.id %>"><strong><%= p.first_name %> <%= p.last_name %></strong></a><% if (p.teams) { %><span class="sub"><%= p.teams %></span><% } %></td>
           <% row.cells.forEach((c, i) => { const col = columns[i]; const e = col.event; %>
             <td class="fb-cell <%= col.first ? 'fb-first' : '' %>">
-              <button type="button" class="fb fb-<%= c.state %><%= c.detail ? ` fb-d-${c.detail}` : '' %>" data-open-dialog="attempt" data-person="<%= p.id %>" data-event="<%= c.eventId %>" data-shift="<%= c.shiftId || '' %>" data-who="<%= `${p.first_name} ${p.last_name} · ${e.name}${col.shift ? ` · ${col.shift.name}` : ''}` %>" data-current="<%= currentText(c, col) %>"<% if (c.reg) { %> data-current-link="/einsaetze/<%= c.eventId %>/<%= ['andere', 'schicht_offen'].includes(c.state) ? 'schichten' : `anmeldungen?q=${encodeURIComponent(p.last_name)}` %>"<% } %> title="<%= cellTitle(c, col, p) %>"><%- sym(c) %></button>
+              <button type="button" class="fb fb-<%= c.state %><%= c.detail ? ` fb-d-${c.detail}` : '' %>" data-open-dialog="attempt" data-person="<%= p.id %>" data-event="<%= c.eventId %>" data-shift="<%= c.shiftId || '' %>" data-who="<%= `${p.first_name} ${p.last_name} · ${e.name}${col.shift ? ` · ${col.shift.name}` : ''}` %>" data-current="<%= currentText(c, col) %>"<% if (c.reg) { %> data-current-link="/einsaetze/<%= c.eventId %>/<%= ['andere', 'schicht_offen'].includes(c.state) ? 'schichten' : `anmeldungen?q=${encodeURIComponent(p.last_name)}` %>"<% } %> aria-label="<%= cellTitle(c, col, p) %>" data-tip="<%= cellTip(c, col, p) %>"><%- sym(c) %></button>
             </td>
           <% }) %>
         </tr>

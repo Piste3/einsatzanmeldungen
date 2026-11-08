@@ -480,7 +480,7 @@ Die Antwort ist sofort gespeichert. Unten erscheint kurz eine Bestätigung, z. B
 
 ![Handy-App: Schichten bei «Kann»](bilder/48-handy-schichten.jpg)
 
-**Einsatz mit mehreren Schichten:** Nach **Kann** fragt die App, für welche Schichten die Person kann. Ankreuzen und **Kann – speichern** tippen. Ist die Schicht noch offen, nichts ankreuzen. Zuteilen geht später auch am Computer unter «Schichten».
+**Einsatz mit mehreren Schichten:** Nach **Kann** fragt die App, für welche Schichten die Person kann. Ankreuzen und **Kann – speichern** tippen. Liegt eine andere Schicht zur selben Zeit wie eine angekreuzte, steht darunter «gleiche Zeit wie …». Dasselbe zeigt am Computer das Fenster «Kontaktversuch erfassen». Ist die Schicht noch offen, nichts ankreuzen. Zuteilen geht später auch am Computer unter «Schichten».
 
 **Interne Bemerkung:** Nach einer Antwort steht in der Karte **Interne Bemerkung schreiben**. Ein Tipp darauf öffnet ein Textfeld, z. B. für «kommt erst ab 10 Uhr». **Bemerkung speichern** speichert sie. Danach steht die Bemerkung in der Karte. Ein Tipp darauf ändert sie. Ein leeres Feld löscht sie.
 
@@ -578,11 +578,15 @@ Die Seite **Rückmeldungen** beantwortet die wichtigste Frage der Aufgebotsstell
 - Mitglieder als Zeilen, Einsätze als Spalten. Kopfzeile und Namensspalte bleiben beim Scrollen stehen. In der ganzen Ansicht am Handy ist die Namensspalte schmal und zeigt nur Rang und Name. So sind mehr Schichten sichtbar.
 - Im Spaltenkopf jedes Einsatzes steht die Besetzung als Balken, z. B. «11 / 16». Sie zählt gleich wie der Reiter «Schichten» und die Übersicht: Anmeldungen mit Status Neu, Rückfrage oder Bestätigt. Die Warteliste zählt nicht.
 - **Symbole:** Die **Legende** direkt über der Tabelle erklärt alle Symbole (Tabelle unten). Sie ist immer sichtbar, in beiden Ansichten. Das Symbol zeigt immer nur den neuesten Stand.
-- **Wer hat das gesetzt?** Fährt man mit der Maus über ein Feld, steht dort der letzte Eintrag mit Name und Zeit, z. B. «Zuletzt: Anmeldung: Bestätigt – Lena Meier, heute 14:20 (4 Einträge im Verlauf)». Hat sich jemand selbst über das Formular gemeldet, steht «Person selbst».
+- **Kleines Fenster beim Darüberfahren:** Bleibt man kurz mit der Maus auf einem Feld, öffnet sich ein kleines Fenster. Die Ansicht wechselt dabei nicht. Das Fenster zeigt den Stand und den letzten Eintrag mit Name und Zeit, z. B. «Zuletzt: Anmeldung: Bestätigt – Lena Meier, heute 14:20 (4 Einträge)». Hat sich jemand selbst über das Formular gemeldet, steht «Person selbst».
+- **Schichten mit Zeiten:** Bei Einsätzen mit mehreren Schichten zeigt das Fenster alle Schichten mit Tag, Zeit und Besetzung. Die Schicht der Spalte ist orange. Bei der Person steht «eingeteilt» oder «gewünscht». Eine Schicht zur selben Zeit trägt den Hinweis «gleiche Zeit». Dasselbe Fenster erscheint auch über dem Spaltenkopf einer Schicht.
+
+![Fenster mit den Schichten und ihren Zeiten](bilder/56-rueckmeldungen-schichtzeiten.jpg)
 - Ein Klick auf ein Feld öffnet immer das Fenster für einen Kontaktversuch, auch bei ✓ oder ✕. Oben steht der aktuelle Stand (z. B. «An · Anmeldung: Bestätigt · Formular · gesetzt von Lena Meier, heute 14:20») mit einem Link zur Anmeldung. Darunter folgt der **Verlauf** (siehe unten). Dort lässt sich auch **«Unsicher – weiss es noch nicht»** eintragen oder mit **Alles zurücksetzen** neu beginnen. Erfasst man bei einer bestehenden Anmeldung «Abgesagt», wird sie als zurückgezogen markiert. «Zugesagt» macht eine zurückgezogene Anmeldung wieder aktiv.
 - Unten stehen pro Einsatz die Summen An · Ab · Unsicher · Offen.
 - Nach dem Speichern, «Verlauf löschen» oder «Alles zurücksetzen» bleibt die Seite an derselben Stelle stehen. Auch die Tabelle springt nicht nach oben oder links zurück.
-- **Einsätze mit mehreren Schichten** haben eine Spalte pro Schicht, mit eigener Besetzung (z. B. «Tagschicht 8 / 10 · 1 ohne Schicht»). «ohne Schicht» heisst: zugesagt, aber noch keiner Schicht zugeteilt. ✓ heisst: für diese Schicht angemeldet oder eingeteilt. – heisst: angemeldet, aber für eine andere Schicht. Ein gestricheltes ✓ heisst: zugesagt, aber die Schicht ist noch nicht festgelegt. Ab, Unsicher und Offen gelten für alle Schichten des Einsatzes.
+- **Einsätze mit mehreren Schichten** haben eine Spalte pro Schicht, mit eigener Besetzung (z. B. «Tagschicht 8 / 10 · 1 ohne Schicht»). «ohne Schicht» heisst: zugesagt, aber noch keiner Schicht zugeteilt. ✓ heisst: für diese Schicht angemeldet oder eingeteilt. Ein gestricheltes ✓ heisst: zugesagt, aber die Schicht ist noch nicht festgelegt. Ab, Unsicher und Offen gelten für alle Schichten des Einsatzes.
+- **Andere Schicht: geht es zeitlich?** Ist eine Person in einer anderen Schicht, rechnet die App aus Datum und Zeit, ob sie diese Schicht trotzdem machen kann. **–** auf grauem Feld heisst: Die Schicht liegt zur selben Zeit wie ihre Schicht. Die Person kann also nicht. **+** mit grünem, gepunktetem Rand heisst: Die Zeiten überschneiden sich nicht. Die Person könnte diese Schicht zusätzlich machen, z. B. an einem anderen Tag. Endet eine Schicht genau dann, wenn die andere beginnt, gilt das nicht als Überschneidung. Eine Nachtschicht über Mitternacht zählt bis zu ihrem Ende am nächsten Tag. Fehlt bei einer Schicht die Zeit, steht ein Punkt (·).
 - Klickt man in einer Schicht-Spalte auf ein offenes Feld und wählt **«Zugesagt»**, ist diese Schicht schon angekreuzt. Weitere Schichten lassen sich dazu wählen, oder man lässt die Auswahl leer und teilt später unter «Schichten» zu. Das gilt genauso beim Erfassen unter Einsatz › Anfragen und auf der Seite eines Mitglieds.
 
 **Die Symbole:**
@@ -599,7 +603,8 @@ Die Seite **Rückmeldungen** beantwortet die wichtigste Frage der Aufgebotsstell
 | Mündlich gefragt (sprechende Person) | Mündlich angefragt, weiss es noch nicht |
 | Rückfrage (!) | Anmeldung mit offener Frage, z. B. nachträglich «Nein» im Formular |
 | Offen | Noch keine Rückmeldung und noch nicht angefragt |
-| Andere Schicht (–) | Angemeldet, aber für eine andere Schicht dieses Einsatzes |
+| Andere Schicht, gleiche Zeit (– auf grauem Feld) | In einer anderen Schicht, die zur selben Zeit liegt. Die Person kann diese Schicht nicht machen |
+| Andere Schicht, zeitlich möglich (+ mit grünem Rand) | In einer anderen Schicht, die zu einer anderen Zeit liegt. Die Person könnte diese Schicht zusätzlich machen |
 | An, ohne Schicht (gestricheltes ✓) | Zugesagt, Schicht noch nicht festgelegt |
 
 ### Verlauf pro Person und Einsatz
@@ -1030,7 +1035,7 @@ Das Mitglied sieht die Bestätigungsseite erst, wenn die Anmeldung sicher gespei
 Doppelte Absendungen werden erkannt. Pro Person und Einsatz gibt es höchstens eine Anmeldung.
 
 **Wie sehe ich, wer jemanden schon angeschrieben oder einen Status geändert hat?**
-In den Rückmeldungen mit der Maus über das Feld fahren: Dort stehen der letzte Eintrag, der Name und die Zeit. Ein Klick öffnet den ganzen Verlauf mit allen Kontakten, Rückmeldungen und Statuswechseln.
+In den Rückmeldungen kurz mit der Maus auf dem Feld bleiben: Im kleinen Fenster stehen der letzte Eintrag, der Name und die Zeit. Ein Klick öffnet den ganzen Verlauf mit allen Kontakten, Rückmeldungen und Statuswechseln.
 
 **Ist man automatisch dabei, wenn man sich anmeldet?**
 Nein. Jede Anmeldung wird von der Aufgebotsstelle bestätigt. Erst dann erhält das Mitglied seine Anmeldebestätigung.

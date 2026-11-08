@@ -108,6 +108,9 @@ body.handy { background: var(--bg); color: var(--text); margin: 0; min-height: 1
 .hc-shifts legend { font-size: 13px; font-weight: 600; padding: 0 4px; }
 .hc-shifts .check { min-height: 40px; align-items: center; font-size: 14.5px; }
 .hc-shifts .check input { width: 20px; height: 20px; margin: 0; }
+.hc-shifts .hc-clash { display: block; font-size: 12.5px; font-weight: 600; color: var(--muted); }
+.hc-shifts .hc-clash[hidden] { display: none; }
+.hc-shifts .check.is-clash > span { opacity: .75; }
 .hc-hint { margin: 0; font-size: 12px; color: var(--muted); }
 .hc-shift-foot { display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px; }
 .hc-shift-foot .btn { min-height: 44px; }

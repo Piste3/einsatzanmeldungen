@@ -784,9 +784,12 @@
       for (const sh of list) {
         const l = document.createElement('label'); l.className = 'check';
         const c = document.createElement('input'); c.type = 'checkbox'; c.name = 'shift_ids'; c.value = sh.id; c.checked = String(sh.id) === btn.dataset.shift;
-        l.append(c, ` ${sh.name}${sh.time ? ` (${sh.time})` : ''}`);
+        Object.assign(c.dataset, { from: sh.from || '', to: sh.to || '', name: sh.name });
+        const hint = document.createElement('span'); hint.className = 'shift-clash'; hint.hidden = true;
+        l.append(c, ` ${sh.name}${sh.time ? ` (${sh.time})` : ''}`, hint);
         shiftBox.append(l);
       }
+      markShiftClash(shiftBox);
       dlg.dataset.hasShifts = list.length ? '1' : '';
       toggleShiftField(dlg);
     }
@@ -1175,6 +1178,52 @@
   const openHashTarget = () => { const id = decodeURIComponent(location.hash.slice(1)); const d = id && document.getElementById(id); if (d && d.tagName === 'DETAILS') d.open = true; };
   openHashTarget();
   window.addEventListener('hashchange', openHashTarget);
+  // Fenster beim längeren Darüberfahren (data-tip, z. B. Rückmeldungen: Schichten mit Zeiten). Inhalt ist serverseitig escaped.
+  (() => {
+    if (!window.matchMedia('(hover: hover)').matches) return;
+    let tip = null; let timer = null; let cur = null;
+    const hide = () => { clearTimeout(timer); timer = null; cur = null; if (tip) tip.hidden = true; };
+    const show = (el) => {
+      if (!tip) { tip = document.createElement('div'); tip.className = 'hover-tip'; tip.setAttribute('role', 'tooltip'); document.body.appendChild(tip); }
+      tip.innerHTML = el.dataset.tip;
+      tip.hidden = false;
+      const r = el.getBoundingClientRect();
+      const w = tip.offsetWidth; const hgt = tip.offsetHeight;
+      let left = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), window.innerWidth - w - 8);
+      let top = r.bottom + 6;
+      if (top + hgt > window.innerHeight - 8) top = Math.max(8, r.top - hgt - 6);
+      tip.style.left = `${left + window.scrollX}px`;
+      tip.style.top = `${top + window.scrollY}px`;
+    };
+    document.addEventListener('mouseover', (ev) => {
+      const el = ev.target.closest('[data-tip]');
+      if (el === cur) return;
+      hide();
+      if (!el || !el.dataset.tip) return;
+      cur = el;
+      timer = setTimeout(() => show(el), 450);
+    });
+    document.addEventListener('mouseleave', hide);
+    document.addEventListener('scroll', hide, true);
+    document.addEventListener('mousedown', hide);
+    document.addEventListener('keydown', hide);
+  })();
+  // Schichtauswahl: bei nicht gewählten Schichten zeigen, wenn sie zur selben Zeit wie eine gewählte liegen
+  function markShiftClash(box) {
+    const boxes = $$('input[name="shift_ids"]', box);
+    const on = boxes.filter((b) => b.checked && b.dataset.from);
+    boxes.forEach((b) => {
+      const hint = b.parentElement.querySelector('.shift-clash');
+      if (!hint) return;
+      const hit = !b.checked && b.dataset.from ? on.filter((o) => b.dataset.from < o.dataset.to && o.dataset.from < b.dataset.to) : [];
+      hint.hidden = !hit.length;
+      hint.textContent = hit.length ? ` – gleiche Zeit wie ${hit.map((o) => o.dataset.name).join(', ')}` : '';
+    });
+  }
+  document.addEventListener('change', (ev) => {
+    const box = ev.target.closest('[data-shift-options]');
+    if (box && ev.target.name === 'shift_ids') markShiftClash(box);
+  });
   const enhanceAll = (root = document) => { rememberFold(root); $$('select[data-search]', root).forEach(enhanceSelect); cardAll(root.closest ? (root.closest('table') || root) : root); };
   enhanceAll();
   new MutationObserver((muts) => {

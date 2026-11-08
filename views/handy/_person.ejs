@@ -57,7 +57,7 @@
     <% if (shifts.length) { %>
     <fieldset class="hc-shifts" data-shift-panel hidden>
       <legend>Für welche Schichten?</legend>
-      <% for (const s of shifts) { %><label class="check"><input type="checkbox" name="shift_ids" value="<%= s.id %>"> <span><%= s.name %><% if (s.time) { %> <span class="muted"><%= s.time %></span><% } %></span></label><% } %>
+      <% for (const s of shifts) { %><label class="check"><input type="checkbox" name="shift_ids" value="<%= s.id %>" data-from="<%= s.from %>" data-to="<%= s.to %>" data-name="<%= s.name %>"> <span><%= s.name %><% if (s.time) { %> <span class="muted"><%= s.time %></span><% } %><span class="hc-clash" data-clash hidden></span></span></label><% } %>
       <p class="hc-hint">Leer lassen, wenn die Schicht noch offen ist.</p>
       <div class="hc-shift-foot"><button class="btn btn-ghost" type="button" data-shift-cancel>Abbrechen</button><button class="btn btn-primary" type="submit" name="antwort" value="kann">Kann – speichern</button></div>
     </fieldset>

@@ -4,11 +4,14 @@ const db = require('../db');
 const feedback = require('../services/feedback');
 const history = require('../services/history');
 const { sendTable, wantsExport } = require('../lib/export');
-const { FEEDBACK } = require('../lib/labels');
+const { FEEDBACK, FEEDBACK_DETAIL } = require('../lib/labels');
 const h = require('../lib/view-helpers');
 const { flash } = h;
 
 const router = express.Router();
+
+// Export: bei «Andere Schicht» steht dabei, ob sie sich zeitlich überschneidet
+const cellLabel = (c) => (c.state === 'andere' && FEEDBACK_DETAIL[c.detail] ? FEEDBACK_DETAIL[c.detail].label : FEEDBACK[c.state].label);
 
 router.get('/rueckmeldungen', (req, res) => {
   const filters = {
@@ -23,7 +26,7 @@ router.get('/rueckmeldungen', (req, res) => {
       { label: 'Vorname', value: (r) => r.person.first_name },
       { label: 'Nachname', value: (r) => r.person.last_name },
       { label: 'Mannschaft', value: (r) => r.person.teams || '' },
-      ...data.columns.map((c, i) => ({ label: `${c.event.name} (${h.fmtEventDate(c.event, 'dm')})${c.shift ? ` – ${c.shift.name}` : ''}`, value: (r) => FEEDBACK[r.cells[i].state].label })),
+      ...data.columns.map((c, i) => ({ label: `${c.event.name} (${h.fmtEventDate(c.event, 'dm')})${c.shift ? ` – ${c.shift.name}` : ''}`, value: (r) => cellLabel(r.cells[i]) })),
     ];
     return sendTable(res, format, 'Rückmeldungen', cols, data.rows);
   }

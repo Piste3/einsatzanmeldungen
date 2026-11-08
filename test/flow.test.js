@@ -175,6 +175,28 @@ test('Rückmeldungen: Spalte pro Schicht und Zusage mit Schicht', () => {
   assert.deepEqual(Object.keys(feedback.shiftChoices([offen])), [String(offen)]);
 });
 
+test('Rückmeldungen: andere Schicht zur selben Zeit oder zeitlich möglich', () => {
+  const { anna, offen } = setup();
+  const inquiries = require('../src/services/inquiries');
+  const feedback = require('../src/services/feedback');
+  const d = db.one('SELECT date FROM events WHERE id = ?', offen).date;
+  const [tag] = events.shiftsOf(offen);
+  db.run('UPDATE shifts SET starts_at = ?, ends_at = ? WHERE id = ?', `${d}T08:00`, `${d}T12:00`, tag.id);
+  events.addShift(offen, { name: 'Mittag', date: d, start: '11:00', end: '14:00' }, system);
+  events.addShift(offen, { name: 'Nacht', date: d, start: '22:00', end: '02:00' }, system);
+  const [, mittag, nacht] = events.shiftsOf(offen);
+  inquiries.addAttempt(offen, anna, { channel: 'telefon', result: 'zugesagt', shift_ids: [String(mittag.id)] }, system);
+  const cells = () => feedback.matrix({}).rows.find((r) => r.person.id === anna).cells.filter((c) => c.eventId === offen);
+  assert.deepEqual(cells().map((c) => [c.state, c.detail]), [['andere', 'ueberschneidung'], ['an', null], ['andere', 'frei']]);
+  assert.deepEqual(cells()[1].mine, { ids: [mittag.id], kind: 'eingeteilt', clash: [tag.id] });
+  // Nachtschicht über Mitternacht und Schichten an anderen Tagen
+  assert.equal(feedback.shiftsOverlap(nacht, { starts_at: `${addDays(d, 1)}T01:00`, ends_at: `${addDays(d, 1)}T06:00` }), true);
+  assert.equal(feedback.shiftsOverlap(tag, { starts_at: `${addDays(d, 1)}T08:00`, ends_at: `${addDays(d, 1)}T12:00` }), false);
+  assert.equal(feedback.shiftsOverlap(tag, { starts_at: `${d}T12:00`, ends_at: `${d}T13:00` }), false, 'direkt danach geht');
+  assert.equal(feedback.shiftsOverlap(tag, { starts_at: null }), null, 'ohne Zeit unbekannt');
+  assert.equal(feedback.shiftChoices([offen])[offen][1].from, `${d}T11:00`);
+});
+
 test('Anfragen: alles für eine Person bei einem Einsatz zurücksetzen', () => {
   const { anna, offen } = setup();
   const inquiries = require('../src/services/inquiries');

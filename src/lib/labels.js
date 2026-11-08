@@ -66,6 +66,9 @@ const FEEDBACK_DETAIL = {
   telefon: { label: 'Angerufen, nicht erreicht', state: 'unsicher' },
   rueckfrage: { label: 'Rückfrage nötig', state: 'unsicher' },
   muendlich: { label: 'Mündlich gefragt, weiss es noch nicht', state: 'unsicher' },
+  // andere Schicht desselben Einsatzes: aus Datum und Zeit der Schichten berechnet
+  ueberschneidung: { label: 'Andere Schicht zur selben Zeit, geht nicht', state: 'andere' },
+  frei: { label: 'Andere Schicht, zeitlich auch möglich', state: 'andere' },
 };
 
 const FEEDBACK = {
