@@ -423,3 +423,12 @@ CREATE TABLE IF NOT EXISTS handy_steps (
   created_ms INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_handy_steps_user ON handy_steps(user_id, undone, id);
+
+-- Zuletzt gewählte Filter pro Benutzer und Seite (gelten auf allen Geräten; das Namen-Suchfeld bleibt draussen)
+CREATE TABLE IF NOT EXISTS user_filters (
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  page TEXT NOT NULL,
+  data JSON NOT NULL,
+  updated_at TEXT NOT NULL,
+  PRIMARY KEY (user_id, page)
+);

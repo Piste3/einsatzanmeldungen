@@ -70,6 +70,8 @@ Unter der Tabelle stehen die **externen Abteilungen** (Leute anderer Abteilungen
 - **Schicht:** Bei mehreren Schichten: **Ganzer Einsatz** (Standard), **Pro Schicht (je ein Block)** oder nur eine Schicht. Pro Schicht steht jede Schicht mit ihren Leuten und ihrer Verpflegung für sich. Wer in zwei Schichten ist, steht in beiden. Wer noch keine Schicht hat, steht am Schluss.
 - **Sortierung:** «Rang: tief → hoch» (Standard) oder «Rang: hoch → tief», innerhalb des Rangs alphabetisch, oder «Funktion, dann Rang» (EL, SC, BF zuerst).
 
+«Wer steht drauf» und die Sortierung bleiben für deinen Benutzer gespeichert, auch auf einem anderen Gerät. Die Schicht wählst du pro Einsatz neu.
+
 Die Seite aktualisiert sich von selbst, sobald die Aufgebotsstelle etwas ändert – die grüne Anzeige **Live** oben rechts zeigt das an. Du musst nicht neu laden.
 
 ## 5 · Die Teilnehmerliste

@@ -15,6 +15,7 @@ const { ConflictError } = require('../services/errors');
 const { today, addDays, fmtDate } = require('../lib/dates');
 const { REG_STATUS, REG_STATUS_MANUAL, REG_COUNTING, DIET } = require('../lib/labels');
 const { BY_RANK } = require('../lib/sorting');
+const userFilters = require('../services/user-filters');
 
 const router = express.Router();
 
@@ -178,8 +179,10 @@ const RANGES = {
 };
 const DEFAULT_FILTER = { zeit: '6', entwurf: true };
 
+// Gespeichert pro Benutzer (gilt auf allen Geräten); alte Handy-Cookies zählen nur, solange nichts gespeichert ist
 function filterOf(req) {
-  const q = new URLSearchParams(String(req.cookies?.[FILTER_COOKIE] || ''));
+  const saved = userFilters.get(req.user?.id, 'handy');
+  const q = new URLSearchParams(saved ? { ...saved } : String(req.cookies?.[FILTER_COOKIE] || ''));
   const zeit = RANGES[q.get('zeit')] ? q.get('zeit') : DEFAULT_FILTER.zeit;
   const entwurf = q.has('entwurf') ? q.get('entwurf') !== '0' : DEFAULT_FILTER.entwurf;
   const label = `${RANGES[zeit].label}${entwurf ? '' : ' · ohne Entwürfe'}`;
@@ -206,7 +209,8 @@ router.get('/handy/filter', (req, res) => {
 router.post('/handy/filter', (req, res) => {
   const zeit = RANGES[req.body.zeit] ? String(req.body.zeit) : DEFAULT_FILTER.zeit;
   const entwurf = req.body.entwurf === '0' ? '0' : '1';
-  res.cookie(FILTER_COOKIE, new URLSearchParams({ zeit, entwurf }).toString(), { httpOnly: true, sameSite: 'lax', path: '/handy', maxAge: 365 * 86400000 });
+  userFilters.set(req.user.id, 'handy', { zeit, entwurf });
+  res.clearCookie(FILTER_COOKIE, { path: '/handy' });
   res.redirect('/handy');
 });
 

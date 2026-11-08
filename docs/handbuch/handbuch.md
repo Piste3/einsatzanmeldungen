@@ -83,6 +83,7 @@ Links steht die Navigation, rechts der Inhalt.
 - **Live:** Die grüne Anzeige «Live» oben bedeutet, dass sich die Seite von selbst aktualisiert, wenn jemand anderes etwas ändert. Während man selbst etwas eingibt, wartet die Aktualisierung und zeigt stattdessen «Es gibt neue Daten».
 - **Suchen beim Tippen:** Alle Suchfelder filtern sofort, Enter ist nicht nötig. Auswahlfelder wie Mannschaft oder Status wirken ebenfalls sofort.
 - **Auswahlfelder mit Suche:** Wo man eine Person oder einen Einsatz auswählt, kann man einfach tippen, z. B. «meier chr». Gross-/Kleinschreibung, Umlaute und die Reihenfolge der Wörter spielen keine Rolle.
+- **Filter bleiben gespeichert:** Der Einsatzplaner merkt sich die zuletzt gewählten Filter pro Benutzer. Beim nächsten Besuch sind sie wieder eingestellt. Das gilt auch auf einem anderen Computer oder Handy. Das gilt für Rückmeldungen, Einsätze, Personen, Anmeldungen, Anfragen, Teilnehmer- und Verpflegungsliste sowie die Handy-App. Das Namen-Suchfeld startet immer leer. Bei Anmeldungen, Anfragen und den Listen merkt er sich Sortierung, Mannschaft und «Wer steht drauf». Diese gelten dann für alle Einsätze. Status und Schicht wählst du pro Einsatz neu. **Zurücksetzen** neben den Filtern stellt alles auf den Standard zurück. Der Knopf erscheint bei Rückmeldungen, Einsätzen und Personen, sobald ein Filter vom Standard abweicht.
 - **Sortierung nach Rang:** Personenlisten sind standardmässig vom tiefsten zum höchsten Rang sortiert, bei gleichem Rang nach Name. Im Auswahlfeld «Sortierung» lässt sich auf «Rang: hoch → tief» umschalten.
 - **Die Stelle bleibt:** Nach dem Speichern kommt man an dieselbe Stelle der Seite zurück.
 - **Nichts geht verloren:** Hat ein anderer Teil der Seite noch ungespeicherte Eingaben, fragt der Einsatzplaner vor dem Speichern nach. Beim Verlassen einer Seite mit ungespeicherten Eingaben warnt der Browser.
@@ -534,7 +535,7 @@ Der Reiter **Filter** bestimmt, welche Einsätze unter **Einsätze** und **Perso
 - **Entwürfe:** Anzeigen oder ausblenden. Ausblenden zeigt nur veröffentlichte Einsätze.
 - **Filter anwenden** speichert die Wahl und öffnet die Einsätze.
 
-Der Filter gilt nur auf diesem Handy und bleibt gespeichert. Vergangene, abgeschlossene und abgesagte Einsätze zeigt die Handy-App nie.
+Die App speichert den Filter für deinen Benutzer. Er gilt also auch auf einem anderen Handy. Auch die gewählte Mannschaft bei den Anfragen bleibt gespeichert. Vergangene, abgeschlossene und abgesagte Einsätze zeigt die Handy-App nie.
 
 #### Profil
 
@@ -634,6 +635,8 @@ Eine Karte pro Einsatz mit den Namen, gruppiert nach An, Unsicher, Ab und Offen.
 
 Namenssuche, Zeitraum (nächste 2 Wochen bis nächstes Jahr), Mannschaft, «Nur mit offenen Einsätzen» oder «Nur mit Unsicheren», Sortierung (Rang tief → hoch oder hoch → tief, nach Name, meiste offen zuerst) und «Entwürfe» einblenden.
 
+Der Einsatzplaner speichert die Filter und die Ansicht («Tabelle» oder «Pro Einsatz») für deinen Benutzer. Beim nächsten Öffnen sind sie wieder eingestellt, auch auf einem anderen Gerät. Die Namenssuche speichert er nicht. **Zurücksetzen** rechts neben den Filtern stellt den Standard wieder her: nächste 3 Monate, alle Mannschaften, alle Mitglieder, Rang tief → hoch, ohne Entwürfe, Tabelle.
+
 ### Die Seite eines Mitglieds
 
 ![Personen › Seite eines Mitglieds](bilder/17-person.jpg)
@@ -671,6 +674,8 @@ Das Menü **Mehr ▾** neben dem Knopf bietet die Liste unter «Teilnehmerliste�
   - **Nur «Name der Schicht»:** nur diese Schicht, mit den externen Abteilungen dieser Schicht.
 - **Sortierung:** Rang tief → hoch (Standard) oder hoch → tief, innerhalb des Rangs alphabetisch, oder **Funktion, dann Rang** (EL, SC, BF zuerst, dann die Einsatzteilnehmer).
 - **PDF öffnen**, **Excel** und **CSV** übernehmen genau diese Auswahl.
+
+«Wer steht drauf» und die Sortierung bleiben für deinen Benutzer gespeichert. Sie gelten beim nächsten Öffnen der Auswahl für jeden Einsatz, auch auf einem anderen Gerät. Die Schicht wählst du pro Einsatz neu. Der Knopf **Teilnehmerliste** oben und die Links im Menü **Mehr ▾** liefern immer die Standard-Liste.
 
 Die Teilnehmerliste pro Schicht als PDF gibt es auch direkt im Menü **Mehr ▾** unter «Teilnehmerliste» › **Pro Schicht (PDF)**.
 

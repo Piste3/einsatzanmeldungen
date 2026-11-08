@@ -367,9 +367,8 @@ test('Filter: Zeitraum und Entwürfe einstellen', async () => {
     body: new URLSearchParams({ _csrf: csrf, zeit: '12', entwurf: '0' }),
   });
   assert.equal(res.status, 302);
-  const set = (res.headers.get('set-cookie') || '').split(';')[0];
-  assert.match(set, /^kkb_handy_filter=/);
-  const both = `${cookie}; ${set}`;
+  // Gespeichert pro Benutzer: gilt auch in einer neuen Anmeldung (anderes Gerät) ohne Cookie
+  const both = await login('lena', 'Aufgebot-2026-x');
   start = await (await get('/handy', both)).text();
   assert.match(start, /Nächste 12 Monate · ohne Entwürfe/);
   assert.match(start, /Tattoo Parking/);
@@ -377,6 +376,8 @@ test('Filter: Zeitraum und Entwürfe einstellen', async () => {
   assert.doesNotMatch(start, /Vorbei Alt/, 'vergangene nie');
   assert.match(await (await get('/handy/filter', both)).text(), /name="zeit" value="12" checked/);
   assert.match(await (await get('/handy/personen', both)).text(), /Nächste 12 Monate · ohne Entwürfe/);
+  // Zurück auf den Standard für die übrigen Tests
+  db.run("DELETE FROM user_filters WHERE page = 'handy'");
 });
 
 test('Profil: Konto, Darstellung, Ganze Ansicht, Abmelden; Konto-Seiten im Rahmen der Handy-App', async () => {
