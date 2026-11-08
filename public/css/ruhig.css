@@ -370,8 +370,18 @@ tr.group-row strong { font-weight: 600; }
 }
 /* Person: eine Liste «Nächste Einsätze» statt vier gleich grosser Karten */
 .person-group-head { display: flex; align-items: center; gap: 8px; padding: 10px 16px 0; }
-.person-group { padding-top: 6px; }
-.person-group + .person-group-head { border-top: 1px solid var(--line); margin-top: 4px; padding-top: 12px; }
+.person-group { padding-top: 2px; padding-bottom: 6px; }
+.person-group + .person-group-head { border-top: 1px solid var(--line); padding-top: 10px; }
+.person-group-head .hint { font-size: 12px; color: var(--muted); }
+/* Person: nur der neueste Kontakt sichtbar, ältere aufklappbar, gleiche zusammengefasst */
+.attempt-count { font-size: 11px; font-weight: 600; color: var(--muted); }
+.attempts-more > summary { cursor: pointer; font-size: 12px; color: var(--muted); list-style: none; width: fit-content; }
+.attempts-more > summary::-webkit-details-marker { display: none; }
+.attempts-more > summary::before { content: "▸ "; }
+.attempts-more[open] > summary::before { content: "▾ "; }
+.attempts-more > summary:hover { color: var(--text); }
+.attempts-more > .attempts { margin-top: 3px; }
+details.collapse > summary .hint { margin-left: 6px; font-size: 12px; font-weight: 400; color: var(--muted); }
 /* Rückmeldungen: Legende immer sichtbar, eine Zeile über der Tabelle */
 .fb-legend { gap: 6px 14px; color: var(--muted); }
 .fb-legend-title { font-weight: 600; color: var(--text); }

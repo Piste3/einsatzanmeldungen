@@ -644,7 +644,10 @@ Der Einsatzplaner speichert die Filter und die Ansicht («Tabelle» oder «Pro E
 - Links die wichtigsten **Stammdaten**.
 - Rechts die Liste **Nächste Einsätze**, gruppiert nach **Angemeldet, Abgemeldet, Unsicher und Offen**, jeweils mit Datum und wie die Rückmeldung kam. Leere Gruppen fallen weg.
 - Offene Einsätze lassen sich direkt mit **Anfrage erfassen** nachfassen.
-- **Frühere Einsätze** und der **Verlauf** sind zuklappbar. Die Seite lässt sich drucken und nach Excel exportieren.
+- Pro Einsatz steht nur der **neueste Kontaktversuch**. Ein Klick auf **«N frühere Kontakte»** zeigt die älteren, der neueste zuoberst.
+- Gleiche Einträge (gleicher Kanal, gleiche Minute, gleiche Person, gleiches Ergebnis) stehen nur einmal, mit der Anzahl dahinter, z. B. **3×**.
+- **Frühere Einsätze** und der **Verlauf** sind zugeklappt. Neben dem Titel steht die Anzahl. Der Verlauf zeigt zuerst die 10 neuesten Einträge, **Ältere anzeigen** zeigt den Rest.
+- Die Seite lässt sich drucken und nach Excel exportieren. Beim Drucken erscheinen alle Kontaktversuche.
 
 ## 14 · Teilnehmerliste und Verpflegungsliste
 
