@@ -6,7 +6,7 @@
 <%
   const SYM = { an: '✓', ab: '✕', unsicher: '?', offen: '', andere: '·', schicht_offen: '✓' };
   // eigenes Icon für den genaueren Stand (z. B. Nachricht gesendet, bestätigt)
-  const DSYM = { bestaetigt: '✓', warteliste: h.icon('clock', 'fb-ico'), whatsapp: h.icon('chat', 'fb-ico'), telefon: h.icon('phone', 'fb-ico'), muendlich: h.icon('voice', 'fb-ico'), rueckfrage: '!', ueberschneidung: '–', frei: '+' };
+  const DSYM = { bestaetigt: '✓', warteliste: h.icon('clock', 'fb-ico'), whatsapp: h.icon('chat', 'fb-ico'), telefon: h.icon('phone', 'fb-ico'), muendlich: h.icon('voice', 'fb-ico'), rueckfrage: '!', ueberschneidung: '–', frei: '<span class="fb-ring"></span>' };
   const sym = (c) => (c.detail ? DSYM[c.detail] : h.escapeHtml(SYM[c.state]));
   const stateLabel = (c) => (c.detail ? h.labels.FEEDBACK_DETAIL[c.detail].label : h.labels.FEEDBACK[c.state].label);
   // wer den Stand gesetzt hat und wann (letzter Historie-Eintrag)
@@ -86,7 +86,7 @@
   <% if (columns.some((c) => c.shift)) { %>
   <span class="fb-legend-item"><span class="fb fb-schicht_offen">✓</span> An, ohne Schicht</span>
   <span class="fb-legend-item"><span class="fb fb-andere fb-d-ueberschneidung">–</span> Andere Schicht, gleiche Zeit</span>
-  <span class="fb-legend-item"><span class="fb fb-andere fb-d-frei">+</span> Andere Schicht, zeitlich möglich</span>
+  <span class="fb-legend-item"><span class="fb fb-andere fb-d-frei"><%- DSYM.frei %></span> Andere Schicht, zeitlich möglich</span>
   <% if (rows.some((r) => r.cells.some((c) => c.state === 'andere' && !c.detail))) { %><span class="fb-legend-item"><span class="fb fb-andere">·</span> Andere Schicht, Zeit fehlt</span><% } %>
   <% } %>
 </div>

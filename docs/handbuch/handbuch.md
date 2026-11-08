@@ -586,7 +586,7 @@ Die Seite **Rückmeldungen** beantwortet die wichtigste Frage der Aufgebotsstell
 - Unten stehen pro Einsatz die Summen An · Ab · Unsicher · Offen.
 - Nach dem Speichern, «Verlauf löschen» oder «Alles zurücksetzen» bleibt die Seite an derselben Stelle stehen. Auch die Tabelle springt nicht nach oben oder links zurück.
 - **Einsätze mit mehreren Schichten** haben eine Spalte pro Schicht, mit eigener Besetzung (z. B. «Tagschicht 8 / 10 · 1 ohne Schicht»). «ohne Schicht» heisst: zugesagt, aber noch keiner Schicht zugeteilt. ✓ heisst: für diese Schicht angemeldet oder eingeteilt. Ein gestricheltes ✓ heisst: zugesagt, aber die Schicht ist noch nicht festgelegt. Ab, Unsicher und Offen gelten für alle Schichten des Einsatzes.
-- **Andere Schicht: geht es zeitlich?** Ist eine Person in einer anderen Schicht, rechnet die App aus Datum und Zeit, ob sie diese Schicht trotzdem machen kann. **–** auf grauem Feld heisst: Die Schicht liegt zur selben Zeit wie ihre Schicht. Die Person kann also nicht. **+** mit grünem, gepunktetem Rand heisst: Die Zeiten überschneiden sich nicht. Die Person könnte diese Schicht zusätzlich machen, z. B. an einem anderen Tag. Endet eine Schicht genau dann, wenn die andere beginnt, gilt das nicht als Überschneidung. Eine Nachtschicht über Mitternacht zählt bis zu ihrem Ende am nächsten Tag. Fehlt bei einer Schicht die Zeit, steht ein Punkt (·).
+- **Andere Schicht: geht es zeitlich?** Ist eine Person in einer anderen Schicht, rechnet die App aus Datum und Zeit, ob sie diese Schicht trotzdem machen kann. **–** auf grauem Feld heisst: Die Schicht liegt zur selben Zeit wie ihre Schicht. Die Person kann also nicht. Ein **kleiner grüner Ring** heisst: Die Zeiten überschneiden sich nicht. Die Person könnte diese Schicht zusätzlich machen, z. B. an einem anderen Tag. Endet eine Schicht genau dann, wenn die andere beginnt, gilt das nicht als Überschneidung. Eine Nachtschicht über Mitternacht zählt bis zu ihrem Ende am nächsten Tag. Fehlt bei einer Schicht die Zeit, steht ein Punkt (·).
 - Klickt man in einer Schicht-Spalte auf ein offenes Feld und wählt **«Zugesagt»**, ist diese Schicht schon angekreuzt. Weitere Schichten lassen sich dazu wählen, oder man lässt die Auswahl leer und teilt später unter «Schichten» zu. Das gilt genauso beim Erfassen unter Einsatz › Anfragen und auf der Seite eines Mitglieds.
 
 **Die Symbole:**
@@ -604,7 +604,7 @@ Die Seite **Rückmeldungen** beantwortet die wichtigste Frage der Aufgebotsstell
 | Rückfrage (!) | Anmeldung mit offener Frage, z. B. nachträglich «Nein» im Formular |
 | Offen | Noch keine Rückmeldung und noch nicht angefragt |
 | Andere Schicht, gleiche Zeit (– auf grauem Feld) | In einer anderen Schicht, die zur selben Zeit liegt. Die Person kann diese Schicht nicht machen |
-| Andere Schicht, zeitlich möglich (+ mit grünem Rand) | In einer anderen Schicht, die zu einer anderen Zeit liegt. Die Person könnte diese Schicht zusätzlich machen |
+| Andere Schicht, zeitlich möglich (kleiner grüner Ring) | In einer anderen Schicht, die zu einer anderen Zeit liegt. Die Person könnte diese Schicht zusätzlich machen |
 | An, ohne Schicht (gestricheltes ✓) | Zugesagt, Schicht noch nicht festgelegt |
 
 ### Verlauf pro Person und Einsatz
