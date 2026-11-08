@@ -425,3 +425,11 @@ tr.group-row strong { font-weight: 600; }
   .fb-matrix tfoot td.fb-name { font-size: 11px; }
   .fb-ev { min-width: 76px; max-width: 92px; padding: 8px 4px !important; }
 }
+
+/* Leerer Zustand einer ganzen Seite (z. B. Klärungen ohne offene Fälle): ruhig, links ausgerichtet */
+.empty-state { max-width: 560px; padding: 28px 28px 30px; display: grid; grid-template-columns: auto 1fr; column-gap: 16px; align-items: start; }
+.empty-state-icon { grid-row: span 2; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface-2); color: var(--dot-green); display: grid; place-items: center; }
+.empty-state-icon .icon { width: 20px; height: 20px; }
+.empty-state h2 { margin: 2px 0 4px; font-size: 15px; font-weight: 600; }
+.empty-state p { margin: 0; color: var(--muted); font-size: 13.5px; line-height: 1.5; }
+@media (max-width: 760px) { .empty-state { padding: 20px; column-gap: 14px; } }

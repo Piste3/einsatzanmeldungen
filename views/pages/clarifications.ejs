@@ -1,10 +1,16 @@
 <%- include('../partials/head') %>
 <%- include('../partials/topbar', { crumbs: [['Klärungen']], heading: 'Anmeldungen zuordnen' }) %>
+<% if (!list.length) { %>
+<div class="card empty-state">
+  <span class="empty-state-icon"><%- h.icon('check') %></span>
+  <h2>Keine offenen Klärungen</h2>
+  <p>Alle Anmeldungen sind einer Person zugeordnet. Kommt ein Name, der nicht eindeutig passt, erscheint er hier.</p>
+</div>
+<% } else { %>
 <div class="grid grid-side">
   <div class="card">
     <div class="card-head"><h2>Offen <%- h.badge(list.length, list.length ? 'yellow' : 'gray') %></h2></div>
     <div class="card-body">
-      <% if (!list.length) { %><div class="empty">Keine offenen Klärungen. 🎉</div><% } %>
       <% for (const r of list) { %>
         <a class="list-item <%= selected && selected.id === r.id ? 'active' : '' %>" href="/klaerungen?id=<%= r.id %>" data-row-id="k<%= r.id %>">
           <strong>«<%= r.entered_name %>»</strong>
@@ -66,4 +72,5 @@
   </div>
   <% } %>
 </div>
+<% } %>
 <%- include('../partials/foot') %>
