@@ -9,7 +9,7 @@ const { ROLES } = require('../lib/labels');
 const { ValidationError } = require('./errors');
 
 function list() {
-  return db.all(`SELECT u.*, p.first_name, p.last_name FROM users u LEFT JOIN persons p ON p.id = u.person_id ORDER BY u.active DESC, u.display_name COLLATE NOCASE`);
+  return db.all(`SELECT u.*, p.first_name, p.last_name FROM users u LEFT JOIN persons p ON p.id = u.person_id ORDER BY u.active DESC, CASE u.role WHEN 'admin' THEN 0 WHEN 'aufgebotsstelle' THEN 1 WHEN 'einsatzleiter' THEN 2 ELSE 3 END, u.display_name COLLATE NOCASE`);
 }
 
 function get(id) {
