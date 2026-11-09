@@ -14,6 +14,13 @@
     if (more.length) overs.push({ shift: sh.name, text: more.join(', ') });
   }
   if (!fnSummary.hasTargets) for (const sh of s.shifts) if (sh.missing) gaps.push({ shift: sh.name, text: `${sh.missing} Personen` });
+  // Bei vielen Schichten: Summe pro Funktion statt einer langen Zeile, z. B. «9 EL, 36 TN»
+  const gapTotal = (shifts, key) => {
+    const sum = new Map();
+    for (const sh of shifts) for (const f of sh.rows) if (f[key] > 0) sum.set(f.short, { pos: f.pos, n: (sum.get(f.short)?.n || 0) + f[key] });
+    if (!sum.size && key === 'missing') return `${s.shifts.reduce((a, sh) => a + (sh.missing || 0), 0)} Personen`;
+    return [...sum].sort((a, b) => a[1].pos - b[1].pos).map(([k, v]) => `${v.n} ${k}`).join(', ');
+  };
   const noSoll = !s.shifts.some((sh) => sh.soll);
   const lage = noSoll ? { tone: 'gray', text: 'Noch kein Soll festgelegt' } : gaps.length ? { tone: 'yellow', text: 'Es fehlen noch Leute' } : { tone: 'green', text: 'Alle Schichten sind besetzt' };
   // Besetzung als Tabelle: Zeilen = Funktionen, Spalten = Schichten
@@ -28,8 +35,8 @@
     <span class="lage-dot dot-<%= lage.tone %>" aria-hidden="true"></span>
     <div>
       <strong><%= lage.text %></strong>
-      <% if (gaps.length) { %><div class="small muted"><%= gaps.map((g) => (fnSummary.shifts.length > 1 ? `${g.shift}: ${g.text}` : g.text)).join(' · ') %></div><% } %>
-      <% if (overs.length) { %><div class="small muted">Mehr als nötig: <%= overs.map((g) => (fnSummary.shifts.length > 1 ? `${g.shift} ${g.text}` : g.text)).join(' · ') %></div><% } %>
+      <% if (gaps.length) { %><div class="small muted"><% if (gaps.length > 2) { %>In <%= gaps.length %> von <%= fnSummary.shifts.length %> Schichten fehlen noch <%= gapTotal(fnSummary.shifts, 'missing') %>. <a class="link no-print" href="#besetzung">Details in der Besetzung ↓</a><% } else { %><%= gaps.map((g) => (fnSummary.shifts.length > 1 ? `${g.shift}: ${g.text}` : g.text)).join(' · ') %><% } %></div><% } %>
+      <% if (overs.length) { %><div class="small muted">Mehr als nötig: <% if (overs.length > 2) { %>in <%= overs.length %> Schichten, total <%= gapTotal(fnSummary.shifts, 'over') %><% } else { %><%= overs.map((g) => (fnSummary.shifts.length > 1 ? `${g.shift} ${g.text}` : g.text)).join(' · ') %><% } %></div><% } %>
       <% if (noSoll) { %><div class="small muted"><a class="link" href="/einsaetze/<%= event.id %>/bearbeiten#funktionen">Soll pro Schicht festlegen</a></div><% } %>
       <% const openItems = checklist.filter((c) => !c.done); %>
       <% if (openItems.length) { %><div class="lage-todo small"><span class="muted">Noch offen:</span> <%= openItems.map((c) => c.label).join(' · ') %> <a class="link no-print" href="/einsaetze/<%= event.id %>/bearbeiten">Angaben ergänzen →</a></div><% } %>

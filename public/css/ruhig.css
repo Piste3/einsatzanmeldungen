@@ -491,3 +491,8 @@ details.collapse > summary .hint { margin-left: 6px; font-size: 12px; font-weigh
   .fn-matrix .fn-matrix-label { position: static; }
   .fn-matrix th, .fn-matrix td { padding: 2px 6px; font-size: 10px; }
 }
+
+/* Besetzung bei vielen Schichten: Spalte «Funktion» bleibt beim seitlichen Schieben stehen */
+.occ-table th:first-child, .occ-table td:first-child { position: sticky; left: 0; z-index: 1; background: var(--card); white-space: nowrap; }
+.occ-table tfoot td:first-child { background: var(--card); }
+@media print { .occ-table th:first-child, .occ-table td:first-child { position: static; } }
