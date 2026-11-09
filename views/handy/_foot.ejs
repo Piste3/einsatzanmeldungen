@@ -20,6 +20,7 @@
     <a href="<%= href %>" data-h-tab="<%= key %>" class="<%= tabNow === key ? 'active' : '' %>"<%- tabNow === key ? ' aria-current="page"' : '' %>><%- h.icon(ico) %><span><%= label %></span></a>
   <% } %>
 </nav>
+<script src="/static/js/scroll.js?v=<%= v %>"></script>
 <% if (typeof withAppJs !== 'undefined' && withAppJs) { %><script src="/static/js/app.js?v=<%= v %>"></script><% } %>
 <script src="/static/js/handy.js?v=<%= v %>"></script>
 </body>

@@ -138,9 +138,11 @@
       const active = document.activeElement;
       const keep = active && active.name && cur.contains(active) ? { name: active.name, value: active.value, start: active.selectionStart, end: active.selectionEnd } : null;
       $$('.flash', next).forEach((f) => f.remove());
-      const boxLeft = $$('.table-wrap, .fb-wrap', cur).map((b) => b.scrollLeft);
+      const pos = window.kkbScroll ? window.kkbScroll.snapshot() : null;
+      const shown = $$(':scope > .flash:not(#stale-hint)', cur);
       cur.innerHTML = next.innerHTML;
-      $$('.table-wrap, .fb-wrap', cur).forEach((b, i) => { if (boxLeft[i]) b.scrollLeft = boxLeft[i]; });
+      cur.prepend(...shown);
+      if (pos) window.kkbScroll.apply(pos); // Seite und Tabellen bleiben, wo sie waren
       history.replaceState(null, '', url.pathname + url.search);
       if (keep) {
         const el = $$('[name]', cur).find((e) => e.name === keep.name && e.closest('form') && isFilterForm(e.closest('form')));
@@ -654,29 +656,6 @@
   }
   $$('[data-rte]').forEach(initRte);
 
-  // ---------- Scroll-Position behalten (Rückmeldungen) ----------
-  // Nach einer Aktion (Speichern, Verlauf löschen, Zurücksetzen) lädt die Seite neu; Seite und Tabelle
-  // springen dann an dieselbe Stelle zurück, waagrecht wie senkrecht.
-  if (document.querySelector('[data-keep-scroll]')) {
-    const key = `scroll:${location.pathname}${location.search}`;
-    const boxes = () => $$('[data-keep-scroll]');
-    const save = () => {
-      try {
-        sessionStorage.setItem(key, JSON.stringify({ t: Date.now(), x: window.scrollX, y: window.scrollY, boxes: boxes().map((b) => [b.scrollLeft, b.scrollTop]) }));
-      } catch { /* kein Speicher */ }
-    };
-    window.addEventListener('pagehide', save);
-    document.addEventListener('submit', save, true);
-    try {
-      const st = JSON.parse(sessionStorage.getItem(key) || 'null');
-      sessionStorage.removeItem(key);
-      if (st && Date.now() - st.t < 5 * 60 * 1000) {
-        boxes().forEach((b, i) => { if (st.boxes[i]) { b.scrollLeft = st.boxes[i][0]; b.scrollTop = st.boxes[i][1]; } });
-        window.scrollTo(st.x, st.y);
-      }
-    } catch { /* egal */ }
-  }
-
   // ---------- Dialoge ----------
   // Kontaktversuch-Fenster: alles für diese Person bei diesem Einsatz zurücksetzen
   document.addEventListener('click', async (ev) => {
@@ -700,7 +679,7 @@
     if (!ok) return;
     const f = document.createElement('form');
     f.method = 'post'; f.action = '/anfragen/zuruecksetzen';
-    for (const [n, v] of [['_csrf', val('_csrf')], ['person_id', val('person_id')], ['event_id', val('event_id') || dlg.dataset.event || ''], ['back', val('back')]]) {
+    for (const [n, v] of [['_csrf', val('_csrf')], ['person_id', val('person_id')], ['event_id', val('event_id') || dlg.dataset.event || ''], ['back', sameView(val('back'))]]) {
       const i = document.createElement('input'); i.type = 'hidden'; i.name = n; i.value = v; f.append(i);
     }
     document.body.append(f);
@@ -724,7 +703,7 @@
     f.method = 'post'; f.action = '/rueckmeldungen/verlauf/loeschen';
     const csrf = (form && form.querySelector('[name=_csrf]') || {}).value || '';
     const back = (form && form.querySelector('[name=back]') || {}).value || location.pathname + location.search;
-    for (const [n, v] of [['_csrf', csrf], ['person_id', b.dataset.person], ['event_id', b.dataset.event], ['back', back]]) {
+    for (const [n, v] of [['_csrf', csrf], ['person_id', b.dataset.person], ['event_id', b.dataset.event], ['back', sameView(back)]]) {
       const i = document.createElement('input'); i.type = 'hidden'; i.name = n; i.value = v; f.append(i);
     }
     document.body.append(f);
@@ -919,16 +898,16 @@
       const cur = document.getElementById('content');
       if (!next || !cur || isBusy()) { showStaleHint(); return; }
       const before = new Set($$('[data-row-id]', cur).map((e) => e.dataset.rowId));
-      const scroll = window.scrollY;
-      const boxPos = $$('.table-wrap, .fb-wrap', cur).map((b) => [b.scrollTop, b.scrollLeft]);
-      // Meldungen nicht erneut anzeigen
+      const pos = window.kkbScroll ? window.kkbScroll.snapshot() : null;
+      // Meldungen nicht erneut anzeigen; die schon sichtbaren bleiben stehen, sonst rutscht der Inhalt nach oben
       $$('.flash', next).forEach((f) => f.remove());
+      const shown = $$(':scope > .flash:not(#stale-hint)', cur);
       deferred = false;
       cur.innerHTML = next.innerHTML;
-      $$('.table-wrap, .fb-wrap', cur).forEach((b, i) => { if (boxPos[i]) { b.scrollTop = boxPos[i][0]; b.scrollLeft = boxPos[i][1]; } });
+      cur.prepend(...shown);
       const nav = doc.querySelector('.nav');
       if (nav) $('.nav').innerHTML = nav.innerHTML;
-      window.scrollTo(0, scroll);
+      if (pos) window.kkbScroll.apply(pos); // Seite und Tabellen bleiben, wo sie waren
       $$('[data-row-id]', cur).forEach((e) => { if (!before.has(e.dataset.rowId)) e.classList.add('flash-new'); });
       const ind = indicator(); if (ind && ws && ws.readyState === 1) ind.classList.remove('off');
     } catch { /* nächster Versuch beim nächsten Ereignis */ }
@@ -946,42 +925,23 @@
 
   connect();
 
-  // ---------- Scrollposition erhalten ----------
-  // Nach dem Absenden eines Formulars kommt man meist auf dieselbe Seite zurück: dann an die alte Stelle scrollen,
-  // auch in Tabellen mit eigenem Scrollbereich.
-  const SCROLL_KEY = 'kkb:scroll';
-  const scrollBoxes = () => $$('.table-wrap, .fb-wrap');
-  function saveScroll() {
-    try {
-      sessionStorage.setItem(SCROLL_KEY, JSON.stringify({
-        path: location.pathname, at: Date.now(), y: window.scrollY,
-        boxes: scrollBoxes().map((b) => [b.scrollTop, b.scrollLeft]),
-      }));
-    } catch { /* ohne Speicher eben nicht */ }
-  }
-  function restoreScroll() {
-    let st = null;
-    try { st = JSON.parse(sessionStorage.getItem(SCROLL_KEY) || 'null'); sessionStorage.removeItem(SCROLL_KEY); } catch { return; }
-    if (!st || st.path !== location.pathname || Date.now() - st.at > 30000) return;
-    const apply = () => {
-      const boxes = scrollBoxes();
-      (st.boxes || []).forEach(([top, left], i) => { if (boxes[i]) { boxes[i].scrollTop = top; boxes[i].scrollLeft = left; } });
-      window.scrollTo(0, st.y);
-    };
-    apply();
-    // nach dem Laden von Schriften und Bildern stimmt die Höhe erst ganz
-    if (document.readyState !== 'complete') window.addEventListener('load', apply, { once: true });
-    requestAnimationFrame(apply);
+  // Scrollposition: siehe scroll.js (gilt für die ganze App)
+  // Rücksprung nach einer Aktion: genau die Ansicht, die gerade offen ist (mit allen Filtern, auch leeren
+  // und solchen, die erst nach dem Laden gewählt wurden). Sonst ist die Liste danach anders und die Stelle weg.
+  function sameView(back) {
+    const v = String(back || '');
+    if (!v.startsWith('/') || v.startsWith('//')) return v;
+    return new URL(v, location.href).pathname === location.pathname ? location.pathname + location.search : v;
   }
   document.addEventListener('submit', (ev) => {
-    if (!ev.defaultPrevented && (ev.target.getAttribute('method') || 'get').toLowerCase() === 'post') saveScroll();
-  });
-  restoreScroll();
+    const f = ev.target;
+    if ((f.getAttribute('method') || 'get').toLowerCase() !== 'post') return;
+    const back = f.querySelector('input[name=back]');
+    if (back) back.value = sameView(back.value);
+  }, true);
   // Kommt die Seite beim Zurückgehen aus dem Zwischenspeicher des Browsers (z. B. Safari), neu laden
   window.addEventListener('pageshow', (ev) => {
-    if (!ev.persisted) return;
-    if (document.querySelector('.app')) location.reload();
-    else restoreScroll();
+    if (ev.persisted && document.querySelector('.app')) location.reload();
   });
 
   // ---------- Ungespeicherte Änderungen schützen ----------
