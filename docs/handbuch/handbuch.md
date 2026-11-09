@@ -577,6 +577,7 @@ Die Seite **Rückmeldungen** beantwortet die wichtigste Frage der Aufgebotsstell
 ![Rückmeldungen als Tabelle](bilder/14-rueckmeldungen.jpg)
 
 - Mitglieder als Zeilen, Einsätze als Spalten. Kopfzeile und Namensspalte bleiben beim Scrollen stehen. Am PC scrollt nur die Tabelle. Filter, Legende und Kopfzeile bleiben oben stehen, die Total-Zeile bleibt unten sichtbar. In der ganzen Ansicht am Handy ist die Namensspalte schmal und zeigt nur Rang und Name. So sind mehr Schichten sichtbar.
+- Hat ein Einsatz mehrere Schichten, bekommt jede Schicht eine eigene Spalte. Unter dem Schichtnamen steht die Zeit, z. B. «13:30–19:30». Bei mehrtägigen Einsätzen steht dort der Tag. Der Einsatzname läuft über alle Spalten seiner Schichten.
 - Im Spaltenkopf jedes Einsatzes steht die Besetzung als Balken, z. B. «11 / 16». Sie zählt gleich wie der Reiter «Schichten» und die Übersicht: Anmeldungen mit Status Neu, Rückfrage oder Bestätigt. Die Warteliste zählt nicht.
 - **Symbole:** Die **Legende** direkt über der Tabelle erklärt alle Symbole (Tabelle unten). Sie ist immer sichtbar, in beiden Ansichten. Das Symbol zeigt immer nur den neuesten Stand.
 - **Kleines Fenster beim Darüberfahren:** Bleibt man kurz mit der Maus auf einem Feld, öffnet sich ein kleines Fenster. Die Ansicht wechselt dabei nicht. Das Fenster zeigt den Stand und den letzten Eintrag mit Name und Zeit, z. B. «Zuletzt: Anmeldung: Bestätigt – Lena Meier, heute 14:20 (4 Einträge)». Hat sich jemand selbst über das Formular gemeldet, steht «Person selbst».

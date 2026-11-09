@@ -102,12 +102,12 @@
         <tr>
           <th class="fb-name">Mitglied</th>
           <% for (const col of columns) { const e = col.event; const t = totals[e.id]; %>
-            <th class="fb-ev <%= col.shift ? 'fb-shift' : '' %> <%= col.first ? 'fb-first' : '' %>" aria-label="<%= e.name %> · <%= colDate(col) %><%= col.shift ? ` · ${col.shift.name} ${shiftTime(col.shift)}` : '' %>" data-tip="<%= headTip(col) %>">
+            <th class="fb-ev <%= col.shift ? 'fb-shift' : '' %> <%= col.first ? 'fb-first' : '' %>"<% if (col.shift && col.first) { %> style="--fb-span: <%= e.shifts.length %>"<% } %> aria-label="<%= e.name %> · <%= colDate(col) %><%= col.shift ? ` · ${col.shift.name} ${shiftTime(col.shift)}` : '' %>" data-tip="<%= headTip(col) %>">
               <a href="/einsaetze/<%= e.id %><%= col.shift ? '/schichten' : '' %>">
                 <span class="dt"><%= h.fmtEventDate(e, 'short') %></span>
                 <span class="ev"><%= e.name %></span>
                 <% if (col.shift) { const ct = colTotals[col.key]; %>
-                  <span class="sh"><%= col.shift.name %><% if (h.isMultiDay(e) && col.shift.starts_at) { %><span class="sh-day"><%= colDate(col) %></span><% } %></span>
+                  <span class="sh"><%= col.shift.name %><% if (h.isMultiDay(e) && col.shift.starts_at) { %><span class="sh-day"><%= colDate(col) %></span><% } else if (shiftTime(col.shift)) { %><span class="sh-day"><%= shiftTime(col.shift) %></span><% } %></span>
                   <span class="fill fill-<%= colTone(col) %>"><span style="width:<%= colFill(col) ?? 0 %>%"></span></span>
                   <span class="num"><%= colIst(col) %><%= extTxt(colExt(col)) %><%= col.shift.target_count ? ` / ${col.shift.target_count}` : '' %><%= ct.schicht_offen ? ` · ${ct.schicht_offen} ohne Schicht` : '' %></span>
                 <% } else { %>

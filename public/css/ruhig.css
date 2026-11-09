@@ -497,5 +497,14 @@ details.collapse > summary .hint { margin-left: 6px; font-size: 12px; font-weigh
 .occ-table tfoot td:first-child { background: var(--card); }
 @media print { .occ-table th:first-child, .occ-table td:first-child { position: static; } }
 
-/* Rückmeldungen: lange Einsatznamen im Spaltenkopf trennen statt abschneiden («Sommernachts-fest») */
-.fb-ev .ev { hyphens: auto; -webkit-hyphens: auto; overflow-wrap: anywhere; }
+/* Rückmeldungen: Einsatznamen nur an Leerzeichen umbrechen, nie mitten im Wort.
+   Bei mehreren Schichten laufen Datum und Name über alle Schichtspalten des Einsatzes (--fb-span). */
+.fb-ev .ev { hyphens: manual; overflow-wrap: normal; word-break: normal; }
+.fb-matrix thead th.fb-shift.fb-first { z-index: 3; }
+.fb-shift.fb-first .dt, .fb-shift.fb-first .ev { position: relative; width: max-content; max-width: calc(var(--fb-span, 1) * 84px - 12px); margin-right: calc((1 - var(--fb-span, 1)) * 84px); }
+.fb-shift.fb-first .dt { white-space: nowrap; }
+.fb-shift.fb-first .ev { -webkit-line-clamp: 2; }
+.fb-ev:not(.fb-shift) { max-width: 150px; }
+@media (max-width: 760px) { .fb-ev:not(.fb-shift) { max-width: 120px; } }
+.fb-ev:not(.fb-shift) .ev { width: max-content; max-width: 136px; }
+@media (max-width: 760px) { .fb-ev:not(.fb-shift) .ev { max-width: 108px; } }
