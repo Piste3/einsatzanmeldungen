@@ -196,6 +196,7 @@ CREATE TABLE IF NOT EXISTS shifts (
   ends_at TEXT,
   target_count INTEGER,         -- Soll der Schicht = Summe von function_targets (wird mitgeführt)
   function_targets JSON NOT NULL DEFAULT '{}',  -- Soll pro Funktion in dieser Schicht: { "<functions.id>": Anzahl }
+  team_ids JSON NOT NULL DEFAULT '[]',  -- vorgesehene Mannschaften (teams.id); leer = alle. Nur Hinweis, Anmeldung bleibt möglich
   start_place TEXT,            -- überschreibt Antretensort des Einsatzes
   internal_note TEXT,
   is_default INTEGER NOT NULL DEFAULT 0,

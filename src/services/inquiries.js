@@ -1,6 +1,7 @@
 'use strict';
 // Nachfassen per Telefon und WhatsApp (Konzept 8.4)
 const db = require('../db');
+const shiftTeams = require('./shift-teams');
 const audit = require('./audit');
 const live = require('../lib/live');
 const registrations = require('./registrations');
@@ -73,6 +74,7 @@ function listForEvent(eventId, { status = '', team = '', q = '', sort = 'rang' }
   }
   if (q) out = out.filter((r) => `${r.first_name} ${r.last_name}`.toLowerCase().includes(q.toLowerCase()));
   const attempts = attemptsFor(out.map((r) => r.inquiry_id).filter(Boolean));
+  markPlanned(eventId, out);
   for (const r of out) {
     r.attempts = attempts.get(r.inquiry_id) || [];
     r.state = rowState(r);
@@ -99,7 +101,27 @@ function rowFor(eventId, personId) {
   if (!r) return null;
   r.attempts = r.inquiry_id ? attemptsFor([r.inquiry_id]).get(r.inquiry_id) || [] : [];
   r.state = rowState(r);
+  markPlanned(eventId, [r]);
   return r;
+}
+
+/**
+ * Vorgesehene Mannschaften der Schichten: pro Zeile «plan» = null (alle Schichten offen),
+ * { none: true } (für keine Schicht vorgesehen) oder { only: ['Tagschicht'] } (nur für einzelne Schichten).
+ * Nur Hinweis – Anfragen und Anmelden bleiben möglich.
+ */
+function markPlanned(eventId, rows) {
+  const shifts = db.all('SELECT id, name, team_ids FROM shifts WHERE event_id = ? ORDER BY sort, starts_at, id', eventId)
+    .map((sh) => ({ ...sh, teams: shiftTeams.parse(sh.team_ids) }));
+  for (const r of rows) r.plan = null;
+  if (!shifts.some((sh) => sh.teams.length) || !rows.length) return rows;
+  const pTeams = shiftTeams.personTeams(rows.map((r) => r.person_id));
+  for (const r of rows) {
+    const ok = shifts.filter((sh) => shiftTeams.allows(sh.teams, pTeams.get(r.person_id)));
+    if (!ok.length) r.plan = { none: true, text: 'nicht vorgesehen', title: `Vorgesehen: ${shiftTeams.label([...new Set(shifts.flatMap((sh) => sh.teams))])}` };
+    else if (ok.length < shifts.length) r.plan = { only: ok.map((sh) => sh.name), text: `nur ${ok.map((sh) => sh.name).join(', ')}`, title: 'Andere Schichten sind für andere Mannschaften vorgesehen' };
+  }
+  return rows;
 }
 
 function forPerson(personId) {
@@ -311,4 +333,4 @@ function resetPerson(eventId, personId, user) {
   });
 }
 
-module.exports = { listForEvent, rowFor, openCount, forPerson, addAttempt, setStatus, removeAttempt, resetPerson, attemptLabel, setAttemptNote };
+module.exports = { markPlanned, listForEvent, rowFor, openCount, forPerson, addAttempt, setStatus, removeAttempt, resetPerson, attemptLabel, setAttemptNote };

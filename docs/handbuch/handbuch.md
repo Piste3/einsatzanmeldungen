@@ -390,6 +390,7 @@ Weitere Hilfen im Reiter:
 - **Gruppen:** Oben stehen die Personen, bei denen noch etwas offen ist (**Noch offen**). Darunter folgen unter **Erledigt** alle, die zugesagt, sich angemeldet oder abgesagt haben.
 - **Kontaktversuche** stehen mit Kanal (Tel / WA), Datum, Uhrzeit, wer es war, Ergebnis und Notiz.
 - Der **Pfeil ↶** beim letzten Kontaktversuch nimmt nur diesen Versuch zurück, falls er falsch erfasst wurde. Hat er eine Anmeldung erzeugt, wird diese mitgelöscht. Hat er eine bestehende Anmeldung zurückgezogen, bekommt sie ihren Status von vorher zurück.
+- **Vorgesehene Mannschaften:** Ist eine Schicht nur für bestimmte Mannschaften gedacht (Kapitel 12), steht beim Namen ein Hinweis. «nicht vorgesehen» heisst: Die Person passt zu keiner Schicht dieses Einsatzes. «nur Tagschicht» heisst: Sie passt nur zu dieser Schicht. Anfragen und Erfassen gehen trotzdem. Dasselbe steht in der Handy-App auf der Karte der Person.
 - **Mehrere auf einmal:** Hat man mehreren dieselbe WhatsApp geschickt, kreuzt man sie links an. Dann erscheint der Knopf **Kontakt für 3 Personen erfassen** (mit der Anzahl), und man erfasst den Kontakt für alle in einem Schritt. **Alle auswählen** kreuzt die ganze (gefilterte) Liste an.
 
 ![Kontaktversuch erfassen](bilder/12-kontaktversuch.jpg)
@@ -560,6 +561,11 @@ Die meisten Einsätze haben nur eine Schicht für alle. Dann gibt es nichts zu v
 - Jede Schicht ist eine Spalte mit Zeit und Besetzung (Ist / Soll). Grün heisst voll. Darunter Ist / Soll pro Funktion, z. B. «EL 1/1 · SC 2/2 · TN 5/6».
 - **Funktion pro Person:** In jeder Zeile wählt man im kleinen Auswahlfeld EL, SC, BF oder TN (Kapitel 6). Das zweite Auswahlfeld teilt die Person einer anderen Schicht zu.
 - **Schichten bearbeiten** (unten, zugeklappt; **Öffnen** klappt die Tabelle auf): Name, Tag, Zeit, das Soll pro Funktion (Spalten EL, SC, BF, TN), Antretensort und interne Bemerkung. Die Spalte «Soll» zeigt die Summe und rechnet beim Tippen mit. Gespeichert wird wie in jeder Tabelle mit einem Knopf unten rechts (Kapitel 3). Eine neue Schicht trägst du in der untersten Zeile ein. **Hinzufügen** in dieser Zeile speichert ebenfalls alles auf einmal. **Löschen** wirkt sofort pro Zeile (mit Rückfrage). Ist eine Zeile ungültig, z. B. eine angefangene neue Schicht ohne Namen, wird nichts gespeichert.
+- **Mannschaften pro Schicht:** In «Schichten bearbeiten» legst du in der Spalte **Mannschaften** fest, für wen eine Schicht gedacht ist, z. B. nur für das Kader. Klick auf **alle** öffnet eine Liste zum Ankreuzen. Nichts angekreuzt heisst: alle Mannschaften. Gespeichert wird mit dem Knopf **Speichern** unten rechts. Das gilt auch für einen Einsatz mit nur einer Schicht.
+
+![Schichten bearbeiten: Mannschaften ankreuzen](bilder/57-schichten-mannschaften.jpg)
+
+- **Was die Einstellung bewirkt:** Sie ist ein Hinweis, keine Sperre. Im Formular sehen alle Mitglieder alle Schichten und können sich anmelden. Einteilen geht auch für alle. Im Spaltenkopf der Schicht steht «nur Kader». Ist eine Person aus einer anderen Mannschaft eingeteilt, steht bei ihr «nicht vorgesehen». In den Rückmeldungen hat sie ein eigenes Symbol (Kapitel 13). Unter Anfragen steht bei ihr «nicht vorgesehen» oder z. B. «nur Tagschicht» (Kapitel 11).
 - **Noch keiner Schicht zugeteilt:** Anmeldungen ohne Schicht stehen oben und werden über «zuteilen …» eingeteilt.
 - **Umteilen** über das Auswahlfeld bei der Person. Eine Person kann auch mehreren Schichten zugeteilt sein («Tag + Abend»).
 - **+ Person aus Anmeldungen hinzufügen:** Name tippen und auswählen.
@@ -589,6 +595,9 @@ Die Seite **Rückmeldungen** beantwortet die wichtigste Frage der Aufgebotsstell
 - Nach dem Speichern, «Verlauf löschen» oder «Alles zurücksetzen» bleibt die Seite an derselben Stelle stehen. Auch die Tabelle springt nicht nach oben oder links zurück.
 - **Einsätze mit mehreren Schichten** haben eine Spalte pro Schicht, mit eigener Besetzung (z. B. «Tagschicht 8 / 10 · 1 ohne Schicht»). «ohne Schicht» heisst: zugesagt, aber noch keiner Schicht zugeteilt. ✓ heisst: für diese Schicht angemeldet oder eingeteilt. Ein gestricheltes ✓ heisst: zugesagt, aber die Schicht ist noch nicht festgelegt. Ab, Unsicher und Offen gelten für alle Schichten des Einsatzes.
 - **Andere Schicht: geht es zeitlich?** Ist eine Person in einer anderen Schicht, rechnet die App aus Datum und Zeit, ob sie diese Schicht trotzdem machen kann. Ein **rotes –** heisst: Die Schicht liegt zur selben Zeit wie ihre Schicht. Die Person kann also nicht. Ein **kleiner grüner Ring** heisst: Die Zeiten überschneiden sich nicht. Die Person könnte diese Schicht zusätzlich machen, z. B. an einem anderen Tag. Endet eine Schicht genau dann, wenn die andere beginnt, gilt das nicht als Überschneidung. Eine Nachtschicht über Mitternacht zählt bis zu ihrem Ende am nächsten Tag. Fehlt bei einer Schicht die Zeit, steht ein Punkt (·).
+- **Nicht vorgesehene Mannschaft:** Ist eine Schicht nur für bestimmte Mannschaften gedacht (Kapitel 12), steht im Spaltenkopf z. B. «nur Kader». Personen aus anderen Mannschaften haben dort ein graues Feld mit einem **durchgestrichenen Kreis**. Es zählt nicht als «Offen». Hat sich eine solche Person trotzdem angemeldet, steht ihr normales Symbol, z. B. ✓, mit einem **kleinen grauen Ring** oben rechts. Das Fenster beim Darüberfahren nennt die vorgesehenen Mannschaften. Ein Klick öffnet wie immer das Fenster für einen Kontaktversuch. Ist eine Person für keine Schicht eines Einsatzes vorgesehen, zählt dieser Einsatz bei «Nur mit offenen Einsätzen» für sie nicht.
+
+![Rückmeldungen: Abendschicht nur für das Kader](bilder/58-rueckmeldungen-nicht-vorgesehen.jpg)
 - Klickt man in einer Schicht-Spalte auf ein offenes Feld und wählt **«Zugesagt»**, ist diese Schicht schon angekreuzt. Weitere Schichten lassen sich dazu wählen, oder man lässt die Auswahl leer und teilt später unter «Schichten» zu. Das gilt genauso beim Erfassen unter Einsatz › Anfragen und auf der Seite eines Mitglieds.
 
 **Die Symbole:**
@@ -608,6 +617,8 @@ Die Seite **Rückmeldungen** beantwortet die wichtigste Frage der Aufgebotsstell
 | Andere Schicht, gleiche Zeit (rotes –) | In einer anderen Schicht, die zur selben Zeit liegt. Die Person kann diese Schicht nicht machen |
 | Andere Schicht, zeitlich möglich (kleiner grüner Ring) | In einer anderen Schicht, die zu einer anderen Zeit liegt. Die Person könnte diese Schicht zusätzlich machen |
 | An, ohne Schicht (gestricheltes ✓) | Zugesagt, Schicht noch nicht festgelegt |
+| Nicht vorgesehen (grauer, durchgestrichener Kreis) | Die Schicht ist für andere Mannschaften gedacht. Die Person kann sich trotzdem anmelden |
+| Angemeldet, obwohl nicht vorgesehen (Symbol mit kleinem grauem Ring) | Die Person ist angemeldet oder unsicher, gehört aber nicht zu den vorgesehenen Mannschaften |
 
 ### Verlauf pro Person und Einsatz
 
@@ -630,7 +641,7 @@ Derselbe Verlauf erscheint beim Erfassen unter Einsatz › Anfragen und auf der 
 
 ![Rückmeldungen pro Einsatz](bilder/15-rueckmeldungen-pro-einsatz.jpg)
 
-Eine Karte pro Einsatz mit den Namen, gruppiert nach An, Unsicher, Ab und Offen. Bei mehreren Schichten steht «An» aufgeteilt nach Schicht, jeweils mit Besetzung, dazu «An, ohne Schicht» mit Link zum Zuteilen und die **Warteliste** mit dem Hinweis «zählt nicht». Ein Klick auf einen offenen Namen erfasst direkt eine Anfrage. Fährt man mit der Maus über einen Namen, steht dort, wer den Stand zuletzt gesetzt hat und wann. Diese Ansicht ist besonders übersichtlich, wenn viele Einsätze anstehen.
+Eine Karte pro Einsatz mit den Namen, gruppiert nach An, Unsicher, Ab und Offen. Wer für keine Schicht des Einsatzes vorgesehen ist, steht unter **Nicht vorgesehen** statt unter Offen. Bei den Schichten steht z. B. «nur Kader». Bei mehreren Schichten steht «An» aufgeteilt nach Schicht, jeweils mit Besetzung, dazu «An, ohne Schicht» mit Link zum Zuteilen und die **Warteliste** mit dem Hinweis «zählt nicht». Ein Klick auf einen offenen Namen erfasst direkt eine Anfrage. Fährt man mit der Maus über einen Namen, steht dort, wer den Stand zuletzt gesetzt hat und wann. Diese Ansicht ist besonders übersichtlich, wenn viele Einsätze anstehen.
 
 ### Filter
 

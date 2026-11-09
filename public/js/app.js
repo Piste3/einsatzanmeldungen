@@ -1184,6 +1184,14 @@
     const box = ev.target.closest('[data-shift-options]');
     if (box && ev.target.name === 'shift_ids') markShiftClash(box);
   });
+  // Schichten bearbeiten: Beschriftung der Mannschafts-Auswahl beim Ankreuzen nachführen (leer = alle)
+  document.addEventListener('change', (ev) => {
+    const pick = ev.target.closest('[data-team-pick]');
+    if (!pick) return;
+    const names = $$('input[type="checkbox"]:checked', pick).map((b) => b.dataset.name);
+    const label = pick.querySelector('[data-team-label]');
+    if (label) label.textContent = names.length ? names.join(', ') : 'alle';
+  });
   const enhanceAll = (root = document) => { rememberFold(root); $$('select[data-search]', root).forEach(enhanceSelect); cardAll(root.closest ? (root.closest('table') || root) : root); };
   enhanceAll();
   new MutationObserver((muts) => {

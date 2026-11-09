@@ -4,6 +4,7 @@ const db = require('../db');
 const audit = require('./audit');
 const externals = require('./externals');
 const functions = require('./functions');
+const shiftTeams = require('./shift-teams');
 const live = require('../lib/live');
 const { nowIso, localNow, isYmd, isHm, addDays, fmtDateShort, fmtEventDate, isMultiDay } = require('../lib/dates');
 const { EVENT_STATUS, REG_COUNTING } = require('../lib/labels');
@@ -31,10 +32,17 @@ function parseJson(s, fallback) {
   try { return typeof s === 'string' ? JSON.parse(s) : s ?? fallback; } catch { return fallback; }
 }
 
-// Schichten mit «targets» = Soll pro Funktion ({ id: Anzahl }); target_count ist die Summe davon
+// Schichten mit «targets» = Soll pro Funktion ({ id: Anzahl }); target_count ist die Summe davon.
+// «teams» = vorgesehene Mannschaften (leer = alle)
 function shiftsOf(eventId) {
   return db.all('SELECT * FROM shifts WHERE event_id = ? ORDER BY sort, starts_at, id', eventId)
-    .map((s) => ({ ...s, targets: functions.parseTargets(s.function_targets) }));
+    .map((s) => ({ ...s, targets: functions.parseTargets(s.function_targets), teams: shiftTeams.parse(s.team_ids) }));
+}
+
+// Formular -> vorgesehene Mannschaften; null = Feld war nicht im Formular (nichts ändern)
+function teamsFromInput(input) {
+  if (!input || input.teams_shown === undefined) return null;
+  return shiftTeams.parse(input.teams);
 }
 
 // Soll pro Funktion einer Schicht speichern; das Soll der Schicht ist die Summe
@@ -342,10 +350,14 @@ function saveShifts(eventId, rows, newRow, user, { reason } = {}) {
     }
     const oldTargets = functions.parseTargets(shift.function_targets);
     const targetsChanged = Boolean(targets) && JSON.stringify(functions.parseTargets(targets)) !== JSON.stringify(oldTargets);
+    const teams = teamsFromInput(input);
+    const oldTeams = shiftTeams.parse(shift.team_ids);
+    const teamsChanged = Boolean(teams) && JSON.stringify(teams) !== JSON.stringify(oldTeams);
     const details = audit.diff(shift, s, Object.keys(s));
-    if (!Object.keys(details).length && !targetsChanged) continue;
+    if (!Object.keys(details).length && !targetsChanged && !teamsChanged) continue;
     if (targetsChanged) details.soll = { alt: shift.target_count, neu: functions.total(targets) || null };
-    updates.push({ shift, s, targets: targetsChanged ? targets : null, details });
+    if (teamsChanged) details.mannschaften = { alt: shiftTeams.label(oldTeams) || 'alle', neu: shiftTeams.label(teams) || 'alle' };
+    updates.push({ shift, s, targets: targetsChanged ? targets : null, teams: teamsChanged ? teams : null, details });
   }
   let added = null;
   const hasNew = newRow && ['name', 'start', 'end', 'start_place', 'internal_note'].some((k) => String(newRow[k] || '').trim())
@@ -353,7 +365,7 @@ function saveShifts(eventId, rows, newRow, user, { reason } = {}) {
   if (hasNew) {
     if (!String(newRow.name || '').trim()) throw new ValidationError(['Neue Schicht: Name fehlt.']);
     try {
-      added = { s: cleanShift(e, newRow), targets: targetsFromInput(newRow) || {} };
+      added = { s: cleanShift(e, newRow), targets: targetsFromInput(newRow) || {}, teams: teamsFromInput(newRow) || [] };
     } catch (err) {
       if (err instanceof ValidationError) throw new ValidationError(err.messages.map((m) => `Neue Schicht: ${m}`));
       throw err;
@@ -365,18 +377,19 @@ function saveShifts(eventId, rows, newRow, user, { reason } = {}) {
       db.run('UPDATE shifts SET name = ?, starts_at = ?, ends_at = ?, start_place = ?, internal_note = ?, is_default = 0, version = version + 1 WHERE id = ?',
         u.s.name, u.s.starts_at, u.s.ends_at, u.s.start_place, u.s.internal_note, u.shift.id);
       if (u.targets) setShiftTargets(u.shift.id, u.targets);
+      if (u.teams) db.run('UPDATE shifts SET team_ids = ? WHERE id = ?', JSON.stringify(u.teams), u.shift.id);
       audit.log({ entity: 'shift', entityId: u.shift.id, eventId: e.id, action: 'update', summary: `${user.display_name} hat die Schicht «${u.s.name}» bei «${e.name}» geändert${reason ? ` – Begründung: ${reason}` : ''}`, details: u.details, user });
     }
-    if (added) insertShift(e, added.s, added.targets, user);
+    if (added) insertShift(e, added.s, added.targets, user, added.teams);
   });
   live.notify(`event:${e.id}`, 'form');
   return { updated: updates.length, added: Boolean(added) };
 }
 
-function insertShift(e, s, targets, user) {
+function insertShift(e, s, targets, user, teams = []) {
   const sort = (db.one('SELECT max(sort) AS m FROM shifts WHERE event_id = ?', e.id).m ?? 0) + 1;
-  const info = db.run('INSERT INTO shifts (event_id, name, starts_at, ends_at, start_place, internal_note, sort) VALUES (?, ?, ?, ?, ?, ?, ?)',
-    e.id, s.name, s.starts_at, s.ends_at, s.start_place, s.internal_note, sort);
+  const info = db.run('INSERT INTO shifts (event_id, name, starts_at, ends_at, start_place, internal_note, team_ids, sort) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+    e.id, s.name, s.starts_at, s.ends_at, s.start_place, s.internal_note, JSON.stringify(shiftTeams.parse(teams)), sort);
   setShiftTargets(Number(info.lastInsertRowid), targets || {});
   // Sobald es mehrere Schichten gibt, ist die Standardschicht eine normale Schicht
   db.run('UPDATE shifts SET is_default = 0 WHERE event_id = ?', e.id);

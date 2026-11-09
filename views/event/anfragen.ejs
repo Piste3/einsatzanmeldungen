@@ -53,7 +53,7 @@
         <% if (grouped && r === closedRows[0]) { %><tr class="group-row"><td colspan="6"><strong>Erledigt</strong> <span class="muted">· <%= closedRows.length %> (zugesagt, angemeldet oder abgesagt)</span></td></tr><% } %>
         <tr data-row-id="i<%= r.person_id %>-<%= r.attempts.length %>-<%= r.state %>" class="<%= r.state === 'whatsapp' ? 'highlight' : '' %> <%= done || r.state === 'abgesagt' ? 'row-muted' : '' %>">
           <td class="check-col"><% if (!locked && !done) { %><input type="checkbox" name="person_ids" value="<%= r.person_id %>" form="auswahl" aria-label="Auswählen"><% } %></td>
-          <td><%- h.rank(r.rank_short) %><a href="/personen/<%= r.person_id %>"><strong><%= r.first_name %> <%= r.last_name %></strong></a><% if (r.teams) { %><span class="sub"><%= r.teams %></span><% } %></td>
+          <td><%- h.rank(r.rank_short) %><a href="/personen/<%= r.person_id %>"><strong><%= r.first_name %> <%= r.last_name %></strong></a><% if (r.plan) { %> <span class="tag <%= r.plan.none ? 'tag-gray' : 'tag-blue' %> tag-np" title="<%= r.plan.title %>"><%= r.plan.text %></span><% } %><% if (r.teams) { %><span class="sub"><%= r.teams %></span><% } %></td>
           <td class="nowrap">
             <% if (r.mobile) { %>
               <a class="link" href="tel:<%= r.mobile.replace(/\s/g, '') %>" title="Anrufen"><%= r.mobile %></a>

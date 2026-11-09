@@ -4,6 +4,7 @@ const db = require('../db');
 const externals = require('./externals');
 const history = require('./history');
 const events = require('./events');
+const shiftTeams = require('./shift-teams');
 const { today, addDays, isMultiDay, fmtShiftWhen } = require('../lib/dates');
 const { rankOrder } = require('../lib/sorting');
 const { REG_COUNTING } = require('../lib/labels');
@@ -107,7 +108,8 @@ function matrix({ team = '', period = '3m', sort = 'rang', includeDrafts = false
     // Soll = Summe der Soll-Werte aller Schichten
     const soll = new Map(db.all(`SELECT event_id, SUM(target_count) AS n FROM shifts WHERE event_id IN (${ph}) GROUP BY event_id`, ...ids).map((r) => [r.event_id, r.n]));
     const shifts = new Map();
-    for (const sh of db.all(`SELECT id, event_id, name, starts_at, ends_at, target_count FROM shifts WHERE event_id IN (${ph}) ORDER BY sort, starts_at, id`, ...ids)) {
+    for (const sh of db.all(`SELECT id, event_id, name, starts_at, ends_at, target_count, team_ids FROM shifts WHERE event_id IN (${ph}) ORDER BY sort, starts_at, id`, ...ids)) {
+      sh.teams = shiftTeams.parse(sh.team_ids);
       if (!shifts.has(sh.event_id)) shifts.set(sh.event_id, []);
       shifts.get(sh.event_id).push(sh);
     }
@@ -120,6 +122,8 @@ function matrix({ team = '', period = '3m', sort = 'rang', includeDrafts = false
       const st = events.stats({ ...e, shifts: shifts.get(e.id) || [] });
       e.istByShift = Object.fromEntries(st.shifts.map((s) => [s.id, s.intern]));
       e.ist = st.shifts.length ? st.shifts.reduce((a, s) => a + s.intern, 0) : st.neu + st.rueckfrage + st.bestaetigt;
+      // Vorgesehene Mannschaften: alle Schichten des Einsatzes (auch bei nur einer Schicht)
+      e.allShifts = shifts.get(e.id) || [];
       // Nur bei mehreren Schichten eine Spalte pro Schicht
       e.shifts = (shifts.get(e.id) || []).length > 1 ? shifts.get(e.id) : [];
     }
@@ -127,13 +131,25 @@ function matrix({ team = '', period = '3m', sort = 'rang', includeDrafts = false
       if (!assigned.has(a.registration_id)) assigned.set(a.registration_id, new Set());
       assigned.get(a.registration_id).add(a.shift_id);
     }
-  } else for (const e of evts) { e.shifts = []; e.externByShift = {}; e.extern = 0; e.istByShift = {}; e.ist = 0; }
+  } else for (const e of evts) { e.shifts = []; e.allShifts = []; e.externByShift = {}; e.extern = 0; e.istByShift = {}; e.ist = 0; }
   // Spalten: ein Einsatz oder eine Schicht eines Einsatzes
   const columns = evts.flatMap((e) => (e.shifts.length
     ? e.shifts.map((sh, i) => ({ event: e, shift: sh, first: i === 0, key: `${e.id}:${sh.id}` }))
     : [{ event: e, shift: null, first: true, key: `${e.id}:0` }]));
   const totals = Object.fromEntries(evts.map((e) => [e.id, { an: 0, ab: 0, unsicher: 0, offen: 0 }]));
-  const colTotals = Object.fromEntries(columns.map((c) => [c.key, { an: 0, ab: 0, unsicher: 0, offen: 0, andere: 0, schicht_offen: 0 }]));
+  const colTotals = Object.fromEntries(columns.map((c) => [c.key, { an: 0, ab: 0, unsicher: 0, offen: 0, andere: 0, schicht_offen: 0, nicht_vorgesehen: 0 }]));
+  // Vorgesehene Mannschaften: wer nicht dazugehört, bekommt ein eigenes Symbol (Anmelden bleibt möglich)
+  const pTeams = shiftTeams.personTeams(people.map((p) => p.id));
+  const teamNames = db.all('SELECT id, name, sort FROM teams ORDER BY sort, name');
+  // Für den Einsatz vorgesehen = für mindestens eine Schicht vorgesehen (ohne Schichten: immer)
+  const plannedForEvent = (p, e) => !e.allShifts.length || e.allShifts.some((sh) => shiftTeams.allows(sh.teams, pTeams.get(p.id)));
+  const plannedForCol = (p, col) => (col.shift ? shiftTeams.allows(col.shift.teams, pTeams.get(p.id)) : plannedForEvent(p, col.event));
+  // Text für das Fenster: für welche Mannschaften die Schicht(en) gedacht sind
+  const plannedText = (col) => {
+    const list = col.shift ? [col.shift] : col.event.allShifts;
+    const names = [...new Set(list.flatMap((sh) => sh.teams))];
+    return shiftTeams.label(names, teamNames);
+  };
   // Schichten einer Anmeldung: Zuteilung, sonst die Wünsche aus dem Formular
   const shiftsOf = (reg, e) => {
     if (!reg) return new Set();
@@ -145,13 +161,15 @@ function matrix({ team = '', period = '3m', sort = 'rang', includeDrafts = false
   let rows = people.map((p) => {
     const eventCells = evts.map((e) => {
       const c = cellState(regs.get(`${p.id}:${e.id}`), inqs.get(`${p.id}:${e.id}`));
-      totals[e.id][c.state]++;
+      // Offen und für keine Schicht vorgesehen: zählt nicht als offen
+      if (c.state === 'offen' && !plannedForEvent(p, e)) c.state = 'nicht_vorgesehen';
+      totals[e.id][c.state] = (totals[e.id][c.state] || 0) + 1;
       return { ...c, eventId: e.id, last: latest.get(`${p.id}:${e.id}`) || null };
     });
     const byEvent = new Map(eventCells.map((c) => [c.eventId, c]));
     const cells = columns.map((col) => {
       const base = byEvent.get(col.event.id);
-      let state = base.state;
+      let state = base.state === 'nicht_vorgesehen' ? 'offen' : base.state;
       let detail = base.detail;
       let mine = null;
       if (col.shift && state === 'an') {
@@ -160,6 +178,11 @@ function matrix({ team = '', period = '3m', sort = 'rang', includeDrafts = false
         if (state === 'andere') detail = otherShiftDetail(col.shift, mine, col.event.shifts);
         else if (state !== base.state) detail = null;
       }
+      // Nicht vorgesehene Mannschaft: offen / andere Schicht -> eigenes Symbol; sonst bleibt der Stand mit Markierung
+      const planned = plannedForCol(p, col);
+      if (!planned && ['offen', 'andere', 'schicht_offen'].includes(state)) { state = 'nicht_vorgesehen'; detail = null; }
+      // Markierung nur, wo sie etwas sagt (angemeldet oder unsicher trotz anderer Mannschaft)
+      const marked = !planned && ['an', 'unsicher'].includes(state);
       colTotals[col.key][state]++;
       // zählt zur Besetzung dieser Schicht (gleiche Regel wie e.istByShift)
       const counts = Boolean(col.shift && base.reg && REG_COUNTING.includes(base.reg.status) && assigned.get(base.reg.id)?.has(col.shift.id));
@@ -168,7 +191,7 @@ function matrix({ team = '', period = '3m', sort = 'rang', includeDrafts = false
         ids: [...mine], kind: assigned.has(base.reg.id) ? 'eingeteilt' : 'gewünscht',
         clash: col.event.shifts.filter((sh) => !mine.has(sh.id) && otherShiftDetail(sh, mine, col.event.shifts) === 'ueberschneidung').map((sh) => sh.id),
       } : null;
-      return { ...base, state, detail, mine: mineInfo, shiftId: col.shift?.id || null, counts };
+      return { ...base, state, detail, mine: mineInfo, shiftId: col.shift?.id || null, counts, notPlanned: !planned && (marked || state === 'nicht_vorgesehen'), plannedFor: planned ? '' : plannedText(col) };
     });
     return { person: p, cells, eventCells, openCount: eventCells.filter((c) => c.state === 'offen').length };
   });
@@ -183,6 +206,9 @@ function matrix({ team = '', period = '3m', sort = 'rang', includeDrafts = false
   // Standard: nach Rang (aus der Abfrage); sort() ist stabil, gleiche Werte behalten die Rangfolge
   if (sort === 'offen') rows.sort((a, b) => b.openCount - a.openCount);
   if (sort === 'name') rows.sort((a, b) => a.person.last_name.localeCompare(b.person.last_name, 'de') || a.person.first_name.localeCompare(b.person.first_name, 'de'));
+  // Kopfzeile: «nur Kader» bei Schichten mit vorgesehenen Mannschaften
+  for (const col of columns) col.planned = plannedText(col);
+  for (const e of evts) for (const sh of e.shifts) sh.planned = shiftTeams.label(sh.teams, teamNames);
   return { events: evts, columns, rows, totals, colTotals, allCount };
 }
 

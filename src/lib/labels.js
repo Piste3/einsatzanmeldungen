@@ -79,6 +79,8 @@ const FEEDBACK = {
   // nur in Schicht-Spalten
   andere: { label: 'Andere Schicht', tone: 'gray' },
   schicht_offen: { label: 'An, ohne Schicht', tone: 'green' },
+  // Schicht ist für andere Mannschaften vorgesehen (Anmelden bleibt möglich)
+  nicht_vorgesehen: { label: 'Nicht vorgesehen (andere Mannschaft)', tone: 'gray' },
 };
 
 const PERSON_STATUS = {

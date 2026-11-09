@@ -3,6 +3,7 @@ const express = require('express');
 const db = require('../db');
 const settings = require('../services/settings');
 const events = require('../services/events');
+const shiftTeams = require('../services/shift-teams');
 const registrations = require('../services/registrations');
 const inquiries = require('../services/inquiries');
 const calendar = require('../services/calendar');
@@ -401,7 +402,12 @@ router.get('/einsaetze/:id/schichten', loadEvent, (req, res) => {
     combos.push({ value: ids.join(','), label: e.shifts.filter((s) => ids.includes(s.id)).map((s) => (ids.length > 1 ? s.name.replace(/schicht$/i, '') : s.name)).join(' + ') });
   }
   combos.sort((a, b) => a.value.split(',').length - b.value.split(',').length);
+  // Vorgesehene Mannschaften pro Schicht: wer nicht vorgesehen ist, wird markiert (nicht gesperrt)
+  const teamList = db.all('SELECT id, name, sort, active FROM teams ORDER BY sort, name');
+  const pTeams = shiftTeams.personTeams(regs.map((r) => r.person_id));
+  const notPlanned = (r, s) => !shiftTeams.allows(s.teams, pTeams.get(r.person_id));
   res.render('pages/event', { title: `${e.name} · Schichten`, tab: 'schichten', stats, columns, unassigned, combos, overlaps: registrations.overlaps(e.id), regs,
+    teamList, notPlanned, teamLabel: (ids) => shiftTeams.label(ids, teamList),
     fnCols: functions.all().filter((f) => f.active || f.is_default || e.shifts.some((s) => s.targets[f.id])), ...functionPanel(e) });
 });
 
@@ -418,7 +424,8 @@ router.post('/einsaetze/:id/schichten/speichern', loadEvent, (req, res) => {
   for (const [key, value] of Object.entries(req.body)) {
     const m = /^(\w+?)__(\d+|neu)$/.exec(key);
     if (!m) continue;
-    const v = Array.isArray(value) ? value[value.length - 1] : value;
+    // Mannschaften: mehrere Häkchen pro Zeile -> Liste behalten
+    const v = m[1] === 'teams' ? [].concat(value) : Array.isArray(value) ? value[value.length - 1] : value;
     if (m[2] === 'neu') (newRow ||= {})[m[1]] = v;
     else (rows[m[2]] ||= {})[m[1]] = v;
   }

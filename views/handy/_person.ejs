@@ -29,6 +29,7 @@
     <div class="hc-who">
       <strong><%- h.rank(r.rank_short) %><%= name %></strong>
       <% if (r.teams) { %><span class="hc-sub"><%= r.teams %></span><% } %>
+      <% if (r.plan) { %><span class="hc-plan<%= r.plan.none ? ' hc-plan-none' : '' %>" title="<%= r.plan.title %>"><%= r.plan.text %></span><% } %>
     </div>
     <div class="hc-contact">
       <% if (tel) { %><a class="h-round" href="tel:<%= tel %>" data-set-channel="telefon" aria-label="<%= name %> anrufen" title="Anrufen"><%- h.icon('phone') %></a><% } %>
