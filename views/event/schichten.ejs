@@ -67,7 +67,7 @@
 <p class="small muted mt-s">Die Funktion (<%= functionOptions.map((f) => f.short).join(', ') %>) wählst du direkt in der Zeile. Sie gilt für alle Schichten der Person. Es zählen Anmeldungen mit Status Neu, Rückfrage oder Bestätigt sowie <a class="link" href="/einsaetze/<%= event.id %>#externe">externe Abteilungen</a>. Wer keine Funktion hat, zählt als <%= fnSummary.def.name %>.</p>
 
 <% const closed = event.status === 'abgeschlossen'; %>
-<details class="card mt no-print shifts-fold" id="schichten-bearbeiten"<%= !event.date_from ? ' open' : '' %>>
+<details class="card mt no-print shifts-fold" id="schichten-bearbeiten" data-remember="schichten-bearbeiten"<%= !event.date_from ? ' open' : '' %>>
 <summary class="card-head"><h2>Schichten bearbeiten <span class="hint">Name, Tag, Zeit, Soll pro Funktion, Mannschaften, Alter und Rang</span></h2><span class="btn btn-sm">Öffnen</span></summary>
 <form method="post" action="/einsaetze/<%= event.id %>/schichten/speichern" id="shifts-form" data-section>
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">

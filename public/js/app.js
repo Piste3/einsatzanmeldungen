@@ -92,8 +92,7 @@
     if (t.matches('[data-add-select]') && t.value) {
       const form = t.closest('form');
       form.action = (t.dataset.addAction || '/anmeldungen/{id}/schichten').replace('{id}', encodeURIComponent(t.value));
-      saveScroll();
-      form.submit();
+      submitForm(form);
     }
     if (t.matches('[data-preview-event]')) {
       const form = t.form;
@@ -140,7 +139,9 @@
       $$('.flash', next).forEach((f) => f.remove());
       const pos = window.kkbScroll ? window.kkbScroll.snapshot() : null;
       const shown = $$(':scope > .flash:not(#stale-hint)', cur);
+      const folds = foldState(cur);
       cur.innerHTML = next.innerHTML;
+      applyFoldState(cur, folds);
       cur.prepend(...shown);
       if (pos) window.kkbScroll.apply(pos); // Seite und Tabellen bleiben, wo sie waren
       history.replaceState(null, '', url.pathname + url.search);
@@ -684,7 +685,7 @@
     }
     document.body.append(f);
     if (dlg.open) dlg.close();
-    f.submit();
+    submitForm(f);
   });
   // Kontaktversuch-Fenster: nur den Verlauf dieser Person bei diesem Einsatz leeren
   document.addEventListener('click', async (ev) => {
@@ -708,7 +709,7 @@
     }
     document.body.append(f);
     if (dlg && dlg.open) dlg.close();
-    f.submit();
+    submitForm(f);
   });
   function toggleShiftField(dlg) {
     const field = dlg.querySelector('[data-shift-field]');
@@ -903,7 +904,9 @@
       $$('.flash', next).forEach((f) => f.remove());
       const shown = $$(':scope > .flash:not(#stale-hint)', cur);
       deferred = false;
+      const folds = foldState(cur);
       cur.innerHTML = next.innerHTML;
+      applyFoldState(cur, folds);
       cur.prepend(...shown);
       const nav = doc.querySelector('.nav');
       if (nav) $('.nav').innerHTML = nav.innerHTML;
@@ -939,6 +942,142 @@
     const back = f.querySelector('input[name=back]');
     if (back) back.value = sameView(back.value);
   }, true);
+
+  // ---------- Aktionen ohne Neuladen (ganze App am PC) ----------
+  // Jede Aktion (Speichern, Löschen, Zurücksetzen, Status …) wird im Hintergrund gesendet. Bleibt man auf
+  // derselben Seite, wird nur der Inhalt ausgetauscht: nichts springt nach oben, offene Bereiche bleiben offen.
+  // Führt die Aktion auf eine andere Seite (z. B. neuer Einsatz), lädt der Browser diese Seite normal.
+  // Der Server meldet Weiterleitungen dafür nur als Ziel (X-Inline-Redirect, siehe src/app.js).
+  const inlineOk = (form) => Boolean(window.fetch && window.DOMParser && $('#content'))
+    && (form.getAttribute('method') || 'get').toLowerCase() === 'post'
+    && !form.getAttribute('target') && !form.hasAttribute('data-no-inline')
+    && Boolean(form.closest('#content') || form.dataset.inline);
+
+  // Offene/zugeklappte Bereiche merken (Menüs schliessen nach einer Aktion wie bisher)
+  const foldKey = (d, i) => d.id || d.dataset.remember || d.dataset.rowId || `${d.className}|${i}`;
+  function foldState(root) {
+    const st = new Map();
+    const count = {};
+    $$('details:not(.menu)', root).forEach((d) => {
+      const i = (count[d.className] = (count[d.className] || 0) + 1);
+      st.set(foldKey(d, i), d.open);
+    });
+    return st;
+  }
+  function applyFoldState(root, st) {
+    const count = {};
+    $$('details:not(.menu)', root).forEach((d) => {
+      const i = (count[d.className] = (count[d.className] || 0) + 1);
+      const k = foldKey(d, i);
+      if (st.has(k)) d.open = st.get(k);
+    });
+  }
+
+  // Meldung («Gespeichert» …) kurz unten einblenden, wenn die Meldung oben nicht sichtbar ist
+  function toastFlashes(root) {
+    $$('.inline-toast').forEach((t) => t.remove());
+    const list = $$(':scope > .flash:not(#stale-hint)', root);
+    if (!list.length || list[0].getBoundingClientRect().bottom > 0) return;
+    const box = document.createElement('div');
+    box.className = 'inline-toast no-print';
+    box.setAttribute('role', 'status');
+    list.forEach((f) => { const c = f.cloneNode(true); c.classList.remove('flash-new'); box.append(c); });
+    document.body.append(box);
+    setTimeout(() => box.remove(), 4500);
+  }
+
+  // Neue Seite (HTML) in die aktuelle einsetzen. false = passt nicht (andere Seitenart)
+  function swapIn(html, { pos, url, top = false }) {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const next = doc.getElementById('content');
+    const cur = $('#content');
+    if (!next || !cur) return false;
+    const folds = foldState(cur);
+    $$('dialog[open]').forEach((d) => d.close());
+    $$('.inline-toast').forEach((t) => t.remove());
+    cur.innerHTML = next.innerHTML;
+    applyFoldState(cur, folds);
+    const nav = doc.querySelector('.nav');
+    if (nav && $('.nav')) $('.nav').innerHTML = nav.innerHTML;
+    if (doc.title) document.title = doc.title;
+    if (url) history.replaceState(null, '', url);
+    if (top) window.scrollTo(0, 0);
+    else if (pos && window.kkbScroll) {
+      window.kkbScroll.apply(pos, { flashShift: true });
+      requestAnimationFrame(() => window.kkbScroll.apply(pos, { flashShift: true }));
+    }
+    toastFlashes(cur);
+    return true;
+  }
+
+  function saveFile(blob, disposition) {
+    const m = /filename\*=UTF-8''([^;]+)/i.exec(disposition) || /filename="?([^";]+)"?/i.exec(disposition);
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = m ? decodeURIComponent(m[1]) : 'download';
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+  }
+
+  async function inlineSubmit(form, submitter) {
+    let data;
+    try { data = new FormData(form, submitter); } catch { data = new FormData(form); if (submitter && submitter.name) data.append(submitter.name, submitter.value); }
+    const multipart = (form.getAttribute('enctype') || '').toLowerCase() === 'multipart/form-data';
+    const pos = window.kkbScroll ? window.kkbScroll.snapshot() : null;
+    const done = () => {
+      document.documentElement.classList.remove('is-busy');
+      $$('button[type=submit], button:not([type])', form).forEach((b) => { b.disabled = false; });
+      if (form.dataset.inline && !form.closest('#content')) form.remove();
+    };
+    document.documentElement.classList.add('is-busy');
+    let res;
+    try {
+      // getAttribute: ein Feld namens «action» würde form.action überdecken
+      const action = new URL((submitter && submitter.getAttribute('formaction')) || form.getAttribute('action') || location.href, location.href).href;
+      res = await fetch(action, {
+        method: 'POST', credentials: 'same-origin', headers: { 'X-Inline-Action': '1' },
+        body: multipart ? data : new URLSearchParams(data),
+      });
+    } catch {
+      done();
+      uiAlert('Keine Verbindung zum Server. Bitte nochmals versuchen.');
+      return;
+    }
+    try {
+      const target = res.headers.get('X-Inline-Redirect');
+      if (res.status === 204 && target) {
+        const url = new URL(target, location.href);
+        if (url.origin !== location.origin || url.pathname !== location.pathname) { location.assign(url.href); return; }
+        const page = await fetch(url.pathname + url.search, { credentials: 'same-origin' });
+        if (!page.ok || page.redirected || !swapIn(await page.text(), { pos, url: url.pathname + url.search + url.hash })) { location.assign(url.href); return; }
+        done();
+        return;
+      }
+      const disp = res.headers.get('Content-Disposition') || '';
+      if (/^attachment/i.test(disp)) { saveFile(await res.blob(), disp); done(); return; }
+      if (res.status === 401) { location.assign(`/login?next=${encodeURIComponent(location.pathname + location.search)}`); return; }
+      const html = await res.text();
+      const type = res.headers.get('Content-Type') || '';
+      // Kurze Textantwort (z. B. «keine Berechtigung»): als Meldung zeigen, die Seite bleibt
+      if (!type.includes('text/html')) { done(); uiAlert(html.slice(0, 500) || 'Die Aktion hat nicht geklappt.'); return; }
+      // Seite direkt als Antwort (z. B. Eingabefehler im Formular): Inhalt austauschen, sonst ganze Seite zeigen
+      if (swapIn(html, { pos, top: true })) { done(); return; }
+      document.open(); document.write(html); document.close();
+    } catch {
+      location.reload();
+    }
+  }
+  // Für Aktionen, die per Skript ein Formular bauen (Zurücksetzen, Verlauf löschen …)
+  function submitForm(form) {
+    if (!form.closest('#content')) form.dataset.inline = '1';
+    if (inlineOk(form)) inlineSubmit(form); else form.submit();
+  }
+  document.addEventListener('submit', (ev) => {
+    const form = ev.target;
+    if (ev.defaultPrevented || !inlineOk(form)) return;
+    ev.preventDefault();
+    inlineSubmit(form, ev.submitter && ev.submitter.form === form ? ev.submitter : null);
+  });
   // Kommt die Seite beim Zurückgehen aus dem Zwischenspeicher des Browsers (z. B. Safari), neu laden
   window.addEventListener('pageshow', (ev) => {
     if (ev.persisted && document.querySelector('.app')) location.reload();
@@ -1126,12 +1265,16 @@
     } else cardTable(t);
   });
 
-  // Aufklappbare Hilfen merken sich, ob man sie zugeklappt hat (nur in diesem Browser)
-  const rememberFold = (root = document) => $$('details[data-remember]', root).forEach((d) => {
+  // Aufklappbare Bereiche merken sich, ob man sie auf- oder zugeklappt hat (nur in diesem Browser).
+  // Gespeichert wird nur der Klick der Person, nicht das Öffnen durch die Seite (Sprungadresse, Vorgabe).
+  // So bleibt z. B. «Schichten bearbeiten» nach dem Speichern offen, und scroll.js findet die alte Stelle wieder.
+  const rememberFold = (root = document) => [...(root.matches && root.matches('details[data-remember]') ? [root] : []), ...$$('details[data-remember]', root)].forEach((d) => {
     if (d.dataset.rememberDone) return;
     d.dataset.rememberDone = '1';
-    try { if (localStorage.getItem(`fold:${d.dataset.remember}`) === 'zu') d.open = false; } catch (e) { /* ohne Speicher: offen lassen */ }
-    d.addEventListener('toggle', () => { try { localStorage.setItem(`fold:${d.dataset.remember}`, d.open ? 'auf' : 'zu'); } catch (e) { /* egal */ } });
+    const key = `fold:${d.dataset.remember}`;
+    try { const v = localStorage.getItem(key); if (v === 'zu') d.open = false; else if (v === 'auf') d.open = true; } catch (e) { /* ohne Speicher: Vorgabe */ }
+    const sum = d.querySelector(':scope > summary');
+    if (sum) sum.addEventListener('click', () => { try { localStorage.setItem(key, d.open ? 'zu' : 'auf'); } catch (e) { /* egal */ } });
   });
   rememberFold();
   // Sprungadresse (#schichten-bearbeiten) auf einen zugeklappten Bereich: aufklappen

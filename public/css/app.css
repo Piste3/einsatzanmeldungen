@@ -823,3 +823,10 @@ tr.note-row > td { padding-top: 0; }
 .note-intern { border-left-color: var(--orange-dark); }
 .note-intern .note-k { color: var(--orange-dark); }
 .form-table select.age-pick { min-width: 78px; width: 78px; }
+
+/* Aktionen ohne Neuladen: kurze Meldung unten, wenn die Meldung oben ausserhalb der Ansicht liegt */
+.inline-toast { position: fixed; right: 20px; bottom: 20px; z-index: 1000; max-width: min(420px, calc(100vw - 32px)); box-shadow: 0 6px 24px rgba(0, 0, 0, .18); border-radius: 8px; }
+.inline-toast .flash { margin: 0; }
+.inline-toast .flash + .flash { margin-top: 6px; }
+html.is-busy, html.is-busy * { cursor: progress !important; }
+@media (max-width: 640px) { .inline-toast { left: 16px; right: 16px; bottom: 16px; max-width: none; } }

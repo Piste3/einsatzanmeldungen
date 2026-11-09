@@ -678,3 +678,12 @@ test('Lokales Login aus: Passwort weder selbst noch durch Admin änderbar', asyn
   assert.equal(r2.status, 302);
   assert.equal(users.get(id).password_hash, hash, 'Passwort unverändert');
 });
+
+test('Aktion ohne Neuladen: Weiterleitung nur als Ziel melden, Meldung bleibt für die Seite', async () => {
+  const r = await fetch(`${base}/logout`, { method: 'POST', redirect: 'manual', headers: { 'X-Inline-Action': '1' } });
+  assert.equal(r.status, 204);
+  assert.match(r.headers.get('x-inline-redirect'), /^\/login/);
+  assert.equal(r.headers.get('location'), null);
+  const normal = await fetch(`${base}/logout`, { method: 'POST', redirect: 'manual' });
+  assert.equal(normal.status, 302, 'ohne Kopfzeile wie bisher');
+});

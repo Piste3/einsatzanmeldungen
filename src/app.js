@@ -67,6 +67,19 @@ function createApp() {
     res.sendFile(path.join(__dirname, '..', 'public', 'js', 'sw.js'));
   });
 
+  // Aktionen ohne Neuladen (app.js): Bei einer Weiterleitung nur das Ziel melden. Der Browser holt die Seite
+  // dann selbst und tauscht nur den Inhalt aus. Die Meldung («Gespeichert») bleibt im Cookie, bis die Seite kommt.
+  app.use((req, res, next) => {
+    if (req.method !== 'POST' || req.get('X-Inline-Action') !== '1') return next();
+    res.redirect = function inlineRedirect(a, b) {
+      this.location(typeof a === 'number' ? b : a);
+      this.set('X-Inline-Redirect', this.get('Location'));
+      this.removeHeader('Location');
+      return this.status(204).end();
+    };
+    next();
+  });
+
   app.use(auth.loadSession);
   app.use(helpers.flashMiddleware);
   app.use(helpers.localsMiddleware);
