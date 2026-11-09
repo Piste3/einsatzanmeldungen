@@ -33,13 +33,13 @@
       <% for (const f of functionOptions) { %><option value="<%= f.id %>"><%= f.short %> · <%= f.name %></option><% } %>
     </select>
     <button class="btn btn-sm" type="submit" name="bulk_action" value="export" hidden data-needs-selection>Exportieren</button>
-    <% if (fnSummary.usesFunctions) { %>
-      <div class="fn-line small bulk-aside"><span class="muted">Funktionen Ist/Soll:</span>
-        <%- include('../partials/fn-line', { fnSummary }) %>
-        <a class="link no-print" href="/einsaetze/<%= event.id %>/schichten#funktionen">Einteilen →</a>
-      </div>
-    <% } %>
   </form>
+  <% if (fnSummary.usesFunctions) { %>
+    <div class="card-body fn-panel">
+      <div class="fn-panel-head"><span>Funktionen Ist/Soll</span><a class="link small no-print" href="/einsaetze/<%= event.id %>/schichten#funktionen">Einteilen →</a></div>
+      <%- include('../partials/fn-line', { fnSummary }) %>
+    </div>
+  <% } %>
   <div class="table-wrap">
     <table>
       <thead><tr><th class="check-col"></th><th>Person</th><th>Eingang</th><th>Schicht</th><th>Funktion</th><th>Bemerkung</th><th>Status</th><th class="actions-col"></th></tr></thead>

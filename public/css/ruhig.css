@@ -467,3 +467,27 @@ details.collapse > summary .hint { margin-left: 6px; font-size: 12px; font-weigh
 .tip-mine { color: var(--green); }
 .tip-clash { color: var(--muted); }
 .shift-clash { color: var(--muted); font-size: 12px; font-weight: 600; }
+
+/* Funktionen Ist/Soll (Anmeldungen, Teilnehmerliste): Raster mit einer Spalte pro Schicht, einer Zeile pro Funktion */
+.fn-panel { border-bottom: 1px solid var(--border-soft); padding-top: 10px; padding-bottom: 12px; }
+.fn-panel-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 6px; font-size: 12.5px; font-weight: 600; color: var(--text-2); }
+.fn-matrix-wrap { overflow-x: auto; }
+.fn-matrix { width: auto; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.fn-matrix th, .fn-matrix td { padding: 5px 10px; font-size: 12.5px; border-bottom: 1px solid var(--border-soft); white-space: nowrap; }
+.fn-matrix thead th { font-size: 11.5px; font-weight: 500; color: var(--muted); text-align: center; white-space: normal; min-width: 78px; max-width: 110px; line-height: 1.25; vertical-align: bottom; }
+.fn-matrix td { text-align: center; }
+.fn-matrix .fn-matrix-label { text-align: left; font-weight: 500; color: var(--text-2); padding-left: 0; position: sticky; left: 0; background: var(--card); }
+.fn-matrix thead .fn-matrix-label { vertical-align: bottom; }
+.fn-matrix td.fn-chip { display: table-cell; font-weight: 600; }
+.fn-matrix tbody tr:last-child th, .fn-matrix tbody tr:last-child td { border-bottom: 0; }
+.fn-matrix .fn-matrix-total th, .fn-matrix .fn-matrix-total td { border-top: 1px solid var(--border); font-weight: 600; color: var(--text); }
+.fn-matrix-name { font-weight: 400; color: var(--muted); }
+@media (max-width: 760px) {
+  .fn-matrix-name { display: none; }
+  .fn-matrix th, .fn-matrix td { padding-left: 6px; padding-right: 6px; }
+  .fn-matrix thead th { min-width: 64px; }
+}
+@media print {
+  .fn-matrix .fn-matrix-label { position: static; }
+  .fn-matrix th, .fn-matrix td { padding: 2px 6px; font-size: 10px; }
+}

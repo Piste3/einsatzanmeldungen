@@ -532,7 +532,9 @@ test('Funktionen: Soll pro Einsatz festlegen, zuweisen, Ist/Soll und Teilnehmerl
 
   // Teilnehmerliste: Spalte Funktion, Ist/Soll, Export
   const tl = await (await get(`/einsaetze/${ev}/teilnehmerliste?sort=funktion`, auf.cookie)).text();
-  assert.match(tl, /Funktionen \(Ist\/Soll\)/);
+  assert.match(tl, /Funktionen Ist\/Soll/);
+  assert.match(tl, /<table class="fn-matrix no-cards">/);
+  assert.match(tl, /tone-green"[^>]*>1 \/ 1<\/td>/);
   assert.ok(tl.indexOf('Marco Leit') < tl.indexOf('Tim Teil'));
   const csv = (await (await get(`/einsaetze/${ev}/teilnehmerliste?format=csv&sort=funktion`, auf.cookie)).text()).replace(/^﻿/, '').trim().split(/\r?\n/);
   assert.match(csv[0], /^Nr\.;Anzahl;Funktion;Rang;Nachname/);

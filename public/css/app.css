@@ -771,8 +771,6 @@ tr.changed td:first-child { box-shadow: inset 3px 0 0 var(--orange, #e8742a); }
 .fn-line-shift { margin-top: 6px; width: 100%; }
 .fn-shift + .fn-shift { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border-soft); }
 .fn-shift-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 8px; }
-.fn-group { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
-.fn-group + .fn-group { padding-left: 10px; border-left: 1px solid var(--border); }
 
 /* ---------- Einstellungen › Server ---------- */
 .server-table { width: 100%; }

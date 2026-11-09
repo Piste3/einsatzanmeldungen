@@ -66,6 +66,12 @@ function verpflegungAfter(list, exts) {
   ];
 }
 
+// «Funktionen (Ist/Soll)» im PDF: bei mehreren Schichten eine Zeile pro Schicht statt einer langen Zeile
+function fnLines(sum) {
+  const ls = functions.lines(sum);
+  return ls.length > 1 ? ['Funktionen (Ist/Soll):', ...ls] : [`Funktionen (Ist/Soll): ${ls[0] || '–'}`];
+}
+
 function participantPdf(e, v) {
   const extTotal = v.extTotal;
   const subtitle = [
@@ -80,7 +86,7 @@ function participantPdf(e, v) {
       const head = {
         title: `${g.title} · ${persons(g.list.length)}${g.extTotal ? ` + ${g.extTotal} extern` : ''}`,
         pageBreak: true,
-        subtitle: v.showFunction && g.fnSummary ? [`Funktionen (Ist/Soll): ${functions.line(g.fnSummary)}`] : [],
+        subtitle: v.showFunction && g.fnSummary ? fnLines(g.fnSummary) : [],
         columns, rows: rowsOf(columns, g.list), empty: 'Niemand eingeteilt.',
       };
       sections.push(head);
@@ -92,7 +98,7 @@ function participantPdf(e, v) {
   const { columns, extColumns } = participantColumns(e, v, { showShift: v.showShift });
   return tablePdf({
     title,
-    subtitle: [...subtitle, ...(v.showFunction ? [`Funktionen (Ist/Soll): ${functions.line(v.fnSummary)}`] : [])],
+    subtitle: [...subtitle, ...(v.showFunction ? fnLines(v.fnSummary) : [])],
     columns, rows: rowsOf(columns, v.list), empty: 'Noch niemand angemeldet.',
     sections: v.exts.length ? [{ title: `Externe Abteilungen · ${persons(extTotal)}`, columns: extColumns, rows: rowsOf(extColumns, v.exts) }] : [],
     after: verpflegungAfter(v.list, v.exts),

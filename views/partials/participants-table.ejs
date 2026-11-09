@@ -3,7 +3,8 @@
 <div class="card participants<%= gTitle ? ' mb' : '' %>">
   <div class="card-head"><h2><% if (gTitle) { %><%= gTitle %> <span class="hint"><%= list.length %> <%= list.length === 1 ? 'Person' : 'Personen' %><%= extTotal ? ` + ${extTotal} extern` : '' %></span><% } else { %><%= list.length %> <%= list.length === 1 ? 'Person' : 'Personen' %><%= extTotal ? ` + ${extTotal} extern` : '' %> <span class="hint"><%= scopes[filters.umfang].label %> · Stand <%= h.fmtDateTime(h.nowIso()) %></span><% } %></h2></div>
   <% if (showFunction) { %>
-    <div class="card-body fn-line small"><span class="muted">Funktionen (Ist/Soll):</span>
+    <div class="card-body fn-panel">
+      <div class="fn-panel-head"><span>Funktionen Ist/Soll</span></div>
       <%- include('fn-line', { fnSummary }) %>
     </div>
   <% } %>

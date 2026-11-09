@@ -237,7 +237,7 @@ Wer keine Funktion zugewiesen hat, zählt automatisch als **Einsatzteilnehmer (T
 - Die Funktion einer **Person** gilt für den ganzen Einsatz: Wer als SC eingeteilt ist und in der Tag- und der Abendschicht arbeitet, zählt in beiden Schichten als SC. Im Reiter «Schichten» steht deshalb in beiden Schichten dasselbe Kürzel im Auswahlfeld.
 - **Externe Abteilungen** zählen mit ihrer Anzahl Personen in ihren Schichten – standardmässig als Einsatzteilnehmer. Stellt eine Abteilung z. B. den Busfahrer, beim Erfassen der Abteilung **Funktion** auf «BF» stellen (Kapitel 7).
 
-Die Funktionen stehen auch auf der **Teilnehmerliste** (Spalte «Fkt.» bzw. «Funktion» und oben «Funktionen (Ist/Soll)»), auf der Seite des Mitglieds, in der Einsatzliste beim Export und in der Ansicht der Einsatzleiter. Jede Zuweisung steht im Verlauf.
+Die Funktionen stehen auch auf der **Teilnehmerliste** (Spalte «Fkt.» bzw. «Funktion» und oben die Tabelle «Funktionen Ist/Soll»: eine Spalte pro Schicht, eine Zeile pro Funktion; im PDF eine Zeile pro Schicht), auf der Seite des Mitglieds, in der Einsatzliste beim Export und in der Ansicht der Einsatzleiter. Jede Zuweisung steht im Verlauf.
 
 > **Funktion EL ≠ Rolle «Einsatzleiter»:** Die **Funktion** EL sagt, wer an diesem Einsatz die Leitung hat. Die **Benutzer-Rolle** «Einsatzleiter» ist ein Login, mit dem jemand freigegebene Einsätze ansehen kann (Kapitel 15). Hat eine Person mit Funktion EL (oder SC, BF) ein Einsatzleiter-Konto, schlägt die Karte **Einsatzleiter-Zugriff** vor, ihr den Einsatz freizugeben – freigeben musst du aber selbst mit einem Klick. Das Feld **Einsatzleitung** bei den Angaben bleibt unabhängig davon die Hauptverantwortung, die ins Aufgebot kommt.
 
@@ -314,7 +314,7 @@ Jede Anmeldung landet automatisch beim richtigen Einsatz – egal ob sie über d
 - **Zähler pro Status** oben: ein Klick filtert die Liste.
 - **Sortierung:** «Rang: tief → hoch» (Standard), «Rang: hoch → tief», «Funktion, dann Rang» oder «neueste zuerst». Daneben das Suchfeld.
 - **Gruppen:** Die Tabelle zeigt oben **Zu bearbeiten** (neu eingegangen, unsichere Zuordnung, Rückfrage nötig), darunter **Bestätigt**. Warteliste, Abmeldungen und ungültige Anmeldungen stehen zugeklappt am Schluss; ein Klick auf die Zeile klappt sie auf. Ist oben ein Status gewählt, gibt es keine Gruppen.
-- **Funktionen (Ist/Soll)** stehen in der Kopfzeile der Tabelle rechts (pro Schicht), sobald beim Einsatz EL, SC oder BF vorkommen.
+- **Funktionen Ist/Soll** steht als kleine Tabelle über den Anmeldungen, sobald beim Einsatz EL, SC oder BF vorkommen. Jede Schicht ist eine Spalte, jede Funktion eine Zeile, unten steht das Total. Die Farben sind dieselben wie im Reiter «Schichten». **Einteilen →** führt zum Reiter «Schichten».
 - **Spalte «Funktion»:** EL, SC, BF oder TN direkt umstellen (Kapitel 6).
 - **Sammelaktionen:** mehrere Anmeldungen ankreuzen. Erst dann erscheinen die Knöpfe zum gemeinsamen Bestätigen, Status ändern, **Funktion zuweisen** oder Exportieren. **Alle auswählen** kreuzt die ganze Liste an.
 - **Eingang:** wie die Anmeldung kam (Formular, Telefon …) und darunter wann. Unter dem Namen steht die Mannschaft; «manuell zugeordnet» oder «über Namensvariante» steht nur, wenn der Name nicht automatisch erkannt wurde.

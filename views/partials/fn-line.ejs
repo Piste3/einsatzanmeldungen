@@ -1,6 +1,26 @@
-<%# Kurzzeile «Funktionen (Ist/Soll)» – bei mehreren Schichten eine Gruppe pro Schicht. Erwartet: fnSummary %>
-<% for (const sh of fnSummary.shifts) { const rows = sh.rows.filter((x) => x.soll || x.ist); if (!rows.length) continue; %>
-  <span class="fn-group"><% if (fnSummary.multi) { %><span class="muted"><%= sh.name %>:</span><% } %>
-    <% for (const f of rows) { %><span class="fn-chip tone-<%= f.tone %>" title="<%= f.name %>"><span class="fn-tag<%= f.is_default ? ' fn-default' : '' %>"><%= f.short %></span> <%= f.ist %>/<%= f.soll ?? '–' %></span><% } %>
-  </span>
+<%# Raster «Funktionen Ist/Soll»: eine Spalte pro Schicht, eine Zeile pro Funktion. Erwartet: fnSummary %>
+<% const g = fnSummary.grid; %>
+<% if (!g.rows.length) { %><span class="muted">Noch keine Funktionen eingeteilt.</span><% } else { %>
+<div class="table-wrap fn-matrix-wrap">
+  <table class="fn-matrix no-cards">
+    <% if (fnSummary.multi) { %>
+      <thead><tr><th class="fn-matrix-label">Funktion</th><% for (const sh of g.shifts) { %><th><%= sh.name %></th><% } %></tr></thead>
+    <% } %>
+    <tbody>
+    <% for (const r of g.rows) { %>
+      <tr>
+        <th scope="row" class="fn-matrix-label"><span class="fn-tag<%= r.is_default ? ' fn-default' : '' %>"><%= r.short %></span> <span class="fn-matrix-name"><%= r.name %></span></th>
+        <% for (const c of r.cells) { %>
+          <% if (!c || (!c.soll && !c.ist)) { %><td class="muted">–</td><% } else { %>
+          <td class="fn-chip tone-<%= c.tone %>" title="<%= r.name %>: <%= c.ist %> / <%= c.soll ?? '–' %><%= c.soll ? (c.over ? ` · ${c.over} zu viel` : c.missing ? ` · ${c.missing} ${c.missing === 1 ? 'fehlt' : 'fehlen'}` : ' · voll') : '' %>"><%= c.ist %> / <%= c.soll ?? '–' %></td>
+          <% } %>
+        <% } %>
+      </tr>
+    <% } %>
+    <% if (g.showTotal) { %>
+      <tr class="fn-matrix-total"><th scope="row" class="fn-matrix-label">Total</th><% for (const sh of g.shifts) { %><td><%= sh.totalIst %> / <%= sh.totalSoll || '–' %></td><% } %></tr>
+    <% } %>
+    </tbody>
+  </table>
+</div>
 <% } %>

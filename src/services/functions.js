@@ -94,14 +94,14 @@ function summary(event, { shiftId = null } = {}) {
     const targets = parseTargets(sh.function_targets);
     const inShift = regs.filter((g) => g.shift_id === sh.id);
     const units = exts.filter((x) => x.allShifts || x.shiftIds.includes(sh.id));
-    const rows = list.map((f) => {
+    const rows = list.map((f, pos) => {
       const people = inShift.filter((g) => of(g.function_id, map, def).id === f.id);
       const us = units.filter((x) => x.func.id === f.id);
       const extern = us.reduce((a, x) => a + x.person_count, 0);
       const ist = people.length + extern;
       const soll = targets[f.id] || null;
       return {
-        ...f, soll, ist, intern: people.length, extern, people, units: us, tone: tone(ist, soll),
+        ...f, pos, soll, ist, intern: people.length, extern, people, units: us, tone: tone(ist, soll),
         missing: soll ? Math.max(0, soll - ist) : null, over: soll && ist > soll ? ist - soll : 0,
       };
     }).filter((r) => r.soll || r.ist || (!multi && (r.active || r.is_default)));
@@ -109,16 +109,38 @@ function summary(event, { shiftId = null } = {}) {
     return { id: sh.id, name: sh.name, starts_at: sh.starts_at, ends_at: sh.ends_at, rows, totalSoll, totalIst: rows.reduce((a, r) => a + r.ist, 0), hasTargets: totalSoll > 0 };
   });
   // «usesFunctions»: mehr als nur Einsatzteilnehmer – erst dann lohnen sich Spalte und Zeile «Funktion» in Listen
-  return {
+  const res = {
     shifts: out, multi: multi && !shiftId, hasTargets: out.some((x) => x.hasTargets), anyAssigned: out.some((x) => x.rows.some((r) => !r.is_default && r.ist)),
     usesFunctions: out.some((x) => x.rows.some((r) => !r.is_default && (r.soll || r.ist))), def,
   };
+  res.grid = grid(res);
+  return res;
 }
 
 // Kurztext «EL 1/1 · SC 1/2 · …» (bei mehreren Schichten mit Schichtnamen) für PDF, Exporte und Listen
+const oneLine = (x) => x.rows.filter((r) => r.soll || r.ist).map((r) => `${r.short} ${r.ist}/${r.soll ?? '–'}`).join(' · ') || '–';
 function line(sum) {
-  const one = (x) => x.rows.filter((r) => r.soll || r.ist).map((r) => `${r.short} ${r.ist}/${r.soll ?? '–'}`).join(' · ') || '–';
-  return sum.shifts.map((x) => (sum.multi ? `${x.name}: ${one(x)}` : one(x))).join('  |  ');
+  return sum.shifts.map((x) => (sum.multi ? `${x.name}: ${oneLine(x)}` : oneLine(x))).join('  |  ');
+}
+
+// Wie line(), aber eine Zeile pro Schicht (PDF): bleibt bei vielen Schichten lesbar
+function lines(sum) {
+  return sum.shifts.map((x) => (sum.multi ? `${x.name}: ${oneLine(x)}` : oneLine(x)));
+}
+
+/**
+ * Raster für die Ansicht «Funktionen Ist/Soll»: eine Spalte pro Schicht, eine Zeile pro Funktion.
+ * Funktionen ohne Soll und ohne Ist in allen Schichten fallen weg.
+ */
+function grid(sum) {
+  const fns = new Map();
+  for (const sh of sum.shifts) for (const r of sh.rows) if ((r.soll || r.ist) && !fns.has(r.id)) fns.set(r.id, r);
+  const order = [...fns.values()].sort((a, b) => a.pos - b.pos);
+  const rows = order.map((f) => ({
+    id: f.id, short: f.short, name: f.name, is_default: f.is_default,
+    cells: sum.shifts.map((sh) => sh.rows.find((r) => r.id === f.id) || null),
+  }));
+  return { shifts: sum.shifts, rows, showTotal: sum.hasTargets && rows.length > 1 };
 }
 
 // Funktion einer Anmeldung setzen (Standardfunktion wird als NULL gespeichert)
@@ -161,4 +183,4 @@ function bulkAssign(ids, functionId, user) {
   return { changed, errors };
 }
 
-module.exports = { all, byId, defaultFn, of, parseTargets, readTargets, total, summary, line, assign, bulkAssign, tone, INACTIVE_REG };
+module.exports = { all, byId, defaultFn, of, parseTargets, readTargets, total, summary, line, lines, grid, assign, bulkAssign, tone, INACTIVE_REG };
