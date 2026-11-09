@@ -34,9 +34,15 @@ function parseJson(s, fallback) {
 
 // Schichten mit «targets» = Soll pro Funktion ({ id: Anzahl }); target_count ist die Summe davon.
 // «teams» = vorgesehene Mannschaften (leer = alle)
+// «teamNames» = Namen dazu, z. B. «Kader» (leer = alle)
 function shiftsOf(eventId) {
-  return db.all('SELECT * FROM shifts WHERE event_id = ? ORDER BY sort, starts_at, id', eventId)
-    .map((s) => ({ ...s, targets: functions.parseTargets(s.function_targets), teams: shiftTeams.parse(s.team_ids) }));
+  const list = db.all('SELECT * FROM shifts WHERE event_id = ? ORDER BY sort, starts_at, id', eventId)
+    .map((s) => ({ ...s, targets: functions.parseTargets(s.function_targets), teams: shiftTeams.parse(s.team_ids), teamNames: '' }));
+  if (list.some((s) => s.teams.length)) {
+    const teams = db.all('SELECT id, name, sort FROM teams ORDER BY sort, name');
+    for (const s of list) s.teamNames = shiftTeams.label(s.teams, teams);
+  }
+  return list;
 }
 
 // Formular -> vorgesehene Mannschaften; null = Feld war nicht im Formular (nichts ändern)

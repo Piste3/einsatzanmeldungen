@@ -286,6 +286,10 @@ Es gibt ein einziges, gemeinsames Anmeldeformular für alle Einsätze. Es ist ei
 - **Mehrere Tage:** Liegen die Schichten an verschiedenen Tagen, steht bei jeder Schicht ihr Tag, z. B. «Sa 02.01. 10:00–18:00».
 - **Mehrere Schichten:** die gewünschten Schichten ankreuzen.
 - **Eine Schicht:** «Ja, ich bin dabei» antippen. Wer nicht kann, lässt den Einsatz einfach leer.
+- **Nur für bestimmte Mannschaften:** Ist eine Schicht z. B. nur für das Kader gedacht (Kapitel 12), steht neben der Schicht «Nur Kader». Bei einem Einsatz mit einer Schicht steht der Hinweis über «Ja, ich bin dabei». Anmelden können sich trotzdem alle.
+
+![Formular: Hinweis «Nur Kader» bei einer Schicht](bilder/59-formular-nur-kader.jpg)
+
 - Eine **Bemerkung** ist pro Einsatz möglich.
 - Man kann sich in einem Durchgang für mehrere Einsätze anmelden.
 
@@ -565,7 +569,7 @@ Die meisten Einsätze haben nur eine Schicht für alle. Dann gibt es nichts zu v
 
 ![Schichten bearbeiten: Mannschaften ankreuzen](bilder/57-schichten-mannschaften.jpg)
 
-- **Was die Einstellung bewirkt:** Sie ist ein Hinweis, keine Sperre. Im Formular sehen alle Mitglieder alle Schichten und können sich anmelden. Einteilen geht auch für alle. Im Spaltenkopf der Schicht steht «nur Kader». Ist eine Person aus einer anderen Mannschaft eingeteilt, steht bei ihr «nicht vorgesehen». In den Rückmeldungen hat sie ein eigenes Symbol (Kapitel 13). Unter Anfragen steht bei ihr «nicht vorgesehen» oder z. B. «nur Tagschicht» (Kapitel 11).
+- **Was die Einstellung bewirkt:** Sie ist ein Hinweis, keine Sperre. Im Formular sehen alle Mitglieder alle Schichten, mit dem Hinweis «Nur Kader» (Kapitel 8). Alle können sich anmelden. Einteilen geht auch für alle. Im Spaltenkopf der Schicht steht «nur Kader». Ist eine Person aus einer anderen Mannschaft eingeteilt, steht bei ihr «nicht vorgesehen». In den Rückmeldungen hat sie ein eigenes Symbol (Kapitel 13). Unter Anfragen steht bei ihr «nicht vorgesehen» oder z. B. «nur Tagschicht» (Kapitel 11).
 - **Noch keiner Schicht zugeteilt:** Anmeldungen ohne Schicht stehen oben und werden über «zuteilen …» eingeteilt.
 - **Umteilen** über das Auswahlfeld bei der Person. Eine Person kann auch mehreren Schichten zugeteilt sein («Tag + Abend»).
 - **+ Person aus Anmeldungen hinzufügen:** Name tippen und auswählen.

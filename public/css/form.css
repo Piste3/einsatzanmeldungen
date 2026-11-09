@@ -27,6 +27,9 @@ input[type=text]:focus { outline: none; border-color: var(--orange); box-shadow:
 .opt { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 14px; font-weight: 500; color: var(--text); }
 .opt input { width: 18px; height: 18px; accent-color: var(--orange); }
 .opt .time { color: var(--muted); font-size: 13px; }
+/* Schicht für bestimmte Mannschaften gedacht (nur Hinweis, Anmelden bleibt möglich) */
+.only { display: inline-block; font-size: 12px; font-weight: 600; padding: 1px 7px; border-radius: 5px; background: var(--orange-soft, #fdeee4); color: var(--text); white-space: nowrap; }
+.ev-only { margin: 0 0 8px; }
 .yesno { display: grid; grid-template-columns: 1fr; gap: 8px; }
 .yesno input { position: absolute; opacity: 0; pointer-events: none; }
 .yesno label { text-align: center; padding: 9px; border: 1px solid #cfd4dd; border-radius: 7px; font-size: 14px; cursor: pointer; color: var(--text); }
