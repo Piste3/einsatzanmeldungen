@@ -154,6 +154,8 @@ small, .small { font-size: 12px; }
 .card-body { padding: 14px 16px; }
 .card + .card { margin-top: 14px; }
 .grid > .card + .card, .grid > * + .card { margin-top: 0; }
+/* In Rastern regelt gap den Abstand. Sonst rutscht jede Karte ausser der ersten um 14px nach unten. */
+.shift-cols > .card + .card, .fb-cards > .card + .card { margin-top: 0; }
 .grid { display: grid; gap: 14px; }
 .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -319,7 +321,7 @@ dl.kv.left dd { text-align: left; font-weight: 500; }
 .ch.wa { background: var(--green-bg); color: var(--green); }
 
 /* ---------- Schicht-Spalten ---------- */
-.shift-cols { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); align-items: start; }
+.shift-cols { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); align-items: stretch; }
 .shift-row { display: flex; align-items: center; gap: 8px; padding: 7px 14px; border-bottom: 1px solid var(--border-soft); font-size: 13px; }
 .shift-row .name { flex: 1; min-width: 0; }
 .shift-row select { width: 130px; height: 27px; padding: 0 6px; font-size: 12px; }
