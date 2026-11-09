@@ -652,3 +652,27 @@ test('Teilnehmer- und Verpflegungsliste: ganzer Einsatz, pro Schicht, eine Schic
   const other = events.create({ name: 'Anderer Einsatz', date: addDays(today(), 6) }, system);
   assert.equal((await get(`/einsaetze/${other}/verpflegungsliste`, v.cookie)).status, 403);
 });
+
+test('Lokales Login aus: Passwort weder selbst noch durch Admin änderbar', async () => {
+  const { id } = await users.create({ username: 'nurms', display_name: 'Nur MS', role: 'aufgebotsstelle', email: 'nurms@kkb.ch', password: 'Microsoft-Nur-2026', must_change_password: false, login_fields: '1', ms_login: '1' }, null);
+  const hash = users.get(id).password_hash;
+  const post = (path, cookie, body) => fetch(`${base}${path}`, { method: 'POST', redirect: 'manual', headers: { cookie, 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(body) });
+
+  // Die Person selbst (Microsoft ist im Test aus, darum klappt das Passwort-Login hier)
+  const me = await login('nurms', 'Microsoft-Nur-2026');
+  const page = await (await get('/konto/passwort', me.cookie)).text();
+  assert.match(page, /Passwort ausgeschaltet/);
+  assert.doesNotMatch(page, /name="current"/, 'kein Formular');
+  const csrf = page.match(/name="_csrf" value="([^"]+)"/)[1];
+  const r = await post('/konto/passwort', me.cookie, { _csrf: csrf, current: 'Microsoft-Nur-2026', password: 'Ganz-Neu-2026!', password_confirm: 'Ganz-Neu-2026!' });
+  assert.equal(r.status, 400);
+
+  // Der Admin
+  const admin = await login('admin', 'Chef-Passwort-2026');
+  const form = await (await get(`/verwaltung/benutzer/${id}`, admin.cookie)).text();
+  assert.doesNotMatch(form, /\/passwort" data-confirm/, 'kein Knopf «Passwort zurücksetzen»');
+  const acsrf = form.match(/name="_csrf" value="([^"]+)"/)[1];
+  const r2 = await post(`/verwaltung/benutzer/${id}/passwort`, admin.cookie, { _csrf: acsrf });
+  assert.equal(r2.status, 302);
+  assert.equal(users.get(id).password_hash, hash, 'Passwort unverändert');
+});

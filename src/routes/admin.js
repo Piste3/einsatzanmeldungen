@@ -69,7 +69,15 @@ router.post('/verwaltung/benutzer/:id', (req, res) => {
 
 router.post('/verwaltung/benutzer/:id/passwort', async (req, res) => {
   const u = users.get(Number(req.params.id));
-  const password = await users.resetPassword(u.id, req.user);
+  if (!u) return res.status(404).render('pages/error', { title: 'Nicht gefunden', message: 'Benutzerkonto nicht gefunden.' });
+  let password;
+  try {
+    password = await users.resetPassword(u.id, req.user);
+  } catch (err) {
+    if (!(err instanceof ValidationError)) throw err;
+    flash(res, 'error', err.messages.join(' '));
+    return res.redirect(`/verwaltung/benutzer/${u.id}`);
+  }
   res.render('admin/user-created', { title: 'Passwort zurückgesetzt', u, password, reset: true });
 });
 

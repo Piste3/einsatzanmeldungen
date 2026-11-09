@@ -108,10 +108,15 @@ function update(id, input, actor) {
   audit.log({ entity: 'user', entityId: id, action: 'update', summary: `${actor.display_name} hat das Benutzerkonto «${before.username}» geändert`, details: audit.diff(before, { ...data, active, ...twofa }, ['display_name', 'email', 'role', 'person_id', 'active', 'twofa_required', 'twofa_remember_days', 'ms_login', 'password_login']), user: actor });
 }
 
+// Lokales Login ausgeschaltet («nur Microsoft»): dann darf niemand das Passwort ändern oder zurücksetzen
+const passwordLocked = (user) => Boolean(user) && !Number(user.password_login ?? 1);
+const LOCKED_MSG = 'Für dieses Konto ist die Anmeldung mit Benutzername und Passwort ausgeschaltet. Das Passwort lässt sich nicht ändern.';
+
 // Admin setzt ein neues Startpasswort; beim nächsten Login muss es geändert werden
 async function resetPassword(id, actor) {
   const user = get(id);
   if (!user) throw new ValidationError(['Benutzer nicht gefunden.']);
+  if (passwordLocked(user)) throw new ValidationError([LOCKED_MSG]);
   const password = passwords.randomPassword();
   db.run('UPDATE users SET password_hash = ?, must_change_password = 1, failed_logins = 0, locked_until = NULL, updated_at = ? WHERE id = ?',
     await passwords.hashPassword(password), nowIso(), id);
@@ -121,6 +126,8 @@ async function resetPassword(id, actor) {
 }
 
 async function changePassword(user, current, next, confirm, sessionToken) {
+  // Frisch aus der Datenbank lesen: die Sitzung kann einen alten Stand haben
+  if (passwordLocked(get(user.id) || user)) throw new ValidationError([LOCKED_MSG]);
   const errors = [];
   if (!(await passwords.verifyPassword(current, user.password_hash))) errors.push('Das aktuelle Passwort ist falsch.');
   if (next !== confirm) errors.push('Die neuen Passwörter stimmen nicht überein.');
@@ -142,4 +149,4 @@ function count() {
   return db.one('SELECT COUNT(*) AS n FROM users').n;
 }
 
-module.exports = { list, get, create, update, remove, resetTwofa, resetPassword, changePassword, unlock, count };
+module.exports = { list, get, create, update, remove, resetTwofa, resetPassword, changePassword, passwordLocked, unlock, count };

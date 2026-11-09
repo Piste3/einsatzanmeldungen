@@ -44,8 +44,12 @@
   </form>
   <% if (!isNew) { %>
   <div class="card"><div class="card-head"><h2>Passwort</h2></div><div class="card-body">
+    <% if (!Number(u.password_login ?? 1)) { %>
+    <p class="small muted">Gesperrt: Die Anmeldung mit Benutzername und Passwort ist für dieses Konto ausgeschaltet. Darum lässt sich das Passwort nicht zurücksetzen. Zuerst oben «Mit Benutzername und Passwort anmelden erlaubt» einschalten und speichern.</p>
+    <% } else { %>
     <p class="small muted">Erzeugt ein neues Startpasswort, meldet alle Sitzungen ab und verlangt beim nächsten Login ein eigenes Passwort.</p>
     <form method="post" action="/verwaltung/benutzer/<%= u.id %>/passwort" data-confirm="Passwort von <%= u.display_name %> zurücksetzen?"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-sm" type="submit">Passwort zurücksetzen</button></form>
+    <% } %>
   </div>
   <div class="card-head"><h2>Zwei-Faktor</h2><%- u.totp_enabled_at ? h.badge('eingerichtet', 'green') : (Number(u.twofa_required) ? h.badge('Pflicht, noch nicht eingerichtet', 'orange') : h.badge('nicht eingerichtet', 'gray')) %></div>
   <div class="card-body">

@@ -92,3 +92,20 @@ test('Microsoft-Login nur mit Freigabe, danach über die feste ID', async () => 
   assert.equal(users.get(id).external_id, null);
   assert.equal((await loginAs({ preferred_username: 'yann@kkb.ch' })).ok, false);
 });
+
+test('Lokales Login aus: niemand kann das Passwort ändern oder zurücksetzen', async () => {
+  freshDb();
+  const admin = { id: 0, display_name: 'Test' };
+  const { id } = await users.create({ username: 'anna', display_name: 'Anna', role: 'aufgebotsstelle', email: 'anna@kkb.ch', password: 'Sehr-Sicher-2026', ms_login: '1', password_login: '', login_fields: '1' }, null);
+  assert.equal(users.passwordLocked(users.get(id)), true);
+  const before = users.get(id).password_hash;
+  await assert.rejects(users.changePassword(users.get(id), 'Sehr-Sicher-2026', 'Ganz-Neu-2026!', 'Ganz-Neu-2026!'), /ausgeschaltet/);
+  await assert.rejects(users.resetPassword(id, admin), /ausgeschaltet/);
+  assert.equal(users.get(id).password_hash, before);
+
+  // Wieder eingeschaltet: beides geht
+  users.update(id, { display_name: 'Anna', role: 'aufgebotsstelle', email: 'anna@kkb.ch', login_fields: '1', ms_login: '1', password_login: '1', active: '1' }, admin);
+  assert.equal(users.passwordLocked(users.get(id)), false);
+  await users.changePassword(users.get(id), 'Sehr-Sicher-2026', 'Ganz-Neu-2026!', 'Ganz-Neu-2026!');
+  assert.ok(await users.resetPassword(id, admin));
+});

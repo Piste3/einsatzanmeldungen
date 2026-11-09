@@ -98,7 +98,7 @@ Links steht die Navigation, rechts der Inhalt.
 
 ![Unten links: eigener Name, Darstellung und Abmelden](bilder/32-umschalter.jpg)
 
-- Ein Klick auf den **eigenen Namen** öffnet das Konto: Passwort ändern und Zwei-Faktor-Anmeldung einrichten.
+- Ein Klick auf den **eigenen Namen** öffnet das Konto: Passwort ändern und Zwei-Faktor-Anmeldung einrichten. Ist für dein Konto nur Microsoft erlaubt, fehlt das Feld für das Passwort.
 - Das **Symbol daneben** wechselt die Darstellung: «wie System» (Bildschirm), «Hell» (Sonne) oder «Dunkel» (Mond). Die Wahl gilt pro Benutzer auf allen Geräten.
 
 ![Der Einsatzplaner im dunklen Design](bilder/31-dunkel.jpg)
@@ -543,7 +543,7 @@ Die App speichert den Filter für deinen Benutzer. Er gilt also auch auf einem a
 
 Der Reiter **Profil** enthält alles zum eigenen Konto, wie unten links in der Seitenleiste am Computer:
 
-- **Passwort ändern** und **Zwei-Faktor-Anmeldung** öffnen dieselben Seiten wie am Computer, aber im Rahmen der Handy-App mit der Leiste unten. Neben der Zwei-Faktor-Anmeldung steht, ob sie eingerichtet ist.
+- **Passwort ändern** und **Zwei-Faktor-Anmeldung** öffnen dieselben Seiten wie am Computer, aber im Rahmen der Handy-App mit der Leiste unten. Neben der Zwei-Faktor-Anmeldung steht, ob sie eingerichtet ist. Ist für das Konto nur Microsoft erlaubt, steht bei «Passwort ändern» «gesperrt».
 - **Darstellung:** **Wie System**, **Hell** oder **Dunkel**. Die Wahl gilt für dein Konto, also auch am Computer.
 - **Handbuch** öffnet dieses Handbuch.
 - **Ganze Ansicht** zeigt eine Stunde lang den normalen Einsatzplaner (siehe oben).
@@ -848,7 +848,7 @@ Konten anlegen, Rolle wählen (Admin, Aufgebotsstelle oder Einsatzleiter) und mi
 
 ![Benutzer bearbeiten mit Zwei-Faktor-Einstellungen](bilder/23-benutzer-bearbeiten.jpg)
 
-- **Passwort zurücksetzen** erzeugt ein Startpasswort, meldet alle Sitzungen ab und verlangt beim nächsten Login ein eigenes Passwort.
+- **Passwort zurücksetzen** erzeugt ein Startpasswort, meldet alle Sitzungen ab und verlangt beim nächsten Login ein eigenes Passwort. Ist bei der Person «Mit Benutzername und Passwort anmelden erlaubt» ausgeschaltet, fehlt der Knopf. Dann kann niemand das Passwort ändern, weder die Person noch ein Admin.
 - **Zwei-Faktor-Anmeldung:**
   - **Pflicht für dieses Konto:** Die Person muss die 2FA beim nächsten Login einrichten. Vorher kommt sie nirgends hin.
   - **Code verlangen:** bei jedem Login, oder einmal pro Tag, Woche, Monat bzw. 3 Monate pro Gerät. Gilt für alle, die 2FA eingerichtet haben – auch freiwillig.
@@ -996,7 +996,7 @@ Beim ersten Microsoft-Login wird das Benutzerkonto fest mit diesem Microsoft-Kon
 
 ### Nur noch Microsoft
 
-- **Pro Person:** Häkchen **Mit Benutzername und Passwort anmelden erlaubt** entfernen. Die Person kommt dann nur noch mit Microsoft hinein. Das eigene Konto lässt sich erst umstellen, wenn man sich einmal erfolgreich mit Microsoft angemeldet hat.
+- **Pro Person:** Häkchen **Mit Benutzername und Passwort anmelden erlaubt** entfernen. Die Person kommt dann nur noch mit Microsoft hinein. Ihr Passwort lässt sich dann nicht mehr ändern oder zurücksetzen. Das eigene Konto lässt sich erst umstellen, wenn man sich einmal erfolgreich mit Microsoft angemeldet hat.
 - **Für alle:** unter **Einstellungen › Server** bei «Anmeldeverfahren» nur noch **Microsoft** ankreuzen und speichern. Die Login-Seite zeigt dann nur noch den Microsoft-Knopf. Das geht erst, wenn dein eigenes Konto die Microsoft-Anmeldung freigegeben hat.
 
 Die Zwei-Faktor-Abfrage des Einsatzplaners gilt nur für das Passwort-Login. Bei Microsoft gilt die Anmeldesicherheit von Microsoft.
@@ -1018,7 +1018,7 @@ Die Freigaben und Verknüpfungen der Benutzer bleiben dabei erhalten.
 
 ### Zurück zum Passwort-Login (Notausgang)
 
-Unter **Einstellungen › Server** bei «Anmeldeverfahren» nur **Passwort** ankreuzen und speichern. Kommt niemand mehr hinein, auf dem Server-PC `betrieb\windows\server-zuruecksetzen.cmd` doppelklicken. Danach gilt wieder die `.env`, und dort steht normalerweise `AUTH_PROVIDERS=local`. Der Microsoft-Knopf verschwindet, und das Passwort gilt wieder für alle, auch für Konten mit «nur Microsoft». Das hilft auch, wenn Microsoft einmal nicht erreichbar ist oder der Schlüssel abgelaufen ist.
+Unter **Einstellungen › Server** bei «Anmeldeverfahren» nur **Passwort** ankreuzen und speichern. Kommt niemand mehr hinein, auf dem Server-PC `betrieb\windows\server-zuruecksetzen.cmd` doppelklicken. Danach gilt wieder die `.env`, und dort steht normalerweise `AUTH_PROVIDERS=local`. Der Microsoft-Knopf verschwindet, und das Passwort gilt wieder für alle, auch für Konten mit «nur Microsoft». Das hilft auch, wenn Microsoft einmal nicht erreichbar ist oder der Schlüssel abgelaufen ist. Braucht eine Person mit «nur Microsoft» ein neues Passwort: Ein Admin schaltet bei ihr zuerst das Häkchen für das Passwort wieder ein. Danach lässt sich das Passwort zurücksetzen.
 
 **Fehlermeldungen bei der Microsoft-Anmeldung:**
 
