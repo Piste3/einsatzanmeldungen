@@ -10,7 +10,7 @@
   <select name="rank"><option value="">Rang: alle</option><% for (const r of ranks) { %><option value="<%= r.id %>" <%= Number(filters.rank) === r.id ? 'selected' : '' %>><%= r.name %></option><% } %></select>
   <select name="status"><option value="aktiv" <%= filters.status === 'aktiv' ? 'selected' : '' %>>aktiv</option><option value="inaktiv" <%= filters.status === 'inaktiv' ? 'selected' : '' %>>inaktiv</option><option value="ausgetreten" <%= filters.status === 'ausgetreten' ? 'selected' : '' %>>ausgetreten</option><option value="alle" <%= filters.status === 'alle' ? 'selected' : '' %>>alle</option></select>
   <select name="sort" aria-label="Sortierung"><option value="rang" <%= filters.sort === 'rang' ? 'selected' : '' %>>Rang: tief → hoch</option><option value="rang_ab" <%= filters.sort === 'rang_ab' ? 'selected' : '' %>>Rang: hoch → tief</option><option value="name" <%= filters.sort === 'name' ? 'selected' : '' %>>nach Name</option></select>
-  <% if (filters.team || filters.rank || filters.status !== 'aktiv' || filters.sort !== 'rang') { %><a class="btn btn-sm btn-ghost" href="/personen?filter=zuruecksetzen" title="Alle Filter auf den Standard zurücksetzen">Zurücksetzen</a><% } %>
+  <% if (filters.team || filters.rank || filters.status !== 'aktiv' || filters.sort !== 'rang') { %><a class="btn btn-sm btn-ghost" href="/personen?filter=zuruecksetzen" title="Alle Filter auf den Standard zurücksetzen">Filter zurücksetzen</a><% } %>
 </form>
 <div class="card">
   <% if (isAdmin) { %>

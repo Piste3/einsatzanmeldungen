@@ -69,7 +69,7 @@
   <select name="sort" aria-label="Sortierung"><option value="rang" <%= filters.sort === 'rang' ? 'selected' : '' %>>Rang: tief → hoch</option><option value="rang_ab" <%= filters.sort === 'rang_ab' ? 'selected' : '' %>>Rang: hoch → tief</option><option value="name" <%= filters.sort === 'name' ? 'selected' : '' %>>nach Name</option><option value="offen" <%= filters.sort === 'offen' ? 'selected' : '' %>>meiste offen zuerst</option></select>
   <% } else { %><input type="hidden" name="sort" value="<%= filters.sort %>"><% } %>
   <label class="check"><input type="checkbox" name="drafts" value="1" <%= filters.drafts === '1' ? 'checked' : '' %>> Entwürfe</label>
-  <% if (filters.period !== '3m' || filters.team || filters.only || filters.sort !== 'rang' || filters.drafts || filters.view !== 'tabelle') { %><a class="btn btn-sm btn-ghost" href="/rueckmeldungen?filter=zuruecksetzen" title="Alle Filter auf den Standard zurücksetzen">Zurücksetzen</a><% } %>
+  <% if (filters.period !== '3m' || filters.team || filters.only || filters.sort !== 'rang' || filters.drafts || filters.view !== 'tabelle') { %><a class="btn btn-sm btn-ghost" href="/rueckmeldungen?filter=zuruecksetzen" title="Alle Filter auf den Standard zurücksetzen">Filter zurücksetzen</a><% } %>
 </form>
 <div class="row-between mb-s">
   <div class="segmented-links">

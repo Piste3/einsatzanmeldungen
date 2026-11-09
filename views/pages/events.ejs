@@ -12,7 +12,7 @@
   <label class="row small muted">von <input type="date" name="from" value="<%= filters.from %>"></label>
   <label class="row small muted">bis <input type="date" name="to" value="<%= filters.to %>"></label>
   <input type="search" name="q" value="<%= filters.q %>" placeholder="Name filtern">
-  <% if (filters.from || filters.to || filters.q || filters.status !== 'aktiv') { %><a class="btn btn-sm btn-ghost" href="/einsaetze?filter=zuruecksetzen" title="Alle Filter auf den Standard zurücksetzen">Zurücksetzen</a><% } %>
+  <% if (filters.from || filters.to || filters.q || filters.status !== 'aktiv') { %><a class="btn btn-sm btn-ghost" href="/einsaetze?filter=zuruecksetzen" title="Alle Filter auf den Standard zurücksetzen">Filter zurücksetzen</a><% } %>
 </form>
 <div class="card">
   <div class="table-wrap">
