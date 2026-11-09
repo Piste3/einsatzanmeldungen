@@ -36,13 +36,8 @@ function parseJson(s, fallback) {
 // «teams» = vorgesehene Mannschaften (leer = alle)
 // «rule» = Einschränkung als Text, z. B. «Kader · 18+» (leer = alle)
 function shiftsOf(eventId) {
-  const list = db.all('SELECT * FROM shifts WHERE event_id = ? ORDER BY sort, starts_at, id', eventId)
-    .map((s) => ({ ...s, targets: functions.parseTargets(s.function_targets), teams: shiftTeams.parse(s.team_ids), rule: '' }));
-  if (list.some(shiftTeams.restricted)) {
-    const teams = db.all('SELECT id, name, sort FROM teams ORDER BY sort, name');
-    for (const s of list) s.rule = shiftTeams.ruleText(s, teams);
-  }
-  return list;
+  return shiftTeams.decorate(db.all('SELECT * FROM shifts WHERE event_id = ? ORDER BY sort, starts_at, id', eventId)
+    .map((s) => ({ ...s, targets: functions.parseTargets(s.function_targets) })));
 }
 
 // Formular -> vorgesehene Mannschaften; null = Feld war nicht im Formular (nichts ändern)
@@ -361,12 +356,18 @@ function saveShifts(eventId, rows, newRow, user, { reason } = {}) {
     const teamsChanged = Boolean(teams) && JSON.stringify(teams) !== JSON.stringify(oldTeams);
     const minAge = input.min_age === undefined ? undefined : shiftTeams.parseMinAge(input.min_age);
     const ageChanged = minAge !== undefined && minAge !== (shift.min_age || null);
+    const minRank = input.min_rank_id === undefined ? undefined : shiftTeams.parseMinRank(input.min_rank_id);
+    const rankChanged = minRank !== undefined && minRank !== (shift.min_rank_id || null);
     const details = audit.diff(shift, s, Object.keys(s));
-    if (!Object.keys(details).length && !targetsChanged && !teamsChanged && !ageChanged) continue;
+    if (!Object.keys(details).length && !targetsChanged && !teamsChanged && !ageChanged && !rankChanged) continue;
+    if (rankChanged) {
+      const short = (id) => (id ? db.one('SELECT short FROM ranks WHERE id = ?', id)?.short : null);
+      details.mindestrang = { alt: shift.min_rank_id ? `ab ${short(shift.min_rank_id)}` : 'alle', neu: minRank ? `ab ${short(minRank)}` : 'alle' };
+    }
     if (ageChanged) details.mindestalter = { alt: shift.min_age ? `${shift.min_age}+` : 'alle', neu: minAge ? `${minAge}+` : 'alle' };
     if (targetsChanged) details.soll = { alt: shift.target_count, neu: functions.total(targets) || null };
     if (teamsChanged) details.mannschaften = { alt: shiftTeams.label(oldTeams) || 'alle', neu: shiftTeams.label(teams) || 'alle' };
-    updates.push({ shift, s, targets: targetsChanged ? targets : null, teams: teamsChanged ? teams : null, minAge: ageChanged ? minAge : undefined, details });
+    updates.push({ shift, s, targets: targetsChanged ? targets : null, teams: teamsChanged ? teams : null, minAge: ageChanged ? minAge : undefined, minRank: rankChanged ? minRank : undefined, details });
   }
   let added = null;
   const hasNew = newRow && ['name', 'start', 'end', 'start_place', 'internal_note'].some((k) => String(newRow[k] || '').trim())
@@ -374,7 +375,7 @@ function saveShifts(eventId, rows, newRow, user, { reason } = {}) {
   if (hasNew) {
     if (!String(newRow.name || '').trim()) throw new ValidationError(['Neue Schicht: Name fehlt.']);
     try {
-      added = { s: cleanShift(e, newRow), targets: targetsFromInput(newRow) || {}, teams: teamsFromInput(newRow) || [], minAge: shiftTeams.parseMinAge(newRow.min_age) };
+      added = { s: cleanShift(e, newRow), targets: targetsFromInput(newRow) || {}, teams: teamsFromInput(newRow) || [], minAge: shiftTeams.parseMinAge(newRow.min_age), minRank: shiftTeams.parseMinRank(newRow.min_rank_id) };
     } catch (err) {
       if (err instanceof ValidationError) throw new ValidationError(err.messages.map((m) => `Neue Schicht: ${m}`));
       throw err;
@@ -388,18 +389,19 @@ function saveShifts(eventId, rows, newRow, user, { reason } = {}) {
       if (u.targets) setShiftTargets(u.shift.id, u.targets);
       if (u.teams) db.run('UPDATE shifts SET team_ids = ? WHERE id = ?', JSON.stringify(u.teams), u.shift.id);
       if (u.minAge !== undefined) db.run('UPDATE shifts SET min_age = ? WHERE id = ?', u.minAge, u.shift.id);
+      if (u.minRank !== undefined) db.run('UPDATE shifts SET min_rank_id = ? WHERE id = ?', u.minRank, u.shift.id);
       audit.log({ entity: 'shift', entityId: u.shift.id, eventId: e.id, action: 'update', summary: `${user.display_name} hat die Schicht «${u.s.name}» bei «${e.name}» geändert${reason ? ` – Begründung: ${reason}` : ''}`, details: u.details, user });
     }
-    if (added) insertShift(e, added.s, added.targets, user, added.teams, added.minAge);
+    if (added) insertShift(e, added.s, added.targets, user, added.teams, added.minAge, added.minRank);
   });
   live.notify(`event:${e.id}`, 'form');
   return { updated: updates.length, added: Boolean(added) };
 }
 
-function insertShift(e, s, targets, user, teams = [], minAge = null) {
+function insertShift(e, s, targets, user, teams = [], minAge = null, minRank = null) {
   const sort = (db.one('SELECT max(sort) AS m FROM shifts WHERE event_id = ?', e.id).m ?? 0) + 1;
-  const info = db.run('INSERT INTO shifts (event_id, name, starts_at, ends_at, start_place, internal_note, team_ids, min_age, sort) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-    e.id, s.name, s.starts_at, s.ends_at, s.start_place, s.internal_note, JSON.stringify(shiftTeams.parse(teams)), shiftTeams.parseMinAge(minAge), sort);
+  const info = db.run('INSERT INTO shifts (event_id, name, starts_at, ends_at, start_place, internal_note, team_ids, min_age, min_rank_id, sort) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    e.id, s.name, s.starts_at, s.ends_at, s.start_place, s.internal_note, JSON.stringify(shiftTeams.parse(teams)), shiftTeams.parseMinAge(minAge), minRank || null, sort);
   setShiftTargets(Number(info.lastInsertRowid), targets || {});
   // Sobald es mehrere Schichten gibt, ist die Standardschicht eine normale Schicht
   db.run('UPDATE shifts SET is_default = 0 WHERE event_id = ?', e.id);

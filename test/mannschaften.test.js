@@ -99,3 +99,22 @@ test('Mindestalter 16+ / 18+: Alter am Tag der Schicht, unbekannt zählt als vor
   assert.equal(events.shiftsOf(id)[1].min_age, null);
   assert.ok(tag);
 });
+
+test('Mindestrang (z. B. ab KS): dieser Rang und höher, ohne Rang = vorgesehen', () => {
+  const { id, abend, k, z } = setup();
+  const ranks = db.all('SELECT id, short, sort FROM ranks ORDER BY sort');
+  const ks = Number(db.run("INSERT INTO ranks (name, short, sort) VALUES ('Kaderschüler', 'KS', ?)", ranks[1].sort).lastInsertRowid);
+  db.run('UPDATE ranks SET sort = sort + 1 WHERE sort >= ? AND id <> ?', ranks[1].sort, ks);
+  db.run('UPDATE persons SET rank_id = ? WHERE id = ?', ranks[0].id, k); // Sdt -> zu tief
+  db.run('UPDATE persons SET rank_id = ? WHERE id = ?', ks, z);          // KS -> passt
+  const n = persons.create({ first_name: 'Ohne', last_name: 'Rang', status: 'aktiv' }, system);
+  const day = abend.starts_at.slice(0, 10);
+  events.saveShifts(id, { [abend.id]: { name: abend.name, date: day, start: abend.starts_at.slice(11, 16), end: abend.ends_at.slice(11, 16), min_rank_id: String(ks) } }, null, system);
+  assert.equal(events.shiftsOf(id)[1].rule, 'ab KS');
+  const m = feedback.matrix({});
+  const col = m.columns.findIndex((c) => c.shift && c.shift.id === abend.id);
+  const state = (p) => m.rows.find((r) => r.person.id === p).cells[col].state;
+  assert.equal(state(k), 'nicht_vorgesehen');
+  assert.equal(state(z), 'offen');
+  assert.equal(state(n), 'offen');
+});

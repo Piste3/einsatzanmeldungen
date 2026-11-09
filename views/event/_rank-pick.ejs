@@ -1,0 +1,4 @@
+<select name="min_rank_id<%= key %>" aria-label="<%= label %>" class="age-pick" title="Mindestrang: dieser Rang und höher">
+  <option value="" <%= !value ? 'selected' : '' %>>alle</option>
+  <% for (const r of rankList.filter((x) => x.active || x.id === value)) { %><option value="<%= r.id %>" <%= value === r.id ? 'selected' : '' %> title="<%= r.name %>">ab <%= r.short %></option><% } %>
+</select>

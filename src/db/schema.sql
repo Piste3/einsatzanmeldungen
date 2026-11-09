@@ -198,6 +198,7 @@ CREATE TABLE IF NOT EXISTS shifts (
   function_targets JSON NOT NULL DEFAULT '{}',  -- Soll pro Funktion in dieser Schicht: { "<functions.id>": Anzahl }
   team_ids JSON NOT NULL DEFAULT '[]',  -- vorgesehene Mannschaften (teams.id); leer = alle. Nur Hinweis, Anmeldung bleibt möglich
   min_age INTEGER,             -- Mindestalter (16 oder 18); leer = alle. Nur Hinweis
+  min_rank_id INTEGER REFERENCES ranks(id),  -- Mindestrang, z. B. KS (Kaderschüler) und höher; leer = alle. Nur Hinweis
   start_place TEXT,            -- überschreibt Antretensort des Einsatzes
   internal_note TEXT,
   is_default INTEGER NOT NULL DEFAULT 0,

@@ -1,5 +1,6 @@
 'use strict';
-// Einschränkungen pro Schicht: vorgesehene Mannschaften (z. B. nur Kader) und Mindestalter (16+ / 18+).
+// Einschränkungen pro Schicht: vorgesehene Mannschaften (z. B. nur Kader), Mindestalter (16+ / 18+)
+// und Mindestrang (z. B. ab KS = Kaderschüler).
 // Leer = alle. Die Einstellung ist ein Hinweis: Anmelden und Einteilen bleiben für alle möglich,
 // die Rückmeldungen zeigen nicht vorgesehene Personen mit einem eigenen Symbol.
 const db = require('../db');
@@ -27,8 +28,8 @@ function personInfo(personIds) {
   const map = new Map();
   if (!ids.length) return map;
   const ph = ids.map(() => '?').join(',');
-  for (const p of db.all(`SELECT id, birth_date, birth_year FROM persons WHERE id IN (${ph})`, ...ids)) {
-    map.set(p.id, { teams: new Set(), birth_date: p.birth_date, birth_year: p.birth_year });
+  for (const p of db.all(`SELECT p.id, p.birth_date, p.birth_year, r.sort AS rank_sort FROM persons p LEFT JOIN ranks r ON r.id = p.rank_id WHERE p.id IN (${ph})`, ...ids)) {
+    map.set(p.id, { teams: new Set(), birth_date: p.birth_date, birth_year: p.birth_year, rank_sort: p.rank_sort });
   }
   for (const r of db.all(`SELECT person_id, team_id FROM person_teams WHERE person_id IN (${ph})`, ...ids)) map.get(r.person_id)?.teams.add(r.team_id);
   return map;
@@ -53,7 +54,7 @@ function shiftDay(shift, event) {
 
 // Hat die Schicht eine Einschränkung?
 function restricted(shift) {
-  return Boolean(shift && ((shift.teams && shift.teams.length) || shift.min_age));
+  return Boolean(shift && ((shift.teams && shift.teams.length) || shift.min_age || shift.min_rank_id));
 }
 
 // Ist die Person für die Schicht vorgesehen? Unbekanntes Alter zählt als vorgesehen.
@@ -64,6 +65,8 @@ function allows(shift, person, day) {
     const age = ageOn(person, day);
     if (age !== null && age < shift.min_age) return false;
   }
+  // Mindestrang: Rang mit gleicher oder höherer Stufe; ohne Rang zählt die Person als vorgesehen (unbekannt)
+  if (shift.min_rank_id && shift.min_rank_sort != null && person && person.rank_sort != null && person.rank_sort < shift.min_rank_sort) return false;
   return true;
 }
 
@@ -73,10 +76,35 @@ function label(teamIds, teams = db.all('SELECT id, name, sort FROM teams ORDER B
   return teams.filter((t) => teamIds.includes(t.id)).map((t) => t.name).join(', ');
 }
 
-// Text der Einschränkung, z. B. «Kader · 18+»; leer = keine
-function ruleText(shift, teams) {
+// Text der Einschränkung, z. B. «Kader · 18+ · ab KS»; leer = keine
+function ruleText(shift, teams, ranks = allRanks()) {
   if (!restricted(shift)) return '';
-  return [label(shift.teams || [], teams), shift.min_age ? `${shift.min_age}+` : ''].filter(Boolean).join(' · ');
+  const rank = shift.min_rank_id ? ranks.find((r) => r.id === shift.min_rank_id) : null;
+  return [label(shift.teams || [], teams), shift.min_age ? `${shift.min_age}+` : '', rank ? `ab ${rank.short}` : ''].filter(Boolean).join(' · ');
 }
 
-module.exports = { MIN_AGES, parse, parseMinAge, personInfo, ageOn, shiftDay, restricted, allows, label, ruleText };
+const allRanks = () => db.all('SELECT id, name, short, sort, active FROM ranks ORDER BY sort, id');
+
+// Formular -> Mindestrang (ranks.id) oder null
+function parseMinRank(value) {
+  const n = Number(value);
+  return Number.isInteger(n) && n > 0 && db.one('SELECT 1 FROM ranks WHERE id = ?', n) ? n : null;
+}
+
+// Schichten aus der Datenbank ergänzen: teams (Liste), min_rank_sort und rule (Text, z. B. «Kader · ab KS»)
+function decorate(shifts) {
+  let teams = null;
+  let ranks = null;
+  for (const s of shifts) {
+    s.teams = parse(s.team_ids);
+    s.rule = '';
+    if (!restricted(s)) continue;
+    teams ||= db.all('SELECT id, name, sort FROM teams ORDER BY sort, name');
+    ranks ||= allRanks();
+    s.min_rank_sort = s.min_rank_id ? ranks.find((r) => r.id === s.min_rank_id)?.sort ?? null : null;
+    s.rule = ruleText(s, teams, ranks);
+  }
+  return shifts;
+}
+
+module.exports = { MIN_AGES, parse, parseMinAge, parseMinRank, personInfo, ageOn, shiftDay, restricted, allows, label, ruleText, decorate, allRanks };

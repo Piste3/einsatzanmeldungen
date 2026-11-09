@@ -407,7 +407,7 @@ router.get('/einsaetze/:id/schichten', loadEvent, (req, res) => {
   const pInfo = shiftTeams.personInfo(regs.map((r) => r.person_id));
   const notPlanned = (r, s) => !shiftTeams.allows(s, pInfo.get(r.person_id), shiftTeams.shiftDay(s, e));
   res.render('pages/event', { title: `${e.name} · Schichten`, tab: 'schichten', stats, columns, unassigned, combos, overlaps: registrations.overlaps(e.id), regs,
-    teamList, notPlanned, teamLabel: (ids) => shiftTeams.label(ids, teamList),
+    teamList, notPlanned, rankList: shiftTeams.allRanks(),
     fnCols: functions.all().filter((f) => f.active || f.is_default || e.shifts.some((s) => s.targets[f.id])), ...functionPanel(e) });
 });
 

@@ -108,11 +108,13 @@ function matrix({ team = '', period = '3m', sort = 'rang', includeDrafts = false
     // Soll = Summe der Soll-Werte aller Schichten
     const soll = new Map(db.all(`SELECT event_id, SUM(target_count) AS n FROM shifts WHERE event_id IN (${ph}) GROUP BY event_id`, ...ids).map((r) => [r.event_id, r.n]));
     const shifts = new Map();
-    for (const sh of db.all(`SELECT id, event_id, name, starts_at, ends_at, target_count, team_ids, min_age FROM shifts WHERE event_id IN (${ph}) ORDER BY sort, starts_at, id`, ...ids)) {
-      sh.teams = shiftTeams.parse(sh.team_ids);
+    const loaded = [];
+    for (const sh of db.all(`SELECT id, event_id, name, starts_at, ends_at, target_count, team_ids, min_age, min_rank_id FROM shifts WHERE event_id IN (${ph}) ORDER BY sort, starts_at, id`, ...ids)) {
+      loaded.push(sh);
       if (!shifts.has(sh.event_id)) shifts.set(sh.event_id, []);
       shifts.get(sh.event_id).push(sh);
     }
+    shiftTeams.decorate(loaded);
     for (const e of evts) {
       e.soll = soll.get(e.id) || null;
       // Externe Abteilungen (nur Anzahl) pro Schicht; Summe wie beim Soll über alle Schichten
@@ -140,8 +142,6 @@ function matrix({ team = '', period = '3m', sort = 'rang', includeDrafts = false
   const colTotals = Object.fromEntries(columns.map((c) => [c.key, { an: 0, ab: 0, unsicher: 0, offen: 0, andere: 0, schicht_offen: 0, nicht_vorgesehen: 0 }]));
   // Einschränkungen (Mannschaften, Mindestalter): wer nicht passt, bekommt ein eigenes Symbol (Anmelden bleibt möglich)
   const pInfo = shiftTeams.personInfo(people.map((p) => p.id));
-  const teamNames = db.all('SELECT id, name, sort FROM teams ORDER BY sort, name');
-  for (const e of evts) for (const sh of e.allShifts) sh.rule = shiftTeams.ruleText(sh, teamNames);
   const fits = (p, sh, e) => shiftTeams.allows(sh, pInfo.get(p.id), shiftTeams.shiftDay(sh, e));
   // Für den Einsatz vorgesehen = für mindestens eine Schicht vorgesehen (ohne Schichten: immer)
   const plannedForEvent = (p, e) => !e.allShifts.length || e.allShifts.some((sh) => fits(p, sh, e));
