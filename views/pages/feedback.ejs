@@ -107,7 +107,7 @@
                 <span class="dt"><%= h.fmtEventDate(e, 'short') %></span>
                 <span class="ev"><%= e.name %></span>
                 <% if (col.shift) { const ct = colTotals[col.key]; %>
-                  <span class="sh"><%= col.shift.name %><% if (h.isMultiDay(e) && col.shift.starts_at) { %><span class="sh-day"><%= colDate(col) %></span><% } else if (shiftTime(col.shift)) { %><span class="sh-day"><%= shiftTime(col.shift) %></span><% } %></span>
+                  <span class="sh"><%= col.shift.name %><% if (h.isMultiDay(e) && col.shift.starts_at) { %><span class="sh-day"><%= colDate(col) %></span><% } %><% if (shiftTime(col.shift)) { %><span class="sh-day"><%= shiftTime(col.shift) %></span><% } %></span>
                   <span class="fill fill-<%= colTone(col) %>"><span style="width:<%= colFill(col) ?? 0 %>%"></span></span>
                   <span class="num"><%= colIst(col) %><%= extTxt(colExt(col)) %><%= col.shift.target_count ? ` / ${col.shift.target_count}` : '' %><%= ct.schicht_offen ? ` · ${ct.schicht_offen} ohne Schicht` : '' %></span>
                 <% } else { %>

@@ -508,3 +508,5 @@ details.collapse > summary .hint { margin-left: 6px; font-size: 12px; font-weigh
 @media (max-width: 760px) { .fb-ev:not(.fb-shift) { max-width: 120px; } }
 .fb-ev:not(.fb-shift) .ev { width: max-content; max-width: 136px; }
 @media (max-width: 760px) { .fb-ev:not(.fb-shift) .ev { max-width: 108px; } }
+/* Rückmeldungen: alles links ausrichten (Köpfe, Felder, Total) */
+.fb-matrix th, .fb-matrix td { text-align: left; }
