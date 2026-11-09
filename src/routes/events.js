@@ -404,8 +404,8 @@ router.get('/einsaetze/:id/schichten', loadEvent, (req, res) => {
   combos.sort((a, b) => a.value.split(',').length - b.value.split(',').length);
   // Vorgesehene Mannschaften pro Schicht: wer nicht vorgesehen ist, wird markiert (nicht gesperrt)
   const teamList = db.all('SELECT id, name, sort, active FROM teams ORDER BY sort, name');
-  const pTeams = shiftTeams.personTeams(regs.map((r) => r.person_id));
-  const notPlanned = (r, s) => !shiftTeams.allows(s.teams, pTeams.get(r.person_id));
+  const pInfo = shiftTeams.personInfo(regs.map((r) => r.person_id));
+  const notPlanned = (r, s) => !shiftTeams.allows(s, pInfo.get(r.person_id), shiftTeams.shiftDay(s, e));
   res.render('pages/event', { title: `${e.name} · Schichten`, tab: 'schichten', stats, columns, unassigned, combos, overlaps: registrations.overlaps(e.id), regs,
     teamList, notPlanned, teamLabel: (ids) => shiftTeams.label(ids, teamList),
     fnCols: functions.all().filter((f) => f.active || f.is_default || e.shifts.some((s) => s.targets[f.id])), ...functionPanel(e) });

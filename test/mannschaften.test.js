@@ -70,3 +70,32 @@ test('Rückmeldungen: Einsatz mit nur Kader-Schichten zählt Nicht-Kader nicht a
   assert.equal(all.totals[id].nicht_vorgesehen, 1);
   assert.ok(tag && abend);
 });
+
+test('Mindestalter 16+ / 18+: Alter am Tag der Schicht, unbekannt zählt als vorgesehen', () => {
+  const st = require('../src/services/shift-teams');
+  assert.equal(st.ageOn({ birth_date: '2008-11-20' }, '2026-11-19'), 17);
+  assert.equal(st.ageOn({ birth_date: '2008-11-20' }, '2026-11-20'), 18);
+  assert.equal(st.ageOn({ birth_year: 2010 }, '2026-03-01'), 16);
+  assert.equal(st.ageOn({}, '2026-03-01'), null);
+  const { id, tag, abend, k, z } = setup();
+  const day = abend.starts_at.slice(0, 10);
+  const y = Number(day.slice(0, 4));
+  db.run('UPDATE persons SET birth_year = ? WHERE id = ?', y - 17, k);   // 17 -> zu jung für 18+
+  db.run('UPDATE persons SET birth_year = ? WHERE id = ?', y - 20, z);   // 20 -> passt
+  const row = (s, extra) => ({ name: s.name, date: day, start: s.starts_at.slice(11, 16), end: s.ends_at.slice(11, 16), ...extra });
+  events.saveShifts(id, { [abend.id]: row(abend, { min_age: '18' }) }, null, system);
+  const a2 = events.shiftsOf(id)[1];
+  assert.equal(a2.min_age, 18);
+  assert.equal(a2.rule, '18+');
+  const m = feedback.matrix({});
+  const col = m.columns.findIndex((c) => c.shift && c.shift.id === abend.id);
+  assert.equal(m.rows.find((r) => r.person.id === k).cells[col].state, 'nicht_vorgesehen');
+  assert.equal(m.rows.find((r) => r.person.id === z).cells[col].state, 'offen');
+  assert.equal(m.columns[col].planned, '18+');
+  // ohne Feld im Formular bleibt der Wert; «alle» löscht ihn
+  events.saveShifts(id, { [abend.id]: row(abend, { name: 'Abend 2' }) }, null, system);
+  assert.equal(events.shiftsOf(id)[1].min_age, 18);
+  events.saveShifts(id, { [abend.id]: row(abend, { name: 'Abend 2', min_age: '' }) }, null, system);
+  assert.equal(events.shiftsOf(id)[1].min_age, null);
+  assert.ok(tag);
+});

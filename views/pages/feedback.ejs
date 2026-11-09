@@ -11,8 +11,8 @@
   // Schicht für andere Mannschaften vorgesehen: eigenes Symbol, bzw. Markierung, wenn die Person trotzdem angemeldet ist
   const NVSYM = h.icon('ban', 'fb-ico');
   const npClass = (c) => (c.notPlanned && c.state !== 'nicht_vorgesehen' ? ' fb-np' : '');
-  const npText = (c) => (c.notPlanned ? `Vorgesehen: ${c.plannedFor || 'andere Mannschaften'}` : '');
-  const hasPlan = columns.some((col) => (col.shift ? col.shift.teams.length : col.event.allShifts.some((sh) => sh.teams.length)));
+  const npText = (c) => (c.notPlanned ? `Vorgesehen: ${c.plannedFor || 'andere Personen'}` : '');
+  const hasPlan = columns.some((col) => col.planned);
   const stateLabel = (c) => (c.detail ? h.labels.FEEDBACK_DETAIL[c.detail].label : h.labels.FEEDBACK[c.state].label);
   // wer den Stand gesetzt hat und wann (letzter Historie-Eintrag)
   const setBy = (c) => (c.last ? `${c.last.by}, ${c.last.atShort}` : '');
@@ -91,7 +91,7 @@
   <span class="fb-legend-item"><span class="fb fb-unsicher fb-d-rueckfrage">!</span> Rückfrage</span>
   <span class="fb-legend-item"><span class="fb fb-offen"></span> Offen</span>
   <% if (hasPlan) { %>
-  <span class="fb-legend-item"><span class="fb fb-nicht_vorgesehen"><%- NVSYM %></span> Nicht vorgesehen (andere Mannschaft)</span>
+  <span class="fb-legend-item"><span class="fb fb-nicht_vorgesehen"><%- NVSYM %></span> Nicht vorgesehen (Mannschaft oder Alter)</span>
   <span class="fb-legend-item"><span class="fb fb-an fb-np">✓</span> Angemeldet, obwohl nicht vorgesehen</span>
   <% } %>
   <% if (columns.some((c) => c.shift)) { %>

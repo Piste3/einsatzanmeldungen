@@ -822,3 +822,4 @@ tr.note-row > td { padding-top: 0; }
 .note-k { flex: none; width: 128px; font-size: 12px; font-weight: 500; color: var(--muted); }
 .note-intern { border-left-color: var(--orange-dark); }
 .note-intern .note-k { color: var(--orange-dark); }
+.form-table select.age-pick { min-width: 78px; width: 78px; }

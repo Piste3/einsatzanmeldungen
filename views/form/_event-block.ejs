@@ -21,10 +21,10 @@
   <% if (e.help_text) { %><div class="ev-help"><%= e.help_text %></div><% } %>
   <% if (multi) { %>
     <% for (const s of e.openShifts) { %>
-      <label class="opt"><input type="checkbox" name="shifts_<%= e.id %>" value="<%= s.id %>" <%= chosen.includes(s.id) ? 'checked' : '' %> <%= disabled ? 'disabled' : '' %> data-shift-check> <span><%= s.name %></span> <span class="time"><%= h.fmtShiftWhen(s, h.isMultiDay(e)) %></span><% if (s.teamNames) { %> <span class="only">Nur <%= s.teamNames %></span><% } %></label>
+      <label class="opt"><input type="checkbox" name="shifts_<%= e.id %>" value="<%= s.id %>" <%= chosen.includes(s.id) ? 'checked' : '' %> <%= disabled ? 'disabled' : '' %> data-shift-check> <span><%= s.name %></span> <span class="time"><%= h.fmtShiftWhen(s, h.isMultiDay(e)) %></span><% if (s.rule) { %> <span class="only">Nur <%= s.rule %></span><% } %></label>
     <% } %>
   <% } else { %>
-    <% const only = e.openShifts[0]?.teamNames; if (only) { %><div class="ev-only"><span class="only">Nur <%= only %></span></div><% } %>
+    <% const only = e.openShifts[0]?.rule; if (only) { %><div class="ev-only"><span class="only">Nur <%= only %></span></div><% } %>
     <div class="yesno">
       <input type="checkbox" id="y<%= e.id %>" name="answer_<%= e.id %>" value="ja" <%= ans === 'ja' ? 'checked' : '' %> <%= disabled ? 'disabled' : '' %>><label for="y<%= e.id %>">Ja, ich bin dabei</label>
     </div>

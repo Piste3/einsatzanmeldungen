@@ -1,0 +1,5 @@
+<select name="min_age<%= key %>" aria-label="<%= label %>" class="age-pick">
+  <option value="" <%= !value ? 'selected' : '' %>>alle</option>
+  <option value="16" <%= value === 16 ? 'selected' : '' %>>16+</option>
+  <option value="18" <%= value === 18 ? 'selected' : '' %>>18+</option>
+</select>

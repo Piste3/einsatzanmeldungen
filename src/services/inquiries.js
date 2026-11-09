@@ -106,23 +106,26 @@ function rowFor(eventId, personId) {
 }
 
 /**
- * Vorgesehene Mannschaften der Schichten: pro Zeile «plan» = null (alle Schichten offen),
+ * Einschränkungen der Schichten (Mannschaften, Mindestalter): pro Zeile «plan» = null (alle Schichten passen),
  * { none: true } (für keine Schicht vorgesehen) oder { only: ['Tagschicht'] } (nur für einzelne Schichten).
  * Nur Hinweis – Anfragen und Anmelden bleiben möglich.
  */
 function markPlanned(eventId, rows) {
-  const shifts = db.all('SELECT id, name, team_ids FROM shifts WHERE event_id = ? ORDER BY sort, starts_at, id', eventId)
-    .map((sh) => ({ ...sh, teams: shiftTeams.parse(sh.team_ids) }));
+  const event = db.one('SELECT date, date_from FROM events WHERE id = ?', eventId);
+  const shifts = events().shiftsOf(eventId);
   for (const r of rows) r.plan = null;
-  if (!shifts.some((sh) => sh.teams.length) || !rows.length) return rows;
-  const pTeams = shiftTeams.personTeams(rows.map((r) => r.person_id));
+  if (!shifts.some(shiftTeams.restricted) || !rows.length) return rows;
+  const info = shiftTeams.personInfo(rows.map((r) => r.person_id));
+  const rules = [...new Set(shifts.map((sh) => sh.rule).filter(Boolean))].join(' / ');
   for (const r of rows) {
-    const ok = shifts.filter((sh) => shiftTeams.allows(sh.teams, pTeams.get(r.person_id)));
-    if (!ok.length) r.plan = { none: true, text: 'nicht vorgesehen', title: `Vorgesehen: ${shiftTeams.label([...new Set(shifts.flatMap((sh) => sh.teams))])}` };
-    else if (ok.length < shifts.length) r.plan = { only: ok.map((sh) => sh.name), text: `nur ${ok.map((sh) => sh.name).join(', ')}`, title: 'Andere Schichten sind für andere Mannschaften vorgesehen' };
+    const ok = shifts.filter((sh) => shiftTeams.allows(sh, info.get(r.person_id), shiftTeams.shiftDay(sh, event)));
+    if (!ok.length) r.plan = { none: true, text: 'nicht vorgesehen', title: `Vorgesehen: ${rules}` };
+    else if (ok.length < shifts.length) r.plan = { only: ok.map((sh) => sh.name), text: `nur ${ok.map((sh) => sh.name).join(', ')}`, title: `Andere Schichten sind eingeschränkt (${rules})` };
   }
   return rows;
 }
+// spät laden: events.js braucht dieses Modul nicht, aber so bleibt die Reihenfolge der require-Aufrufe egal
+const events = () => require('./events');
 
 function forPerson(personId) {
   const rows = db.all(`SELECT i.*, e.name AS event_name, e.date_from AS event_date, e.date_to AS event_date_to FROM inquiries i JOIN events e ON e.id = i.event_id WHERE i.person_id = ?`, personId);

@@ -108,7 +108,7 @@ function matrix({ team = '', period = '3m', sort = 'rang', includeDrafts = false
     // Soll = Summe der Soll-Werte aller Schichten
     const soll = new Map(db.all(`SELECT event_id, SUM(target_count) AS n FROM shifts WHERE event_id IN (${ph}) GROUP BY event_id`, ...ids).map((r) => [r.event_id, r.n]));
     const shifts = new Map();
-    for (const sh of db.all(`SELECT id, event_id, name, starts_at, ends_at, target_count, team_ids FROM shifts WHERE event_id IN (${ph}) ORDER BY sort, starts_at, id`, ...ids)) {
+    for (const sh of db.all(`SELECT id, event_id, name, starts_at, ends_at, target_count, team_ids, min_age FROM shifts WHERE event_id IN (${ph}) ORDER BY sort, starts_at, id`, ...ids)) {
       sh.teams = shiftTeams.parse(sh.team_ids);
       if (!shifts.has(sh.event_id)) shifts.set(sh.event_id, []);
       shifts.get(sh.event_id).push(sh);
@@ -138,18 +138,16 @@ function matrix({ team = '', period = '3m', sort = 'rang', includeDrafts = false
     : [{ event: e, shift: null, first: true, key: `${e.id}:0` }]));
   const totals = Object.fromEntries(evts.map((e) => [e.id, { an: 0, ab: 0, unsicher: 0, offen: 0 }]));
   const colTotals = Object.fromEntries(columns.map((c) => [c.key, { an: 0, ab: 0, unsicher: 0, offen: 0, andere: 0, schicht_offen: 0, nicht_vorgesehen: 0 }]));
-  // Vorgesehene Mannschaften: wer nicht dazugehört, bekommt ein eigenes Symbol (Anmelden bleibt möglich)
-  const pTeams = shiftTeams.personTeams(people.map((p) => p.id));
+  // Einschränkungen (Mannschaften, Mindestalter): wer nicht passt, bekommt ein eigenes Symbol (Anmelden bleibt möglich)
+  const pInfo = shiftTeams.personInfo(people.map((p) => p.id));
   const teamNames = db.all('SELECT id, name, sort FROM teams ORDER BY sort, name');
+  for (const e of evts) for (const sh of e.allShifts) sh.rule = shiftTeams.ruleText(sh, teamNames);
+  const fits = (p, sh, e) => shiftTeams.allows(sh, pInfo.get(p.id), shiftTeams.shiftDay(sh, e));
   // Für den Einsatz vorgesehen = für mindestens eine Schicht vorgesehen (ohne Schichten: immer)
-  const plannedForEvent = (p, e) => !e.allShifts.length || e.allShifts.some((sh) => shiftTeams.allows(sh.teams, pTeams.get(p.id)));
-  const plannedForCol = (p, col) => (col.shift ? shiftTeams.allows(col.shift.teams, pTeams.get(p.id)) : plannedForEvent(p, col.event));
-  // Text für das Fenster: für welche Mannschaften die Schicht(en) gedacht sind
-  const plannedText = (col) => {
-    const list = col.shift ? [col.shift] : col.event.allShifts;
-    const names = [...new Set(list.flatMap((sh) => sh.teams))];
-    return shiftTeams.label(names, teamNames);
-  };
+  const plannedForEvent = (p, e) => !e.allShifts.length || e.allShifts.some((sh) => fits(p, sh, e));
+  const plannedForCol = (p, col) => (col.shift ? fits(p, col.shift, col.event) : plannedForEvent(p, col.event));
+  // Text für Kopf und Fenster: Einschränkung der Schicht(en), z. B. «Kader · 18+»
+  const plannedText = (col) => [...new Set((col.shift ? [col.shift] : col.event.allShifts).map((sh) => sh.rule).filter(Boolean))].join(' / ');
   // Schichten einer Anmeldung: Zuteilung, sonst die Wünsche aus dem Formular
   const shiftsOf = (reg, e) => {
     if (!reg) return new Set();
@@ -208,7 +206,7 @@ function matrix({ team = '', period = '3m', sort = 'rang', includeDrafts = false
   if (sort === 'name') rows.sort((a, b) => a.person.last_name.localeCompare(b.person.last_name, 'de') || a.person.first_name.localeCompare(b.person.first_name, 'de'));
   // Kopfzeile: «nur Kader» bei Schichten mit vorgesehenen Mannschaften
   for (const col of columns) col.planned = plannedText(col);
-  for (const e of evts) for (const sh of e.shifts) sh.planned = shiftTeams.label(sh.teams, teamNames);
+  for (const e of evts) for (const sh of e.shifts) sh.planned = sh.rule;
   return { events: evts, columns, rows, totals, colTotals, allCount };
 }
 
