@@ -10,7 +10,7 @@
   <div class="top-actions">
     <% if ((liveTopics || []).length) { %><span class="live off" id="live-indicator">Live</span><% } %>
     <% if (typeof showSearch === 'undefined' || showSearch) { %>
-      <form class="search" action="/suche" method="get" role="search"><input type="search" name="q" placeholder="Suchen …" aria-label="Suchen"><input type="hidden" name="go" value="1"></form>
+      <form class="search" action="/suche" method="get" role="search"><input type="search" name="q" placeholder="Suchen" aria-label="Suchen"><input type="hidden" name="go" value="1"></form>
     <% } %>
     <%- typeof actions !== 'undefined' ? actions : '' %>
   </div>

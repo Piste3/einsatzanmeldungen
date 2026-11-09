@@ -9,7 +9,7 @@ body.handy { background: var(--bg); color: var(--text); margin: 0; min-height: 1
 
 /* Kopfleiste */
 .h-bar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 10px; padding: 8px 12px; padding-top: max(8px, env(safe-area-inset-top)); background: var(--paper); border-bottom: 1px solid var(--line); }
-.h-bar .logo { flex: none; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; width: 34px; height: 34px; border-radius: 9px; font-size: 11px; }
+.h-bar .logo { flex: none; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-weight: 600; width: 34px; height: 34px; border-radius: 9px; font-size: 11px; }
 .h-bar-title { flex: 1; min-width: 0; font-weight: 600; font-size: 16px; line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .h-bar-title span { display: block; font-weight: 400; font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; }
 .h-bar-btn { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 0; border-radius: 10px; background: none; color: var(--text); font: inherit; font-size: 26px; line-height: 1; text-decoration: none; cursor: pointer; }
@@ -189,7 +189,7 @@ body.handy { padding-bottom: calc(60px + env(safe-area-inset-bottom)); }
 .h-profile { display: flex; align-items: center; gap: 14px; padding: 8px 2px 16px; }
 .h-profile strong { display: block; font-size: 18px; font-weight: 600; }
 .h-avatar { width: 52px; height: 52px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 600; font-size: 17px; flex: none; }
-.h-section { margin: 18px 2px 8px; font-size: 12.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.h-section { margin: 20px 2px 8px; font-size: 14px; font-weight: 500; color: var(--muted); }
 .h-menu { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
 .h-menu li + li { border-top: 1px solid var(--line); }
 .h-menu a, .h-menu button { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; padding: 8px 14px; box-sizing: border-box; background: var(--card); border: 0; color: var(--text); font: inherit; font-size: 15.5px; text-align: left; text-decoration: none; cursor: pointer; }

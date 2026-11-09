@@ -1067,7 +1067,7 @@
     if (sel.required) { input.required = true; sel.required = false; }
     if (sel.style.width) wrap.style.width = sel.style.width;
     const placeholderOpt = [...sel.options].find((o) => o.value === '');
-    input.placeholder = placeholderOpt && placeholderOpt.text.trim() !== '–' ? placeholderOpt.text : 'Tippen zum Suchen …';
+    input.placeholder = placeholderOpt && placeholderOpt.text.trim() !== '–' ? placeholderOpt.text : 'Suchen';
     const list = document.createElement('div');
     list.className = 'combo-list';
     list.setAttribute('role', 'listbox');

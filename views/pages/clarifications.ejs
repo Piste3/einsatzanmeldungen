@@ -38,7 +38,7 @@
       <form method="get" action="/klaerungen" class="mt">
         <input type="hidden" name="id" value="<%= r.id %>">
         <label for="q">Person in den Stammdaten suchen</label>
-        <input id="q" type="search" name="q" value="<%= q || r.entered_last_name %>" placeholder="Name eingeben …" autofocus>
+        <input id="q" type="search" name="q" value="<%= q || r.entered_last_name %>" placeholder="Name" autofocus>
       </form>
       <% const people = searchResults || candidates; %>
       <div class="table-wrap mt-s">

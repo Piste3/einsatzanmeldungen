@@ -1,11 +1,6 @@
 <%- include('../partials/head') %>
-<%
-  const hour = Number(h.localNow().slice(11, 13));
-  const greet = hour < 11 ? 'Guten Morgen' : hour < 17 ? 'Guten Tag' : 'Guten Abend';
-  const firstName = user.display_name.split(' ')[0];
-%>
 <%- include('../partials/topbar', {
-  crumbs: [[h.fmtDateLong(h.today())]], heading: `${greet}, ${firstName}`,
+  crumbs: [[h.fmtDateLong(h.today())]], heading: 'Cockpit',
   actions: '<a class="btn btn-primary" href="/einsaetze/neu">+ Neuer Einsatz</a>',
 }) %>
 

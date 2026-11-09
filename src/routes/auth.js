@@ -122,7 +122,7 @@ router.post('/setup', async (req, res, next) => {
     const user = users.get(id);
     audit.log({ entity: 'user', entityId: id, action: 'setup', summary: `${user.display_name} hat den KKB-Einsatzplaner eingerichtet`, user });
     auth.login(req, res, user);
-    flash(res, 'success', 'Willkommen! Das Admin-Konto ist eingerichtet.');
+    flash(res, 'success', 'Das Admin-Konto ist eingerichtet');
     res.redirect('/');
   } catch (err) {
     if (err instanceof ValidationError) return res.render('auth/setup', { title: 'Einrichtung', token: req.body.token, errors: err.messages, values: req.body });

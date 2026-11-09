@@ -1,6 +1,6 @@
 <%- include('../partials/head') %>
 <%- include('../partials/topbar', { crumbs: [['Suche']], heading: q ? `Suche: «${q}»` : 'Suche' }) %>
-<form method="get" action="/suche" class="filters"><input type="search" name="q" value="<%= q %>" placeholder="Personen, Einsätze, Anmeldungen …" autofocus style="min-width:320px"><button class="btn btn-sm" type="submit">Suchen</button></form>
+<form method="get" action="/suche" class="filters"><input type="search" name="q" value="<%= q %>" placeholder="Personen, Einsätze oder Anmeldungen" autofocus style="min-width:320px"><button class="btn btn-sm" type="submit">Suchen</button></form>
 <% if (q.length < 2) { %><p class="muted">Mindestens zwei Zeichen eingeben.</p><% } else { %>
 <div class="grid grid-3">
   <div class="card"><div class="card-head"><h2>Personen <span class="hint"><%= people.length %></span></h2></div>

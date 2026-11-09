@@ -75,7 +75,7 @@
 option, optgroup { background-color: var(--input-bg, var(--paper)); color: var(--text); }
 option:checked { background-color: var(--hover-2); color: var(--text); }
 
-body { font-feature-settings: "cv11", "ss01"; letter-spacing: -0.005em; }
+body { font-feature-settings: "cv11", "ss01"; }
 h1, h2, h3, h4 { font-weight: 600; letter-spacing: -0.02em; }
 
 /* ---------- Seitenleiste: hell, nur durch eine Linie getrennt ---------- */
@@ -264,7 +264,7 @@ td .sub, .cell-sub { font-size: 12px; margin-top: 1px; }
 .fb-d-bestaetigt { background: var(--green); color: #fff; }
 .fb-d-warteliste { color: var(--green); }
 .fb-d-whatsapp { background: var(--blue-bg); color: var(--blue); }
-.fb-d-rueckfrage { font-weight: 800; }
+.fb-d-rueckfrage { font-weight: 600; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .fb-d-bestaetigt { color: #0c0c0d; } }
 :root[data-theme="dark"] .fb-d-bestaetigt { color: #0c0c0d; }
 .hist-head .hist-clear { margin-left: auto; min-height: 0; padding: 2px 8px; font-size: 12px; }
@@ -315,7 +315,7 @@ td .sub, .cell-sub { font-size: 12px; margin-top: 1px; }
 .ch.md { background: var(--orange-soft); color: var(--orange-dark); }
 
 /* ---------- Seiten-Gerüst (05.11.2026): Kopf, «Zu tun», Werkzeugleiste, Inhalt ---------- */
-.menu-list .menu-head { padding: 6px 10px 2px; font-size: 11px; font-weight: 600; color: var(--muted-2); text-transform: uppercase; letter-spacing: .04em; }
+.menu-list .menu-head { padding: 8px 10px 4px; font-size: 12px; font-weight: 500; color: var(--muted); }
 .lage-todo { margin-top: 6px; color: var(--text-2); }
 .lage-todo .link { margin-left: 4px; white-space: nowrap; }
 .switch + .link { display: inline-block; margin-top: 10px; }
@@ -392,7 +392,7 @@ details.collapse > summary .hint { margin-left: 6px; font-size: 12px; font-weigh
 .help-fold-card[open] > summary { border-bottom: 1px solid var(--line); }
 /* Einstellungen: Reiter in zwei Gruppen */
 .tabs-grouped { align-items: flex-end; }
-.tab-group-label { align-self: center; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--muted-2); padding: 0 6px 0 2px; }
+.tab-group-label { align-self: center; font-size: 12px; font-weight: 500; color: var(--muted); padding: 0 8px 0 2px; }
 .tab-group-sep { margin-left: 14px; padding-left: 16px; border-left: 1px solid var(--line); }
 .server-table tr.group-row th { font-weight: 500; }
 .server-table tr.group-row th .muted { text-transform: none; letter-spacing: 0; font-weight: 400; }
@@ -445,7 +445,7 @@ details.collapse > summary .hint { margin-left: 6px; font-size: 12px; font-weigh
 @media (max-width: 760px) { .empty-state { padding: 20px; column-gap: 14px; } }
 
 /* Rückmeldungen: andere Schicht – gleiche Zeit (geht nicht) oder zeitlich möglich */
-.fb-andere.fb-d-ueberschneidung { background: var(--border-soft); color: var(--muted); border-color: var(--border-strong); font-weight: 800; }
+.fb-andere.fb-d-ueberschneidung { background: var(--border-soft); color: var(--muted); border-color: var(--border-strong); font-weight: 600; }
 .fb-andere.fb-d-frei { background: var(--card); border: 1px solid var(--border-soft); }
 .fb-ring { display: block; width: 8px; height: 8px; border-radius: 50%; border: 2px solid var(--green); }
 .legend .fb-ring { width: 6px; height: 6px; border-width: 1.5px; }

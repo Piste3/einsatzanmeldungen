@@ -51,7 +51,7 @@
 %>
 <form class="filters fb-filters" method="get" data-autosubmit>
   <input type="hidden" name="view" value="<%= filters.view %>">
-  <input type="search" name="q" value="<%= filters.q %>" placeholder="Name suchen …">
+  <input type="search" name="q" value="<%= filters.q %>" placeholder="Name suchen">
   <select name="period"><% for (const [k, p] of Object.entries(periods)) { %><option value="<%= k %>" <%= filters.period === k ? 'selected' : '' %>><%= p.label %></option><% } %></select>
   <select name="team"><option value="">Alle Mannschaften</option><% for (const t of teams) { %><option value="<%= t.id %>" <%= Number(filters.team) === t.id ? 'selected' : '' %>><%= t.name %></option><% } %></select>
   <select name="only">
