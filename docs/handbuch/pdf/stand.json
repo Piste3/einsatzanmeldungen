@@ -1,14 +1,14 @@
 {
   "einsatzleiter": {
     "quelle": "56b172a52556d9fc",
-    "version": "ffcff87",
-    "erzeugt": "2026-11-09T11:30:03.322Z",
+    "version": "0b695c1",
+    "erzeugt": "2026-11-09T11:37:05.429Z",
     "seiten": 10
   },
   "voll": {
-    "quelle": "cef4233fca72b017",
-    "version": "ffcff87",
-    "erzeugt": "2026-11-09T11:30:03.322Z",
+    "quelle": "a713dcd02c536c7a",
+    "version": "0b695c1",
+    "erzeugt": "2026-11-09T11:37:05.429Z",
     "seiten": 82
   }
 }
