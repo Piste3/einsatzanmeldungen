@@ -496,3 +496,6 @@ details.collapse > summary .hint { margin-left: 6px; font-size: 12px; font-weigh
 .occ-table th:first-child, .occ-table td:first-child { position: sticky; left: 0; z-index: 1; background: var(--card); white-space: nowrap; }
 .occ-table tfoot td:first-child { background: var(--card); }
 @media print { .occ-table th:first-child, .occ-table td:first-child { position: static; } }
+
+/* Rückmeldungen: lange Einsatznamen im Spaltenkopf trennen statt abschneiden («Sommernachts-fest») */
+.fb-ev .ev { hyphens: auto; -webkit-hyphens: auto; overflow-wrap: anywhere; }
