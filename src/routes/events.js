@@ -258,6 +258,7 @@ router.get('/einsaetze/:id/anmeldungen', loadEvent, (req, res) => {
     WHERE p.status = 'aktiv' AND NOT EXISTS (SELECT 1 FROM registrations g WHERE g.event_id = ? AND g.person_id = p.id) ORDER BY ${BY_RANK}`, e.id);
   res.render('pages/event', {
     title: `${e.name} · Anmeldungen`, tab: 'anmeldungen', list, counts, total: all.length, filters, available, dietOf,
+    diets: Object.fromEntries(list.map((r) => [r.id, dietOf(r)])), // für die Browser-App (Funktionen gehen nicht über JSON)
     functionOptions: functions.all({ activeOnly: true }), fnSummary: functions.summary(e),
   });
 });
