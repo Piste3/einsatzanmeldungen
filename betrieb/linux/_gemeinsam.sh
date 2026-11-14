@@ -42,7 +42,7 @@ uses_launchd() { [ "$(uname)" = "Darwin" ] && [ -f "$PLIST" ]; }
 # Browser-App: Pakete installieren und bauen, wenn sie fehlt oder sich der Code geändert hat (force)
 install_frontend() {
   local force="${1:-}"
-  if [ -n "$force" ] || [ ! -d frontend/node_modules ]; then echo "Installiere Pakete der Browser-App …"; (cd frontend && npm ci --no-audit --no-fund); fi
+  if [ -n "$force" ] || [ ! -d frontend/node_modules/vite ]; then echo "Installiere Pakete der Browser-App …"; (cd frontend && npm ci --include=dev --no-audit --no-fund); fi
   if [ -n "$force" ] || [ ! -f frontend/dist/index.html ]; then echo "Baue die Browser-App …"; (cd frontend && npm run build); fi
 }
 

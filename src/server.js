@@ -16,9 +16,10 @@ function ensureFrontendBuilt() {
   const { spawnSync } = require('node:child_process');
   const dir = path.join(__dirname, '..', 'frontend');
   if (fs.existsSync(path.join(dir, 'dist', 'index.html'))) return;
+  // --include=dev: Vite ist ein Entwicklungs-Paket; mit NODE_ENV=production liesse npm es sonst weg
   const npm = (args) => spawnSync('npm', args, { cwd: dir, stdio: 'inherit', shell: process.platform === 'win32', windowsHide: true }).status === 0;
   console.log('Browser-App fehlt – wird jetzt installiert und gebaut (einmalig, ca. 1 Minute) …');
-  if (!fs.existsSync(path.join(dir, 'node_modules')) && !npm(['ci', '--no-audit', '--no-fund'])) return console.error('npm ci für die Browser-App fehlgeschlagen.');
+  if (!fs.existsSync(path.join(dir, 'node_modules', 'vite')) && !npm(['ci', '--include=dev', '--no-audit', '--no-fund'])) return console.error('npm ci für die Browser-App fehlgeschlagen.');
   if (!npm(['run', 'build'])) console.error('Bauen der Browser-App fehlgeschlagen. Bitte update.cmd ausführen.');
 }
 ensureFrontendBuilt();

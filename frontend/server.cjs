@@ -128,7 +128,7 @@ function createFrontend({ settings }) {
     } catch {
       res.statusCode = 503;
       res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-      return res.end('Die Browser-App ist noch nicht gebaut. Bitte «npm run build» im Ordner frontend ausführen.');
+      return res.end('Die Browser-App ist noch nicht gebaut. Bitte im Ordner frontend «npm ci --include=dev» und danach «npm run build» ausführen.');
     }
     res.statusCode = 200;
     res.setHeader('Content-Type', 'text/html; charset=utf-8');

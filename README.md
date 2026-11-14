@@ -29,7 +29,7 @@ Zusätzlich zu den Anmeldestatus aus dem Konzept gibt es **Abgesagt** (im Formul
 
 ```bash
 npm install
-(cd frontend && npm ci && npm run build)   # Browser-App bauen
+(cd frontend && npm ci --include=dev && npm run build)   # Browser-App bauen
 cp .env.example .env      # anpassen
 npm start
 ```

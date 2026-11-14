@@ -77,9 +77,9 @@ function Install-Frontend([switch]$Force) {
   $front = Join-Path $AppDir 'frontend'
   Push-Location $front
   try {
-    if ($Force -or -not (Test-Path (Join-Path $front 'node_modules'))) {
+    if ($Force -or -not (Test-Path (Join-Path $front 'node_modules\vite'))) {
       Write-Host 'Installiere Pakete der Browser-App ...'
-      npm ci --no-audit --no-fund
+      npm ci --include=dev --no-audit --no-fund
       if ($LASTEXITCODE -ne 0) { throw 'npm ci für die Browser-App fehlgeschlagen.' }
     }
     if ($Force -or -not (Test-Path (Join-Path $front 'dist\index.html'))) {

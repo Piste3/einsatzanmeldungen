@@ -121,7 +121,8 @@ async function update(user) {
     const lockAfter = (await run('git', ['rev-parse', 'HEAD:package-lock.json'], { quiet: true })).out;
     const frontLockAfter = (await run('git', ['rev-parse', 'HEAD:frontend/package-lock.json'], { quiet: true })).out;
     const FRONT_DIR = path.join(APP_DIR, 'frontend');
-    const frontMissing = !fs.existsSync(path.join(FRONT_DIR, 'node_modules'));
+    // Vite fehlt auch, wenn npm wegen NODE_ENV=production die Entwicklungs-Pakete weggelassen hat
+    const frontMissing = !fs.existsSync(path.join(FRONT_DIR, 'node_modules', 'vite'));
     if (lockBefore !== lockAfter || frontLockBefore !== frontLockAfter || frontMissing) {
       log('3/5 Abhängigkeiten installieren …');
       if (lockBefore !== lockAfter) {
@@ -130,7 +131,7 @@ async function update(user) {
       }
       // Die Browser-App braucht zum Bauen auch die Entwicklungs-Pakete (Vite)
       if (frontLockBefore !== frontLockAfter || frontMissing) {
-        const ci = await run('npm', ['ci', '--no-audit', '--no-fund'], { cwd: FRONT_DIR });
+        const ci = await run('npm', ['ci', '--include=dev', '--no-audit', '--no-fund'], { cwd: FRONT_DIR });
         if (ci.code !== 0) return fail('npm ci für die Browser-App fehlgeschlagen. Bitte auf dem Server update.cmd ausführen.');
       }
     } else log('3/5 Abhängigkeiten unverändert.');
