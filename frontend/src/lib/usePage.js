@@ -1,7 +1,7 @@
 // Gemeinsame Logik jeder Seite: Daten laden, bei Live-Meldungen auffrischen, Ladezustand und Fehler.
 import { ref, watch, onUnmounted, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
-import { page, session, navigate, ApiError } from './api.js';
+import { page, session, navigate, ApiError, onSameRoute } from './api.js';
 import { subscribe, unsubscribe } from './live.js';
 import { dirtySections } from './section.js';
 
@@ -75,6 +75,7 @@ export function usePage(pathFn, { live = true } = {}) {
 
   watch(() => route.fullPath, () => load(), { immediate: true });
   const refresh = () => load({ quiet: true });
-  onUnmounted(() => { unsubscribe(liveChange); clearInterval(waiting); });
+  const offSame = onSameRoute(refresh);
+  onUnmounted(() => { unsubscribe(liveChange); clearInterval(waiting); offSame(); });
   return { env, data, error, loading, refresh, reload: load };
 }

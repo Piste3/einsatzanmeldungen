@@ -82,12 +82,18 @@ export async function act(method, path, body, { follow = true } = {}) {
 }
 export const post = (path, body, opts) => act('POST', path, body, opts);
 
+// Die angezeigte Seite meldet hier, wie sie ihre Daten neu lädt
+let sameRoute = null;
+export function onSameRoute(fn) { sameRoute = fn; return () => { if (sameRoute === fn) sameRoute = null; }; }
+
 export async function navigate(target) {
   if (!router) return;
-  // Gleiche Adresse: Seite neu laden statt nichts zu tun
+  // Gleiche Adresse: nur den Inhalt neu laden, die Seite bleibt stehen
   const resolved = router.resolve(target);
-  if (resolved.fullPath === router.currentRoute.value.fullPath) router.go(0);
-  else await router.push(target);
+  if (resolved.fullPath === router.currentRoute.value.fullPath) {
+    flashCarry.keep = false;
+    if (sameRoute) await sameRoute(); else router.go(0);
+  } else await router.push(target);
 }
 
 export { request };

@@ -21,6 +21,7 @@ const routes = [
   { path: '/einsaetze/:id(\\d+)/formular', name: 'event-form', component: () => import('./views/EventFormTab.vue') },
   { path: '/einsaetze/:id(\\d+)/verlauf', name: 'event-log', component: () => import('./views/EventLog.vue') },
   { path: '/einsaetze/:id(\\d+)/anmeldungen', name: 'event-registrations', component: () => import('./views/EventRegistrations.vue') },
+  { path: '/klaerungen', name: 'clarifications', component: () => import('./views/ClarificationsView.vue') },
   { path: '/personen', name: 'persons', component: () => import('./views/PersonsView.vue') },
   { path: '/personen/neu', name: 'person-new', component: () => import('./views/PersonForm.vue') },
   { path: '/personen/:id(\\d+)', name: 'person', component: () => import('./views/PersonView.vue') },
