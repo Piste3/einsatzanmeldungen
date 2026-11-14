@@ -3,6 +3,8 @@
 source "$(dirname "$0")/_gemeinsam.sh"
 DIR="$APP_DIR/betrieb/linux"
 
+# Paketlisten ändert npm selbst (z. B. nach «npm install» von Hand): auf den Stand von GitHub zurücksetzen
+git checkout -- package.json package-lock.json frontend/package.json frontend/package-lock.json 2>/dev/null || true
 if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
   echo "Es gibt lokale Änderungen am Code. Update abgebrochen:" >&2
   git status --short --untracked-files=no >&2

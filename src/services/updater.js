@@ -13,6 +13,7 @@ const { localNow } = require('../lib/dates');
 const APP_DIR = path.join(__dirname, '..', '..');
 const LOG_FILE = path.join(config.dataDir, 'update.log');
 const isWin = process.platform === 'win32';
+const PACKAGE_FILES = ['package.json', 'package-lock.json', 'frontend/package.json', 'frontend/package-lock.json'];
 
 // Zustand des laufenden bzw. letzten Updates (überlebt den Neustart über die Logdatei)
 const state = { running: false, step: null, ok: null, lines: [], restarting: false };
@@ -91,6 +92,8 @@ async function update(user) {
   const fail = (msg) => { log(`FEHLER: ${msg}`); Object.assign(state, { running: false, ok: false, step: null }); return false; };
   try {
     state.step = 'Prüfen';
+    // Paketlisten ändert npm selbst (z. B. nach «npm install» von Hand): auf den Stand von GitHub zurücksetzen
+    await run('git', ['checkout', '--', ...PACKAGE_FILES.filter((f) => fs.existsSync(path.join(APP_DIR, f)))], { quiet: true });
     const dirty = await run('git', ['status', '--porcelain', '--untracked-files=no'], { quiet: true });
     if (dirty.code !== 0) return fail(`git ist nicht verfügbar oder der Ordner ist kein git-Projekt (${dirty.out}).`);
     if (dirty.out) return fail(`Es gibt lokale Änderungen am Code, Update abgebrochen:\n${dirty.out}`);

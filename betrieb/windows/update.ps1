@@ -1,6 +1,8 @@
 ﻿# Neueste Version von GitHub holen, vorher sichern, danach neu starten
 . "$PSScriptRoot\_gemeinsam.ps1"
 
+# Paketlisten ändert npm selbst (z. B. nach «npm install» von Hand): auf den Stand von GitHub zurücksetzen
+git checkout -- package.json package-lock.json frontend/package.json frontend/package-lock.json 2>$null
 $changes = git status --porcelain --untracked-files=no
 if ($changes) { Write-Host 'Es gibt lokale Änderungen am Code. Update abgebrochen:' -ForegroundColor Red; $changes; exit 1 }
 
