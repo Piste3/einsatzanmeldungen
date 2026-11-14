@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router';
 import { page, session, navigate, ApiError, onSameRoute } from './api.js';
 import { subscribe, unsubscribe } from './live.js';
 import { dirtySections } from './section.js';
+import { showPageError } from './pageError.js';
 
 // Während jemand etwas bearbeitet (offenes Fenster, ungespeicherte Tabelle), wartet die Live-Aktualisierung
 const busy = () => dirtySections.size > 0 || document.querySelector('dialog[open]') !== null;
@@ -34,7 +35,8 @@ export function usePage(pathFn, { live = true } = {}) {
     if (!quiet) loading.value = true;
     try {
       const e = await page(pathFn(route));
-      if (e.redirect) { await navigate(e.redirect); return; }
+      // Weiterleitung beim Laden ersetzt den Eintrag im Verlauf (Zurück führt nicht in eine Schleife)
+      if (e.redirect) { await navigate(e.redirect, { replace: true }); return; }
       env.value = e;
       data.value = e.data;
       session.title = e.title;
@@ -44,6 +46,8 @@ export function usePage(pathFn, { live = true } = {}) {
       if (live) subscribe(e.liveTopics, liveChange);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) return;
+      // Kein Zugriff, nicht gefunden: Fehlerseite wie bisher
+      if (!quiet && err instanceof ApiError && err.body?.view === 'pages/error') { showPageError({ title: err.body.title, message: err.body.data?.message }); return; }
       if (!quiet) error.value = err;
     } finally {
       loading.value = false;

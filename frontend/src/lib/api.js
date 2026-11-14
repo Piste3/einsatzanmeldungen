@@ -90,14 +90,15 @@ export const post = (path, body, opts) => act('POST', path, body, opts);
 let sameRoute = null;
 export function onSameRoute(fn) { sameRoute = fn; return () => { if (sameRoute === fn) sameRoute = null; }; }
 
-export async function navigate(target) {
+export async function navigate(target, { replace = false } = {}) {
   if (!router) return;
   // Gleiche Adresse: nur den Inhalt neu laden, die Seite bleibt stehen
   const resolved = router.resolve(target);
   if (resolved.fullPath === router.currentRoute.value.fullPath) {
     flashCarry.keep = false;
     if (sameRoute) await sameRoute(); else router.go(0);
-  } else await router.push(target);
+  } else if (replace) await router.replace(target);
+  else await router.push(target);
 }
 
 export { request };

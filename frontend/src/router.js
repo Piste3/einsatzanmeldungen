@@ -4,6 +4,8 @@ import { dirtySections, leaveAllowed } from './lib/section.js';
 import { whenPageLoaded } from './lib/usePage.js';
 import { uiDialog } from './lib/dialog.js';
 import { clearConflict } from './lib/conflict.js';
+import { byRole } from './lib/byRole.js';
+import { clearPageError } from './lib/pageError.js';
 
 // Ausgewählte Ansichten sind schon in der Browser-App. Alle anderen Adressen öffnet die bisherige Ansicht (LegacyView).
 const routes = [
@@ -12,10 +14,10 @@ const routes = [
   { path: '/setup', name: 'setup', component: () => import('./views/SetupView.vue'), meta: { public: true } },
   { path: '/konto/passwort', name: 'password', component: () => import('./views/PasswordView.vue') },
   { path: '/konto/2fa', name: 'twofa', component: () => import('./views/TwofaAccountView.vue') },
-  { path: '/', name: 'cockpit', component: () => import('./views/CockpitView.vue') },
+  { path: '/', name: 'cockpit', component: byRole(() => import('./views/CockpitView.vue'), () => import('./views/LeaderHome.vue')) },
   { path: '/rueckmeldungen', name: 'feedback', component: () => import('./views/FeedbackView.vue') },
   { path: '/einsaetze', name: 'events', component: () => import('./views/EventsView.vue') },
-  { path: '/einsaetze/:id(\\d+)', name: 'event', component: () => import('./views/EventOverview.vue') },
+  { path: '/einsaetze/:id(\\d+)', name: 'event', component: byRole(() => import('./views/EventOverview.vue'), () => import('./views/LeaderEvent.vue')) },
   { path: '/einsaetze/:id(\\d+)/anfragen', name: 'event-inquiries', component: () => import('./views/EventInquiries.vue') },
   { path: '/einsaetze/:id(\\d+)/schichten', name: 'event-shifts', component: () => import('./views/EventShifts.vue') },
   { path: '/einsaetze/neu', name: 'event-new', component: () => import('./views/EventEdit.vue') },
@@ -68,6 +70,7 @@ router.beforeEach(async (to, from) => {
 // Eine angezeigte Konfliktseite gilt nur für die Seite, auf der sie entstand
 router.afterEach((to, from) => {
   clearConflict();
+  clearPageError();
   // Meldungen gelten für die Seite, auf der sie entstanden; nach einer Aktion mit Weiterleitung kommen sie mit
   if (to.path !== from.path && !flashCarry.keep) setFlashes([]);
   flashCarry.keep = false;
