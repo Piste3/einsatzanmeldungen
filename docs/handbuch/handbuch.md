@@ -943,7 +943,7 @@ Gut zu wissen: Die hier gespeicherten Passwörter liegen in der Datenbank und da
 - **Server neu starten**, z. B. nach Änderungen an der `.env`. Werte unter **Server** gelten ohne Neustart.
 - Während eines Neustarts bleiben die Seiten offen. Eine Aktion in diesen Sekunden zeigt «Der Server ist kurz nicht erreichbar». Danach lädt jede offene Seite ihre Daten selbst neu.
 
-> **Aufbau:** Der Einsatzplaner läuft als zwei Teile auf dem Server-PC. Die **Browser-App** liefert die Seiten aus. Der Nginx Proxy Manager leitet auf ihren Port weiter. Das **Backend** verwaltet die Datenbank und ist nur auf dem Server-PC selbst erreichbar. Beide startet `start.cmd` gemeinsam.
+> **Aufbau:** Der Einsatzplaner läuft als zwei Teile auf dem Server-PC. Die **Browser-App** liefert die Seiten aus. Der Nginx Proxy Manager leitet auf ihren Port weiter. Das **Backend** verwaltet die Datenbank und ist nur auf dem Server-PC selbst erreichbar. Beide startet `start.cmd` gemeinsam. Einzeln steuern lassen sie sich im Ordner `betrieb\windows` mit `frontend-start.cmd`, `frontend-stop.cmd`, `frontend-neustart.cmd`, `frontend-status.cmd` und den gleichen Skripten mit `backend-`. Ein von Hand gestoppter Teil bleibt gestoppt, bis du ihn wieder startest. Ist das Backend gestoppt, zeigt die Browser-App «Der Server ist kurz nicht erreichbar».
 - **Version** zeigt Stand und Datum der installierten Version. Das Handbuch passt immer zu dieser Version.
 
 ### Formulare

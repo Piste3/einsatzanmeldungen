@@ -256,6 +256,7 @@ function start() {
   process.on('SIGTERM', () => shutdown(0));
   process.on('SIGINT', () => shutdown(0));
   if (process.send) process.on('disconnect', () => shutdown(0));
+  process.on('message', (m) => { if (m === 'kkb:stop') shutdown(0); });
 }
 
 module.exports = { createFrontend, createProxy, createFrontendServer, securityHeaders, isBackendPath };

@@ -12,6 +12,6 @@ try {
   Write-Host "Antwortet auf http://localhost:$Port (HTTP $($r.StatusCode))"
 } catch { Write-Host "Keine Antwort auf Port $Port." }
 try {
-  $h = Invoke-WebRequest -Uri "http://localhost:$Port/health" -UseBasicParsing -TimeoutSec 5
-  Write-Host "Backend antwortet (über die Browser-App, HTTP $($h.StatusCode))"
+  $h = Invoke-WebRequest -Uri "http://127.0.0.1:$ApiPort/health" -UseBasicParsing -TimeoutSec 5
+  Write-Host "Backend antwortet auf Port $ApiPort (HTTP $($h.StatusCode))"
 } catch { Write-Host "Backend antwortet nicht (Port $ApiPort)." }

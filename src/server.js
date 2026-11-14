@@ -79,5 +79,7 @@ process.on('SIGTERM', () => shutdown(0));
 process.on('SIGINT', () => shutdown(0));
 // Über den Starter (launcher.js) gestartet: endet der Starter, endet auch der Server
 if (process.send) process.on('disconnect', () => shutdown(0));
+// Starter bittet um sauberes Beenden (Skript backend-stop / -neustart)
+process.on('message', (m) => { if (m === 'kkb:stop') shutdown(0); });
 // Neustart (Verwaltung › System): Exit-Code 75, der Starter startet den Server danach neu
 process.on('kkb:restart', () => shutdown(75));

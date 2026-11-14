@@ -12,6 +12,8 @@ Skripte für den Alltag. Es gibt je eine Variante für **Linux/macOS** (`betrieb
 | Sicherung jetzt | `betrieb/linux/sicherung.sh` | `sicherung.cmd` |
 | Server-Einstellungen aus der Verwaltung löschen (Notausgang) | `betrieb/linux/server-zuruecksetzen.sh` | `server-zuruecksetzen.cmd` |
 | Neueste Version holen | `betrieb/linux/update.sh` | `update.cmd` |
+| Nur Browser-App starten / stoppen / neu starten / Stand | `betrieb/linux/teil.sh frontend start` (`stop`, `neustart`, `status`) | `frontend-start.cmd`, `frontend-stop.cmd`, `frontend-neustart.cmd`, `frontend-status.cmd` |
+| Nur Backend starten / stoppen / neu starten / Stand | `betrieb/linux/teil.sh backend start` (`stop`, `neustart`, `status`) | `backend-start.cmd`, `backend-stop.cmd`, `backend-neustart.cmd`, `backend-status.cmd` |
 | Autostart einschalten | `betrieb/linux/autostart-ein.sh` | `autostart-ein.cmd` (als Administrator) |
 | Autostart ausschalten | `betrieb/linux/autostart-aus.sh` | `autostart-aus.cmd` (als Administrator) |
 
@@ -23,6 +25,8 @@ Der Einsatzplaner läuft als zwei getrennte Node-Prozesse, beide gestartet vom S
 
 - **Browser-App** auf `PORT` (z. B. 3010): Seiten, Skripte, Stylesheets. Der Reverse-Proxy zeigt hierhin.
 - **Backend** auf `API_PORT` (Standard `PORT + 1`, z. B. 3011), nur für diesen Rechner: Datenbank und Daten.
+
+Beide Teile lassen sich einzeln steuern (Tabelle oben). Die Skripte geben dem Starter einen Auftrag über eine Datei in `DATA_DIR/steuerung`; der Starter schreibt den Stand nach `DATA_DIR/status.json`. Ein von Hand gestoppter Teil bleibt gestoppt, bis man ihn wieder startet oder den ganzen Einsatzplaner neu startet. Läuft der Einsatzplaner gar nicht, startet z. B. `backend-start.cmd` nur das Backend; die Browser-App kommt dann mit `frontend-start.cmd` dazu.
 
 Endet die Browser-App unerwartet, startet der Starter nur sie neu. Bei einem Neustart des Backends läuft die Browser-App weiter. Die Skripte erkennen beide Prozesse und beide Ports.
 
