@@ -8,6 +8,10 @@ import { clearConflict } from './lib/conflict.js';
 // Ausgewählte Ansichten sind schon in der Browser-App. Alle anderen Adressen öffnet die bisherige Ansicht (LegacyView).
 const routes = [
   { path: '/login', name: 'login', component: () => import('./views/LoginView.vue'), meta: { public: true } },
+  { path: '/login/2fa', name: 'login-2fa', component: () => import('./views/TwofaLoginView.vue'), meta: { public: true } },
+  { path: '/setup', name: 'setup', component: () => import('./views/SetupView.vue'), meta: { public: true } },
+  { path: '/konto/passwort', name: 'password', component: () => import('./views/PasswordView.vue') },
+  { path: '/konto/2fa', name: 'twofa', component: () => import('./views/TwofaAccountView.vue') },
   { path: '/', name: 'cockpit', component: () => import('./views/CockpitView.vue') },
   { path: '/rueckmeldungen', name: 'feedback', component: () => import('./views/FeedbackView.vue') },
   { path: '/einsaetze', name: 'events', component: () => import('./views/EventsView.vue') },

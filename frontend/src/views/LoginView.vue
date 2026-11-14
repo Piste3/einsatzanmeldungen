@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { page, post, bootstrap, ApiError, session, navigate } from '@/lib/api.js';
+import { page, post, bootstrap, ApiError, session, navigate, flashCarry } from '@/lib/api.js';
 
 const route = useRoute();
 const state = ref(null);
@@ -12,9 +12,9 @@ const busy = ref(false);
 
 onMounted(async () => {
   const env = await page(`/login?next=${encodeURIComponent(route.query.next || '/')}`);
-  if (env.redirect) { await bootstrap(); return navigate(env.redirect); }
+  if (env.redirect) { await bootstrap({ refreshOnly: true }); flashCarry.keep = true; return navigate(env.redirect); }
   state.value = env.data;
-  error.value = env.data.error || '';
+  error.value = route.query.fehler || env.data.error || '';
   document.title = 'Anmelden · KKB-Einsatzplaner';
 });
 

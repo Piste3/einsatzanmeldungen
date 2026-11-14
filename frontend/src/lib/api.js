@@ -42,7 +42,8 @@ async function request(method, path, body) {
   const json = type.includes('json') ? await res.json() : null;
   if (res.status === 401 && json?.login) {
     session.user = null;
-    if (router && router.currentRoute.value.name !== 'login') router.push({ name: 'login', query: { next: router.currentRoute.value.fullPath } });
+    // Öffentliche Seiten (Login, Code, Einrichtung) bleiben stehen
+    if (router && !router.currentRoute.value.meta.public) router.push({ name: 'login', query: { next: router.currentRoute.value.fullPath } });
   }
   if (!res.ok) throw new ApiError(res.status, json);
   return json;
@@ -55,10 +56,11 @@ export async function page(path) {
   return env;
 }
 
-export async function bootstrap() {
+// Sitzung lesen. Nach einer Aktion (refreshOnly) bleiben deren Meldungen stehen.
+export async function bootstrap({ refreshOnly = false } = {}) {
   const s = await request('GET', '/session');
   adopt(s);
-  setFlashes(s.flashes);
+  if (!refreshOnly) setFlashes(s.flashes);
   session.ready = true;
   return s;
 }
