@@ -5,6 +5,8 @@ import { session, bootstrap, useRouter } from './lib/api.js';
 const routes = [
   { path: '/login', name: 'login', component: () => import('./views/LoginView.vue'), meta: { public: true } },
   { path: '/', name: 'cockpit', component: () => import('./views/CockpitView.vue') },
+  { path: '/einsaetze', name: 'events', component: () => import('./views/EventsView.vue') },
+  { path: '/einsaetze/:id(\\d+)', name: 'event', component: () => import('./views/EventOverview.vue') },
   { path: '/:pathMatch(.*)*', name: 'legacy', component: () => import('./views/LegacyView.vue'), meta: { public: true } },
 ];
 
