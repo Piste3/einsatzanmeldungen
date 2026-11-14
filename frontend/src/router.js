@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import { session, bootstrap, useRouter } from './lib/api.js';
+import { session, bootstrap, useRouter, setFlashes, flashCarry } from './lib/api.js';
 import { dirtySections, leaveAllowed } from './lib/section.js';
+import { whenPageLoaded } from './lib/usePage.js';
 import { uiDialog } from './lib/dialog.js';
 import { clearConflict } from './lib/conflict.js';
 
@@ -22,7 +23,17 @@ const routes = [
   { path: '/:pathMatch(.*)*', name: 'legacy', component: () => import('./views/LegacyView.vue'), meta: { public: true } },
 ];
 
-export const router = createRouter({ history: createWebHistory(import.meta.env.BASE_URL), routes });
+export const router = createRouter({
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes,
+  // Gleiche Seite (Filter, Sortierung): Stelle halten. Zurück/Vor: frühere Stelle. Neue Seite: oben, bei #… dorthin.
+  scrollBehavior(to, from, saved) {
+    if (saved) return whenPageLoaded().then(() => saved);
+    if (to.path === from.path) return false;
+    if (to.hash) return { el: to.hash };
+    return { top: 0 };
+  },
+});
 useRouter(router);
 
 router.beforeEach(async (to, from) => {
@@ -40,4 +51,9 @@ router.beforeEach(async (to, from) => {
 });
 
 // Eine angezeigte Konfliktseite gilt nur für die Seite, auf der sie entstand
-router.afterEach(() => clearConflict());
+router.afterEach((to, from) => {
+  clearConflict();
+  // Meldungen gelten für die Seite, auf der sie entstanden; nach einer Aktion mit Weiterleitung kommen sie mit
+  if (to.path !== from.path && !flashCarry.keep) setFlashes([]);
+  flashCarry.keep = false;
+});

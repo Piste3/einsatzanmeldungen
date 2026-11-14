@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 import Icon from './Icon.vue';
 import ConflictView from './ConflictView.vue';
 import { conflict } from '@/lib/conflict.js';
+import { snapshot, apply as applyScroll, toastFlashes } from '@/lib/scroll.js';
 import { session, post } from '@/lib/api.js';
 import { liveState } from '@/lib/live.js';
 import { initials, labels } from '@/lib/format.js';
@@ -49,6 +50,15 @@ watch(() => user.value?.theme, (t) => {
 }, { immediate: true });
 const onKey = (e) => { if (e.key === 'Escape') navOpen.value = false; };
 onMounted(() => document.addEventListener('keydown', onKey));
+
+// Neue Meldung oben: Stelle halten (die Seite scrollt um die Höhe der Meldung mit), sonst unten rechts zeigen
+let flashSnap = null;
+watch(() => session.flashes.map((f) => f.id).join(','), () => { flashSnap = snapshot(); }, { flush: 'pre' });
+watch(() => session.flashes.map((f) => f.id).join(','), (ids) => {
+  if (flashSnap) applyScroll(flashSnap, { flashShift: true });
+  flashSnap = null;
+  if (ids) requestAnimationFrame(toastFlashes);
+}, { flush: 'post' });
 onUnmounted(() => { document.removeEventListener('keydown', onKey); document.body.classList.remove('nav-open'); });
 </script>
 

@@ -1,5 +1,5 @@
 // Aktion mit den üblichen Rückfragen: Bestätigung, Begründung bei abgeschlossenem Einsatz, Fehlermeldungen.
-import { post, ApiError, flash } from './api.js';
+import { post, ApiError, setFlashes } from './api.js';
 import { confirmDialog, askReason } from './dialog.js';
 import { showConflict } from './conflict.js';
 
@@ -18,8 +18,8 @@ export async function runAction(path, body = {}, { confirm = null, event = null,
   } catch (e) {
     if (e instanceof ApiError) {
       if (e.status === 409 && e.body?.view === 'pages/conflict') showConflict(e.body.data);
-      else if (e.status === 409) flash('error', 'Der Datensatz wurde inzwischen von jemand anderem geändert. Bitte neu laden.');
-      else for (const m of e.messages) flash('error', m);
+      else if (e.status === 409) setFlashes([{ type: 'error', message: 'Der Datensatz wurde inzwischen von jemand anderem geändert. Bitte neu laden.' }]);
+      else setFlashes(e.messages.map((m) => ({ type: 'error', message: m })));
       return null;
     }
     throw e;

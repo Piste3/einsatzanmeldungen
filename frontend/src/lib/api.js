@@ -56,23 +56,28 @@ export async function page(path) {
 export async function bootstrap() {
   const s = await request('GET', '/session');
   adopt(s);
-  session.flashes = s.flashes || [];
+  setFlashes(s.flashes);
   session.ready = true;
   return s;
 }
 
-// Meldungen aus der Antwort anzeigen (verschwinden nach einigen Sekunden)
+// Meldungen («Gespeichert» …) wie bisher: Sie bleiben stehen, bis die nächste Aktion neue bringt
+// oder eine andere Seite öffnet. Die Live-Aktualisierung lässt sie stehen.
+let flashSeq = 0;
 export function flash(type, message) {
-  const f = { type, message, id: Math.random() };
-  session.flashes.push(f);
-  setTimeout(() => { session.flashes = session.flashes.filter((x) => x.id !== f.id); }, 8000);
+  session.flashes.push({ type, message, id: ++flashSeq });
 }
+export function setFlashes(list) {
+  session.flashes = (list || []).map((f) => ({ ...f, id: ++flashSeq }));
+}
+// Eine Aktion führt auf eine andere Seite: ihre Meldungen sollen dort stehen bleiben
+export const flashCarry = { keep: false };
 
 // Aktion senden. Eine Weiterleitung in der Antwort führt die Browser-App aus.
 export async function act(method, path, body, { follow = true } = {}) {
   const json = await request(method, path, body);
-  for (const f of json.flashes || []) flash(f.type, f.message);
-  if (follow && json.redirect) { leaveAllowed(); await navigate(json.redirect); }
+  setFlashes(json.flashes);
+  if (follow && json.redirect) { leaveAllowed(); flashCarry.keep = true; await navigate(json.redirect); }
   return json;
 }
 export const post = (path, body, opts) => act('POST', path, body, opts);
