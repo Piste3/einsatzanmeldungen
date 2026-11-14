@@ -15,4 +15,6 @@ fi
 if command -v curl >/dev/null 2>&1; then
   CODE="$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:$PORT/login" || true)"
   if [ "$CODE" = "200" ] || [ "$CODE" = "302" ]; then echo "Antwortet auf http://localhost:$PORT"; else echo "Keine Antwort auf Port $PORT."; fi
+  CODE="$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:$PORT/health" || true)"
+  if [ "$CODE" = "200" ]; then echo "Backend antwortet (Port $API_PORT)."; else echo "Backend antwortet nicht (Port $API_PORT)."; fi
 fi

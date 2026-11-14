@@ -29,9 +29,17 @@ Zusätzlich zu den Anmeldestatus aus dem Konzept gibt es **Abgesagt** (im Formul
 
 ```bash
 npm install
+(cd frontend && npm ci && npm run build)   # Browser-App bauen
 cp .env.example .env      # anpassen
 npm start
 ```
+
+`npm start` startet zwei getrennte Node-Prozesse:
+
+- **Browser-App** (`frontend/server.cjs`) auf `PORT`: liefert Seiten, Skripte und Stylesheets aus und leitet Daten-Anfragen weiter. Sie hat keinen Zugriff auf die Datenbank.
+- **Backend** (`src/server.js`) auf `API_PORT` (Standard `PORT + 1`), nur für diesen Rechner erreichbar: Datenbank, Schnittstelle `/api/v1`, Live-Meldungen, Hintergrundaufgaben.
+
+Fällt das Backend kurz aus (Neustart, Update), läuft die Browser-App weiter und zeigt «Der Server ist kurz nicht erreichbar». Für die Entwicklung startet `npm run dev` alles in einem Prozess.
 
 Beim ersten Start gibt es noch kein Benutzerkonto. Der Server schreibt dann einen einmaligen Einrichtungs-Link in die Ausgabe:
 
@@ -75,11 +83,15 @@ npm run handbuch:pdf
 
 Alles läuft über Umgebungsvariablen. `npm start` liest zusätzlich eine `.env`-Datei, siehe `.env.example`.
 
-Admins können fast alle dieser Werte auch im Browser unter **Einstellungen › Server** ändern. Sie werden in der Datenbank gespeichert, gelten sofort und gehen der `.env` vor. Nur `PORT`, `HOST`, `DATA_DIR`, `DB_FILE` und `NODE_ENV` kommen ausschliesslich aus der `.env`, weil der Server sie vor dem Start braucht. Notausgang: `npm run server:zuruecksetzen` (bzw. `betrieb/windows/server-zuruecksetzen.cmd`) löscht die Werte aus der Datenbank wieder.
+Admins können fast alle dieser Werte auch im Browser unter **Einstellungen › Server** ändern. Sie werden in der Datenbank gespeichert, gelten sofort und gehen der `.env` vor. Nur `PORT`, `HOST`, `API_PORT`, `API_HOST`, `BACKEND_URL`, `KKB_BETRIEB`, `DATA_DIR`, `DB_FILE` und `NODE_ENV` kommen ausschliesslich aus der `.env`, weil der Server sie vor dem Start braucht. Notausgang: `npm run server:zuruecksetzen` (bzw. `betrieb/windows/server-zuruecksetzen.cmd`) löscht die Werte aus der Datenbank wieder.
 
 | Variable | Standard | Bedeutung |
 |---|---|---|
-| `PORT` | `3000` | Port des Servers |
+| `PORT` | `3000` | Port der Browser-App (diesen Port gibt der Reverse-Proxy weiter) |
+| `API_PORT` | `PORT + 1` | Port des Backends |
+| `API_HOST` | `127.0.0.1` | Wo das Backend Anfragen annimmt. Nur ändern, wenn die Browser-App auf einem anderen Rechner läuft; dann den Port mit einer Firewall auf diesen Rechner beschränken |
+| `BACKEND_URL` | `http://127.0.0.1:API_PORT` | Für die Browser-App: Adresse des Backends |
+| `KKB_BETRIEB` | | `einzeln`: wie früher ein einziger Prozess |
 | `BASE_URL` | `http://localhost:PORT` | Öffentliche Adresse, wird für Links und Microsoft-Login gebraucht |
 | `DATA_DIR` | `./data` | Ordner für Datenbank und Sicherungen |
 | `TRUST_PROXY` | aus | Auf `1` setzen, wenn ein Reverse-Proxy davor steht |
@@ -153,7 +165,7 @@ einsatz.kkb.ch {
 }
 ```
 
-Caddy holt das Zertifikat selbst und leitet auch WebSockets (`/live`) weiter. Bei nginx `proxy_set_header Upgrade $http_upgrade;` und `proxy_set_header Connection "upgrade";` für `/live` nicht vergessen. In beiden Fällen `TRUST_PROXY=1` setzen.
+Der Reverse-Proxy zeigt immer auf die Browser-App (`PORT`), nie auf das Backend. Caddy holt das Zertifikat selbst und leitet auch WebSockets (`/live`) weiter. Bei nginx `proxy_set_header Upgrade $http_upgrade;` und `proxy_set_header Connection "upgrade";` für `/live` nicht vergessen. In beiden Fällen `TRUST_PROXY=1` setzen.
 
 ### Docker
 
@@ -171,14 +183,18 @@ Wiederherstellen: Server stoppen, die gewünschte Sicherung als `DATA_DIR/einsat
 ## Aufbau
 
 ```
-src/
+src/            Backend
+  api.js        Schnittstelle /api/v1 (JSON für die Browser-App)
   auth/         Login, Sitzungen, Anbieter (local, microsoft)
   db/           Schema und Standardwerte (SQLite)
   services/     Fachlogik (Einsätze, Anmeldungen, Zuordnung, Kalender, …)
-  routes/       Seiten und Formulare
-  lib/          Hilfsfunktionen (Datum, Export, ICS, XLSX, Live-Updates)
-views/          EJS-Vorlagen
-public/         CSS, JavaScript, Logo
+  routes/       Daten und Aktionen pro Bereich
+  lib/          Hilfsfunktionen (Datum, Export, ICS, XLSX, Live-Updates); Teile davon nutzt auch die Browser-App
+  launcher.js   Starter für Backend und Browser-App
+frontend/       Browser-App (Vue 3, gebaut mit Vite nach frontend/dist)
+  server.cjs    Frontend-Server: liefert die App aus, leitet /api und /live an das Backend
+  src/views/    Seiten, src/components/ Bausteine, src/lib/ Schnittstelle, Live, Handy-App
+public/         CSS, Logo, Service Worker der Handy-App
 scripts/        seed, user:create
 test/           automatische Tests
 ```

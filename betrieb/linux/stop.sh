@@ -7,7 +7,7 @@ if uses_launchd; then launchctl stop ch.kkb.einsatzplaner; launchctl unload "$PL
 
 if ! pid_running; then
   # Ohne PID-Datei gestartet (z. B. «npm start»)? Dann die Prozesse dieses Projekts beenden.
-  if pkill -f "env-file-if-exists=.env src/(server|launcher).js" 2>/dev/null; then echo "Server gestoppt."; else echo "Der Server läuft nicht."; fi
+  if pkill -f "$APP_PATTERN" 2>/dev/null; then echo "Server gestoppt."; else echo "Der Server läuft nicht."; fi
   rm -f "$PID_FILE"; exit 0
 fi
 PID="$(cat "$PID_FILE")"

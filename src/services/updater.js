@@ -1,5 +1,5 @@
 'use strict';
-// Update und Neustart aus der Verwaltung (System): Sicherung, git pull, ggf. npm ci, dann Neustart.
+// Update und Neustart aus der Verwaltung (System): Sicherung, git pull, ggf. npm ci, Browser-App bauen, dann Neustart.
 // Läuft im Serverprozess selbst; den Neustart übernimmt der Starter (src/launcher.js).
 const fs = require('node:fs');
 const path = require('node:path');
@@ -29,12 +29,12 @@ function log(line) {
 }
 
 // Befehl ausführen, Ausgabe ins Protokoll; gibt { code, out } zurück
-function run(cmd, args, { quiet = false } = {}) {
+function run(cmd, args, { quiet = false, cwd = APP_DIR } = {}) {
   return new Promise((resolve) => {
     // git darf das Projekt auch unter einem anderen Windows-Konto (z. B. SYSTEM bei Autostart) benutzen
     const fullArgs = cmd === 'git' ? ['-c', `safe.directory=${APP_DIR.replace(/\\/g, '/')}`, ...args] : args;
     // npm ist unter Windows eine .cmd-Datei und braucht eine Shell (Argumente sind fest, keine Benutzereingaben)
-    const child = spawn(cmd, fullArgs, { cwd: APP_DIR, shell: isWin && cmd === 'npm', windowsHide: true, env: { ...process.env, GIT_TERMINAL_PROMPT: '0' } });
+    const child = spawn(cmd, fullArgs, { cwd, shell: isWin && cmd === 'npm', windowsHide: true, env: { ...process.env, GIT_TERMINAL_PROMPT: '0' } });
     let out = '';
     const onData = (d) => {
       const s = d.toString();
@@ -96,16 +96,17 @@ async function update(user) {
     if (dirty.out) return fail(`Es gibt lokale Änderungen am Code, Update abgebrochen:\n${dirty.out}`);
 
     state.step = 'Sichern';
-    log('1/4 Datenbank sichern …');
+    log('1/5 Datenbank sichern …');
     const file = path.join(backup.backupDir(), `einsatzplaner-${localNow().replace('T', '-').replace(':', '')}-vor-update.sqlite`);
     fs.mkdirSync(backup.backupDir(), { recursive: true });
     db.get().exec(`VACUUM INTO '${file.replace(/'/g, "''")}'`);
     log(`  ${file}`);
 
     state.step = 'Herunterladen';
-    log('2/4 Neueste Version holen …');
+    log('2/5 Neueste Version holen …');
     const before = (await run('git', ['rev-parse', 'HEAD'], { quiet: true })).out;
     const lockBefore = (await run('git', ['rev-parse', 'HEAD:package-lock.json'], { quiet: true })).out;
+    const frontLockBefore = (await run('git', ['rev-parse', 'HEAD:frontend/package-lock.json'], { quiet: true })).out;
     const pull = await run('git', ['pull', '--ff-only', 'origin', 'main']);
     if (pull.code !== 0) return fail('git pull fehlgeschlagen.');
     const after = (await run('git', ['rev-parse', 'HEAD'], { quiet: true })).out;
@@ -118,14 +119,35 @@ async function update(user) {
 
     state.step = 'Abhängigkeiten';
     const lockAfter = (await run('git', ['rev-parse', 'HEAD:package-lock.json'], { quiet: true })).out;
-    if (lockBefore !== lockAfter) {
-      log('3/4 Abhängigkeiten installieren …');
-      const ci = await run('npm', ['ci', '--omit=dev', '--no-audit', '--no-fund']);
-      if (ci.code !== 0) return fail('npm ci fehlgeschlagen. Bitte auf dem Server update.cmd ausführen.');
-    } else log('3/4 Abhängigkeiten unverändert.');
+    const frontLockAfter = (await run('git', ['rev-parse', 'HEAD:frontend/package-lock.json'], { quiet: true })).out;
+    const FRONT_DIR = path.join(APP_DIR, 'frontend');
+    const frontMissing = !fs.existsSync(path.join(FRONT_DIR, 'node_modules'));
+    if (lockBefore !== lockAfter || frontLockBefore !== frontLockAfter || frontMissing) {
+      log('3/5 Abhängigkeiten installieren …');
+      if (lockBefore !== lockAfter) {
+        const ci = await run('npm', ['ci', '--omit=dev', '--no-audit', '--no-fund']);
+        if (ci.code !== 0) return fail('npm ci fehlgeschlagen. Bitte auf dem Server update.cmd ausführen.');
+      }
+      // Die Browser-App braucht zum Bauen auch die Entwicklungs-Pakete (Vite)
+      if (frontLockBefore !== frontLockAfter || frontMissing) {
+        const ci = await run('npm', ['ci', '--no-audit', '--no-fund'], { cwd: FRONT_DIR });
+        if (ci.code !== 0) return fail('npm ci für die Browser-App fehlgeschlagen. Bitte auf dem Server update.cmd ausführen.');
+      }
+    } else log('3/5 Abhängigkeiten unverändert.');
+
+    // Browser-App neu bauen, wenn sich ihr Code oder der geteilte Code (src/lib, public) geändert hat.
+    // Der Build tauscht erst am Schluss: Schlägt er fehl, läuft die alte App weiter.
+    state.step = 'Bauen';
+    const changed = (await run('git', ['diff', '--name-only', before, after], { quiet: true })).out.split('\n');
+    const needsBuild = !fs.existsSync(path.join(FRONT_DIR, 'dist', 'index.html')) || changed.some((f) => /^(frontend\/|src\/lib\/|public\/)/.test(f));
+    if (needsBuild) {
+      log('4/5 Browser-App bauen …');
+      const b = await run('npm', ['run', 'build'], { cwd: FRONT_DIR });
+      if (b.code !== 0) return fail('Bauen der Browser-App fehlgeschlagen. Die bisherige Browser-App läuft weiter. Bitte auf dem Server update.cmd ausführen.');
+    } else log('4/5 Browser-App unverändert.');
 
     state.step = 'Neustart';
-    log('4/4 Neustart …');
+    log('5/5 Neustart …');
     Object.assign(state, { running: false, ok: true });
     restart(user, 'Update fertig');
     return true;

@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "icons": "node scripts/icons.mjs",
-    "build": "node scripts/icons.mjs && vite build"
+    "build": "node scripts/build.mjs"
   },
   "dependencies": {
     "vue": "3.5",

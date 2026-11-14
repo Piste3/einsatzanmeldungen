@@ -10,13 +10,14 @@ if ($other) {
   Start-Sleep -Seconds 1
 }
 if (-not (Test-Path (Join-Path $AppDir 'node_modules'))) { Write-Host 'Installiere Abhängigkeiten ...'; npm ci --omit=dev }
+Install-Frontend
 
 $p = Start-Process -FilePath $NodeBin -ArgumentList $NodeArgs -WorkingDirectory $AppDir `
   -RedirectStandardOutput $LogFile -RedirectStandardError $ErrFile -WindowStyle Hidden -PassThru
 $p.Id | Set-Content $PidFile
 Start-Sleep -Seconds 2
 if (Get-ServerProcess) {
-  Write-Host "Server gestartet (PID $($p.Id)) auf http://localhost:$Port"
+  Write-Host "Server gestartet (PID $($p.Id)): Browser-App auf http://localhost:$Port, Backend auf Port $ApiPort (nur dieser Rechner)"
   Write-Host "Protokoll: $LogFile"
 } else {
   Write-Host 'Der Server konnte nicht starten:' -ForegroundColor Red

@@ -43,6 +43,11 @@ async function request(method, path, body, extraHeaders = {}) {
   const type = res.headers.get('content-type') || '';
   // Kurze Fehlermeldung als Text (Handy-App: Karte speichern) wird zur Fehlermeldung
   const json = type.includes('json') ? await res.json() : !res.ok && type.includes('text/plain') ? { error: await res.text(), text: true } : null;
+  // Browser-App läuft, das Backend antwortet nicht (Neustart, Update): wie ohne Verbindung
+  if (res.status === 503 && json?.offline) {
+    session.offline = true;
+    throw new ApiError(0, json);
+  }
   if (res.status === 401 && json?.login) {
     session.user = null;
     // Öffentliche Seiten (Login, Code, Einrichtung) bleiben stehen

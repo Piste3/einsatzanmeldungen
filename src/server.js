@@ -14,7 +14,12 @@ seedDefaults();
 // Server-Einstellungen aus der Verwaltung über die .env legen
 require('./services/server-settings').applyStored();
 
-const app = createApp();
+// Getrennter Betrieb (Starter, «npm start»): dieser Prozess ist nur das Backend auf API_PORT, nur für diesen Rechner erreichbar.
+// Die Browser-App liefert frontend/server.cjs auf PORT aus und leitet Daten-Anfragen hierher weiter.
+const split = process.env.KKB_ROLE === 'backend';
+const port = split ? Number(process.env.API_PORT || config.port + 1) : config.port;
+const host = split ? (process.env.API_HOST || '127.0.0.1') : config.host;
+const app = createApp({ split });
 const server = http.createServer(app);
 live.attach(server, auth.userFromRequest, { topicFilter: require('./services/leaders').allowTopic });
 
@@ -30,13 +35,13 @@ if (users.count() === 0) {
 
 server.on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
-    console.error(`\nPort ${config.port} ist bereits belegt – läuft der Einsatzplaner schon? Mit stop.cmd / stop.sh beenden oder in der .env einen anderen PORT wählen.\n`);
+    console.error(`\nPort ${port} ist bereits belegt – läuft der Einsatzplaner schon? Mit stop.cmd / stop.sh beenden oder in der .env einen anderen PORT wählen.\n`);
     process.exit(1);
   }
   throw err;
 });
-server.listen(config.port, config.host, () => {
-  console.log(`KKB-Einsatzplaner läuft auf ${config.baseUrl} (Port ${config.port})`);
+server.listen(port, host, () => {
+  console.log(split ? `Backend läuft auf ${host}:${port} (Browser-App: ${config.baseUrl})` : `KKB-Einsatzplaner läuft auf ${config.baseUrl} (Port ${port})`);
   require('./services/updater').markStarted();
   console.log(`Anmeldeformular: ${config.baseUrl}/forms/anmeldung (einbettbar auf: ${config.formFrameAncestors})`);
 });

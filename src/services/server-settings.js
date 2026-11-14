@@ -85,8 +85,10 @@ const FIELDS = [
 
 // Nur lesend: ohne diese Werte startet der Server nicht oder findet die Datenbank nicht
 const READONLY = [
-  { key: 'PORT', label: 'Port', current: () => String(config.port),
+  { key: 'PORT', label: 'Port der Browser-App', current: () => String(config.port),
     reason: 'Auf diesen Port leitet der Nginx Proxy Manager weiter. Ein falscher Wert hier würde den Einsatzplaner unerreichbar machen, und du könntest ihn nicht mehr über diese Seite zurückstellen.' },
+  { key: 'API_PORT', label: 'Port des Backends', current: () => (process.env.KKB_ROLE === 'backend' ? String(process.env.API_PORT || config.port + 1) : 'kein eigener Prozess'),
+    reason: 'Die Browser-App holt die Daten über diesen Port. Er ist nur auf diesem Rechner erreichbar. Standard: Port der Browser-App + 1.' },
   { key: 'HOST', label: 'Netzwerk-Schnittstelle', current: () => config.host,
     reason: 'Wie beim Port: Ein falscher Wert sperrt den Zugriff von aussen. Standard 0.0.0.0 = alle Schnittstellen.' },
   { key: 'DATA_DIR', label: 'Datenordner', current: () => config.dataDir,

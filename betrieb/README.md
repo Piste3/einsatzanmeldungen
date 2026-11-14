@@ -17,6 +17,15 @@ Skripte für den Alltag. Es gibt je eine Variante für **Linux/macOS** (`betrieb
 
 Unter Windows sind die `.cmd`-Dateien nur Doppelklick-Starter für die gleichnamigen PowerShell-Skripte (`.ps1`).
 
+## Zwei Prozesse
+
+Der Einsatzplaner läuft als zwei getrennte Node-Prozesse, beide gestartet vom Starter `src/launcher.js`:
+
+- **Browser-App** auf `PORT` (z. B. 3010): Seiten, Skripte, Stylesheets. Der Reverse-Proxy zeigt hierhin.
+- **Backend** auf `API_PORT` (Standard `PORT + 1`, z. B. 3011), nur für diesen Rechner: Datenbank und Daten.
+
+Endet die Browser-App unerwartet, startet der Starter nur sie neu. Bei einem Neustart des Backends läuft die Browser-App weiter. Die Skripte erkennen beide Prozesse und beide Ports.
+
 ## Update und Neustart im Browser
 
 Admins finden unter **Einstellungen › System** die Knöpfe «Nach Updates suchen», «Update installieren» und «Server neu starten», mit Protokoll. Dafür muss der Server über die Skripte hier (oder `npm start`) gestartet sein. Diese starten `src/launcher.js`, der den Server nach einem Update automatisch neu startet. Für das Update muss `git` auf dem Server installiert sein, und das Konto, unter dem der Server läuft, muss von GitHub lesen dürfen.
@@ -25,7 +34,8 @@ Admins finden unter **Einstellungen › System** die Knöpfe «Nach Updates such
 
 - **start** startet den Server im Hintergrund und merkt sich die Prozessnummer in `DATA_DIR/server.pid`. Die Ausgabe landet in `DATA_DIR/server.log`. Fehlen die Abhängigkeiten, werden sie zuerst installiert.
 - **stop** beendet den Server.
-- **update** bricht ab, wenn jemand am Code etwas lokal geändert hat. Sonst sichert es zuerst die Datenbank, holt mit `git pull` die neueste Version von `main`, installiert die Abhängigkeiten und startet den Server neu.
+- **start** installiert und baut zuerst die Browser-App (`frontend`), wenn sie fehlt.
+- **update** bricht ab, wenn jemand am Code etwas lokal geändert hat. Sonst sichert es zuerst die Datenbank, holt mit `git pull` die neueste Version von `main`, installiert die Abhängigkeiten, baut die Browser-App neu und startet den Server neu. Schlägt das Bauen fehl, bleibt die bisherige Browser-App erhalten.
 - **server-zuruecksetzen** löscht die Werte, die unter **Einstellungen › Server** gespeichert sind, und startet neu. Danach gilt wieder nur die `.env`. Hilft, wenn man sich dort ausgesperrt hat. Mit Namen dahinter nur diese Werte, z. B. `server-zuruecksetzen.cmd AUTH_PROVIDERS`.
 - **sicherung** legt sofort eine Kopie der Datenbank in `DATA_DIR/backups` ab (zusätzlich zur täglichen automatischen Sicherung). Das geht auch, während der Server läuft.
 - **autostart-ein** richtet den Server als Dienst ein, der beim Hochfahren startet und nach einem Absturz neu startet:

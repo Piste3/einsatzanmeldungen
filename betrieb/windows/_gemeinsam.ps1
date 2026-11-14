@@ -15,6 +15,10 @@ function Get-EnvValue([string]$Name, [string]$Default) {
 $DataDir = Get-EnvValue 'DATA_DIR' (Join-Path $AppDir 'data')
 if (-not [System.IO.Path]::IsPathRooted($DataDir)) { $DataDir = Join-Path $AppDir $DataDir }
 $Port = Get-EnvValue 'PORT' '3000'
+# Backend (Datenbank, Schnittstelle) läuft getrennt auf API_PORT, nur für diesen Rechner erreichbar
+$ApiPort = Get-EnvValue 'API_PORT' ([string]([int]$Port + 1))
+# Erkennt die node-Prozesse dieses Projekts: Starter, Backend, Browser-App
+$AppPattern = 'src[\\/](server|launcher)\.js|frontend[\\/]server\.cjs'
 $PidFile = Join-Path $DataDir 'server.pid'
 $LogFile = Join-Path $DataDir 'server.log'
 $ErrFile = Join-Path $DataDir 'server-fehler.log'
@@ -45,7 +49,7 @@ function Test-Admin {
 function Stop-TaskServer {
   Stop-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
   Get-CimInstance Win32_Process -Filter "Name = 'node.exe'" |
-    Where-Object { ($_.CommandLine -like '*src/server.js*' -or $_.CommandLine -like '*src/launcher.js*') -and $_.CommandLine -like '*env-file-if-exists*' } |
+    Where-Object { $_.CommandLine -match $AppPattern -and $_.CommandLine -like '*env-file-if-exists*' } |
     ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
 }
 
@@ -53,17 +57,37 @@ function Stop-TaskServer {
 # (auch wenn der Server ohne die Skripte gestartet wurde, z. B. mit «npm start»)
 function Get-AppProcessIds {
   $ids = @()
-  # Wer den Port belegt – aber nur, wenn es ein node-Prozess ist (nie fremde Programme beenden)
-  try {
-    foreach ($c in Get-NetTCPConnection -LocalPort ([int]$Port) -State Listen -ErrorAction Stop) {
-      $p = Get-Process -Id $c.OwningProcess -ErrorAction SilentlyContinue
-      if ($p -and $p.ProcessName -eq 'node') { $ids += $p.Id }
-    }
-  } catch { }
+  # Wer die Ports belegt (Browser-App, Backend) – aber nur, wenn es ein node-Prozess ist (nie fremde Programme beenden)
+  foreach ($port in @([int]$Port, [int]$ApiPort)) {
+    try {
+      foreach ($c in Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction Stop) {
+        $p = Get-Process -Id $c.OwningProcess -ErrorAction SilentlyContinue
+        if ($p -and $p.ProcessName -eq 'node') { $ids += $p.Id }
+      }
+    } catch { }
+  }
   $ids += Get-CimInstance Win32_Process -Filter "Name = 'node.exe'" |
-    Where-Object { $_.CommandLine -match 'src[\\/](server|launcher)\.js' -and $_.CommandLine -like '*env-file-if-exists*' } |
+    Where-Object { $_.CommandLine -match $AppPattern -and $_.CommandLine -like '*env-file-if-exists*' } |
     ForEach-Object { $_.ProcessId }
   return $ids | Where-Object { $_ -and $_ -ne $PID } | Sort-Object -Unique
+}
+
+# Browser-App: Pakete installieren und bauen, wenn sie fehlt oder sich der Code geändert hat ($Force)
+function Install-Frontend([switch]$Force) {
+  $front = Join-Path $AppDir 'frontend'
+  Push-Location $front
+  try {
+    if ($Force -or -not (Test-Path (Join-Path $front 'node_modules'))) {
+      Write-Host 'Installiere Pakete der Browser-App ...'
+      npm ci --no-audit --no-fund
+      if ($LASTEXITCODE -ne 0) { throw 'npm ci für die Browser-App fehlgeschlagen.' }
+    }
+    if ($Force -or -not (Test-Path (Join-Path $front 'dist\index.html'))) {
+      Write-Host 'Baue die Browser-App ...'
+      npm run build
+      if ($LASTEXITCODE -ne 0) { throw 'Bauen der Browser-App fehlgeschlagen.' }
+    }
+  } finally { Pop-Location }
 }
 
 function Stop-AppProcesses {

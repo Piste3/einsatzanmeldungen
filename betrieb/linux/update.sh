@@ -9,18 +9,21 @@ if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
   exit 1
 fi
 
-echo "1/4 Datenbank sichern …"
+echo "1/5 Datenbank sichern …"
 npm run --silent backup
 
-echo "2/4 Neueste Version holen …"
+echo "2/5 Neueste Version holen …"
 BEFORE="$(git rev-parse HEAD)"
 git pull --ff-only origin main
 AFTER="$(git rev-parse HEAD)"
 if [ "$BEFORE" = "$AFTER" ]; then echo "Bereits auf dem neuesten Stand."; exit 0; fi
 git --no-pager log --oneline "$BEFORE..$AFTER"
 
-echo "3/4 Abhängigkeiten installieren …"
+echo "3/5 Abhängigkeiten installieren …"
 npm ci --omit=dev
 
-echo "4/4 Server neu starten …"
+echo "4/5 Browser-App bauen …"
+install_frontend force
+
+echo "5/5 Server neu starten …"
 "$DIR/neustart.sh"
