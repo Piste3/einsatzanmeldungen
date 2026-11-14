@@ -117,6 +117,8 @@ function createApi() {
   api.use(auth.csrfProtect);
   api.use(helpers.navMiddleware);
   api.use(require('./services/user-filters').middleware);
+  // Zähler in der Navigation (Klärungen, Formular-Fehler): Live-Meldung «nur Navigation»
+  api.get('/nav', (req, res) => res.json({ nav: req.user.role === 'einsatzleiter' ? {} : require('./services/cockpit').navCounts() }));
   api.use(require('./routes/leader'));
   api.use(require('./routes/handy'));
   api.use(require('./routes/cockpit'));

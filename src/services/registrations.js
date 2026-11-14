@@ -285,7 +285,8 @@ function setStatus(id, to, user, { expected = null, silent = false, mail = true 
     // Automatische Anmeldebestätigung per E-Mail (sofern hinterlegt)
     require('./calendar').sendConfirmation(id, user).catch((err) => console.error('Bestätigung fehlgeschlagen:', err));
   }
-  live.notify(`event:${reg.event_id}`, 'feedback', `person:${reg.person_id}`);
+  // Ohne Person (Klärung, z. B. «ungültig»): Zähler «Klärungen» in der Navigation ändert sich
+  live.notify(`event:${reg.event_id}`, 'feedback', reg.person_id ? `person:${reg.person_id}` : 'clarifications');
   return { changed: true, reg };
 }
 
