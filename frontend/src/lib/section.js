@@ -2,6 +2,7 @@
 // Hinweis «Ungespeicherte Änderungen» zeigen und Live-Aktualisierungen solange zurückhalten.
 // Die Felder sind ungebunden (:value); verglichen wird mit dem Stand nach dem letzten Laden.
 import { ref, watch, nextTick, onUnmounted } from 'vue';
+import { uiDialog } from './dialog.js';
 
 export const dirtySections = new Set();
 // Nach erfolgreichem Speichern: Weiterleiten ohne Rückfrage
@@ -58,7 +59,6 @@ window.addEventListener('beforeunload', (ev) => {
 export async function confirmOtherSections(formRef) {
   const others = [...dirtySections].filter((r) => r !== formRef && r.value);
   if (!others.length) return true;
-  const { uiDialog } = await import('./dialog.js');
   const names = others.map((r) => (r.value.querySelector('.card-head h2, h2') || {}).firstChild?.textContent?.trim()).filter(Boolean);
   return uiDialog({
     title: 'Ungespeicherte Änderungen',

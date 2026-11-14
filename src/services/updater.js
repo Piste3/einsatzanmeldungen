@@ -29,12 +29,12 @@ function log(line) {
 }
 
 // Befehl ausführen, Ausgabe ins Protokoll; gibt { code, out } zurück
-function run(cmd, args, { quiet = false, cwd = APP_DIR } = {}) {
+function run(cmd, args, { quiet = false, cwd = APP_DIR, env = {} } = {}) {
   return new Promise((resolve) => {
     // git darf das Projekt auch unter einem anderen Windows-Konto (z. B. SYSTEM bei Autostart) benutzen
     const fullArgs = cmd === 'git' ? ['-c', `safe.directory=${APP_DIR.replace(/\\/g, '/')}`, ...args] : args;
     // npm ist unter Windows eine .cmd-Datei und braucht eine Shell (Argumente sind fest, keine Benutzereingaben)
-    const child = spawn(cmd, fullArgs, { cwd, shell: isWin && cmd === 'npm', windowsHide: true, env: { ...process.env, GIT_TERMINAL_PROMPT: '0' } });
+    const child = spawn(cmd, fullArgs, { cwd, shell: isWin && cmd === 'npm', windowsHide: true, env: { ...process.env, GIT_TERMINAL_PROMPT: '0', ...env } });
     let out = '';
     const onData = (d) => {
       const s = d.toString();
@@ -142,7 +142,8 @@ async function update(user) {
     const needsBuild = !fs.existsSync(path.join(FRONT_DIR, 'dist', 'index.html')) || changed.some((f) => /^(frontend\/|src\/lib\/|public\/)/.test(f));
     if (needsBuild) {
       log('4/5 Browser-App bauen …');
-      const b = await run('npm', ['run', 'build'], { cwd: FRONT_DIR });
+      // CI=1: im Protokoll nur Warnungen und das Ergebnis, nicht jede Datei
+      const b = await run('npm', ['run', 'build'], { cwd: FRONT_DIR, env: { CI: '1' } });
       if (b.code !== 0) return fail('Bauen der Browser-App fehlgeschlagen. Die bisherige Browser-App läuft weiter. Bitte auf dem Server update.cmd ausführen.');
     } else log('4/5 Browser-App unverändert.');
 
