@@ -930,7 +930,7 @@ Damit sich niemand aussperrt, prüft die Seite beim Speichern: Die Passwort-Anme
 
 **Nur in der .env:** Port der Browser-App, Port des Backends, Netzwerk-Schnittstelle, Datenordner, Datenbank-Datei und Betriebsart stehen rechts zugeklappt (**Anzeigen**) und nur zum Ansehen. Der Server braucht sie, bevor er startet: Auf den Port leitet der Nginx Proxy Manager weiter, und im Datenordner liegt die Datenbank mit den Werten dieser Seite. Ein falscher Wert hier würde den Einsatzplaner unerreichbar machen, und man könnte ihn nicht mehr über den Browser zurückstellen. Diese Werte ändert man deshalb in der `.env` und startet danach unter **System** neu.
 
-> **Ausgesperrt?** Auf dem Server-PC im Ordner `betrieb\windows` doppelt auf `server-zuruecksetzen.cmd` klicken. Das löscht alle Werte dieser Seite und startet den Einsatzplaner neu. Danach gilt wieder die `.env`. Nur einzelne Werte: Namen anhängen, z. B. `server-zuruecksetzen.cmd AUTH_PROVIDERS`.
+> **Ausgesperrt?** Auf dem Server-PC im Ordner `betrieb\windows\wartung` doppelt auf `server-zuruecksetzen.cmd` klicken. Das löscht alle Werte dieser Seite und startet den Einsatzplaner neu. Danach gilt wieder die `.env`. Nur einzelne Werte: Namen anhängen, z. B. `server-zuruecksetzen.cmd AUTH_PROVIDERS`.
 
 Gut zu wissen: Die hier gespeicherten Passwörter liegen in der Datenbank und damit auch in jeder Datensicherung. Sicherungen deshalb genauso sorgfältig aufbewahren wie die `.env`.
 
@@ -943,7 +943,7 @@ Gut zu wissen: Die hier gespeicherten Passwörter liegen in der Datenbank und da
 - **Server neu starten**, z. B. nach Änderungen an der `.env`. Werte unter **Server** gelten ohne Neustart.
 - Während eines Neustarts bleiben die Seiten offen. Eine Aktion in diesen Sekunden zeigt «Der Server ist kurz nicht erreichbar». Danach lädt jede offene Seite ihre Daten selbst neu.
 
-> **Aufbau:** Der Einsatzplaner läuft als zwei Teile auf dem Server-PC. Die **Browser-App** liefert die Seiten aus. Der Nginx Proxy Manager leitet auf ihren Port weiter. Das **Backend** verwaltet die Datenbank und ist nur auf dem Server-PC selbst erreichbar. Beide startet `start.cmd` gemeinsam. Einzeln steuern lassen sie sich im Ordner `betrieb\windows` mit `frontend-start.cmd`, `frontend-stop.cmd`, `frontend-neustart.cmd`, `frontend-status.cmd` und den gleichen Skripten mit `backend-`. Ein von Hand gestoppter Teil bleibt gestoppt, bis du ihn wieder startest. Ist das Backend gestoppt, zeigt die Browser-App «Der Server ist kurz nicht erreichbar».
+> **Aufbau:** Der Einsatzplaner läuft als zwei Teile auf dem Server-PC. Die **Browser-App** liefert die Seiten aus. Der Nginx Proxy Manager leitet auf ihren Port weiter. Das **Backend** verwaltet die Datenbank und ist nur auf dem Server-PC selbst erreichbar. Die Skripte liegen auf dem Server-PC im Ordner `betrieb\windows`, nach Ordnern sortiert. `gesamt` steuert beide Teile zusammen (start, stop, neustart, status, protokoll, update). `frontend` steuert nur die Browser-App, `backend` nur das Backend (je start, stop, neustart, status). `wartung` enthält Sicherung, Zurücksetzen der Server-Einstellungen und den Autostart. Ein von Hand gestoppter Teil bleibt gestoppt, bis du ihn wieder startest. Ist das Backend gestoppt, zeigt die Browser-App «Der Server ist kurz nicht erreichbar».
 - **Version** zeigt Stand und Datum der installierten Version. Das Handbuch passt immer zu dieser Version.
 
 ### Formulare
@@ -1037,7 +1037,7 @@ Die Freigaben und Verknüpfungen der Benutzer bleiben dabei erhalten.
 
 ### Zurück zum Passwort-Login (Notausgang)
 
-Unter **Einstellungen › Server** bei «Anmeldeverfahren» nur **Passwort** ankreuzen und speichern. Kommt niemand mehr hinein, auf dem Server-PC `betrieb\windows\server-zuruecksetzen.cmd` doppelklicken. Danach gilt wieder die `.env`, und dort steht normalerweise `AUTH_PROVIDERS=local`. Der Microsoft-Knopf verschwindet, und das Passwort gilt wieder für alle, auch für Konten mit «nur Microsoft». Das hilft auch, wenn Microsoft einmal nicht erreichbar ist oder der Schlüssel abgelaufen ist. Braucht eine Person mit «nur Microsoft» ein neues Passwort: Ein Admin schaltet bei ihr zuerst das Häkchen für das Passwort wieder ein. Danach lässt sich das Passwort zurücksetzen.
+Unter **Einstellungen › Server** bei «Anmeldeverfahren» nur **Passwort** ankreuzen und speichern. Kommt niemand mehr hinein, auf dem Server-PC `betrieb\windows\wartung\server-zuruecksetzen.cmd` doppelklicken. Danach gilt wieder die `.env`, und dort steht normalerweise `AUTH_PROVIDERS=local`. Der Microsoft-Knopf verschwindet, und das Passwort gilt wieder für alle, auch für Konten mit «nur Microsoft». Das hilft auch, wenn Microsoft einmal nicht erreichbar ist oder der Schlüssel abgelaufen ist. Braucht eine Person mit «nur Microsoft» ein neues Passwort: Ein Admin schaltet bei ihr zuerst das Häkchen für das Passwort wieder ein. Danach lässt sich das Passwort zurücksetzen.
 
 **Fehlermeldungen bei der Microsoft-Anmeldung:**
 

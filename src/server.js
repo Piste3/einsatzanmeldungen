@@ -20,7 +20,7 @@ function ensureFrontendBuilt() {
   const npm = (args) => spawnSync('npm', args, { cwd: dir, stdio: 'inherit', shell: process.platform === 'win32', windowsHide: true }).status === 0;
   console.log('Browser-App fehlt – wird jetzt installiert und gebaut (einmalig, ca. 1 Minute) …');
   if (!fs.existsSync(path.join(dir, 'node_modules', 'vite')) && !npm(['ci', '--include=dev', '--no-audit', '--no-fund'])) return console.error('npm ci für die Browser-App fehlgeschlagen.');
-  if (!npm(['run', 'build'])) console.error('Bauen der Browser-App fehlgeschlagen. Bitte update.cmd ausführen.');
+  if (!npm(['run', 'build'])) console.error('Bauen der Browser-App fehlgeschlagen. Bitte betrieb\\windows\\gesamt\\update.cmd ausführen.');
 }
 ensureFrontendBuilt();
 
@@ -50,7 +50,7 @@ if (users.count() === 0) {
 
 server.on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
-    console.error(`\nPort ${port} ist bereits belegt – läuft der Einsatzplaner schon? Mit stop.cmd / stop.sh beenden oder in der .env einen anderen PORT wählen.\n`);
+    console.error(`\nPort ${port} ist bereits belegt – läuft der Einsatzplaner schon? Mit betrieb\\windows\\gesamt\\stop.cmd bzw. betrieb/linux/stop.sh beenden oder in der .env einen anderen PORT wählen.\n`);
     process.exit(1);
   }
   throw err;

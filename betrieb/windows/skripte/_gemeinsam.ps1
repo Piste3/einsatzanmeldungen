@@ -1,6 +1,6 @@
 ﻿# Gemeinsame Einstellungen für alle Skripte (wird per Punkt-Aufruf geladen)
 $ErrorActionPreference = 'Stop'
-$AppDir = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+$AppDir = (Resolve-Path (Join-Path $PSScriptRoot '..\..\..')).Path
 Set-Location $AppDir
 
 function Get-EnvValue([string]$Name, [string]$Default) {

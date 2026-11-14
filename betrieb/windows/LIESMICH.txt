@@ -1,0 +1,7 @@
+Skripte für den Einsatzplaner (Doppelklick auf die .cmd-Datei)
+
+gesamt\      Browser-App und Backend zusammen: start, stop, neustart, status, protokoll, update
+frontend\    nur die Browser-App: start, stop, neustart, status
+backend\     nur das Backend (Datenbank, Daten): start, stop, neustart, status
+wartung\     sicherung, server-zuruecksetzen, autostart-ein und autostart-aus (beide als Administrator)
+skripte\     die PowerShell-Skripte dahinter, nicht direkt starten

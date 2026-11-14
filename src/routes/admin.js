@@ -431,13 +431,13 @@ router.post('/verwaltung/system/pruefen', async (req, res, next) => {
 });
 
 router.post('/verwaltung/system/update', (req, res) => {
-  if (!updater.canRestart()) throw new ValidationError(['Der Server wurde noch mit dem alten Startskript gestartet. Bitte einmalig auf dem Server update.cmd (bzw. update.sh) ausführen.']);
+  if (!updater.canRestart()) throw new ValidationError(['Der Server wurde noch mit dem alten Startskript gestartet. Bitte einmalig auf dem Server betrieb\\windows\\gesamt\\update.cmd (bzw. betrieb/linux/update.sh) ausführen.']);
   updater.update(req.user).catch((err) => console.error('Update fehlgeschlagen:', err));
   res.redirect(303, '/verwaltung/system');
 });
 
 router.post('/verwaltung/system/neustart', (req, res) => {
-  if (!updater.canRestart()) throw new ValidationError(['Der Server wurde noch mit dem alten Startskript gestartet. Bitte einmalig auf dem Server neustart.cmd (bzw. neustart.sh) ausführen.']);
+  if (!updater.canRestart()) throw new ValidationError(['Der Server wurde noch mit dem alten Startskript gestartet. Bitte einmalig auf dem Server betrieb\\windows\\gesamt\\neustart.cmd (bzw. betrieb/linux/neustart.sh) ausführen.']);
   updater.restart(req.user);
   res.redirect(303, '/verwaltung/system?neustart=1');
 });

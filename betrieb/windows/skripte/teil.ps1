@@ -1,5 +1,5 @@
 ﻿# Browser-App (frontend) oder Backend einzeln starten, stoppen, neu starten oder den Stand zeigen
-# Aufruf: teil.ps1 frontend|backend start|stop|neustart|status  (Doppelklick: frontend-start.cmd usw.)
+# Aufruf: teil.ps1 frontend|backend start|stop|neustart|status  (Doppelklick: frontend\start.cmd usw.)
 param(
   [Parameter(Mandatory = $true)][ValidateSet('frontend', 'backend')][string]$Teil,
   [Parameter(Mandatory = $true)][ValidateSet('start', 'stop', 'neustart', 'status')][string]$Aktion
@@ -25,12 +25,12 @@ function Test-Answer {
 
 function Show-Status {
   $s = Get-LauncherStatus
-  if (-not $s) { Write-Host "Der Einsatzplaner läuft nicht (kein Starter). Mit start.cmd starten oder mit $Teil-start.cmd nur diesen Teil."; return }
+  if (-not $s) { Write-Host "Der Einsatzplaner läuft nicht (kein Starter). Mit gesamt\start.cmd starten oder mit $Teil\start.cmd nur diesen Teil."; return }
   $p = $s.parts.$Teil
   if (-not $p) { Write-Host "$Label gibt es in dieser Betriebsart nicht (KKB_BETRIEB=einzeln)."; return }
   $port = if ($Teil -eq 'frontend') { $Port } else { $ApiPort }
   if ($p.running) { Write-Host "$Label läuft (PID $($p.pid), Port $port, seit $($p.since))." -ForegroundColor Green }
-  elseif (-not $p.wanted) { Write-Host "$Label ist gestoppt (von Hand). Mit $Teil-start.cmd wieder starten." -ForegroundColor Yellow }
+  elseif (-not $p.wanted) { Write-Host "$Label ist gestoppt (von Hand). Mit $Teil\start.cmd wieder starten." -ForegroundColor Yellow }
   else { Write-Host "$Label startet gerade neu." -ForegroundColor Yellow }
   Write-Host "$Label $(Test-Answer)"
 }

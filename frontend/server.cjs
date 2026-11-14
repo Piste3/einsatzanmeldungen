@@ -240,7 +240,7 @@ function start() {
   const { server, ready } = createFrontendServer({ backend });
   server.on('error', (err) => {
     if (err.code === 'EADDRINUSE') {
-      console.error(`\nPort ${port} ist bereits belegt – läuft der Einsatzplaner schon? Mit stop.cmd / stop.sh beenden oder in der .env einen anderen PORT wählen.\n`);
+      console.error(`\nPort ${port} ist bereits belegt – läuft der Einsatzplaner schon? Mit betrieb\\windows\\gesamt\\stop.cmd bzw. betrieb/linux/stop.sh beenden oder in der .env einen anderen PORT wählen.\n`);
       process.exit(1);
     }
     throw err;

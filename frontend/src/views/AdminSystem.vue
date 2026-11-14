@@ -65,7 +65,7 @@ async function restart() {
         <div class="card">
           <div class="card-head"><h2>Update</h2></div>
           <div class="card-body">
-            <div v-if="!st.canRestart" class="callout warn mb">Der Server läuft noch mit dem alten Startskript. Damit Update und Neustart hier funktionieren, bitte <strong>einmalig auf dem Server</strong> <code>betrieb\windows\update.cmd</code> ausführen (Linux/macOS: <code>betrieb/linux/update.sh</code>). Ist der Autostart eingerichtet, danach zusätzlich <code>autostart-ein.cmd</code> als Administrator.</div>
+            <div v-if="!st.canRestart" class="callout warn mb">Der Server läuft noch mit dem alten Startskript. Damit Update und Neustart hier funktionieren, bitte <strong>einmalig auf dem Server</strong> <code>betrieb\windows\gesamt\update.cmd</code> ausführen (Linux/macOS: <code>betrieb/linux/update.sh</code>). Ist der Autostart eingerichtet, danach zusätzlich <code>betrieb\windows\wartung\autostart-ein.cmd</code> als Administrator.</div>
             <p class="small">Holt die neueste Version von GitHub. Vorher wird die Datenbank gesichert, danach startet der Server neu. Während des Neustarts ist die Seite für einige Sekunden nicht erreichbar.</p>
             <template v-if="check">
               <div v-if="check.error" class="callout warn mt-s">{{ check.error }}</div>

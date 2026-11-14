@@ -84,7 +84,7 @@ function restart(user, reason = 'Neustart') {
 
 async function update(user) {
   if (state.running) throw new Error('Es läuft bereits ein Update.');
-  if (!canRestart()) throw new Error('Der Server wurde nicht über den Starter gestartet – bitte einmal update.cmd auf dem Server ausführen.');
+  if (!canRestart()) throw new Error('Der Server wurde nicht über den Starter gestartet – bitte einmal betrieb\\windows\\gesamt\\update.cmd auf dem Server ausführen.');
   Object.assign(state, { running: true, ok: null, lines: [], restarting: false });
   try { fs.writeFileSync(LOG_FILE, ''); } catch { /* egal */ }
   log(`Update gestartet von ${user.display_name}`);
@@ -130,12 +130,12 @@ async function update(user) {
       log('3/5 Abhängigkeiten installieren …');
       if (lockBefore !== lockAfter) {
         const ci = await run('npm', ['ci', '--omit=dev', '--no-audit', '--no-fund']);
-        if (ci.code !== 0) return fail('npm ci fehlgeschlagen. Bitte auf dem Server update.cmd ausführen.');
+        if (ci.code !== 0) return fail('npm ci fehlgeschlagen. Bitte auf dem Server betrieb\\windows\\gesamt\\update.cmd ausführen.');
       }
       // Die Browser-App braucht zum Bauen auch die Entwicklungs-Pakete (Vite)
       if (frontLockBefore !== frontLockAfter || frontMissing) {
         const ci = await run('npm', ['ci', '--include=dev', '--no-audit', '--no-fund'], { cwd: FRONT_DIR });
-        if (ci.code !== 0) return fail('npm ci für die Browser-App fehlgeschlagen. Bitte auf dem Server update.cmd ausführen.');
+        if (ci.code !== 0) return fail('npm ci für die Browser-App fehlgeschlagen. Bitte auf dem Server betrieb\\windows\\gesamt\\update.cmd ausführen.');
       }
     } else log('3/5 Abhängigkeiten unverändert.');
 
@@ -148,7 +148,7 @@ async function update(user) {
       log('4/5 Browser-App bauen …');
       // CI=1: im Protokoll nur Warnungen und das Ergebnis, nicht jede Datei
       const b = await run('npm', ['run', 'build'], { cwd: FRONT_DIR, env: { CI: '1' } });
-      if (b.code !== 0) return fail('Bauen der Browser-App fehlgeschlagen. Die bisherige Browser-App läuft weiter. Bitte auf dem Server update.cmd ausführen.');
+      if (b.code !== 0) return fail('Bauen der Browser-App fehlgeschlagen. Die bisherige Browser-App läuft weiter. Bitte auf dem Server betrieb\\windows\\gesamt\\update.cmd ausführen.');
     } else log('4/5 Browser-App unverändert.');
 
     state.step = 'Neustart';

@@ -85,7 +85,7 @@ const sendTest = () => runAction('/verwaltung/server/testmail', { test_to: testT
         <div class="card">
           <div class="card-head"><h2>Ausgesperrt?</h2></div>
           <div class="card-body small">
-            <p>Wer sich mit einem Wert hier ausgesperrt hat, doppelklickt auf dem Server im Ordner <code>betrieb\windows</code> auf <code>server-zuruecksetzen.cmd</code>. Das löscht alle Werte dieser Seite und startet den Einsatzplaner neu, danach gilt wieder die <code>.env</code>.</p>
+            <p>Wer sich mit einem Wert hier ausgesperrt hat, doppelklickt auf dem Server im Ordner <code>betrieb\windows\wartung</code> auf <code>server-zuruecksetzen.cmd</code>. Das löscht alle Werte dieser Seite und startet den Einsatzplaner neu, danach gilt wieder die <code>.env</code>.</p>
             <p class="muted">Linux: <code>betrieb/linux/server-zuruecksetzen.sh</code>. Nur einzelne Werte: Namen anhängen, z. B. <code>server-zuruecksetzen.cmd AUTH_PROVIDERS</code>.</p>
           </div>
         </div>

@@ -7,7 +7,7 @@
 // Endet die Browser-App unerwartet, startet der Starter nur sie neu. Das Backend läuft weiter.
 // KKB_BETRIEB=einzeln: wie früher ein einziger Prozess (Backend liefert auch die Seiten).
 //
-// Einzeln steuern (Skripte frontend-*.cmd, backend-*.cmd bzw. betrieb/linux/teil.sh):
+// Einzeln steuern (Skripte betrieb/windows/frontend/*.cmd, betrieb/windows/backend/*.cmd bzw. betrieb/linux/teil.sh):
 // Die Skripte legen eine Datei «<teil>-<aktion>» in DATA_DIR/steuerung ab (aktion: start, stop, neustart).
 // Der Starter führt sie aus und schreibt den Stand nach DATA_DIR/status.json.
 // KKB_NUR=frontend|backend: beim Start nur diesen Teil starten.
