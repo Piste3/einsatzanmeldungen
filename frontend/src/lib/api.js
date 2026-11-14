@@ -26,11 +26,13 @@ function adopt(env) {
 
 async function request(method, path, body) {
   const headers = { Accept: 'application/json' };
-  if (body !== undefined) headers['Content-Type'] = 'application/json';
+  // Datei-Upload (FormData): Der Browser setzt den Typ samt Trennzeichen selbst
+  const isForm = typeof FormData !== 'undefined' && body instanceof FormData;
+  if (body !== undefined && !isForm) headers['Content-Type'] = 'application/json';
   if (method !== 'GET' && session.csrf) headers['X-CSRF-Token'] = session.csrf;
   let res;
   try {
-    res = await fetch(`/api/v1${path}`, { method, headers, body: body === undefined ? undefined : JSON.stringify(body), credentials: 'same-origin', cache: 'no-store' });
+    res = await fetch(`/api/v1${path}`, { method, headers, body: body === undefined ? undefined : isForm ? body : JSON.stringify(body), credentials: 'same-origin', cache: 'no-store' });
     session.offline = false;
   } catch (e) {
     session.offline = true;
