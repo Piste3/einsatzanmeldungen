@@ -114,7 +114,7 @@ async function clearHist() {
           </select>
         </div>
         <div v-if="showShifts" class="field"><label>Für welche Schichten?</label>
-          <div class="check-list">
+          <div class="check-list" data-shift-options>
             <label v-for="sh in shifts" :key="sh.id" class="check"><input v-model="f.shift_ids" type="checkbox" :value="sh.id"> {{ sh.name }}{{ sh.time ? ` (${sh.time})` : '' }}<span v-if="clashText(sh)" class="shift-clash">{{ clashText(sh) }}</span></label>
           </div>
           <div class="field-hint">Leer lassen, wenn die Schicht noch offen ist. Zuteilen geht auch später unter «Schichten».</div>
