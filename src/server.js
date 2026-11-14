@@ -9,6 +9,20 @@ const { createApp } = require('./app');
 const seedDefaults = require('./db/defaults');
 const jobs = require('./jobs');
 
+// Browser-App fehlt (z. B. erstes Update mit dem alten Updater, der noch nicht baut): einmal installieren und bauen
+function ensureFrontendBuilt() {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const { spawnSync } = require('node:child_process');
+  const dir = path.join(__dirname, '..', 'frontend');
+  if (fs.existsSync(path.join(dir, 'dist', 'index.html'))) return;
+  const npm = (args) => spawnSync('npm', args, { cwd: dir, stdio: 'inherit', shell: process.platform === 'win32', windowsHide: true }).status === 0;
+  console.log('Browser-App fehlt – wird jetzt installiert und gebaut (einmalig, ca. 1 Minute) …');
+  if (!fs.existsSync(path.join(dir, 'node_modules')) && !npm(['ci', '--no-audit', '--no-fund'])) return console.error('npm ci für die Browser-App fehlgeschlagen.');
+  if (!npm(['run', 'build'])) console.error('Bauen der Browser-App fehlgeschlagen. Bitte update.cmd ausführen.');
+}
+ensureFrontendBuilt();
+
 db.open();
 seedDefaults();
 // Server-Einstellungen aus der Verwaltung über die .env legen
