@@ -13,7 +13,7 @@ const audit = require('../services/audit');
 const mailer = require('../lib/mailer');
 const { render } = require('../lib/template');
 const { sanitize: sanitizeHtml } = require('../lib/html');
-const { flash } = require('../lib/view-helpers');
+const { flash, editorHtml } = require('../lib/view-helpers');
 const { ValidationError } = require('../services/errors');
 const { today } = require('../lib/dates');
 
@@ -30,9 +30,15 @@ function personOptions() {
     WHERE p.status = 'aktiv' ORDER BY ${BY_RANK}`);
 }
 
+// Für die Browser-App: Anzeige-Werte aus Feldern, die nie das Backend verlassen (external_id, locked_until)
+function withFlags(u) {
+  if (!u) return u;
+  return { ...u, locked: Boolean(u.locked_until && new Date(u.locked_until) > new Date()), ms_linked: Boolean(u.external_id) };
+}
+
 // ---- Benutzer ----
 router.get('/verwaltung/benutzer', (req, res) => {
-  res.render('admin/users', { title: 'Benutzer', list: users.list(), providers: auth.providers().map((p) => p.id), msProviderConfigured: config.authProviders.includes('microsoft') });
+  res.render('admin/users', { title: 'Benutzer', list: users.list().map(withFlags), providers: auth.providers().map((p) => p.id), msProviderConfigured: config.authProviders.includes('microsoft') });
 });
 
 router.get('/verwaltung/benutzer/neu', (req, res) => {
@@ -52,7 +58,7 @@ router.post('/verwaltung/benutzer', async (req, res, next) => {
 router.get('/verwaltung/benutzer/:id', (req, res) => {
   const u = users.get(Number(req.params.id));
   if (!u) return res.redirect('/verwaltung/benutzer');
-  res.render('admin/user-form', { title: u.display_name, u, isNew: false, errors: [], persons: personOptions(), twofaOptions, msEnabled: msEnabled() });
+  res.render('admin/user-form', { title: u.display_name, u: withFlags(u), isNew: false, errors: [], persons: personOptions(), twofaOptions, msEnabled: msEnabled() });
 });
 
 router.post('/verwaltung/benutzer/:id', (req, res) => {
@@ -63,7 +69,7 @@ router.post('/verwaltung/benutzer/:id', (req, res) => {
     res.redirect('/verwaltung/benutzer');
   } catch (err) {
     if (!(err instanceof ValidationError)) throw err;
-    res.status(400).render('admin/user-form', { title: 'Benutzerkonto', u: { ...users.get(id), ...req.body }, isNew: false, errors: err.messages, persons: personOptions(), twofaOptions, msEnabled: msEnabled() });
+    res.status(400).render('admin/user-form', { title: 'Benutzerkonto', u: withFlags({ ...users.get(id), ...req.body }), isNew: false, errors: err.messages, persons: personOptions(), twofaOptions, msEnabled: msEnabled() });
   }
 });
 
@@ -321,7 +327,7 @@ router.get('/verwaltung/kalendertermin', (req, res) => {
   const e = previewEvent(req.query.einsatz);
   const preview = e ? calendar.renderEntry(e, e.shifts.length > 1 ? e.shifts[0] : null, req.user, tpl) : null;
   res.render('admin/calendar', {
-    title: 'Kalendertermin', tpl, groups: calendar.blockGroups(), preview, previewEvent: e,
+    title: 'Kalendertermin', tpl, editorValue: editorHtml(tpl.description, tpl.format), groups: calendar.blockGroups(), preview, previewEvent: e,
     eventOptions: db.all('SELECT id, name, date, date_from, date_to FROM events ORDER BY date_from DESC LIMIT 50'),
   });
 });
@@ -339,7 +345,7 @@ router.post('/verwaltung/kalendertermin', (req, res) => {
     const e = previewEvent(b.einsatz);
     const preview = e ? calendar.renderEntry(e, e.shifts.length > 1 ? e.shifts[0] : null, req.user, tpl) : null;
     return res.render('admin/calendar', {
-      title: 'Kalendertermin', tpl, groups: calendar.blockGroups(), preview, previewEvent: e,
+      title: 'Kalendertermin', tpl, editorValue: editorHtml(tpl.description, tpl.format), groups: calendar.blockGroups(), preview, previewEvent: e,
       eventOptions: db.all('SELECT id, name, date, date_from, date_to FROM events ORDER BY date_from DESC LIMIT 50'), unsaved: true,
     });
   }
@@ -366,7 +372,7 @@ function confirmationPage(req, res, conf, extra = {}) {
   const groups = [...calendar.blockGroups()];
   groups.splice(1, 0, { name: 'Person', items: [['person.vorname', 'Vorname'], ['person.nachname', 'Nachname']] });
   res.render('admin/confirmation', {
-    title: 'Bestätigungsmail', conf, groups, preview, previewEvent: e, smtp: mailer.isConfigured(),
+    title: 'Bestätigungsmail', conf, editorValue: editorHtml(conf.body, conf.format), groups, preview, previewEvent: e, smtp: mailer.isConfigured(),
     testTo: req.body?.test_to || req.user.email || '',
     eventOptions: db.all('SELECT id, name, date, date_from, date_to FROM events ORDER BY date_from DESC LIMIT 50'), ...extra,
   });

@@ -53,3 +53,16 @@ export function useSection(formRef, sourceRef) {
 window.addEventListener('beforeunload', (ev) => {
   if (dirtySections.size) { ev.preventDefault(); ev.returnValue = ''; }
 });
+
+// Beim Speichern eines Abschnitts warnen, wenn andere Abschnitte ungespeicherte Änderungen haben (wie bisher)
+export async function confirmOtherSections(formRef) {
+  const others = [...dirtySections].filter((r) => r !== formRef && r.value);
+  if (!others.length) return true;
+  const { uiDialog } = await import('./dialog.js');
+  const names = others.map((r) => (r.value.querySelector('.card-head h2, h2') || {}).firstChild?.textContent?.trim()).filter(Boolean);
+  return uiDialog({
+    title: 'Ungespeicherte Änderungen',
+    message: `In ${names.length ? `«${names.join('», «')}»` : 'einem anderen Abschnitt'} gibt es ungespeicherte Änderungen. Sie gehen verloren, wenn du jetzt nur diesen Teil speicherst.`,
+    ok: 'Trotzdem speichern', danger: true,
+  });
+}

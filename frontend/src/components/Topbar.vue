@@ -1,10 +1,17 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { liveState } from '@/lib/live.js';
 import { session } from '@/lib/api.js';
 
-defineProps({ heading: String, crumbs: { type: Array, default: () => [] }, showSearch: { type: Boolean, default: true } });
+const props = defineProps({ heading: String, crumbs: { type: Array, default: () => [] }, showSearch: { type: Boolean, default: true } });
+// Brotkrumen: Text ohne Link und Trennzeichen als ein Textstück (wie bisher, sonst verschiebt sich die Schrift minimal)
+const parts = computed(() => {
+  const out = [];
+  const text = (t) => { const last = out.at(-1); if (last && !last.to) last.text += t; else out.push({ text: t }); };
+  props.crumbs.forEach((c, i) => { if (i) text(' › '); if (c[1]) out.push({ text: c[0], to: c[1] }); else text(c[0]); });
+  return out;
+});
 const router = useRouter();
 const q = ref('');
 function search() { router.push({ path: '/suche', query: { q: q.value, go: 1 } }); }
@@ -13,7 +20,7 @@ function search() { router.push({ path: '/suche', query: { q: q.value, go: 1 } }
   <div class="topbar">
     <div>
       <div v-if="crumbs.length" class="crumbs">
-        <template v-for="(c, i) in crumbs" :key="i"><template v-if="i"> › </template><router-link v-if="c[1]" :to="c[1]">{{ c[0] }}</router-link><template v-else>{{ c[0] }}</template></template>
+        <template v-for="(c, i) in parts" :key="i"><router-link v-if="c.to" :to="c.to">{{ c.text }}</router-link><template v-else>{{ c.text }}</template></template>
       </div>
       <div class="title-row"><h1>{{ heading }}</h1><slot name="badges" /></div>
       <div v-if="$slots.subline" class="subline"><slot name="subline" /></div>
