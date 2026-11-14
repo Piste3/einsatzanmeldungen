@@ -97,7 +97,7 @@ function again() { preview.value = null; setFlashes([]); }
             </tbody>
           </table>
         </div>
-        <div class="card-body row"><button class="btn btn-primary" type="submit" name="commit" value="1">Import ausführen</button><a class="btn btn-ghost" href="/neu/personen/import" @click.prevent="again">Andere Datei</a><span class="small muted">Neue Personen legt nur ein berechtigter Benutzer an – nie das System automatisch.</span></div>
+        <div class="card-body row"><button class="btn btn-primary" type="submit" name="commit" value="1">Import ausführen</button><a class="btn btn-ghost" href="/personen/import" @click.prevent="again">Andere Datei</a><span class="small muted">Neue Personen legt nur ein berechtigter Benutzer an – nie das System automatisch.</span></div>
       </div>
     </form>
   </AppShell>

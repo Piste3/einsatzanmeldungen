@@ -2,9 +2,8 @@ import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import path from 'node:path';
 
-// Die Browser-App liegt während des Umbaus unter /neu/. Beim Umschalten (Schritt 8) wechselt die Basis auf «/».
 export default defineConfig({
-  base: process.env.KKB_BASE || '/neu/',
+  base: '/',
   plugins: [vue()],
   resolve: {
     alias: {

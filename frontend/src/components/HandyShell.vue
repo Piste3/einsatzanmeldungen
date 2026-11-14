@@ -49,7 +49,9 @@ let mounted = 0;
 function sheet(on) {
   let link = document.getElementById('handy-css');
   if (!link && on) {
-    link = Object.assign(document.createElement('link'), { id: 'handy-css', rel: 'stylesheet', href: '/static/css/handy.css' });
+    // Gleiche Version wie app.css (der Server setzt sie in die Adresse)
+    const v = (document.querySelector('link[href*="/static/css/app.css"]')?.getAttribute('href') || '').split('?')[1] || '';
+    link = Object.assign(document.createElement('link'), { id: 'handy-css', rel: 'stylesheet', href: `/static/css/handy.css${v ? `?${v}` : ''}` });
     document.head.append(link);
     document.head.append(Object.assign(document.createElement('link'), { id: 'handy-manifest', rel: 'manifest', href: '/manifest.webmanifest' }));
   }

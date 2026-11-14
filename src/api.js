@@ -22,6 +22,9 @@ function safeUser(user) {
   return out;
 }
 
+// Felder, die Einsatzleiter nie bekommen (interne Bemerkungen, Zuordnungs-Details, Angaben aus dem Formular)
+const LEADER_HIDDEN_FIELDS = ['internal_note', 'match_info', 'remark', 'email', 'birth_date', 'birth_year', 'shift_wishes', 'wishes'];
+
 // Funktionen weglassen, grosse Zahlen als Zahl senden, geheime Felder an jeder Stelle entfernen
 function replacer(key, value) {
   if (typeof value === 'function') return undefined;
@@ -29,6 +32,11 @@ function replacer(key, value) {
   if (typeof value === 'bigint') return Number(value);
   return value;
 }
+function leaderReplacer(key, value) {
+  if (LEADER_HIDDEN_FIELDS.includes(key)) return undefined;
+  return replacer(key, value);
+}
+const replacerFor = (req) => (req.user?.role === 'einsatzleiter' ? leaderReplacer : replacer);
 
 // Namen, die nicht in «data» landen
 const META = new Set(['h', '_api', 'user', 'nav', 'flashes', 'csrfToken', 'title', 'path', 'query', 'isAdmin', 'isLeader', 'liveTopics', '_flashOut', 'settings', 'cache', '_locals']);
@@ -53,7 +61,7 @@ function prepare(req, res, next) {
   res.locals._api = true;
   res.render = function apiRender(view, options, cb) {
     const data = typeof options === 'function' ? {} : options || {};
-    const body = JSON.stringify(envelope(req, this, view, data), replacer);
+    const body = JSON.stringify(envelope(req, this, view, data), replacerFor(req));
     this.type('application/json').send(body);
     if (typeof cb === 'function') cb(null, body);
   };

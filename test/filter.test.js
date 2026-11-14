@@ -18,66 +18,61 @@ test.before(async () => {
 });
 test.after(() => server.close());
 
+const { client } = require('./client');
 async function login(username, password) {
-  const res = await fetch(`${base}/login`, {
-    method: 'POST', redirect: 'manual', headers: { 'content-type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ username, password, next: '/' }),
-  });
-  return (res.headers.get('set-cookie') || '').split(';')[0];
+  const c = client(base);
+  await c.login(username, password);
+  return c;
 }
-const get = (path, cookie) => fetch(`${base}${path}`, { headers: { cookie }, redirect: 'manual' });
-const page = async (path, cookie) => (await get(path, cookie)).text();
+const filters = async (c, path) => (await c.get(path)).data.filters;
 
 test('Rückmeldungen: Filter gelten auch in einer neuen Anmeldung, die Namenssuche nicht', async () => {
   const pc = await login('lena', 'Aufgebot-2026-x');
-  await get('/rueckmeldungen?view=einsatz&q=Muster&period=12m&team=&only=unsicher&sort=rang_ab&drafts=1', pc);
+  await pc.get('/rueckmeldungen?view=einsatz&q=Muster&period=12m&team=&only=unsicher&sort=rang_ab&drafts=1');
 
   const handy = await login('lena', 'Aufgebot-2026-x'); // anderes Gerät
-  const html = await page('/rueckmeldungen', handy);
-  assert.match(html, /<option value="12m" selected>/);
-  assert.match(html, /<option value="unsicher" selected>/);
-  assert.match(html, /name="drafts" value="1" checked/);
-  assert.match(html, /name="sort" value="rang_ab"/, 'Sortierung bleibt in «Pro Einsatz» erhalten');
-  assert.match(html, /class="active" href="[^"]*view=einsatz/);
-  assert.match(html, /name="q" value=""/, 'Suche nicht gespeichert');
-  assert.match(html, /href="\/rueckmeldungen\?filter=zuruecksetzen"/);
+  let f = await filters(handy, '/rueckmeldungen');
+  assert.equal(f.period, '12m');
+  assert.equal(f.only, 'unsicher');
+  assert.equal(f.drafts, '1');
+  assert.equal(f.sort, 'rang_ab', 'Sortierung bleibt in «Pro Einsatz» erhalten');
+  assert.equal(f.view, 'einsatz');
+  assert.equal(f.q, '', 'Suche nicht gespeichert');
 
   // Andere Benutzer sehen ihren eigenen Stand
   const tom = await login('tom', 'Aufgebot-2026-y');
-  const other = await page('/rueckmeldungen', tom);
-  assert.match(other, /<option value="3m" selected>/);
-  assert.doesNotMatch(other, /filter=zuruecksetzen/);
+  f = await filters(tom, '/rueckmeldungen');
+  assert.equal(f.period, '3m');
+  assert.equal(f.view, 'tabelle');
 
   // Häkchen weg = aus; Link von aussen ergänzt nur die fehlenden Filter
-  await get('/rueckmeldungen?view=tabelle&period=6m&team=&only=&sort=name', pc);
-  const again = await page('/rueckmeldungen?only=offen', handy);
-  assert.match(again, /<option value="6m" selected>/);
-  assert.match(again, /<option value="offen" selected>/);
-  assert.match(again, /name="drafts" value="1" >/);
+  await pc.get('/rueckmeldungen?view=tabelle&period=6m&team=&only=&sort=name');
+  f = await filters(handy, '/rueckmeldungen?only=offen');
+  assert.equal(f.period, '6m');
+  assert.equal(f.only, 'offen');
+  assert.equal(f.drafts, '');
 
   // Zurücksetzen
-  const r = await get('/rueckmeldungen?filter=zuruecksetzen', pc);
-  assert.equal(r.status, 302);
-  assert.equal(r.headers.get('location'), '/rueckmeldungen');
-  assert.match(await page('/rueckmeldungen', handy), /<option value="3m" selected>/);
+  const r = await pc.get('/rueckmeldungen?filter=zuruecksetzen');
+  assert.equal(r.redirect, '/rueckmeldungen');
+  assert.equal((await filters(handy, '/rueckmeldungen')).period, '3m');
 });
 
 test('Einsätze und Personen: «Alle Status» und Sortierung bleiben', async () => {
   const pc = await login('lena', 'Aufgebot-2026-x');
-  await get('/einsaetze?status=&from=2026-01-01&to=&q=abc', pc);
-  let html = await page('/einsaetze', pc);
-  assert.match(html, /<option value="" selected>Alle Status/);
-  assert.match(html, /name="from" value="2026-01-01"/);
-  assert.match(html, /name="q" value=""/);
+  await pc.get('/einsaetze?status=&from=2026-01-01&to=&q=abc');
+  let f = await filters(pc, '/einsaetze');
+  assert.equal(f.status, '');
+  assert.equal(f.from, '2026-01-01');
+  assert.equal(f.q, '');
   // Export ohne Filter in der Adresse übernimmt den gespeicherten Stand
-  assert.equal((await get('/einsaetze?format=csv', pc)).status, 200);
-  assert.match(await page('/einsaetze', pc), /name="from" value="2026-01-01"/);
+  assert.equal((await pc.get('/einsaetze?format=csv')).status, 200);
+  assert.equal((await filters(pc, '/einsaetze')).from, '2026-01-01');
 
-  await get('/personen?q=&team=&rank=&status=alle&sort=rang_ab', pc);
-  html = await page('/personen', pc);
-  assert.match(html, /<option value="alle" selected>/);
-  assert.match(html, /<option value="rang_ab" selected>/);
-  assert.match(html, /href="\/personen\?filter=zuruecksetzen"/);
+  await pc.get('/personen?q=&team=&rank=&status=alle&sort=rang_ab');
+  f = await filters(pc, '/personen');
+  assert.equal(f.status, 'alle');
+  assert.equal(f.sort, 'rang_ab');
 });
 
 test('Anmeldungen und Teilnehmerliste: Sortierung gilt für alle Einsätze', async () => {
@@ -85,10 +80,10 @@ test('Anmeldungen und Teilnehmerliste: Sortierung gilt für alle Einsätze', asy
   const a = events.create({ name: 'Probe A', date: '2027-03-01', start_time: '18:00', end_time: '21:00' }, system);
   const b = events.create({ name: 'Probe B', date: '2027-03-08', start_time: '18:00', end_time: '21:00' }, system);
   const pc = await login('lena', 'Aufgebot-2026-x');
-  await get(`/einsaetze/${a}/anmeldungen?status=&q=&sort=funktion`, pc);
-  assert.match(await page(`/einsaetze/${b}/anmeldungen?status=neu`, pc), /<option value="funktion" selected>/);
-  await get(`/einsaetze/${a}/teilnehmerliste?umfang=bestaetigt&sort=rang_ab`, pc);
-  const html = await page(`/einsaetze/${b}/verpflegungsliste`, pc);
-  assert.match(html, /<option value="bestaetigt" selected>/);
-  assert.match(html, /<option value="rang_ab" selected>/);
+  await pc.get(`/einsaetze/${a}/anmeldungen?status=&q=&sort=funktion`);
+  assert.equal((await filters(pc, `/einsaetze/${b}/anmeldungen?status=neu`)).sort, 'funktion');
+  await pc.get(`/einsaetze/${a}/teilnehmerliste?umfang=bestaetigt&sort=rang_ab`);
+  const d = (await pc.get(`/einsaetze/${b}/verpflegungsliste`)).data;
+  assert.equal(d.umfang ?? d.filters?.umfang, 'bestaetigt');
+  assert.equal(d.sort ?? d.filters?.sort, 'rang_ab');
 });

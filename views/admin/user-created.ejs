@@ -1,9 +1,0 @@
-<%- include('../partials/head') %>
-<%- include('../partials/topbar', { crumbs: [['Einstellungen', '/verwaltung'], ['Benutzer', '/verwaltung/benutzer']], heading: title, showSearch: false }) %>
-<div class="card" style="max-width:520px"><div class="card-body">
-  <dl class="kv left"><dt>Name</dt><dd><%= u.display_name %></dd><dt>Benutzername</dt><dd><strong><%= u.username %></strong></dd><dt>Rolle</dt><dd><%= h.labels.ROLES[u.role] %></dd>
-  <% if (password) { %><dt>Startpasswort</dt><dd><code class="pre" style="font-size:16px"><%= password %></code></dd><% } %></dl>
-  <% if (password) { %><div class="callout warn mt">Das Startpasswort wird nur jetzt angezeigt. Bitte sicher übermitteln – beim ersten Login muss es geändert werden.</div><% } %>
-  <a class="btn mt" href="/verwaltung/benutzer">Zur Benutzerliste</a>
-</div></div>
-<%- include('../partials/foot') %>

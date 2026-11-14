@@ -19,40 +19,15 @@ const userFilters = require('../services/user-filters');
 
 const router = express.Router();
 
-// ---------- Auf dem Handy immer die Handy-App ----------
-// Handys erkennt der Einsatzplaner am Browser (Tablets nicht). «Ganze Ansicht» schaltet für eine Stunde auf die PC-Ansicht.
+// ---------- Handy erkennen ----------
+// Handys erkennt der Einsatzplaner am Browser (Tablets nicht). Die Browser-App zeigt dann die Handy-App
+// (phoneState in /api/v1/session). «Ganze Ansicht» schaltet für eine Stunde auf die PC-Ansicht.
 const PHONE = /iPhone|iPod|Android.*Mobile|Mobile.*Firefox|Windows Phone|BlackBerry|Opera Mini/i;
 const PC_COOKIE = 'kkb_ansicht';
-const KEEP_PC_PATHS = /^\/(handy|handbuch|konto|static|forms|logout)(\/|$)/;
 
 function isPhone(req) {
   return PHONE.test(String(req.get('user-agent') || ''));
 }
-
-// Passende Seite in der Handy-App für eine Seite des Einsatzplaners
-function handyTarget(path) {
-  let m = path.match(/^\/einsaetze\/(\d+)\/anmeldungen$/);
-  if (m) return `/handy/einsatz/${m[1]}/anmeldungen`;
-  m = path.match(/^\/einsaetze\/(\d+)(\/.*)?$/);
-  if (m) return `/handy/einsatz/${m[1]}`;
-  m = path.match(/^\/personen\/(\d+)$/);
-  if (m) return `/handy/personen/${m[1]}`;
-  if (path === '/personen' || path.startsWith('/rueckmeldungen')) return '/handy/personen';
-  return '/handy';
-}
-
-// Konto-Seiten (Passwort, Zwei-Faktor) zeigt das Handy im Rahmen der Handy-App. Läuft vor den Login-Routen.
-function shellMiddleware(req, res, next) {
-  if (/^\/konto(\/|$)/.test(req.path) && isPhone(req) && req.cookies?.[PC_COOKIE] !== 'pc' && req.user?.role !== 'einsatzleiter') res.locals.handyShell = true;
-  next();
-}
-
-router.use((req, res, next) => {
-  if (req.method !== 'GET' || req.xhr || !isPhone(req)) return next();
-  if (KEEP_PC_PATHS.test(req.path) || req.query.format || req.cookies?.[PC_COOKIE] === 'pc') return next();
-  if (!req.accepts('html')) return next();
-  res.redirect(handyTarget(req.path));
-});
 
 // «Ganze Ansicht»: eine Stunde lang die PC-Ansicht zeigen
 router.get('/handy/ganze-ansicht', (req, res) => {
@@ -426,6 +401,5 @@ router.get('/handy/personen/:pid', (req, res) => {
 module.exports = router;
 module.exports.answerOf = answerOf;
 module.exports.isPhone = isPhone;
-module.exports.shellMiddleware = shellMiddleware;
 // Browser-App: Handy erkannt (ohne Einsatzleitung) und «Ganze Ansicht» gerade aktiv?
 module.exports.phoneState = (req) => ({ phone: isPhone(req) && req.user?.role !== 'einsatzleiter', pcView: req.cookies?.[PC_COOKIE] === 'pc' });

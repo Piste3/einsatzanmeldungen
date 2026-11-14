@@ -21,12 +21,7 @@ test('TOTP entspricht RFC 6238', () => {
 });
 
 let server; let base;
-const enc = (o) => new URLSearchParams(o);
-async function post(path, body, cookie = '') {
-  return fetch(`${base}${path}`, { method: 'POST', redirect: 'manual', headers: { cookie, 'content-type': 'application/x-www-form-urlencoded' }, body: enc(body) });
-}
-const cookiesOf = (res) => (res.headers.getSetCookie?.() || []).map((c) => c.split(';')[0]).filter((c) => !c.endsWith('='));
-const join = (...lists) => lists.flat().join('; ');
+const { client } = require('./client');
 const currentCode = (id) => totp.codeAt(db.one('SELECT totp_secret FROM users WHERE id = ?', id).totp_secret, totp.currentStep());
 
 test.before(async () => {
@@ -43,64 +38,63 @@ async function enable(id) {
   db.run('UPDATE users SET totp_last_step = NULL WHERE id = ?', id); // Testcode gleich nochmals verwendbar machen
   return codes;
 }
+// Anmelden mit Passwort; bei 2FA bleibt der Browser auf «/login/2fa» stehen
+async function start(username, password, device) {
+  const c = client(base);
+  if (device) c.jar.set(...device);
+  c.res = await c.login(username, password);
+  return c;
+}
+const code = (c, body) => c.post('/login/2fa', body);
 
 test('Login mit 2FA: Code nötig, falscher Code abgelehnt, «Gerät merken» wirkt', async () => {
   const { id } = await users.create({ username: 'anna', display_name: 'Anna', role: 'aufgebotsstelle', password: 'Geheim-Passwort-1', must_change_password: false, twofa_remember_days: 7 }, null);
   await enable(id);
-  const r1 = await post('/login', { username: 'anna', password: 'Geheim-Passwort-1', next: '/' });
-  assert.equal(r1.headers.get('location'), '/login/2fa');
-  const challenge = cookiesOf(r1);
-  assert.ok(!challenge.some((c) => c.startsWith('kkb_session')), 'noch keine Sitzung vor dem Code');
+  const c = await start('anna', 'Geheim-Passwort-1');
+  assert.equal(c.res.redirect, '/login/2fa');
+  assert.ok(![...c.jar.keys()].some((k) => k.startsWith('kkb_session')), 'noch keine Sitzung vor dem Code');
+  assert.equal((await c.get('/')).status, 401);
 
-  const bad = await post('/login/2fa', { code: '000000' }, join(challenge));
-  assert.equal(bad.status, 401);
+  assert.equal((await code(c, { code: '000000' })).status, 401);
 
-  const ok = await post('/login/2fa', { code: currentCode(id), remember: '1' }, join(challenge));
-  assert.equal(ok.status, 302);
-  const after = cookiesOf(ok);
-  assert.ok(after.some((c) => c.startsWith('kkb_session')));
-  const device = after.filter((c) => c.startsWith('kkb_device'));
-  assert.equal(device.length, 1);
+  const ok = await code(c, { code: currentCode(id), remember: '1' });
+  assert.equal(ok.redirect, '/');
+  assert.ok([...c.jar.keys()].some((k) => k.startsWith('kkb_session')));
+  const device = [...c.jar].find(([k]) => k.startsWith('kkb_device'));
+  assert.ok(device);
+  assert.equal((await c.get('/')).status, 200);
 
   // Mit gemerktem Gerät kein Code mehr
-  const r2 = await post('/login', { username: 'anna', password: 'Geheim-Passwort-1', next: '/' }, join(device));
-  assert.equal(r2.headers.get('location'), '/');
+  assert.equal((await start('anna', 'Geheim-Passwort-1', device)).res.redirect, '/');
   // Ohne das Gerät wieder Code
-  const r3 = await post('/login', { username: 'anna', password: 'Geheim-Passwort-1', next: '/' });
-  assert.equal(r3.headers.get('location'), '/login/2fa');
+  assert.equal((await start('anna', 'Geheim-Passwort-1')).res.redirect, '/login/2fa');
 });
 
 test('Wiederherstellungscode funktioniert genau einmal', async () => {
   const { id } = await users.create({ username: 'ben', display_name: 'Ben', role: 'aufgebotsstelle', password: 'Geheim-Passwort-2', must_change_password: false }, null);
   const codes = await enable(id);
   assert.equal(codes.length, 10);
-  const login = async () => cookiesOf(await post('/login', { username: 'ben', password: 'Geheim-Passwort-2', next: '/' }));
-  const ok = await post('/login/2fa', { code: codes[0].toUpperCase() }, join(await login()));
-  assert.equal(ok.status, 302);
-  const again = await post('/login/2fa', { code: codes[0] }, join(await login()));
+  const ok = await code(await start('ben', 'Geheim-Passwort-2'), { code: codes[0].toUpperCase() });
+  assert.equal(ok.redirect, '/');
+  const again = await code(await start('ben', 'Geheim-Passwort-2'), { code: codes[0] });
   assert.equal(again.status, 401);
 });
 
 test('Fehlversuche mit Codes sperren das Konto, auch über neue Logins hinweg', async () => {
   const { id } = await users.create({ username: 'carla', display_name: 'Carla', role: 'aufgebotsstelle', password: 'Geheim-Passwort-3', must_change_password: false }, null);
   await enable(id);
-  for (let i = 0; i < 5; i++) {
-    const c = cookiesOf(await post('/login', { username: 'carla', password: 'Geheim-Passwort-3', next: '/' }));
-    await post('/login/2fa', { code: '111111' }, join(c));
-  }
-  const locked = await post('/login', { username: 'carla', password: 'Geheim-Passwort-3', next: '/' });
-  assert.equal(locked.status, 401);
+  for (let i = 0; i < 5; i++) await code(await start('carla', 'Geheim-Passwort-3'), { code: '111111' });
+  assert.equal((await start('carla', 'Geheim-Passwort-3')).res.status, 401);
 });
 
 test('Pflicht-2FA: ohne Einrichtung nur die Einrichtungsseite', async () => {
   await users.create({ username: 'dora', display_name: 'Dora', role: 'aufgebotsstelle', password: 'Geheim-Passwort-4', must_change_password: false, twofa_required: '1' }, null);
-  const r = await post('/login', { username: 'dora', password: 'Geheim-Passwort-4', next: '/' });
-  const cookie = join(cookiesOf(r));
-  const home = await fetch(`${base}/`, { headers: { cookie }, redirect: 'manual' });
-  assert.equal(home.headers.get('location'), '/konto/2fa');
-  const page = await fetch(`${base}/konto/2fa`, { headers: { cookie }, redirect: 'manual' });
+  const c = await start('dora', 'Geheim-Passwort-4');
+  assert.equal((await c.get('/')).redirect, '/konto/2fa');
+  const page = await c.get('/konto/2fa');
   assert.equal(page.status, 200);
-  assert.match(await page.text(), /<svg/);
+  assert.match(JSON.stringify(page.data), /<svg/, 'QR-Code zum Einrichten');
+  assert.ok(!('totp_secret' in page.data.u), 'Geheimnis des Kontos bleibt im Server');
 });
 
 test('Benutzer löschen: nicht sich selbst, nicht den letzten Admin, Daten bleiben', async () => {

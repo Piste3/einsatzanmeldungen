@@ -8,7 +8,7 @@ import { byRole } from './lib/byRole.js';
 import { clearPageError } from './lib/pageError.js';
 import { handyTarget, KEEP_PC } from './lib/handy.js';
 
-// Ausgewählte Ansichten sind schon in der Browser-App. Alle anderen Adressen öffnet die bisherige Ansicht (LegacyView).
+// Alle Seiten der Browser-App. Unbekannte Adressen zeigen «Nicht gefunden».
 const routes = [
   { path: '/login', name: 'login', component: () => import('./views/LoginView.vue'), meta: { public: true } },
   { path: '/login/2fa', name: 'login-2fa', component: () => import('./views/TwofaLoginView.vue'), meta: { public: true } },
@@ -58,7 +58,7 @@ const routes = [
   { path: '/handy/einsatz/:id(\\d+)/anmeldungen', name: 'handy-registrations', component: () => import('./views/handy/HandyRegistrations.vue'), meta: { handy: true } },
   { path: '/handy/anfragen', component: () => import('./views/handy/HandyRedirect.vue'), meta: { handy: true } },
   { path: '/handy/anmeldungen', component: () => import('./views/handy/HandyRedirect.vue'), meta: { handy: true } },
-  { path: '/:pathMatch(.*)*', name: 'legacy', component: () => import('./views/LegacyView.vue'), meta: { public: true } },
+  { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('./views/NotFoundView.vue') },
 ];
 
 export const router = createRouter({

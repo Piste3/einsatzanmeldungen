@@ -75,26 +75,29 @@ router.post('/logout', (req, res) => {
   res.redirect('/login');
 });
 
-// Microsoft SSO (sobald aktiviert)
-router.get('/auth/microsoft', async (req, res, next) => {
+// Microsoft SSO (sobald aktiviert). Läuft direkt über den Server (Weiterleitungen zu Microsoft und zurück).
+// Fehler zeigt die Anmeldeseite der Browser-App (?fehler=…).
+const microsoft = express.Router();
+const loginError = (res, message) => res.redirect(`/login?fehler=${encodeURIComponent(message)}`);
+microsoft.get('/auth/microsoft', async (req, res, next) => {
   try {
     const p = auth.provider('microsoft');
-    if (!p) return res.status(404).render('pages/error', { title: 'Nicht verfügbar', message: 'Microsoft-Anmeldung ist nicht eingerichtet.' });
+    if (!p) return loginError(res, 'Microsoft-Anmeldung ist nicht eingerichtet.');
     await p.start(req, res);
   } catch (err) { next(err); }
 });
 
-router.get('/auth/microsoft/callback', async (req, res) => {
+microsoft.get('/auth/microsoft/callback', async (req, res) => {
   const p = auth.provider('microsoft');
   if (!p) return res.redirect('/login');
   try {
     const result = await p.callback(req, res);
-    if (!result.ok) return res.status(401).render('auth/login', { title: 'Anmelden', error: result.error, providers: auth.providers(), next: '/', username: '' });
+    if (!result.ok) return loginError(res, result.error);
     auth.login(req, res, result.user);
     res.redirect('/');
   } catch (err) {
     console.error('Microsoft-Login:', err);
-    res.status(401).render('auth/login', { title: 'Anmelden', error: 'Microsoft-Anmeldung fehlgeschlagen.', providers: auth.providers(), next: '/', username: '' });
+    loginError(res, 'Microsoft-Anmeldung fehlgeschlagen.');
   }
 });
 
@@ -224,3 +227,4 @@ router.post('/konto/2fa/geraete', auth.requireLogin, auth.csrfProtect, (req, res
 });
 
 module.exports = router;
+module.exports.microsoft = microsoft;

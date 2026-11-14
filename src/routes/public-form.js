@@ -44,7 +44,8 @@ function renderForm(req, res, { values = {}, errors = [], preview = false } = {}
 // Steht dann in der Server-Ausgabe, damit man sieht, welche Seite es versucht hat.
 let reportsThisHour = 0;
 setInterval(() => { reportsThisHour = 0; }, 3600000).unref();
-router.post('/csp-bericht', express.json({ type: ['application/csp-report', 'application/reports+json', 'application/json'], limit: '16kb' }), (req, res) => {
+const cspReport = express.Router();
+cspReport.post('/csp-bericht', express.json({ type: ['application/csp-report', 'application/reports+json', 'application/json'], limit: '16kb' }), (req, res) => {
   if (reportsThisHour++ < 50) {
     const items = [].concat(req.body || []).map((r) => r['csp-report'] || r.body || r);
     for (const r of items) {
@@ -55,6 +56,7 @@ router.post('/csp-bericht', express.json({ type: ['application/csp-report', 'app
   }
   res.status(204).end();
 });
+router.use(cspReport);
 
 router.get('/anmeldung', (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
@@ -86,3 +88,4 @@ router.post('/anmeldung', rateLimit, (req, res) => {
 });
 
 module.exports = router;
+module.exports.cspReport = cspReport;

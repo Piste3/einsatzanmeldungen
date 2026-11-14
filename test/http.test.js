@@ -1,7 +1,9 @@
 'use strict';
+// Server über HTTP: Browser-App, Schnittstelle /api/v1, Rollen, Listen und Exporte
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { freshDb } = require('./helpers');
+const { client, flashText } = require('./client');
 const users = require('../src/services/users');
 const { createApp } = require('../src/app');
 
@@ -19,24 +21,33 @@ test.before(async () => {
 test.after(() => server.close());
 
 async function login(username, password) {
-  const res = await fetch(`${base}/login`, {
-    method: 'POST', redirect: 'manual',
-    headers: { 'content-type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ username, password, next: '/' }),
-  });
-  const cookie = (res.headers.get('set-cookie') || '').split(';')[0];
-  return { res, cookie };
+  const c = client(base);
+  c.res = await c.login(username, password);
+  return c;
 }
+const raw = (path, headers = {}) => fetch(`${base}${path}`, { headers, redirect: 'manual' });
+const csvLines = async (r) => (await r.res.text()).replace(/^﻿/, '').trim().split(/\r?\n/);
+const json = (r) => JSON.stringify(r.json);
 
-const get = (path, cookie) => fetch(`${base}${path}`, { headers: cookie ? { cookie } : {}, redirect: 'manual' });
-
-test('ohne Anmeldung nur Login und Formular erreichbar', async () => {
-  const r = await get('/');
-  assert.equal(r.status, 302);
-  assert.match(r.headers.get('location'), /^\/login/);
-  assert.equal((await get('/login')).status, 200);
-  assert.equal((await get('/login')).headers.get('cache-control'), 'no-store', 'Seiten nicht aus dem Browser-Cache');
-  assert.equal((await get('/forms/anmeldung')).status, 200);
+test('Browser-App: Seiten für alle, Daten nur mit Anmeldung', async () => {
+  for (const p of ['/', '/login', '/einsaetze/5', '/handy']) {
+    const r = await raw(p, { accept: 'text/html' });
+    assert.equal(r.status, 200, p);
+    assert.match(await r.text(), /<div id="app">/, p);
+  }
+  assert.equal((await raw('/login')).headers.get('cache-control'), 'no-store', 'Seiten nicht aus dem Browser-Cache');
+  // Stylesheets mit Version in der Adresse (nach einem Update lädt der Browser sie neu)
+  assert.match(await (await raw('/', { accept: 'text/html' })).text(), /\/static\/css\/app\.css\?v=[0-9a-f]{10}"/);
+  const form = await raw('/forms/anmeldung');
+  assert.equal(form.status, 200);
+  assert.doesNotMatch(await form.text(), /<div id="app">/, 'Formular: eigener, kleiner Einstieg');
+  // Ohne Login: Schnittstelle antwortet 401, keine Seite
+  const anon = client(base);
+  assert.equal((await anon.get('/')).status, 401);
+  assert.equal((await anon.get('/einsaetze')).status, 401);
+  // Fehlende Dateien: 404 statt Fehler
+  assert.equal((await raw('/assets/gibt-es-nicht.js')).status, 404);
+  assert.equal((await raw('/handbuch/bilder/x.png')).status, 302, 'Bilder des Handbuchs nur mit Login');
 });
 
 test('Anmeldung und Rollen', async () => {
@@ -44,32 +55,32 @@ test('Anmeldung und Rollen', async () => {
   assert.equal(bad.res.status, 401);
 
   const admin = await login('admin', 'Chef-Passwort-2026');
-  assert.equal(admin.res.status, 302);
-  assert.equal((await get('/', admin.cookie)).status, 200);
-  for (const p of ['/verwaltung/benutzer/neu', '/verwaltung/benutzer/1']) assert.equal((await get(p, admin.cookie)).status, 200, p);
-  assert.equal((await get('/verwaltung/benutzer', admin.cookie)).status, 200);
+  assert.equal(admin.res.redirect, '/');
+  assert.equal((await admin.get('/')).status, 200);
+  for (const p of ['/verwaltung/benutzer/neu', '/verwaltung/benutzer/1', '/verwaltung/benutzer']) assert.equal((await admin.get(p)).status, 200, p);
   // Einstellungen öffnen beim ersten Reiter, nicht bei Benutzer
-  assert.equal((await get('/verwaltung', admin.cookie)).headers.get('location'), '/verwaltung/listen');
+  assert.equal((await admin.get('/verwaltung')).redirect, '/verwaltung/listen');
 
   const lena = await login('lena', 'Aufgebot-2026-x');
-  assert.equal((await get('/einsaetze', lena.cookie)).status, 200);
-  assert.equal((await get('/verwaltung/benutzer', lena.cookie)).status, 403);
+  assert.equal((await lena.get('/einsaetze')).status, 200);
+  const no = await lena.get('/verwaltung/benutzer');
+  assert.equal(no.status, 403);
+  assert.equal(no.view, 'pages/error');
 });
 
 test('Erstes Login mit Startpasswort verlangt neues Passwort', async () => {
   const neu = await login('neu', 'Erstes-Kennwort-99');
-  assert.equal(neu.res.headers.get('location'), '/konto/passwort');
-  const r = await get('/', neu.cookie);
-  assert.equal(r.status, 302);
-  assert.equal(r.headers.get('location'), '/konto/passwort');
+  assert.equal(neu.res.redirect, '/konto/passwort');
+  assert.equal((await neu.get('/')).redirect, '/konto/passwort');
+  assert.equal((await neu.get('/konto/passwort')).view, 'auth/password');
 });
 
 test('POST ohne CSRF-Token wird abgelehnt', async () => {
   const admin = await login('admin', 'Chef-Passwort-2026');
-  const r = await fetch(`${base}/einsaetze/neu`, {
+  const r = await fetch(`${base}/api/v1/einsaetze`, {
     method: 'POST', redirect: 'manual',
-    headers: { cookie: admin.cookie, 'content-type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ name: 'X', date: '2030-01-01' }),
+    headers: { cookie: admin.cookie(), 'content-type': 'application/json' },
+    body: JSON.stringify({ name: 'X', date: '2030-01-01' }),
   });
   assert.equal(r.status, 403);
 });
@@ -81,10 +92,10 @@ test('Konto wird nach 5 Fehlversuchen gesperrt', async () => {
 });
 
 test('Formular darf nur in erlaubte Seiten eingebettet werden', async () => {
-  const r = await get('/forms/anmeldung');
+  const r = await raw('/forms/anmeldung');
   assert.match(r.headers.get('content-security-policy'), /frame-ancestors 'self' https:\/\/\*\.clubdesk\.com/);
   assert.equal(r.headers.get('x-frame-options'), null);
-  const app = await get('/login');
+  const app = await raw('/login');
   assert.match(app.headers.get('content-security-policy') || app.headers.get('x-frame-options') || '', /frame-ancestors 'none'|DENY/i);
 });
 
@@ -94,70 +105,58 @@ test('Blockier-Meldungen des Browsers werden angenommen', async () => {
     body: JSON.stringify({ 'csp-report': { 'violated-directive': 'frame-ancestors', 'blocked-uri': 'https://example.org', 'document-uri': 'https://x/forms/anmeldung' } }),
   });
   assert.equal(r.status, 204);
-  assert.match((await get('/forms/anmeldung')).headers.get('content-security-policy'), /report-uri \/forms\/csp-bericht/);
+  assert.match((await raw('/forms/anmeldung')).headers.get('content-security-policy'), /report-uri \/forms\/csp-bericht/);
 });
 
 test('Bestätigungsmail: Seite, Vorschau und Speichern (nur Admin)', async () => {
   const settings = require('../src/services/settings');
   const admin = await login('admin', 'Chef-Passwort-2026');
-  const page = await get('/verwaltung/bestaetigungsmail', admin.cookie);
-  assert.equal(page.status, 200);
-  const csrf = (await page.text()).match(/name="_csrf" value="([^"]+)"/)[1];
-  const post = (action) => fetch(`${base}/verwaltung/bestaetigungsmail`, {
-    method: 'POST', redirect: 'manual', headers: { cookie: admin.cookie, 'content-type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ _csrf: csrf, enabled: '1', subject: 'Bestätigt: {{einsatz.name}}', body: 'Hallo {{person.vorname}}', action }),
-  });
-  assert.equal((await post('preview')).status, 200);
+  assert.equal((await admin.get('/verwaltung/bestaetigungsmail')).status, 200);
+  const post = (action) => admin.post('/verwaltung/bestaetigungsmail', { enabled: '1', subject: 'Bestätigt: {{einsatz.name}}', body: 'Hallo {{person.vorname}}', action });
+  const preview = await post('preview');
+  assert.equal(preview.status, 200);
+  assert.equal(preview.view, 'admin/confirmation');
   assert.notEqual(settings.get('confirmation').subject, 'Bestätigt: {{einsatz.name}}');
-  assert.equal((await post('save')).status, 302);
+  assert.ok((await post('save')).redirect);
   assert.equal(settings.get('confirmation').subject, 'Bestätigt: {{einsatz.name}}');
   // formatierte Vorlage (HTML aus dem Editor) wird bereinigt gespeichert
-  const rich = await fetch(`${base}/verwaltung/bestaetigungsmail`, {
-    method: 'POST', redirect: 'manual', headers: { cookie: admin.cookie, 'content-type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ _csrf: csrf, enabled: '1', subject: 'S', body: '<div>Hallo <b>{{person.vorname}}</b><script>x</script></div>', body_format: 'html', action: 'save' }),
-  });
-  assert.equal(rich.status, 302);
+  const rich = await admin.post('/verwaltung/bestaetigungsmail', { enabled: '1', subject: 'S', body: '<div>Hallo <b>{{person.vorname}}</b><script>x</script></div>', body_format: 'html', action: 'save' });
+  assert.ok(rich.redirect);
   assert.equal(settings.get('confirmation').format, 'html');
   assert.equal(settings.get('confirmation').body, '<div>Hallo <b>{{person.vorname}}</b></div>');
-  const page2 = await (await get('/verwaltung/bestaetigungsmail', admin.cookie)).text();
-  assert.match(page2, /data-rte/);
-  const lena = await login('lena', 'Aufgebot-2026-x');
-  assert.notEqual((await get('/verwaltung/bestaetigungsmail', lena.cookie)).status, 200);
+  // Der Editor bekommt den Inhalt als fertigen Wert
+  assert.match((await admin.get('/verwaltung/bestaetigungsmail')).data.editorValue, /<b>/);
+  const neu = await login('neu', 'Erstes-Kennwort-99');
+  const no = await neu.get('/verwaltung/bestaetigungsmail');
+  assert.ok(no.status !== 200 || no.redirect, 'nur Admin');
+  assert.notEqual(no.view, 'admin/confirmation');
 });
 
 test('System-Seite: nur Admin, Update ohne Starter wird abgelehnt', async () => {
   const admin = await login('admin', 'Chef-Passwort-2026');
-  const page = await get('/verwaltung/system', admin.cookie);
+  const page = await admin.get('/verwaltung/system');
   assert.equal(page.status, 200);
-  const html = await page.text();
-  assert.match(html, /alten Startskript/);
-  const csrf = html.match(/name="_csrf" value="([^"]+)"/)[1];
-  const r = await fetch(`${base}/verwaltung/system/neustart`, {
-    method: 'POST', redirect: 'manual', headers: { cookie: admin.cookie, 'content-type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ _csrf: csrf }),
-  });
-  assert.equal(r.status, 302); // Fehlermeldung statt Neustart
+  assert.equal(page.data.st.canRestart, false, 'alter Start ohne Starter');
+  const r = await admin.post('/verwaltung/system/neustart');
+  assert.equal(r.status, 400, 'Fehlermeldung statt Neustart');
+  assert.match(JSON.stringify(r.json), /alten Startskript/);
 });
 
 test('Standard-Anmeldefrage ist bei neuen Einsätzen vorausgewählt', async () => {
   const settings = require('../src/services/settings');
   const db = require('../src/db');
   const admin = await login('admin', 'Chef-Passwort-2026');
-  const page = await get('/verwaltung/vorlagen', admin.cookie);
-  const csrf = (await page.text()).match(/name="_csrf" value="([^"]+)"/)[1];
   const q = db.one("SELECT * FROM question_templates WHERE name = 'Schichtauswahl'");
-  const save = (def) => fetch(`${base}/verwaltung/vorlagen/fragen`, {
-    method: 'POST', redirect: 'manual', headers: { cookie: admin.cookie, 'content-type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ _csrf: csrf, default_question: def }),
-  });
-  assert.equal((await save(String(q.id))).status, 302);
+  const save = (def) => admin.post('/verwaltung/vorlagen/fragen', { default_question: def });
+  assert.ok((await save(String(q.id))).redirect);
   assert.equal(settings.get('default_question_template'), q.id);
-  const html = await (await get('/einsaetze/neu', admin.cookie)).text();
-  assert.match(html, new RegExp(`<option value="${q.id}"[^>]*selected`));
-  assert.match(html, /value="Für welche Schichten kannst du\?"/);
+  let e = (await admin.get('/einsaetze/neu')).data.e;
+  assert.equal(Number(e.question_template_id), q.id);
+  assert.equal(e.question_text, 'Für welche Schichten kannst du?');
   await save('');
   assert.equal(settings.get('default_question_template'), null);
-  assert.doesNotMatch(await (await get('/einsaetze/neu', admin.cookie)).text(), /<option value="\d+"[^>]*data-question[^>]*selected/);
+  e = (await admin.get('/einsaetze/neu')).data.e;
+  assert.ok(!e.question_template_id);
 });
 
 test('Teilnehmerliste: nach Rang, mit Mobil und Essenseinschränkungen, als Seite, Excel und CSV', async () => {
@@ -181,35 +180,32 @@ test('Teilnehmerliste: nach Rang, mit Mobil und Essenseinschränkungen, als Seit
   // eigene Aufgebotsstelle (lena ist durch den Sperr-Test oben gesperrt)
   await users.create({ username: 'mara', display_name: 'Mara', role: 'aufgebotsstelle', password: 'Aufgebot-2026-m', must_change_password: false }, null);
   const mara = await login('mara', 'Aufgebot-2026-m');
-  const html = await (await get(`/einsaetze/${ev}/teilnehmerliste`, mara.cookie)).text();
-  const order = ['Sina Soldat', 'Willi Wacht', 'Hans Haupt'].map((n) => html.indexOf(n));
-  assert.ok(order.every((i) => i > 0) && order[0] < order[1] && order[1] < order[2], 'Standard: tiefster Rang zuerst');
-  const ab = await (await get(`/einsaetze/${ev}/teilnehmerliste?sort=rang_ab`, mara.cookie)).text();
-  const orderAb = ['Hans Haupt', 'Willi Wacht', 'Sina Soldat'].map((n) => ab.indexOf(n));
-  assert.ok(orderAb.every((i) => i > 0) && orderAb[0] < orderAb[1] && orderAb[1] < orderAb[2], 'umgeschaltet: höchster Rang zuerst');
-  assert.doesNotMatch(html, /Abi Gemeldet/, 'Abmeldungen stehen nicht auf der Liste');
-  assert.match(html, /079 999 88 77/);
-  assert.match(html, /Allergie<\/strong>: Nüsse/, 'Aufgebotsstelle sieht die Angaben der Angemeldeten');
-  assert.match(html, /1 Allergie · 1 vegetarisch · 1 ohne Einschränkung/);
+  const names = (d) => d.list.map((r) => `${r.first_name} ${r.last_name}`);
+  const page = (await mara.get(`/einsaetze/${ev}/teilnehmerliste`)).data;
+  assert.deepEqual(names(page), ['Sina Soldat', 'Willi Wacht', 'Hans Haupt'], 'Standard: tiefster Rang zuerst; Abmeldungen nicht auf der Liste');
+  assert.deepEqual(names((await mara.get(`/einsaetze/${ev}/teilnehmerliste?sort=rang_ab`)).data), ['Hans Haupt', 'Willi Wacht', 'Sina Soldat'], 'umgeschaltet: höchster Rang zuerst');
+  const hans = page.list.find((r) => r.last_name === 'Haupt');
+  assert.equal(hans.mobile, '079 999 88 77');
+  assert.ok(hans.diet.visible, 'Aufgebotsstelle sieht die Angaben der Angemeldeten');
+  assert.deepEqual([hans.diet.category, hans.diet.text], ['Allergie', 'Nüsse']);
+  assert.deepEqual(page.summary, [['Allergie', 1], ['vegetarisch', 1], ['ohne Einschränkung', 1]]);
 
-  const auf = await (await get(`/einsaetze/${ev}/teilnehmerliste?sort=rang_ab&umfang=bestaetigt`, mara.cookie)).text();
-  assert.match(auf, /Hans Haupt/);
-  assert.doesNotMatch(auf, /Sina Soldat/, 'nur bestätigte');
+  assert.deepEqual(names((await mara.get(`/einsaetze/${ev}/teilnehmerliste?sort=rang_ab&umfang=bestaetigt`)).data), ['Hans Haupt'], 'nur bestätigte');
 
-  const csv = await get(`/einsaetze/${ev}/teilnehmerliste?format=csv`, mara.cookie);
+  const csv = await mara.get(`/einsaetze/${ev}/teilnehmerliste?format=csv`);
   assert.match(csv.headers.get('content-disposition'), /Teilnehmerliste_Zolli-Fest/);
-  const lines = (await csv.text()).replace(/^﻿/, '').trim().split(/\r?\n/);
+  const lines = await csvLines(csv);
   assert.match(lines[0], /Nr\.;Rang;Nachname;Vorname;Mobil;Essenseinschränkung;Details;Status/);
   assert.match(lines[1], /^1;Sdt;Soldat;Sina;079 111 22 33;vegetarisch;;Neu$/);
   assert.match(lines[3], /^3;Hptm;Haupt;Hans;079 999 88 77;Allergie;Nüsse;Bestätigt$/);
   assert.equal(lines.length, 4);
-  const xlsx = await get(`/einsaetze/${ev}/teilnehmerliste?format=xlsx`, mara.cookie);
+  const xlsx = await mara.get(`/einsaetze/${ev}/teilnehmerliste?format=xlsx`);
   assert.equal(xlsx.status, 200);
   assert.match(xlsx.headers.get('content-type'), /spreadsheetml/);
-  const pdf = await get(`/einsaetze/${ev}/teilnehmerliste?format=pdf`, mara.cookie);
+  const pdf = await mara.get(`/einsaetze/${ev}/teilnehmerliste?format=pdf`);
   assert.equal(pdf.headers.get('content-type'), 'application/pdf');
   assert.match(pdf.headers.get('content-disposition'), /^inline; filename="Teilnehmerliste_Zolli-Fest_/);
-  const body = Buffer.from(await pdf.arrayBuffer()).toString('latin1');
+  const body = Buffer.from(await pdf.res.arrayBuffer()).toString('latin1');
   assert.match(body, /^%PDF-1\.4/);
   assert.match(body, /\/Count 1 /);
   assert.match(body, /%%EOF\n$/);
@@ -234,77 +230,70 @@ test('Einsatzleiter: sieht nur freigegebene Einsätze, nur lesen', async () => {
   const auf = await login('auf2', 'Aufgebot-2026-z');
 
   // vor der Freigabe: nichts zu sehen
-  const home = await (await get('/', leo.cookie)).text();
-  assert.match(home, /Meine Einsätze/);
-  assert.doesNotMatch(home, /Basler Herbstlauf/);
-  assert.doesNotMatch(home, /href="\/personen"/, 'kein Menü für Personen');
-  assert.equal((await get(`/einsaetze/${ev}`, leo.cookie)).status, 403);
-  for (const p of ['/einsaetze', '/personen', '/rueckmeldungen', '/klaerungen', '/suche?q=pia', `/einsaetze/${ev}/anmeldungen`, `/einsaetze/${ev}/teilnehmerliste?format=csv`, '/verwaltung']) {
-    assert.equal((await get(p, leo.cookie)).status, 403, p);
+  const home = await leo.get('/');
+  assert.equal(home.view, 'leader/home');
+  assert.doesNotMatch(json(home), /Basler Herbstlauf/);
+  assert.deepEqual(home.json.nav, {}, 'keine Zähler für Personen, Klärungen');
+  assert.equal((await leo.get(`/einsaetze/${ev}`)).status, 403);
+  for (const p of ['/einsaetze', '/personen', '/rueckmeldungen', '/klaerungen', '/suche?q=pia', `/einsaetze/${ev}/anmeldungen`, `/einsaetze/${ev}/teilnehmerliste?format=csv`, '/verwaltung', '/handy']) {
+    assert.equal((await leo.get(p)).status, 403, p);
   }
-  const leoBook = await (await get('/handbuch', leo.cookie)).text();
-  assert.match(leoBook, /Handbuch für Einsatzleiter/, 'Einsatzleiter sehen ihr eigenes Handbuch');
-  assert.doesNotMatch(leoBook, /Klärungen/, 'nicht das volle Handbuch');
-  assert.equal((await get('/handbuch/einsatzleiter', leo.cookie)).status, 302);
-  assert.equal((await get('/konto/passwort', leo.cookie)).status, 200);
+  const leoBook = await leo.get('/handbuch');
+  assert.match(leoBook.json.title, /Handbuch für Einsatzleiter/, 'Einsatzleiter sehen ihr eigenes Handbuch');
+  assert.doesNotMatch(json(leoBook), /Klärungen/, 'nicht das volle Handbuch');
+  assert.ok((await leo.get('/handbuch/einsatzleiter')).redirect);
+  assert.equal((await leo.get('/konto/passwort')).status, 200);
 
   // Aufgebotsstelle: volles Handbuch, Einsatzleiter-Handbuch zum Nachschauen
-  const fullBook = await (await get('/handbuch', auf.cookie)).text();
-  assert.match(fullBook, /Klärungen/);
-  assert.match(fullBook, /href="\/handbuch\/einsatzleiter"/);
-  assert.match(await (await get('/handbuch/einsatzleiter', auf.cookie)).text(), /Was du als Einsatzleiter siehst/);
+  const fullBook = await auf.get('/handbuch');
+  assert.match(json(fullBook), /Klärungen/);
+  assert.match(json(await auf.get('/handbuch/einsatzleiter')), /Was du als Einsatzleiter siehst/);
 
   // «Als PDF»: das gestaltete PDF, Einsatzleiter bekommen ihres
-  assert.match(fullBook, /href="\/handbuch\/pdf"/);
-  for (const [path, cookie, file] of [
-    ['/handbuch/pdf', auf.cookie, 'KKB-Einsatzplaner_Handbuch.pdf'],
-    ['/handbuch/einsatzleiter/pdf', auf.cookie, 'KKB-Einsatzplaner_Handbuch_Einsatzleiter.pdf'],
-    ['/handbuch/pdf', leo.cookie, 'KKB-Einsatzplaner_Handbuch_Einsatzleiter.pdf'],
+  assert.equal(fullBook.data.pdfHref, '/handbuch/pdf');
+  for (const [path, who, file] of [
+    ['/handbuch/pdf', auf, 'KKB-Einsatzplaner_Handbuch.pdf'],
+    ['/handbuch/einsatzleiter/pdf', auf, 'KKB-Einsatzplaner_Handbuch_Einsatzleiter.pdf'],
+    ['/handbuch/pdf', leo, 'KKB-Einsatzplaner_Handbuch_Einsatzleiter.pdf'],
   ]) {
-    const r = await get(path, cookie);
+    const r = await who.get(path);
     assert.equal(r.status, 200, path);
     assert.equal(r.headers.get('content-type'), 'application/pdf');
     assert.match(r.headers.get('content-disposition'), new RegExp(`inline; filename="${file}"`));
-    assert.equal(Buffer.from(await r.arrayBuffer()).subarray(0, 5).toString(), '%PDF-');
+    assert.equal(Buffer.from(await r.res.arrayBuffer()).subarray(0, 5).toString(), '%PDF-');
   }
 
   // Aufgebotsstelle gibt frei
-  const page = await (await get(`/einsaetze/${ev}`, auf.cookie)).text();
-  assert.match(page, /Einsatzleiter-Zugriff/);
-  assert.match(page, new RegExp(`<option value="${leaderId}"[^>]*>Leo Leiter`));
-  const csrf = page.match(/name="_csrf" value="([^"]+)"/)[1];
-  const post = (path, cookie, token, body = {}) => fetch(`${base}${path}`, {
-    method: 'POST', redirect: 'manual', headers: { cookie, 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ _csrf: token, ...body }),
-  });
-  assert.equal((await post(`/einsaetze/${ev}/einsatzleiter`, auf.cookie, csrf, { user_id: String(leaderId) })).status, 302);
+  const page = (await auf.get(`/einsaetze/${ev}`)).data;
+  assert.ok(page.leaderCandidates.some((u) => u.id === leaderId && u.display_name === 'Leo Leiter'));
+  assert.ok((await auf.post(`/einsaetze/${ev}/einsatzleiter`, { user_id: String(leaderId) })).redirect);
   assert.ok(db.one('SELECT 1 FROM event_leaders WHERE event_id = ? AND user_id = ?', ev, leaderId));
   assert.ok(db.one("SELECT 1 FROM audit_log WHERE event_id = ? AND action = 'leader_grant'", ev), 'Freigabe steht im Verlauf');
 
-  // nach der Freigabe: Einsatz mit Angaben und Teilnehmern, aber ohne interne Bemerkung und ohne Bearbeiten
-  assert.match(await (await get('/', leo.cookie)).text(), /Basler Herbstlauf/);
-  const view = await (await get(`/einsaetze/${ev}`, leo.cookie)).text();
-  assert.match(view, /Pia Planer/);
-  assert.match(view, /079 555 44 33/);
-  assert.match(view, /vegan/, 'Essenseinschränkung beim anstehenden freigegebenen Einsatz sichtbar');
-  assert.doesNotMatch(view, /Budget 500/, 'keine interne Bemerkung');
-  assert.doesNotMatch(view, /\/bearbeiten|\/personen\//, 'keine Links zum Bearbeiten oder zu Personen');
-  const csv = await get(`/einsaetze/${ev}/teilnehmerliste?format=csv`, leo.cookie);
+  // nach der Freigabe: Einsatz mit Angaben und Teilnehmern, aber ohne interne Bemerkung
+  assert.match(json(await leo.get('/')), /Basler Herbstlauf/);
+  const view = await leo.get(`/einsaetze/${ev}`);
+  assert.equal(view.view, 'leader/event');
+  const p = view.data.list.find((r) => r.person_id === pia);
+  assert.equal(p.mobile, '079 555 44 33');
+  assert.equal(p.diet.category, 'vegan', 'Essenseinschränkung beim anstehenden freigegebenen Einsatz sichtbar');
+  assert.doesNotMatch(json(view), /Budget 500/, 'keine interne Bemerkung');
+  const csv = await leo.get(`/einsaetze/${ev}/teilnehmerliste?format=csv`);
   assert.equal(csv.status, 200);
-  assert.match(await csv.text(), /Planer;Pia;079 555 44 33;vegan/);
-  assert.equal((await get(`/einsaetze/${ev}/teilnehmerliste?format=pdf`, leo.cookie)).headers.get('content-type'), 'application/pdf');
-  assert.equal((await get(`/einsaetze/${ev}/teilnehmerliste`, leo.cookie)).headers.get('location'), `/einsaetze/${ev}`);
-  assert.equal((await get(`/einsaetze/${other}`, leo.cookie)).status, 403, 'andere Einsätze bleiben gesperrt');
-  assert.equal((await get(`/einsaetze/${ev}/schichten`, leo.cookie)).status, 403);
+  assert.match(await csv.res.text(), /Planer;Pia;079 555 44 33;vegan/);
+  assert.equal((await leo.get(`/einsaetze/${ev}/teilnehmerliste?format=pdf`)).headers.get('content-type'), 'application/pdf');
+  assert.equal((await leo.get(`/einsaetze/${ev}/teilnehmerliste`)).redirect, `/einsaetze/${ev}`);
+  assert.equal((await leo.get(`/einsaetze/${other}`)).status, 403, 'andere Einsätze bleiben gesperrt');
+  assert.equal((await leo.get(`/einsaetze/${ev}/schichten`)).status, 403);
 
   // Einsatzleiter darf nichts ändern
-  const leoCsrf = view.match(/name="_csrf" value="([^"]+)"/)[1];
-  assert.equal((await post(`/einsaetze/${ev}/status`, leo.cookie, leoCsrf, { status: 'abgesagt' })).status, 403);
-  assert.equal((await post(`/einsaetze/${ev}/einsatzleiter`, leo.cookie, leoCsrf, { user_id: String(leaderId) })).status, 403);
+  assert.equal((await leo.post(`/einsaetze/${ev}/status`, { status: 'abgesagt' })).status, 403);
+  assert.equal((await leo.post(`/einsaetze/${ev}/einsatzleiter`, { user_id: String(leaderId) })).status, 403);
   assert.equal(db.one('SELECT status FROM events WHERE id = ?', ev).status, 'entwurf');
 
   // Freigabe entfernen
-  assert.equal((await post(`/einsaetze/${ev}/einsatzleiter/${leaderId}/entfernen`, auf.cookie, csrf)).status, 302);
-  assert.equal((await get(`/einsaetze/${ev}`, leo.cookie)).status, 403);
+  assert.ok((await auf.post(`/einsaetze/${ev}/einsatzleiter/${leaderId}/entfernen`)).redirect);
+  assert.equal((await leo.get(`/einsaetze/${ev}`)).status, 403);
 });
 
 test('Externe Abteilungen: mit Anzahl erfassen, zählen in der Besetzung, stehen auf der Teilnehmerliste', async () => {
@@ -318,22 +307,22 @@ test('Externe Abteilungen: mit Anzahl erfassen, zählen in der Besetzung, stehen
 
   await users.create({ username: 'ext', display_name: 'Ext', role: 'aufgebotsstelle', password: 'Aufgebot-2026-e', must_change_password: false }, null);
   const ext = await login('ext', 'Aufgebot-2026-e');
-  const page = await (await get(`/einsaetze/${ev}`, ext.cookie)).text();
-  assert.match(page, /Externe Abteilungen/);
-  const csrf = page.match(/name="_csrf" value="([^"]+)"/)[1];
-  const post = (path, fields) => fetch(`${base}${path}`, {
-    method: 'POST', redirect: 'manual', headers: { cookie: ext.cookie, 'content-type': 'application/x-www-form-urlencoded', referer: `${base}/einsaetze/${ev}` },
-    body: new URLSearchParams([['_csrf', csrf], ...fields]),
-  });
+  assert.ok(Array.isArray((await ext.get(`/einsaetze/${ev}`)).data.externals));
+  // Formularfelder wie im Browser: gleiche Namen mehrfach = Liste
+  const post = (path, fields) => {
+    const body = {};
+    for (const [k, v] of fields) body[k] = k in body ? [].concat(body[k], v) : v;
+    return ext.post(path, body);
+  };
 
   // neue Abteilung per Name (wird in die Liste aufgenommen), nur Tagschicht
-  assert.equal((await post(`/einsaetze/${ev}/externe`, [['unit_name', 'Feuerwehr Riehen'], ['person_count', '6'], ['shift_ids', String(tag.id)], ['contact', 'Hptm Muster 079 555 44 33']])).status, 302);
+  assert.ok((await post(`/einsaetze/${ev}/externe`, [['unit_name', 'Feuerwehr Riehen'], ['person_count', '6'], ['shift_ids', String(tag.id)], ['contact', 'Hptm Muster 079 555 44 33']])).redirect);
   // gleicher Name anders geschrieben = gleiche Abteilung; alle Schichten
-  assert.equal((await post(`/einsaetze/${ev}/externe`, [['unit_name', 'feuerwehr riehen'], ['person_count', '2'], ['shift_ids', String(tag.id)], ['shift_ids', String(abend.id)]])).status, 302);
+  assert.ok((await post(`/einsaetze/${ev}/externe`, [['unit_name', 'feuerwehr riehen'], ['person_count', '2'], ['shift_ids', String(tag.id)], ['shift_ids', String(abend.id)]])).redirect);
   assert.equal(db.one('SELECT COUNT(*) AS n FROM external_units').n, 1);
   // ungültig: keine Anzahl, keine Schicht
-  await post(`/einsaetze/${ev}/externe`, [['unit_name', 'Samariter'], ['person_count', '0'], ['shift_ids', String(tag.id)]]);
-  await post(`/einsaetze/${ev}/externe`, [['unit_name', 'Samariter'], ['person_count', '3']]);
+  assert.equal((await post(`/einsaetze/${ev}/externe`, [['unit_name', 'Samariter'], ['person_count', '0'], ['shift_ids', String(tag.id)]])).status, 400);
+  assert.equal((await post(`/einsaetze/${ev}/externe`, [['unit_name', 'Samariter'], ['person_count', '3']])).status, 400);
   assert.equal(db.one('SELECT COUNT(*) AS n FROM event_externals WHERE event_id = ?', ev).n, 2);
   assert.equal(db.one('SELECT COUNT(*) AS n FROM external_units').n, 1, 'abgelehnte Eingaben legen keine Abteilung an');
 
@@ -343,10 +332,10 @@ test('Externe Abteilungen: mit Anzahl erfassen, zählen in der Besetzung, stehen
 
   // ändern und Verlauf
   const x = db.one('SELECT id FROM event_externals WHERE person_count = 6');
-  assert.equal((await post(`/einsaetze/${ev}/externe/${x.id}`, [['unit_name', 'Feuerwehr Riehen'], ['person_count', '7'], ['shift_ids', String(tag.id)], ['contact', 'Hptm Muster 079 555 44 33'],
+  assert.ok((await post(`/einsaetze/${ev}/externe/${x.id}`, [['unit_name', 'Feuerwehr Riehen'], ['person_count', '7'], ['shift_ids', String(tag.id)], ['contact', 'Hptm Muster 079 555 44 33'],
     ['diet_count', '2'], ['diet_category', 'vegetarisch'], ['diet_text', ''],
     ['diet_count', '1'], ['diet_category', 'allergie'], ['diet_text', 'Nüsse'],
-    ['diet_count', ''], ['diet_category', ''], ['diet_text', '']])).status, 302);
+    ['diet_count', ''], ['diet_category', ''], ['diet_text', '']])).redirect);
   assert.deepEqual(JSON.parse(db.one('SELECT diets FROM event_externals WHERE id = ?', x.id).diets), [{ count: 2, category: 'vegetarisch', text: '' }, { count: 1, category: 'allergie', text: 'Nüsse' }]);
   // mehr Einschränkungen als Personen: abgelehnt, alte Angaben bleiben
   await post(`/einsaetze/${ev}/externe/${x.id}`, [['unit_name', 'Feuerwehr Riehen'], ['person_count', '7'], ['shift_ids', String(tag.id)], ['diet_count', '8'], ['diet_category', 'vegan'], ['diet_text', '']]);
@@ -355,23 +344,22 @@ test('Externe Abteilungen: mit Anzahl erfassen, zählen in der Besetzung, stehen
   assert.equal(st.shifts[0].ist, 9);
   assert.ok(db.one("SELECT 1 FROM audit_log WHERE event_id = ? AND entity_type = 'external' AND summary LIKE '%Anzahl 6 → 7%Essenseinschränkungen%'", ev));
 
-  const html = await (await get(`/einsaetze/${ev}/teilnehmerliste`, ext.cookie)).text();
-  assert.match(html, /0 Personen \+ 9 extern/);
-  assert.match(html, /Feuerwehr Riehen/);
-  assert.match(html, /Hptm Muster 079 555 44 33/);
-  assert.match(html, /2× vegetarisch/);
-  assert.match(html, /1× Allergie<\/strong>: Nüsse/);
-  assert.match(html, /Verpflegung:<\/strong>\s*2 vegetarisch · 1 Allergie · 4 ohne Einschränkung · 2 extern \(keine Angaben\)/);
-  const abendHtml = await (await get(`/einsaetze/${ev}/teilnehmerliste?schicht=${abend.id}`, ext.cookie)).text();
-  assert.match(abendHtml, /0 Personen \+ 2 extern/);
-  const csv = (await (await get(`/einsaetze/${ev}/teilnehmerliste?format=csv`, ext.cookie)).text()).replace(/^﻿/, '').trim().split(/\r?\n/);
+  const tl = (await ext.get(`/einsaetze/${ev}/teilnehmerliste`)).data;
+  assert.equal(tl.list.length, 0);
+  assert.equal(tl.extTotal, 9);
+  const riehen = tl.exts.find((e) => e.unit_name === 'Feuerwehr Riehen');
+  assert.equal(riehen.contact, 'Hptm Muster 079 555 44 33');
+  assert.deepEqual(riehen.dietList.map((d) => [d.count, d.label]), [[2, 'vegetarisch'], [1, 'Allergie']]);
+  assert.deepEqual(tl.summary, [['vegetarisch', 2], ['Allergie', 1], ['ohne Einschränkung', 4], ['extern (keine Angaben)', 2]]);
+  assert.equal((await ext.get(`/einsaetze/${ev}/teilnehmerliste?schicht=${abend.id}`)).data.extTotal, 2);
+  const csv = await csvLines(await ext.get(`/einsaetze/${ev}/teilnehmerliste?format=csv`));
   assert.match(csv[0], /^Nr\.;Anzahl;Rang;Nachname/);
   assert.match(csv[1], /^;7;extern;Feuerwehr Riehen;;Hptm Muster 079 555 44 33;"2× vegetarisch, 1× Allergie: Nüsse";/);
-  const pdf = Buffer.from(await (await get(`/einsaetze/${ev}/teilnehmerliste?format=pdf`, ext.cookie)).arrayBuffer());
+  const pdf = Buffer.from(await (await ext.get(`/einsaetze/${ev}/teilnehmerliste?format=pdf`)).res.arrayBuffer());
   assert.match(pdf.toString('latin1'), /^%PDF-1\.4/);
-  assert.equal((await get(`/einsaetze/${ev}/schichten`, ext.cookie)).status, 200);
-  assert.equal((await get('/rueckmeldungen', ext.cookie)).status, 200);
-  assert.equal((await get('/', ext.cookie)).status, 200);
+  assert.equal((await ext.get(`/einsaetze/${ev}/schichten`)).status, 200);
+  assert.equal((await ext.get('/rueckmeldungen')).status, 200);
+  assert.equal((await ext.get('/')).status, 200);
 
   // Schicht löschen: Auswahl wird bereinigt, Abteilung gilt dann für alle Schichten
   events.deleteShift(tag.id, system);
@@ -379,15 +367,13 @@ test('Externe Abteilungen: mit Anzahl erfassen, zählen in der Besetzung, stehen
   assert.deepEqual(st.shifts.map((s) => s.extern), [9]);
 
   // Entfernen
-  assert.equal((await post(`/einsaetze/${ev}/externe/${x.id}/loeschen`, [])).status, 302);
+  assert.ok((await post(`/einsaetze/${ev}/externe/${x.id}/loeschen`, [])).redirect);
   assert.equal(db.one('SELECT COUNT(*) AS n FROM event_externals WHERE event_id = ?', ev).n, 1);
 
-  // Auswahlliste: nur Admin, verwendete Abteilung kann nicht entfernt werden
-  assert.equal((await get('/verwaltung/listen', ext.cookie)).status, 403);
+  // Auswahlliste: nur Admin
+  assert.equal((await ext.get('/verwaltung/listen')).status, 403);
   const admin = await login('admin', 'Chef-Passwort-2026');
-  const lists = await (await get('/verwaltung/listen', admin.cookie)).text();
-  assert.match(lists, /Externe Abteilungen/);
-  assert.match(lists, /value="Feuerwehr Riehen"/);
+  assert.ok((await admin.get('/verwaltung/listen')).data.externalUnits.some((u) => u.name === 'Feuerwehr Riehen'));
 });
 
 test('Funktionen: Soll pro Einsatz festlegen, zuweisen, Ist/Soll und Teilnehmerliste', async () => {
@@ -404,20 +390,17 @@ test('Funktionen: Soll pro Einsatz festlegen, zuweisen, Ist/Soll und Teilnehmerl
 
   await users.create({ username: 'fkt', display_name: 'Fkt', role: 'aufgebotsstelle', password: 'Aufgebot-2026-f', must_change_password: false }, null);
   const auf = await login('fkt', 'Aufgebot-2026-f');
-  const form = await (await get('/einsaetze/neu', auf.cookie)).text();
-  assert.match(form, /Schichten und Soll/);
-  assert.match(form, new RegExp(`name="fn_target_${fn('BF')}"`));
-  const csrf = form.match(/name="_csrf" value="([^"]+)"/)[1];
-  const post = (path, fields) => fetch(`${base}${path}`, {
-    method: 'POST', redirect: 'manual', headers: { cookie: auf.cookie, 'content-type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams([['_csrf', csrf], ...fields]),
-  });
+  assert.deepEqual((await auf.get('/einsaetze/neu')).data.functionList.map((f) => f.short), ['EL', 'SC', 'BF', 'TN']);
+  const post = (path, fields) => {
+    const body = {};
+    for (const [k, v] of fields) body[k] = k in body ? [].concat(body[k], v) : v;
+    return auf.post(path, body);
+  };
 
   // Einsatz mit Soll: 1 EL, 2 SC, 1 BF, 3 TN (0 = braucht es nicht)
   const created = await post('/einsaetze', [['name', 'Fasnachtsumzug'], ['date', addDays(today(), 8)], ['start_time', '13:00'], ['end_time', '18:00'],
     [`fn_target_${fn('EL')}`, '1'], [`fn_target_${fn('SC')}`, '2'], [`fn_target_${fn('BF')}`, '1'], [`fn_target_${fn('TN')}`, '3']]);
-  assert.equal(created.status, 302);
-  const ev = Number(created.headers.get('location').match(/\/einsaetze\/(\d+)/)[1]);
+  const ev = Number(created.redirect.match(/\/einsaetze\/(\d+)/)[1]);
   assert.deepEqual(events.get(ev).shifts[0].targets, { [fn('EL')]: 1, [fn('SC')]: 2, [fn('BF')]: 1, [fn('TN')]: 3 });
   assert.equal(events.get(ev).shifts[0].target_count, 7, 'Soll der Schicht = Summe der Funktionen');
   // ungültige Zahl wird abgelehnt
@@ -430,10 +413,10 @@ test('Funktionen: Soll pro Einsatz festlegen, zuweisen, Ist/Soll und Teilnehmerl
   registrations.setStatus(reg.ida, 'zurueckgezogen', system);
 
   // Einzeln zuweisen und als Sammelaktion
-  assert.equal((await post(`/anmeldungen/${reg.marco}/funktion`, [['function_id', String(fn('EL'))], ['back', `/einsaetze/${ev}`]])).status, 302);
+  assert.ok((await post(`/anmeldungen/${reg.marco}/funktion`, [['function_id', String(fn('EL'))], ['back', `/einsaetze/${ev}`]])).redirect);
   assert.equal(db.one('SELECT function_id FROM registrations WHERE id = ?', reg.marco).function_id, fn('EL'));
   assert.ok(db.one("SELECT 1 FROM audit_log WHERE event_id = ? AND action = 'function' AND summary LIKE '%Marco Leit die Funktion Einsatzleiter (EL)%'", ev));
-  assert.equal((await post(`/einsaetze/${ev}/anmeldungen/sammel`, [['ids', String(reg.sara)], ['ids', String(reg.ben)], ['function_select', String(fn('SC'))], ['status_select', '']])).status, 302);
+  assert.ok((await post(`/einsaetze/${ev}/anmeldungen/sammel`, [['ids', String(reg.sara)], ['ids', String(reg.ben)], ['function_select', String(fn('SC'))], ['status_select', '']])).redirect);
   await post(`/anmeldungen/${reg.ben}/funktion`, [['function_id', String(fn('BF'))]]);
   // Abgemeldete bekommen keine Funktion
   await post(`/anmeldungen/${reg.ida}/funktion`, [['function_id', String(fn('SC'))]]);
@@ -457,16 +440,15 @@ test('Funktionen: Soll pro Einsatz festlegen, zuweisen, Ist/Soll und Teilnehmerl
 
   // Zweite Schicht mit eigenem Soll pro Funktion (Reiter Schichten): 1 SC + 2 TN = 3
   const sh1 = events.get(ev).shifts[0];
-  assert.equal((await post(`/einsaetze/${ev}/schichten`, [['name', 'Abend'], ['start', '18:00'], ['end', '22:00'], [`fn_target_${fn('SC')}`, '1'], [`fn_target_${fn('TN')}`, '2']])).status, 302);
+  assert.ok((await post(`/einsaetze/${ev}/schichten`, [['name', 'Abend'], ['start', '18:00'], ['end', '22:00'], [`fn_target_${fn('SC')}`, '1'], [`fn_target_${fn('TN')}`, '2']])).redirect);
   const sh2 = events.get(ev).shifts[1];
   assert.equal(sh2.target_count, 3);
   // Soll pro Schicht und Funktion im Einsatzformular ändern
-  const edit = await (await get(`/einsaetze/${ev}/bearbeiten`, auf.cookie)).text();
-  assert.match(edit, new RegExp(`name="fn_target_${sh2.id}_${fn('SC')}"`));
+  assert.equal((await auf.get(`/einsaetze/${ev}/bearbeiten`)).data.e.shifts[1].targets[fn('SC')], 1);
   const version = String(db.one('SELECT version FROM events WHERE id = ?', ev).version);
-  assert.equal((await post(`/einsaetze/${ev}/bearbeiten`, [['version', version], ['name', 'Fasnachtsumzug'], ['date', events.get(ev).date], ['start_time', '13:00'], ['end_time', '18:00'],
+  assert.ok((await post(`/einsaetze/${ev}/bearbeiten`, [['version', version], ['name', 'Fasnachtsumzug'], ['date', events.get(ev).date], ['start_time', '13:00'], ['end_time', '18:00'],
     ...[['EL', '1'], ['SC', '2'], ['BF', '1'], ['TN', '3']].map(([k, v]) => [`fn_target_${sh1.id}_${fn(k)}`, v]),
-    ...[['EL', ''], ['SC', '1'], ['BF', ''], ['TN', '4']].map(([k, v]) => [`fn_target_${sh2.id}_${fn(k)}`, v])])).status, 302);
+    ...[['EL', ''], ['SC', '1'], ['BF', ''], ['TN', '4']].map(([k, v]) => [`fn_target_${sh2.id}_${fn(k)}`, v])])).redirect);
   assert.equal(events.get(ev).shifts[1].target_count, 5);
   assert.equal(events.get(ev).shifts[0].target_count, 7);
   // Marco ist nur in der Abendschicht: zählt dort als EL
@@ -479,31 +461,20 @@ test('Funktionen: Soll pro Einsatz festlegen, zuweisen, Ist/Soll und Teilnehmerl
   registrations.setShifts(reg.marco, [sh1.id], system);
   events.deleteShift(sh2.id, system);
 
-  // Übersicht: Besetzung als Tabelle Funktion × Schicht, Lage oben, Vorschlag für den Einsatzleiter-Zugriff (Konto der Person mit Funktion EL)
+  // Übersicht: Besetzung pro Funktion, Lage oben, Vorschlag für den Einsatzleiter-Zugriff (Konto der Person mit Funktion EL)
   await users.create({ username: 'marco2', display_name: 'Marco Leit', role: 'einsatzleiter', person_id: ids.marco, password: 'Kommando-Marco-2026', must_change_password: false }, null);
-  const over = await (await get(`/einsaetze/${ev}`, auf.cookie)).text();
-  assert.match(over, /id="besetzung"/);
-  assert.match(over, /Es fehlen noch Leute/);
-  assert.match(over, /1 \/ 2<\/span><span class="occ-note tone-yellow">1 fehlt/);
-  assert.match(over, /2 \/ 1<\/span><span class="occ-note tone-orange">1 zu viel/);
-  // Zuweisen der Funktionen: im Reiter «Schichten»
-  const sch = await (await get(`/einsaetze/${ev}/schichten`, auf.cookie)).text();
-  assert.match(sch, /id="funktionen"/);
-  assert.match(sch, /1 \/ 2 · 1 fehlt/);
-  assert.match(sch, /2 \/ 1 · 1 zu viel/);
-  assert.match(over, /ist als Einsatzleiter \(EL\) eingeteilt und hat ein Einsatzleiter-Konto/);
-  const anm = await (await get(`/einsaetze/${ev}/anmeldungen?sort=funktion`, auf.cookie)).text();
-  assert.match(anm, /Funktion zuweisen/);
-  const order = ['Marco Leit', 'Sara Sektor', 'Ben Bus', 'Tim Teil'].map((n) => anm.indexOf(n));
-  assert.ok(order.every((i) => i > 0) && order.every((v, i) => i === 0 || order[i - 1] < v), 'nach Funktion sortiert');
-  assert.equal((await get(`/einsaetze/${ev}/schichten`, auf.cookie)).status, 200);
-  assert.equal((await get(`/einsaetze/${ev}/bearbeiten`, auf.cookie)).status, 200);
+  const over = (await auf.get(`/einsaetze/${ev}`)).data;
+  const orow = (s) => over.fnSummary.shifts[0].rows.find((r) => r.short === s);
+  assert.deepEqual([orow('SC').ist, orow('SC').soll], [1, 2]);
+  assert.equal(orow('BF').over, 1);
+  assert.ok(over.leaderSuggestions.some((u) => u.username === 'marco2'), 'Einsatzleiter-Konto der Person mit Funktion EL');
+  assert.ok((await auf.get(`/einsaetze/${ev}/schichten`)).data.fnSummary);
+  const anm = (await auf.get(`/einsaetze/${ev}/anmeldungen?sort=funktion`)).data;
+  assert.ok(anm.functionOptions.length);
+  assert.deepEqual(anm.list.filter((r) => r.status !== 'zurueckgezogen').map((r) => `${r.first_name} ${r.last_name}`), ['Marco Leit', 'Sara Sektor', 'Ben Bus', 'Tim Teil'], 'nach Funktion sortiert');
+  assert.equal((await auf.get(`/einsaetze/${ev}/bearbeiten`)).status, 200);
 
   // Schichten verwalten: ein Speichern-Knopf für alle Zeilen, neue Zeile wird mitgespeichert
-  const shPage = await (await get(`/einsaetze/${ev}/schichten`, auf.cookie)).text();
-  assert.match(shPage, new RegExp(`action="/einsaetze/${ev}/schichten/speichern"`));
-  assert.match(shPage, new RegExp(`name="name__${sh1.id}"`));
-  assert.doesNotMatch(shPage, new RegExp(`action="/schichten/${sh1.id}"`), 'kein Speichern pro Zeile mehr');
   const sh0 = events.get(ev).shifts[0];
   const rowOf = (s, extra = {}) => [['name', s.name], ['date', s.starts_at ? s.starts_at.slice(0, 10) : events.get(ev).date], ['start', s.starts_at ? s.starts_at.slice(11, 16) : ''],
     ['end', s.ends_at ? s.ends_at.slice(11, 16) : ''], ['start_place', s.start_place || ''], ['internal_note', s.internal_note || ''],
@@ -511,14 +482,14 @@ test('Funktionen: Soll pro Einsatz festlegen, zuweisen, Ist/Soll und Teilnehmerl
   const logCount = () => db.one("SELECT count(*) AS n FROM audit_log WHERE entity_type = 'shift'").n;
   // nichts geändert: nichts gespeichert, kein Verlaufseintrag
   const before = logCount();
-  assert.equal((await post(`/einsaetze/${ev}/schichten/speichern`, rowOf(sh0))).status, 302);
+  assert.ok((await post(`/einsaetze/${ev}/schichten/speichern`, rowOf(sh0))).redirect);
   assert.equal(logCount(), before);
   // angefangene neue Zeile ohne Namen: Fehler, auch die geänderte Zeile bleibt ungespeichert
   await post(`/einsaetze/${ev}/schichten/speichern`, [...rowOf(sh0, { name: 'Tagschicht' }), ['name__neu', ''], [`fn_target_${fn('TN')}__neu`, '2']]);
   assert.equal(events.get(ev).shifts[0].name, sh0.name);
   // Zeile ändern und gleichzeitig eine neue Schicht anlegen
-  assert.equal((await post(`/einsaetze/${ev}/schichten/speichern`, [...rowOf(sh0, { name: 'Tagschicht', [`fn_target_${fn('SC')}`]: '3' }),
-    ['name__neu', 'Nacht'], ['date__neu', events.get(ev).date], ['start__neu', '22:00'], ['end__neu', '23:30'], [`fn_target_${fn('TN')}__neu`, '2']])).status, 302);
+  assert.ok((await post(`/einsaetze/${ev}/schichten/speichern`, [...rowOf(sh0, { name: 'Tagschicht', [`fn_target_${fn('SC')}`]: '3' }),
+    ['name__neu', 'Nacht'], ['date__neu', events.get(ev).date], ['start__neu', '22:00'], ['end__neu', '23:30'], [`fn_target_${fn('TN')}__neu`, '2']])).redirect);
   const after = events.get(ev).shifts;
   assert.equal(after.length, 2);
   assert.equal(after[0].name, 'Tagschicht');
@@ -531,35 +502,31 @@ test('Funktionen: Soll pro Einsatz festlegen, zuweisen, Ist/Soll und Teilnehmerl
   events.setShiftTargets(sh0.id, sh0.targets);
 
   // Teilnehmerliste: Spalte Funktion, Ist/Soll, Export
-  const tl = await (await get(`/einsaetze/${ev}/teilnehmerliste?sort=funktion`, auf.cookie)).text();
-  assert.match(tl, /Funktionen Ist\/Soll/);
-  assert.match(tl, /<table class="fn-matrix no-cards">/);
-  assert.match(tl, /tone-green"[^>]*>1 \/ 1<\/td>/);
-  assert.ok(tl.indexOf('Marco Leit') < tl.indexOf('Tim Teil'));
-  const csv = (await (await get(`/einsaetze/${ev}/teilnehmerliste?format=csv&sort=funktion`, auf.cookie)).text()).replace(/^﻿/, '').trim().split(/\r?\n/);
+  const tl = (await auf.get(`/einsaetze/${ev}/teilnehmerliste?sort=funktion`)).data;
+  assert.ok(tl.showFunction);
+  assert.deepEqual([tl.fnSummary.shifts[0].rows[0].ist, tl.fnSummary.shifts[0].rows[0].soll], [1, 1]);
+  assert.ok(tl.list.findIndex((r) => r.last_name === 'Leit') < tl.list.findIndex((r) => r.last_name === 'Teil'));
+  const csv = await csvLines(await auf.get(`/einsaetze/${ev}/teilnehmerliste?format=csv&sort=funktion`));
   assert.match(csv[0], /^Nr\.;Anzahl;Funktion;Rang;Nachname/);
   assert.match(csv[1], /^1;1;EL;Oblt;Leit;Marco/);
   assert.ok(csv.some((l) => /^;1;BF;extern;Carfahrer AG/.test(l)));
-  const pdf = Buffer.from(await (await get(`/einsaetze/${ev}/teilnehmerliste?format=pdf`, auf.cookie)).arrayBuffer()).toString('latin1');
+  const pdf = Buffer.from(await (await auf.get(`/einsaetze/${ev}/teilnehmerliste?format=pdf`)).res.arrayBuffer()).toString('latin1');
   assert.match(pdf, /^%PDF-1\.4/);
 
   // Einsatzleiter-Ansicht zeigt die Funktionen (nur lesen)
   const lead = await login('marco2', 'Kommando-Marco-2026');
-  const leadCsrf = (await (await get(`/einsaetze/${ev}`, auf.cookie)).text()).match(/name="_csrf" value="([^"]+)"/)[1];
-  await fetch(`${base}/einsaetze/${ev}/einsatzleiter`, { method: 'POST', redirect: 'manual', headers: { cookie: auf.cookie, 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ _csrf: leadCsrf, user_id: String(db.one("SELECT id FROM users WHERE username = 'marco2'").id) }) });
-  const lv = await (await get(`/einsaetze/${ev}`, lead.cookie)).text();
-  assert.match(lv, /id="funktionen"/);
-  assert.doesNotMatch(lv, /zuweisen …|Soll ändern/, 'nur lesen');
+  await auf.post(`/einsaetze/${ev}/einsatzleiter`, { user_id: String(db.one("SELECT id FROM users WHERE username = 'marco2'").id) });
+  const lv = await lead.get(`/einsaetze/${ev}`);
+  assert.equal(lv.view, 'leader/event');
+  assert.ok(lv.data.fnSummary);
 
   // Auswahlliste: Funktionen verwalten (Admin); verwendete und die Standardfunktion lassen sich nicht entfernen
   const admin = await login('admin', 'Chef-Passwort-2026');
-  const lists = await (await get('/verwaltung/listen', admin.cookie)).text();
-  assert.match(lists, /Funktionen an Einsätzen/);
-  const aCsrf = lists.match(/name="_csrf" value="([^"]+)"/)[1];
-  const fields = [['_csrf', aCsrf], ['default_function', String(fn('TN'))]];
-  for (const f of db.all('SELECT * FROM functions')) fields.push([`row__${f.id}`, '1'], [`name__${f.id}`, f.name], [`short__${f.id}`, f.short], [`sort__${f.id}`, String(f.sort)], [`active__${f.id}`, '1'], [`delete__${f.id}`, '1']);
-  fields.push(['name__neu', 'Sanität'], ['short__neu', 'SAN'], ['sort__neu', '5']);
-  await fetch(`${base}/verwaltung/listen/funktionen`, { method: 'POST', redirect: 'manual', headers: { cookie: admin.cookie, 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(fields) });
+  assert.ok((await admin.get('/verwaltung/listen')).data.functionList.length >= 4);
+  const fields = { default_function: String(fn('TN')) };
+  for (const f of db.all('SELECT * FROM functions')) Object.assign(fields, { [`row__${f.id}`]: '1', [`name__${f.id}`]: f.name, [`short__${f.id}`]: f.short, [`sort__${f.id}`]: String(f.sort), [`active__${f.id}`]: '1', [`delete__${f.id}`]: '1' });
+  Object.assign(fields, { name__neu: 'Sanität', short__neu: 'SAN', sort__neu: '5' });
+  await admin.post('/verwaltung/listen/funktionen', fields);
   assert.deepEqual(db.all('SELECT short FROM functions ORDER BY sort').map((f) => f.short), ['EL', 'SC', 'BF', 'TN', 'SAN']);
   assert.equal(db.one('SELECT short FROM functions WHERE is_default = 1').short, 'TN');
 });
@@ -593,97 +560,76 @@ test('Teilnehmer- und Verpflegungsliste: ganzer Einsatz, pro Schicht, eine Schic
 
   await users.create({ username: 'kueche', display_name: 'Küche', role: 'aufgebotsstelle', password: 'Aufgebot-2026-k', must_change_password: false }, null);
   const k = await login('kueche', 'Aufgebot-2026-k');
-  const text = async (path) => (await get(path, k.cookie)).text();
+  const names = (list) => list.map((r) => `${r.first_name} ${r.last_name}`);
 
   // Teilnehmerliste pro Schicht: ein Block pro Schicht, wer in zwei Schichten ist, steht zweimal; Rest am Schluss
-  const tn = await text(`/einsaetze/${ev}/teilnehmerliste?schicht=alle`);
-  assert.match(tn, /Teilnehmerliste pro Schicht/);
-  const iVor = tn.indexOf('Vormittag'); const iNach = tn.indexOf('Nachmittag ·'); const iRest = tn.indexOf('Noch in keiner Schicht eingeteilt');
-  assert.ok(iVor > 0 && iVor < iNach && iNach < iRest, 'Schichten in Reihenfolge, Rest am Schluss');
-  assert.equal(tn.split('Nora Nuss').length - 1, 2, 'in zwei Schichten = zweimal aufgeführt');
-  assert.ok(tn.indexOf('Fritz Frei') > iRest);
-  assert.match(tn.slice(iNach, iRest), /Pontoniere/);
-  assert.doesNotMatch(tn.slice(iVor, iNach), /Pontoniere/);
-  const tnCsv = (await text(`/einsaetze/${ev}/teilnehmerliste?format=csv&schicht=alle`)).replace(/^﻿/, '').trim().split(/\r?\n/);
+  const tn = (await k.get(`/einsaetze/${ev}/teilnehmerliste?schicht=alle`)).data;
+  assert.ok(tn.perShift);
+  assert.deepEqual(tn.groups.map((g) => g.shift?.name ?? null), ['Vormittag', 'Nachmittag', null], 'Schichten in Reihenfolge, Rest am Schluss');
+  assert.deepEqual(names(tn.groups[0].list), ['Vera Vegi', 'Nora Nuss']);
+  assert.ok(names(tn.groups[1].list).includes('Nora Nuss'), 'in zwei Schichten = zweimal aufgeführt');
+  assert.deepEqual(names(tn.groups[2].list), ['Fritz Frei']);
+  assert.ok(tn.groups[1].exts.some((x) => x.unit_name === 'Pontoniere'));
+  assert.ok(!tn.groups[0].exts.some((x) => x.unit_name === 'Pontoniere'));
+  const tnCsv = await csvLines(await k.get(`/einsaetze/${ev}/teilnehmerliste?format=csv&schicht=alle`));
   assert.match(tnCsv[0], /^Schicht;Nr\.;Anzahl;Rang;Nachname/);
   assert.match(tnCsv[1], /^Vormittag · 10:00–14:00;1;1;Sdt;Vegi;Vera;/);
   assert.ok(tnCsv.some((l) => /^Nachmittag · 14:00–18:00;;4;extern;Pontoniere;/.test(l)));
-  const tnPdf = await get(`/einsaetze/${ev}/teilnehmerliste?format=pdf&schicht=alle`, k.cookie);
+  const tnPdf = await k.get(`/einsaetze/${ev}/teilnehmerliste?format=pdf&schicht=alle`);
   assert.match(tnPdf.headers.get('content-disposition'), /Teilnehmerliste_Rheinschwimmen_pro_Schicht_/);
-  assert.match(Buffer.from(await tnPdf.arrayBuffer()).toString('latin1'), /\/Count 3 /, 'jede Schicht auf einer eigenen Seite');
+  assert.match(Buffer.from(await tnPdf.res.arrayBuffer()).toString('latin1'), /\/Count 3 /, 'jede Schicht auf einer eigenen Seite');
 
   // Verpflegungsliste ganzer Einsatz: Spalte pro Schicht + Total (jede Person einmal)
-  const vl = await text(`/einsaetze/${ev}/verpflegungsliste`);
-  assert.match(vl, /<h1>Verpflegungsliste<\/h1>/);
-  const total = vl.match(/<tr class="total"><td>Total Essen<\/td>(.*?)<\/tr>/)[1].match(/>(\d+)</g).map((x) => Number(x.slice(1, -1)));
-  assert.deepEqual(total, [2, 6, 1, 8], 'Vormittag 2, Nachmittag 2 + 4 extern, ohne Schicht 1, ganzer Einsatz 4 + 4');
-  assert.match(vl, /Wer in mehreren Schichten eingeteilt ist/);
-  assert.match(vl, /Nora Nuss<\/strong><\/a><\/td>\s*<td><strong>Allergie<\/strong><\/td>\s*<td>Erdnüsse<\/td>/);
-  assert.match(vl, /1× vegan/);
-  const vlCsv = (await text(`/einsaetze/${ev}/verpflegungsliste?format=csv`)).replace(/^﻿/, '').trim().split(/\r?\n/);
+  const vl = (await k.get(`/einsaetze/${ev}/verpflegungsliste`)).data;
+  assert.deepEqual([...vl.matrix.totals, vl.matrix.total], [2, 6, 1, 8], 'Vormittag 2, Nachmittag 2 + 4 extern, ohne Schicht 1, ganzer Einsatz 4 + 4');
+  assert.ok(vl.matrix.overlap, 'Hinweis: wer in mehreren Schichten eingeteilt ist');
+  const nora = vl.list.find((r) => r.last_name === 'Nuss');
+  assert.deepEqual([nora.diet.category, nora.diet.text], ['Allergie', 'Erdnüsse']);
+  assert.ok(vl.exts.some((x) => x.unit_name === 'Pontoniere' && x.dietList.some((d) => d.label === 'vegan' && d.count === 1)));
+  const vlCsv = await csvLines(await k.get(`/einsaetze/${ev}/verpflegungsliste?format=csv`));
   assert.equal(vlCsv[0], 'Schicht;Essen;Anzahl;Wer');
   assert.ok(vlCsv.includes('Ganzer Einsatz;Total Essen;8;'));
   assert.ok(vlCsv.includes('Nachmittag · 14:00–18:00;vegan;1;Pontoniere 1×'));
   assert.ok(vlCsv.includes('Ganzer Einsatz;Allergie;1;Kpl Nora Nuss (Erdnüsse)'));
 
   // eine Schicht und pro Schicht
-  const one = await text(`/einsaetze/${ev}/verpflegungsliste?schicht=${nach.id}`);
-  assert.match(one, /Verpflegungsliste · Nachmittag/);
-  assert.match(one, /<tr class="total"><td>Total Essen<\/td><td class="right">6<\/td>/);
-  assert.doesNotMatch(one, /Vera Vegi/);
-  const per = await text(`/einsaetze/${ev}/verpflegungsliste?schicht=alle`);
-  assert.equal(per.split('<tr class="total">').length - 1, 3, 'drei Blöcke: zwei Schichten + ohne Schicht');
-  const vlPdf = await get(`/einsaetze/${ev}/verpflegungsliste?format=pdf&schicht=alle`, k.cookie);
+  const one = (await k.get(`/einsaetze/${ev}/verpflegungsliste?schicht=${nach.id}`)).data;
+  assert.equal(one.shift.name, 'Nachmittag');
+  assert.ok(!names(one.list).includes('Vera Vegi'));
+  const per = (await k.get(`/einsaetze/${ev}/verpflegungsliste?schicht=alle`)).data;
+  assert.equal(per.shiftBlocks.length, 3, 'drei Blöcke: zwei Schichten + ohne Schicht');
+  const vlPdf = await k.get(`/einsaetze/${ev}/verpflegungsliste?format=pdf&schicht=alle`);
   assert.equal(vlPdf.headers.get('content-type'), 'application/pdf');
-  assert.match(Buffer.from(await vlPdf.arrayBuffer()).toString('latin1'), /^%PDF-1\.4/);
+  assert.match(Buffer.from(await vlPdf.res.arrayBuffer()).toString('latin1'), /^%PDF-1\.4/);
   assert.ok(db.one("SELECT 1 FROM audit_log WHERE event_id = ? AND action = 'export' AND summary LIKE '%Verpflegungsliste (pro Schicht)%'", ev));
-
-  // Menü im Einsatzkopf
-  const head = await text(`/einsaetze/${ev}`);
-  assert.match(head, /verpflegungsliste\?format=pdf&amp;schicht=alle/);
-  assert.match(head, /teilnehmerliste\?format=pdf&amp;schicht=alle/);
 
   // Einsatzleiter: freigegebener Einsatz ja, andere nein
   const el = await users.create({ username: 'vera-el', display_name: 'Vera EL', role: 'einsatzleiter', password: 'Leitung-2026-v', must_change_password: false }, null);
   leaders.grant(ev, el.id, system);
   const v = await login('vera-el', 'Leitung-2026-v');
-  const elPage = await (await get(`/einsaetze/${ev}/verpflegungsliste`, v.cookie)).text();
-  assert.match(elPage, /Meine Einsätze/);
-  assert.doesNotMatch(elPage, /\/personen\//, 'keine Links zu Personen');
-  assert.equal((await get(`/einsaetze/${ev}/verpflegungsliste?format=pdf`, v.cookie)).headers.get('content-type'), 'application/pdf');
+  const elPage = await v.get(`/einsaetze/${ev}/verpflegungsliste`);
+  assert.equal(elPage.status, 200);
+  assert.equal(elPage.data.leaderView, true);
+  assert.equal((await v.get(`/einsaetze/${ev}/verpflegungsliste?format=pdf`)).headers.get('content-type'), 'application/pdf');
   const other = events.create({ name: 'Anderer Einsatz', date: addDays(today(), 6) }, system);
-  assert.equal((await get(`/einsaetze/${other}/verpflegungsliste`, v.cookie)).status, 403);
+  assert.equal((await v.get(`/einsaetze/${other}/verpflegungsliste`)).status, 403);
 });
 
 test('Lokales Login aus: Passwort weder selbst noch durch Admin änderbar', async () => {
   const { id } = await users.create({ username: 'nurms', display_name: 'Nur MS', role: 'aufgebotsstelle', email: 'nurms@kkb.ch', password: 'Microsoft-Nur-2026', must_change_password: false, login_fields: '1', ms_login: '1' }, null);
   const hash = users.get(id).password_hash;
-  const post = (path, cookie, body) => fetch(`${base}${path}`, { method: 'POST', redirect: 'manual', headers: { cookie, 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(body) });
 
   // Die Person selbst (Microsoft ist im Test aus, darum klappt das Passwort-Login hier)
   const me = await login('nurms', 'Microsoft-Nur-2026');
-  const page = await (await get('/konto/passwort', me.cookie)).text();
-  assert.match(page, /Passwort ausgeschaltet/);
-  assert.doesNotMatch(page, /name="current"/, 'kein Formular');
-  const csrf = page.match(/name="_csrf" value="([^"]+)"/)[1];
-  const r = await post('/konto/passwort', me.cookie, { _csrf: csrf, current: 'Microsoft-Nur-2026', password: 'Ganz-Neu-2026!', password_confirm: 'Ganz-Neu-2026!' });
+  assert.equal(Number(me.res.json ? (await me.refresh()).user.password_login : 1), 0, 'Passwort-Login ausgeschaltet');
+  const r = await me.post('/konto/passwort', { current: 'Microsoft-Nur-2026', password: 'Ganz-Neu-2026!', password_confirm: 'Ganz-Neu-2026!' });
   assert.equal(r.status, 400);
 
   // Der Admin
   const admin = await login('admin', 'Chef-Passwort-2026');
-  const form = await (await get(`/verwaltung/benutzer/${id}`, admin.cookie)).text();
-  assert.doesNotMatch(form, /\/passwort" data-confirm/, 'kein Knopf «Passwort zurücksetzen»');
-  const acsrf = form.match(/name="_csrf" value="([^"]+)"/)[1];
-  const r2 = await post(`/verwaltung/benutzer/${id}/passwort`, admin.cookie, { _csrf: acsrf });
-  assert.equal(r2.status, 302);
+  assert.equal(Number((await admin.get(`/verwaltung/benutzer/${id}`)).data.u.password_login), 0, 'kein Knopf «Passwort zurücksetzen»');
+  const r2 = await admin.post(`/verwaltung/benutzer/${id}/passwort`);
+  assert.ok(r2.redirect);
+  assert.match(flashText(r2), /./);
   assert.equal(users.get(id).password_hash, hash, 'Passwort unverändert');
-});
-
-test('Aktion ohne Neuladen: Weiterleitung nur als Ziel melden, Meldung bleibt für die Seite', async () => {
-  const r = await fetch(`${base}/logout`, { method: 'POST', redirect: 'manual', headers: { 'X-Inline-Action': '1' } });
-  assert.equal(r.status, 204);
-  assert.match(r.headers.get('x-inline-redirect'), /^\/login/);
-  assert.equal(r.headers.get('location'), null);
-  const normal = await fetch(`${base}/logout`, { method: 'POST', redirect: 'manual' });
-  assert.equal(normal.status, 302, 'ohne Kopfzeile wie bisher');
 });

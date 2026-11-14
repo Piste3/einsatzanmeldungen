@@ -95,23 +95,22 @@ test('Seite: nur Admin, kein Geheimnis im HTML, Einbettung wirkt sofort', async 
   const server = createApp().listen(0);
   const base = `http://127.0.0.1:${server.address().port}`;
   try {
+    const { client } = require('./client');
     const login = async (username, password) => {
-      const r = await fetch(`${base}/login`, { method: 'POST', redirect: 'manual', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ username, password, next: '/' }) });
-      return (r.headers.get('set-cookie') || '').split(';')[0];
+      const c = client(base);
+      await c.login(username, password);
+      return c;
     };
     const lena = await login('lena', 'Aufgebot-2026-x');
-    assert.equal((await fetch(`${base}/verwaltung/server`, { headers: { cookie: lena }, redirect: 'manual' })).status, 403);
-    const cookie = await login('admin', 'Chef-Passwort-2026');
-    const page = await fetch(`${base}/verwaltung/server`, { headers: { cookie } });
+    assert.equal((await lena.get('/verwaltung/server')).status, 403);
+    const admin = await login('admin', 'Chef-Passwort-2026');
+    const page = await admin.get('/verwaltung/server');
     assert.equal(page.status, 200);
-    const html = await page.text();
-    assert.ok(!html.includes('env-geheim-123'), 'Passwort steht nicht im HTML');
-    assert.match(html, /mail\.aus-env\.ch/);
-    assert.match(html, /Nur in der \.env/);
-    const csrf = html.match(/name="_csrf" value="([^"]+)"/)[1];
-    const body = new URLSearchParams({ _csrf: csrf, has__AUTH_PROVIDERS: '1', v__AUTH_PROVIDERS: 'local', v__FORM_FRAME_ANCESTORS: 'https://neu.example.ch' });
-    const r = await fetch(`${base}/verwaltung/server`, { method: 'POST', headers: { cookie, 'content-type': 'application/x-www-form-urlencoded' }, body, redirect: 'manual' });
-    assert.equal(r.status, 302);
+    const json = JSON.stringify(page.json);
+    assert.ok(!json.includes('env-geheim-123'), 'Passwort verlässt den Server nicht');
+    assert.match(json, /mail\.aus-env\.ch/);
+    const r = await admin.post('/verwaltung/server', { has__AUTH_PROVIDERS: '1', v__AUTH_PROVIDERS: 'local', v__FORM_FRAME_ANCESTORS: 'https://neu.example.ch' });
+    assert.ok(r.redirect);
     const form = await fetch(`${base}/forms/anmeldung`);
     assert.match(form.headers.get('content-security-policy'), /frame-ancestors 'self' https:\/\/neu\.example\.ch/);
   } finally {
