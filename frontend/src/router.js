@@ -9,6 +9,7 @@ import { clearConflict } from './lib/conflict.js';
 const routes = [
   { path: '/login', name: 'login', component: () => import('./views/LoginView.vue'), meta: { public: true } },
   { path: '/', name: 'cockpit', component: () => import('./views/CockpitView.vue') },
+  { path: '/rueckmeldungen', name: 'feedback', component: () => import('./views/FeedbackView.vue') },
   { path: '/einsaetze', name: 'events', component: () => import('./views/EventsView.vue') },
   { path: '/einsaetze/:id(\\d+)', name: 'event', component: () => import('./views/EventOverview.vue') },
   { path: '/einsaetze/:id(\\d+)/anfragen', name: 'event-inquiries', component: () => import('./views/EventInquiries.vue') },
