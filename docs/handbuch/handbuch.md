@@ -928,7 +928,7 @@ So funktioniert es:
 
 Damit sich niemand aussperrt, prüft die Seite beim Speichern: Die Passwort-Anmeldung lässt sich nur ausschalten, wenn die Microsoft-Angaben vollständig sind und dein eigenes Konto Microsoft freigegeben hat. «Anmeldung nur über HTTPS» lässt sich nur einschalten, wenn du gerade über HTTPS verbunden bist.
 
-**Nur in der .env:** Port, Netzwerk-Schnittstelle, Datenordner, Datenbank-Datei und Betriebsart stehen rechts zugeklappt (**Anzeigen**) und nur zum Ansehen. Der Server braucht sie, bevor er startet: Auf den Port leitet der Nginx Proxy Manager weiter, und im Datenordner liegt die Datenbank mit den Werten dieser Seite. Ein falscher Wert hier würde den Einsatzplaner unerreichbar machen, und man könnte ihn nicht mehr über den Browser zurückstellen. Diese Werte ändert man deshalb in der `.env` und startet danach unter **System** neu.
+**Nur in der .env:** Port der Browser-App, Port des Backends, Netzwerk-Schnittstelle, Datenordner, Datenbank-Datei und Betriebsart stehen rechts zugeklappt (**Anzeigen**) und nur zum Ansehen. Der Server braucht sie, bevor er startet: Auf den Port leitet der Nginx Proxy Manager weiter, und im Datenordner liegt die Datenbank mit den Werten dieser Seite. Ein falscher Wert hier würde den Einsatzplaner unerreichbar machen, und man könnte ihn nicht mehr über den Browser zurückstellen. Diese Werte ändert man deshalb in der `.env` und startet danach unter **System** neu.
 
 > **Ausgesperrt?** Auf dem Server-PC im Ordner `betrieb\windows` doppelt auf `server-zuruecksetzen.cmd` klicken. Das löscht alle Werte dieser Seite und startet den Einsatzplaner neu. Danach gilt wieder die `.env`. Nur einzelne Werte: Namen anhängen, z. B. `server-zuruecksetzen.cmd AUTH_PROVIDERS`.
 
@@ -939,8 +939,11 @@ Gut zu wissen: Die hier gespeicherten Passwörter liegen in der Datenbank und da
 ![Einstellungen › System](bilder/27-system.jpg)
 
 - **Nach Updates suchen** zeigt, ob es eine neue Version gibt.
-- **Update installieren** sichert zuerst die Datenbank, holt dann die neue Version, installiert nötige Pakete und startet den Server neu. Das Protokoll läuft live mit. Während des Neustarts ist die Seite einige Sekunden nicht erreichbar.
+- **Update installieren** sichert zuerst die Datenbank, holt dann die neue Version, installiert nötige Pakete, baut die Browser-App neu und startet den Server neu. Das Protokoll läuft live mit. Schlägt das Bauen fehl, bleibt die bisherige Version in Betrieb.
 - **Server neu starten**, z. B. nach Änderungen an der `.env`. Werte unter **Server** gelten ohne Neustart.
+- Während eines Neustarts bleiben die Seiten offen. Eine Aktion in diesen Sekunden zeigt «Der Server ist kurz nicht erreichbar». Danach lädt jede offene Seite ihre Daten selbst neu.
+
+> **Aufbau:** Der Einsatzplaner läuft als zwei Teile auf dem Server-PC. Die **Browser-App** liefert die Seiten aus. Der Nginx Proxy Manager leitet auf ihren Port weiter. Das **Backend** verwaltet die Datenbank und ist nur auf dem Server-PC selbst erreichbar. Beide startet `start.cmd` gemeinsam.
 - **Version** zeigt Stand und Datum der installierten Version. Das Handbuch passt immer zu dieser Version.
 
 ### Formulare

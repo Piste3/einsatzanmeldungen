@@ -9,6 +9,8 @@ let handler = null;
 let retry = 1000;
 let timer = null;
 let wanted = false;
+// Verbindung war weg (z. B. Neustart des Servers): beim Wiederverbinden einmal alles neu laden
+let lost = false;
 
 export const liveState = reactive({ connected: false, editors: [] });
 let editKey = null; // Datensatz, den diese Seite gerade bearbeitet (z. B. event:3)
@@ -23,6 +25,12 @@ function connect() {
     liveState.connected = true;
     ws.send(JSON.stringify({ type: 'subscribe', topics: allTopics() }));
     if (editKey) ws.send(JSON.stringify({ type: 'editing', key: editKey }));
+    if (lost) {
+      lost = false;
+      session.offline = false;
+      refreshNav();
+      if (handler && topics.length) handler({ type: 'changed', topics: [...topics], nav: true });
+    }
   });
   ws.addEventListener('message', (ev) => {
     let msg;
@@ -34,7 +42,9 @@ function connect() {
     clearTimeout(timer);
     timer = setTimeout(() => handler && handler(msg), 250);
   });
-  ws.addEventListener('close', () => {
+  ws.addEventListener('close', (ev) => {
+    // Selbst geschlossen (Seite ohne Live): kein Verlust
+    if (liveState.connected && !ev.target.kkbClosed) lost = true;
     liveState.connected = false;
     if (wanted) setTimeout(connect, retry);
     retry = Math.min(retry * 2, 30000);
@@ -58,7 +68,7 @@ export function subscribe(newTopics, onChange) {
 
 function sync() {
   wanted = (topics.length > 0 || Boolean(editKey)) && !!session.user;
-  if (!wanted) { if (ws) ws.close(); ws = null; return; }
+  if (!wanted) { if (ws) { ws.kkbClosed = true; ws.close(); } ws = null; return; }
   if (ws && ws.readyState === 1) {
     ws.send(JSON.stringify({ type: 'subscribe', topics: allTopics() }));
     ws.send(JSON.stringify({ type: 'editing', key: editKey }));
