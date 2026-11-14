@@ -80,6 +80,13 @@ function createApp() {
     next();
   });
 
+  // Browser-App (Vue): während des Umbaus unter /neu, danach auf «/». Gebaut wird sie in frontend/ (npm run build).
+  const appDist = path.join(__dirname, '..', 'frontend', 'dist');
+  if (require('node:fs').existsSync(path.join(appDist, 'index.html'))) {
+    app.use('/neu/assets', express.static(path.join(appDist, 'assets'), { maxAge: '365d', immutable: true, fallthrough: false }));
+    app.get(/^\/neu(\/.*)?$/, (req, res) => res.sendFile(path.join(appDist, 'index.html')));
+  }
+
   // JSON-Schnittstelle für die Browser-App (Vue)
   app.use('/api/v1', require('./api').createApi());
 
