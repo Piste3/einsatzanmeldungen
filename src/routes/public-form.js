@@ -35,6 +35,8 @@ function renderForm(req, res, { values = {}, errors = [], preview = false } = {}
   res.render('form/anmeldung', {
     h, title: settings.get('form').title, form, values, errors, preview, verein: settings.get('verein_name'),
     intro: settings.get('form').intro, questionFor: submissions.questionFor,
+    // Für die Browser-App: Frage pro Einsatz schon als Text (Funktionen gehen nicht über JSON)
+    questions: Object.fromEntries(form.events.map((e) => [e.id, submissions.questionFor(e)])),
   });
 }
 

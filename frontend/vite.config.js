@@ -15,6 +15,7 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
+    rollupOptions: { input: { main: path.resolve(__dirname, 'index.html'), form: path.resolve(__dirname, 'form.html') } },
     emptyOutDir: true,
     commonjsOptions: { include: [/node_modules/, /src[\\/]lib[\\/]/], transformMixedEsModules: true },
   },

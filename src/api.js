@@ -31,7 +31,7 @@ function replacer(key, value) {
 }
 
 // Namen, die nicht in «data» landen
-const META = new Set(['user', 'nav', 'flashes', 'csrfToken', 'title', 'path', 'query', 'isAdmin', 'isLeader', 'liveTopics', '_flashOut', 'settings', 'cache', '_locals']);
+const META = new Set(['h', '_api', 'user', 'nav', 'flashes', 'csrfToken', 'title', 'path', 'query', 'isAdmin', 'isLeader', 'liveTopics', '_flashOut', 'settings', 'cache', '_locals']);
 
 function envelope(req, res, view, data) {
   const merged = { ...res.locals, ...data };

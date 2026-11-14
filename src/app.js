@@ -34,7 +34,7 @@ function createApp() {
 
   // Sicherheits-Header. Das öffentliche Formular darf nur von ClubDesk eingebettet werden.
   app.use((req, res, next) => {
-    const isForm = req.path.startsWith('/forms/');
+    const isForm = req.path.startsWith('/forms/') || req.path.startsWith('/neu/forms/');
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Referrer-Policy', 'same-origin');
     res.setHeader('Content-Security-Policy', [
@@ -84,6 +84,8 @@ function createApp() {
   const appDist = path.join(__dirname, '..', 'frontend', 'dist');
   if (require('node:fs').existsSync(path.join(appDist, 'index.html'))) {
     app.use('/neu/assets', express.static(path.join(appDist, 'assets'), { maxAge: '365d', immutable: true, fallthrough: false }));
+    // Anmeldeformular: eigener, kleiner Einstieg (lädt im ClubDesk-iFrame ohne die ganze App)
+    app.get(/^\/neu\/forms(\/.*)?$/, (req, res) => res.sendFile(path.join(appDist, 'form.html')));
     app.get(/^\/neu(\/.*)?$/, (req, res) => res.sendFile(path.join(appDist, 'index.html')));
   }
 
