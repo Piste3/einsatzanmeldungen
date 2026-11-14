@@ -8,6 +8,7 @@ const routes = [
   { path: '/einsaetze', name: 'events', component: () => import('./views/EventsView.vue') },
   { path: '/einsaetze/:id(\\d+)', name: 'event', component: () => import('./views/EventOverview.vue') },
   { path: '/einsaetze/:id(\\d+)/anfragen', name: 'event-inquiries', component: () => import('./views/EventInquiries.vue') },
+  { path: '/einsaetze/:id(\\d+)/schichten', name: 'event-shifts', component: () => import('./views/EventShifts.vue') },
   { path: '/einsaetze/:id(\\d+)/anmeldungen', name: 'event-registrations', component: () => import('./views/EventRegistrations.vue') },
   { path: '/:pathMatch(.*)*', name: 'legacy', component: () => import('./views/LegacyView.vue'), meta: { public: true } },
 ];

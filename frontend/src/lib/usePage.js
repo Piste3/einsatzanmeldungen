@@ -3,6 +3,10 @@ import { ref, watch, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { page, session, navigate, ApiError } from './api.js';
 import { subscribe, unsubscribe } from './live.js';
+import { dirtySections } from './section.js';
+
+// Während jemand etwas bearbeitet (offenes Fenster, ungespeicherte Tabelle), wartet die Live-Aktualisierung
+const busy = () => dirtySections.size > 0 || document.querySelector('dialog[open]') !== null;
 
 export function usePage(pathFn) {
   const route = useRoute();
@@ -21,7 +25,7 @@ export function usePage(pathFn) {
       session.title = e.title;
       session.liveTopics = e.liveTopics || [];
       error.value = null;
-      subscribe(e.liveTopics, () => load({ quiet: true }));
+      subscribe(e.liveTopics, liveChange);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) return;
       if (!quiet) error.value = err;
@@ -30,8 +34,15 @@ export function usePage(pathFn) {
     }
   }
 
+  let waiting = null;
+  function liveChange() {
+    if (!busy()) { load({ quiet: true }); return; }
+    if (waiting) return;
+    waiting = setInterval(() => { if (!busy()) { clearInterval(waiting); waiting = null; load({ quiet: true }); } }, 1500);
+  }
+
   watch(() => route.fullPath, () => load(), { immediate: true });
   const refresh = () => load({ quiet: true });
-  onUnmounted(() => unsubscribe());
+  onUnmounted(() => { unsubscribe(); clearInterval(waiting); });
   return { env, data, error, loading, refresh, reload: load };
 }

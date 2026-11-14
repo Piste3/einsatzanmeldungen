@@ -35,10 +35,10 @@ async function submit() {
   <form :id="fid" ref="form" class="card-body ext-form" @submit.prevent="submit">
     <div class="fields fields-2">
       <div class="field"><label :for="`${fid}-unit`">Abteilung <span class="req">*</span></label>
-        <input :id="`${fid}-unit`" type="text" name="unit_name" list="ext-units" required maxlength="120" :value="isNew ? '' : x.unit_name" placeholder="z. B. VK NWS" autocomplete="off">
+        <input :id="`${fid}-unit`" type="text" name="unit_name" list="ext-units" required maxlength="120" :defaultValue="isNew ? '' : x.unit_name" placeholder="z. B. VK NWS" autocomplete="off">
         <div class="field-hint">Aus der Liste wählen oder neuen Namen eintippen – er wird für das nächste Mal gespeichert.</div></div>
       <div class="field"><label :for="`${fid}-count`">Anzahl Personen <span class="req">*</span></label>
-        <input :id="`${fid}-count`" type="number" name="person_count" min="1" max="9999" step="1" required :value="isNew ? '' : x.person_count" inputmode="numeric"></div>
+        <input :id="`${fid}-count`" type="number" name="person_count" min="1" max="9999" step="1" required :defaultValue="isNew ? '' : x.person_count" inputmode="numeric"></div>
     </div>
     <div v-if="functionOptions.length > 1" class="field"><label :for="`${fid}-fn`">Funktion</label>
       <select :id="`${fid}-fn`" name="function_id">
@@ -63,9 +63,9 @@ async function submit() {
       <div class="field-hint">Zum Beispiel 2 × vegetarisch, 1 × Allergie «Nüsse». Wer nicht aufgeführt ist, isst ohne Einschränkung.</div></div>
     <div class="fields fields-2">
       <div class="field"><label :for="`${fid}-contact`">Kontakt <span class="muted small">(optional)</span></label>
-        <input :id="`${fid}-contact`" type="text" name="contact" maxlength="500" :value="isNew ? '' : x.contact || ''" placeholder="z. B. Hptm Muster, 079 123 45 67"></div>
+        <input :id="`${fid}-contact`" type="text" name="contact" maxlength="500" :defaultValue="isNew ? '' : x.contact || ''" placeholder="z. B. Hptm Muster, 079 123 45 67"></div>
       <div class="field"><label :for="`${fid}-note`">Bemerkung <span class="muted small">(optional)</span></label>
-        <input :id="`${fid}-note`" type="text" name="note" maxlength="500" :value="isNew ? '' : x.note || ''"></div>
+        <input :id="`${fid}-note`" type="text" name="note" maxlength="500" :defaultValue="isNew ? '' : x.note || ''"></div>
     </div>
     <div class="row">
       <button class="btn btn-sm btn-primary" type="submit">{{ isNew ? 'Hinzufügen' : 'Speichern' }}</button>

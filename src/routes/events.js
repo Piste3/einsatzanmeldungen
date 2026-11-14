@@ -409,6 +409,8 @@ router.get('/einsaetze/:id/schichten', loadEvent, (req, res) => {
   const notPlanned = (r, s) => !shiftTeams.allows(s, pInfo.get(r.person_id), shiftTeams.shiftDay(s, e));
   res.render('pages/event', { title: `${e.name} · Schichten`, tab: 'schichten', stats, columns, unassigned, combos, overlaps: registrations.overlaps(e.id), regs,
     teamList, notPlanned, rankList: shiftTeams.allRanks(),
+    // für die Browser-App: «nicht vorgesehen» pro Anmeldung und Schicht (Funktionen gehen nicht über JSON)
+    notPlannedMap: Object.fromEntries(regs.flatMap((r) => stats.shifts.filter((s) => notPlanned(r, s)).map((s) => [`${r.id}:${s.id}`, true]))),
     fnCols: functions.all().filter((f) => f.active || f.is_default || e.shifts.some((s) => s.targets[f.id])), ...functionPanel(e) });
 });
 
