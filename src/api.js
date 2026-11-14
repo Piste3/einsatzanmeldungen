@@ -106,6 +106,7 @@ function createApi() {
       nav: res.locals.nav || {},
       flashes: res.locals.flashes || [],
       providers: auth.providers().map((p) => ({ id: p.id, label: p.label || p.id })),
+      ...require('./routes/handy').phoneState(req),
     });
   });
 

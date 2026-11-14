@@ -6,6 +6,7 @@ import { uiDialog } from './lib/dialog.js';
 import { clearConflict } from './lib/conflict.js';
 import { byRole } from './lib/byRole.js';
 import { clearPageError } from './lib/pageError.js';
+import { handyTarget, KEEP_PC } from './lib/handy.js';
 
 // Ausgewählte Ansichten sind schon in der Browser-App. Alle anderen Adressen öffnet die bisherige Ansicht (LegacyView).
 const routes = [
@@ -48,6 +49,15 @@ const routes = [
   { path: '/personen/neu', name: 'person-new', component: () => import('./views/PersonForm.vue') },
   { path: '/personen/:id(\\d+)', name: 'person', component: () => import('./views/PersonView.vue') },
   { path: '/personen/:id(\\d+)/bearbeiten', name: 'person-edit', component: () => import('./views/PersonForm.vue') },
+  { path: '/handy', name: 'handy', component: () => import('./views/handy/HandyStart.vue'), meta: { handy: true } },
+  { path: '/handy/filter', name: 'handy-filter', component: () => import('./views/handy/HandyFilter.vue'), meta: { handy: true } },
+  { path: '/handy/profil', name: 'handy-profile', component: () => import('./views/handy/HandyProfile.vue'), meta: { handy: true } },
+  { path: '/handy/personen', name: 'handy-persons', component: () => import('./views/handy/HandyPersons.vue'), meta: { handy: true } },
+  { path: '/handy/personen/:pid(\\d+)', name: 'handy-person', component: () => import('./views/handy/HandyPerson.vue'), meta: { handy: true } },
+  { path: '/handy/einsatz/:id(\\d+)', name: 'handy-event', component: () => import('./views/handy/HandyEvent.vue'), meta: { handy: true } },
+  { path: '/handy/einsatz/:id(\\d+)/anmeldungen', name: 'handy-registrations', component: () => import('./views/handy/HandyRegistrations.vue'), meta: { handy: true } },
+  { path: '/handy/anfragen', component: () => import('./views/handy/HandyRedirect.vue'), meta: { handy: true } },
+  { path: '/handy/anmeldungen', component: () => import('./views/handy/HandyRedirect.vue'), meta: { handy: true } },
   { path: '/:pathMatch(.*)*', name: 'legacy', component: () => import('./views/LegacyView.vue'), meta: { public: true } },
 ];
 
@@ -75,6 +85,9 @@ router.beforeEach(async (to, from) => {
   }
   if (to.meta.public) return true;
   if (!session.user) return { name: 'login', query: { next: to.fullPath } };
+  // Auf dem Handy immer die Handy-App (ausser «Ganze Ansicht» ist gerade aktiv). Der Server schaltet sie beim Aufruf wieder aus.
+  if (to.meta.handy) session.pcView = false;
+  else if (session.phone && !session.pcView && !KEEP_PC.test(to.path)) return { path: handyTarget(to.path), replace: true };
   return true;
 });
 

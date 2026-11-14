@@ -3,7 +3,7 @@ import { reactive } from 'vue';
 import { leaveAllowed } from './section.js';
 
 export const session = reactive({
-  ready: false, user: null, csrf: '', nav: {}, flashes: [], liveTopics: [], title: '', offline: false,
+  ready: false, user: null, csrf: '', nav: {}, flashes: [], liveTopics: [], title: '', offline: false, phone: false, pcView: false,
 });
 
 let router = null;
@@ -22,10 +22,12 @@ function adopt(env) {
   if (env.user !== undefined) session.user = env.user;
   if (env.csrf !== undefined) session.csrf = env.csrf;
   if (env.nav) session.nav = env.nav;
+  if (env.phone !== undefined) session.phone = env.phone;
+  if (env.pcView !== undefined) session.pcView = env.pcView;
 }
 
-async function request(method, path, body) {
-  const headers = { Accept: 'application/json' };
+async function request(method, path, body, extraHeaders = {}) {
+  const headers = { Accept: 'application/json', ...extraHeaders };
   // Datei-Upload (FormData): Der Browser setzt den Typ samt Trennzeichen selbst
   const isForm = typeof FormData !== 'undefined' && body instanceof FormData;
   if (body !== undefined && !isForm) headers['Content-Type'] = 'application/json';
@@ -39,7 +41,8 @@ async function request(method, path, body) {
     throw new ApiError(0, { error: 'Der Server ist kurz nicht erreichbar.' });
   }
   const type = res.headers.get('content-type') || '';
-  const json = type.includes('json') ? await res.json() : null;
+  // Kurze Fehlermeldung als Text (Handy-App: Karte speichern) wird zur Fehlermeldung
+  const json = type.includes('json') ? await res.json() : !res.ok && type.includes('text/plain') ? { error: await res.text(), text: true } : null;
   if (res.status === 401 && json?.login) {
     session.user = null;
     // Öffentliche Seiten (Login, Code, Einrichtung) bleiben stehen

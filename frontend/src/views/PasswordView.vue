@@ -1,7 +1,7 @@
 <script setup>
 // Eigenes Passwort ändern, auch erzwungen nach dem Zurücksetzen (wie views/auth/password.ejs)
 import { computed, ref } from 'vue';
-import AppShell from '@/components/AppShell.vue';
+import AppShell from '@/components/KontoShell.vue';
 import Topbar from '@/components/Topbar.vue';
 import { usePage } from '@/lib/usePage.js';
 import { runAction, formBody } from '@/lib/actions.js';

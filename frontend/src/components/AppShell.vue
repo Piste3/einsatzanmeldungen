@@ -87,7 +87,7 @@ onUnmounted(() => { document.removeEventListener('keydown', onKey); document.bod
           <router-link to="/verwaltung" :class="{ active: path.startsWith('/verwaltung') }" @click="go"><Icon name="settings" cls="nav-icon" />Einstellungen</router-link>
         </template>
         <a v-else-if="!isLeader" href="/forms/anmeldung?vorschau=1" target="_blank" rel="noopener"><Icon name="eye" cls="nav-icon" />Formular-Vorschau</a>
-        <a v-if="!isLeader" href="/handy"><Icon name="phone" cls="nav-icon" />Handy-App</a>
+        <router-link v-if="!isLeader" to="/handy" @click="go"><Icon name="phone" cls="nav-icon" />Handy-App</router-link>
         <router-link to="/handbuch" :class="{ active: path.startsWith('/handbuch') }" @click="go"><Icon name="book" cls="nav-icon" />Handbuch</router-link>
       </nav>
       <div v-if="user" class="sidebar-user">

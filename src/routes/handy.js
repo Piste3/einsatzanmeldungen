@@ -254,6 +254,7 @@ function cardRow(e, personId) {
 function undoHeader(req, res) {
   const st = undo.state(req.user);
   if (st.undo) res.set('X-H-Undo', encodeURIComponent(st.undo));
+  res.locals.handySteps = st; // Browser-App: Knöpfe oben aus der Antwort
 }
 
 function personName(id) {
@@ -426,3 +427,5 @@ module.exports = router;
 module.exports.answerOf = answerOf;
 module.exports.isPhone = isPhone;
 module.exports.shellMiddleware = shellMiddleware;
+// Browser-App: Handy erkannt (ohne Einsatzleitung) und «Ganze Ansicht» gerade aktiv?
+module.exports.phoneState = (req) => ({ phone: isPhone(req) && req.user?.role !== 'einsatzleiter', pcView: req.cookies?.[PC_COOKIE] === 'pc' });

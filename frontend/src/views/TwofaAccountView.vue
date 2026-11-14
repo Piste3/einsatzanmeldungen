@@ -1,7 +1,7 @@
 <script setup>
 // Eigene Zwei-Faktor-Anmeldung: einrichten, Codes erneuern, Geräte vergessen, abschalten (wie views/auth/twofa-account.ejs)
 import { computed, ref } from 'vue';
-import AppShell from '@/components/AppShell.vue';
+import AppShell from '@/components/KontoShell.vue';
 import Topbar from '@/components/Topbar.vue';
 import Badge from '@/components/Badge.vue';
 import { usePage } from '@/lib/usePage.js';
