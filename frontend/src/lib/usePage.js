@@ -8,7 +8,7 @@ import { dirtySections } from './section.js';
 // Während jemand etwas bearbeitet (offenes Fenster, ungespeicherte Tabelle), wartet die Live-Aktualisierung
 const busy = () => dirtySections.size > 0 || document.querySelector('dialog[open]') !== null;
 
-export function usePage(pathFn) {
+export function usePage(pathFn, { live = true } = {}) {
   const route = useRoute();
   const env = ref(null);
   const data = ref({});
@@ -25,7 +25,7 @@ export function usePage(pathFn) {
       session.title = e.title;
       session.liveTopics = e.liveTopics || [];
       error.value = null;
-      subscribe(e.liveTopics, liveChange);
+      if (live) subscribe(e.liveTopics, liveChange);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) return;
       if (!quiet) error.value = err;
@@ -43,6 +43,6 @@ export function usePage(pathFn) {
 
   watch(() => route.fullPath, () => load(), { immediate: true });
   const refresh = () => load({ quiet: true });
-  onUnmounted(() => { unsubscribe(); clearInterval(waiting); });
+  onUnmounted(() => { unsubscribe(liveChange); clearInterval(waiting); });
   return { env, data, error, loading, refresh, reload: load };
 }

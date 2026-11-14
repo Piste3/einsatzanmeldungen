@@ -2,6 +2,8 @@
 import { computed, ref, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Icon from './Icon.vue';
+import ConflictView from './ConflictView.vue';
+import { conflict } from '@/lib/conflict.js';
 import { session, post } from '@/lib/api.js';
 import { liveState } from '@/lib/live.js';
 import { initials, labels } from '@/lib/format.js';
@@ -90,7 +92,9 @@ onUnmounted(() => { document.removeEventListener('keydown', onKey); document.bod
     <main id="content" class="main">
       <div v-if="session.offline" class="flash flash-error">Der Server ist kurz nicht erreichbar. Die App versucht es selbst wieder.</div>
       <div v-for="f in session.flashes" :key="f.id || f.message" :class="['flash', `flash-${f.type}`]">{{ f.message }}</div>
-      <slot />
+      <div id="presence" :class="['hint-bar', 'presence', { show: liveState.editors.length }]"><span class="tag tag-yellow">Hinweis</span><span id="presence-text">{{ liveState.editors.length ? `Wird gerade von ${liveState.editors.join(', ')} bearbeitet.` : '' }}</span></div>
+      <ConflictView v-if="conflict.data" />
+      <slot v-else />
     </main>
   </div>
 </template>

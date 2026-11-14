@@ -10,7 +10,9 @@ let retry = 1000;
 let timer = null;
 let wanted = false;
 
-export const liveState = reactive({ connected: false });
+export const liveState = reactive({ connected: false, editors: [] });
+let editKey = null; // Datensatz, den diese Seite gerade bearbeitet (z. B. event:3)
+const allTopics = () => [...topics, editKey ? `presence:${editKey}` : null].filter(Boolean);
 
 function connect() {
   if (!wanted) return;
@@ -19,11 +21,13 @@ function connect() {
   ws.addEventListener('open', () => {
     retry = 1000;
     liveState.connected = true;
-    ws.send(JSON.stringify({ type: 'subscribe', topics }));
+    ws.send(JSON.stringify({ type: 'subscribe', topics: allTopics() }));
+    if (editKey) ws.send(JSON.stringify({ type: 'editing', key: editKey }));
   });
   ws.addEventListener('message', (ev) => {
     let msg;
     try { msg = JSON.parse(ev.data); } catch { return; }
+    if (msg.type === 'presence') { if (msg.key === editKey) liveState.editors = msg.editors || []; return; }
     if (msg.type !== 'changed') return;
     clearTimeout(timer);
     timer = setTimeout(() => handler && handler(msg), 250);
@@ -39,12 +43,28 @@ function connect() {
 export function subscribe(newTopics, onChange) {
   topics = newTopics || [];
   handler = onChange;
-  wanted = topics.length > 0 && !!session.user;
+  sync();
+}
+
+function sync() {
+  wanted = (topics.length > 0 || Boolean(editKey)) && !!session.user;
   if (!wanted) { if (ws) ws.close(); ws = null; return; }
-  if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: 'subscribe', topics }));
-  else if (!ws || ws.readyState > 1) connect();
+  if (ws && ws.readyState === 1) {
+    ws.send(JSON.stringify({ type: 'subscribe', topics: allTopics() }));
+    ws.send(JSON.stringify({ type: 'editing', key: editKey }));
+  } else if (!ws || ws.readyState > 1) connect();
+}
+
+// Bearbeitungsseite: andere sehen «wird gerade von … bearbeitet», diese Seite sieht die anderen
+export function setEditing(key) {
+  editKey = key || null;
+  liveState.editors = [];
+  sync();
 }
 
 export function unsubscribe(onChange) {
-  if (handler === onChange) { handler = null; topics = []; if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: 'subscribe', topics: [] })); }
+  if (onChange && handler !== onChange) return;
+  handler = null;
+  topics = [];
+  if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: 'subscribe', topics: allTopics() }));
 }

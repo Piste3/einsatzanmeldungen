@@ -163,7 +163,7 @@ const removeShift = (s) => runAction(`/schichten/${s.id}/loeschen`, {}, { confir
         </div>
         <div v-if="closed" class="card-body small muted">Abgeschlossen: Änderungen nur durch Admins mit Begründung (wird beim Speichern abgefragt).</div>
         <div class="section-foot">
-          <span class="small muted">{{ dirty ? 'Ungespeicherte Änderungen in diesem Abschnitt' : 'Das Soll der Schicht ist die Summe der Funktionen. Mannschaften, Alter und Rang: leer = alle; andere können sich trotzdem anmelden. Mehrere Schichten ändern, dann einmal speichern. Neue Schicht: unterste Zeile ausfüllen.' }}</span>
+          <span class="small muted" data-dirty-hint>{{ dirty ? 'Ungespeicherte Änderungen in diesem Abschnitt' : 'Das Soll der Schicht ist die Summe der Funktionen. Mannschaften, Alter und Rang: leer = alle; andere können sich trotzdem anmelden. Mehrere Schichten ändern, dann einmal speichern. Neue Schicht: unterste Zeile ausfüllen.' }}</span>
           <button class="btn btn-primary btn-sm" type="submit">Speichern</button>
         </div>
       </form>

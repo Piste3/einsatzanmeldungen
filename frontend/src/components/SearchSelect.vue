@@ -5,7 +5,7 @@ import { ref, computed, watch } from 'vue';
 
 const props = defineProps({
   modelValue: [String, Number], options: { type: Array, default: () => [] }, // [{ value, text }]
-  name: String, required: Boolean, placeholder: { type: String, default: 'Suchen' }, id: String, ariaLabel: String, allowEmpty: Boolean,
+  name: String, required: Boolean, defaultValue: { type: [String, Number], default: undefined }, placeholder: { type: String, default: 'Suchen' }, id: String, ariaLabel: String, allowEmpty: Boolean,
 });
 const emit = defineEmits(['update:modelValue', 'change']);
 const fold = (s) => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
@@ -21,7 +21,7 @@ watch([() => props.modelValue, input], () => {
 }, { immediate: true });
 const items = computed(() => {
   const words = fold(text.value === label.value ? '' : text.value).split(/\s+/).filter(Boolean);
-  const base = props.allowEmpty ? [{ value: '', text: '– keine Auswahl –' }, ...props.options] : props.options;
+  const base = props.allowEmpty ? [{ value: '', text: '–' }, ...props.options] : props.options;
   return base.filter((o) => { const t = fold(o.text); return words.every((w) => t.includes(w)); }).slice(0, 200);
 });
 function choose(o) {
@@ -53,6 +53,6 @@ function onBlur() { open.value = false; text.value = label.value; }
       <div v-if="!items.length" class="combo-empty">Keine Treffer</div>
       <div v-for="(o, i) in items" :key="o.value" :class="['combo-opt', { selected: String(o.value) === String(modelValue ?? ''), active: i === active }]" role="option" @mousedown.prevent="choose(o)">{{ o.text }}</div>
     </div>
-    <input v-if="name" type="hidden" :name="name" :value="modelValue ?? ''">
+    <input v-if="name" type="hidden" :name="name" :value="modelValue ?? ''" :data-default="defaultValue === undefined ? undefined : String(defaultValue ?? '')">
   </div>
 </template>

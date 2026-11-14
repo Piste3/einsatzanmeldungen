@@ -4,12 +4,18 @@
 import { ref, watch, nextTick, onUnmounted } from 'vue';
 
 export const dirtySections = new Set();
+// Nach erfolgreichem Speichern: Weiterleiten ohne Rückfrage
+export function leaveAllowed() { dirtySections.clear(); }
 
-const fields = (form) => [...form.querySelectorAll('input, select, textarea')].filter((el) => !['hidden', 'submit', 'button'].includes(el.type) && !el.disabled);
+// Suchauswahl: das Textfeld zählt nicht, das versteckte Feld mit data-default schon
+const fields = (form) => [...form.querySelectorAll('input, select, textarea')].filter((el) => !el.disabled && !el.classList.contains('combo-input')
+  && (el.type === 'hidden' ? el.dataset.default !== undefined : !['submit', 'button'].includes(el.type)));
 
 // Wie bisher: verglichen wird mit dem Vorgabewert aus den Daten (defaultValue, defaultChecked, defaultSelected).
 // Die Felder binden deshalb :defaultValue statt :value; Vue setzt :value bei jedem Neuzeichnen zurück.
 export function fieldChanged(el) {
+  if (el.type === 'hidden') return el.dataset.default !== undefined && el.value !== el.dataset.default;
+  if (el.classList.contains('combo-input')) return false;
   if (el.type === 'checkbox' || el.type === 'radio') return el.checked !== el.defaultChecked;
   if (el.tagName === 'SELECT') {
     if (el.multiple) return [...el.options].some((o) => o.selected !== o.defaultSelected);
@@ -27,7 +33,7 @@ export function useSection(formRef, sourceRef) {
     dirty.value = fields(f).some(fieldChanged);
     f.classList.toggle('dirty', dirty.value);
     for (const tr of f.querySelectorAll('tr')) {
-      tr.classList.toggle('changed', [...tr.querySelectorAll('input, select, textarea')].some((el) => el.type !== 'hidden' && fieldChanged(el)));
+      tr.classList.toggle('changed', [...tr.querySelectorAll('input, select, textarea')].some(fieldChanged));
       const d = tr.querySelector('[data-delete-row]');
       tr.classList.toggle('to-delete', Boolean(d && d.checked));
     }

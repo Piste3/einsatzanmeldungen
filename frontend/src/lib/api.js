@@ -1,5 +1,6 @@
 // Zugriff auf die Schnittstelle /api/v1. Das Cookie der Sitzung geht automatisch mit, das CSRF-Token im Kopf.
 import { reactive } from 'vue';
+import { leaveAllowed } from './section.js';
 
 export const session = reactive({
   ready: false, user: null, csrf: '', nav: {}, flashes: [], liveTopics: [], title: '', offline: false,
@@ -13,7 +14,7 @@ export class ApiError extends Error {
     super(body?.error || `Fehler ${status}`);
     this.status = status;
     this.body = body || {};
-    this.messages = body?.messages || [this.message];
+    this.messages = body?.messages || (body?.data?.errors?.length ? body.data.errors : [this.message]);
   }
 }
 
@@ -71,7 +72,7 @@ export function flash(type, message) {
 export async function act(method, path, body, { follow = true } = {}) {
   const json = await request(method, path, body);
   for (const f of json.flashes || []) flash(f.type, f.message);
-  if (follow && json.redirect) await navigate(json.redirect);
+  if (follow && json.redirect) { leaveAllowed(); await navigate(json.redirect); }
   return json;
 }
 export const post = (path, body, opts) => act('POST', path, body, opts);
