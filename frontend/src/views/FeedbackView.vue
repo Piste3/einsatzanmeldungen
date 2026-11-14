@@ -173,7 +173,7 @@ const SYM = { an: '✓', ab: '✕', unsicher: '?', offen: '' };
             <tr v-for="row in data.rows" :key="row.person.id" :data-row-id="`p${row.person.id}-${row.cells.map((c) => c.state[0]).join('')}`">
               <td class="fb-name"><Rank :short="row.person.rank_short" /><router-link :to="`/personen/${row.person.id}`"><strong>{{ row.person.first_name }} {{ row.person.last_name }}</strong></router-link><span v-if="row.person.teams" class="sub">{{ row.person.teams }}</span></td>
               <td v-for="(c, i) in row.cells" :key="i" :class="['fb-cell', { 'fb-first': data.columns[i].first }]">
-                <button type="button" :class="['fb', `fb-${c.state}`, c.detail ? `fb-d-${c.detail}` : '', c.notPlanned && c.state !== 'nicht_vorgesehen' ? 'fb-np' : '']" :aria-label="cellTitle(c, data.columns[i], row.person)" :data-tip="cellTip(c, data.columns[i], row.person)" @click="openCell(c, data.columns[i], row.person)"><FbSym :state="c.state" :detail="c.detail" /></button>
+                <button type="button" :class="['fb', `fb-${c.state}`, c.detail ? `fb-d-${c.detail}` : '', c.notPlanned && c.state !== 'nicht_vorgesehen' ? 'fb-np' : '']" :data-who="`${row.person.first_name} ${row.person.last_name} · ${data.columns[i].event.name}${data.columns[i].shift ? ` · ${data.columns[i].shift.name}` : ''}`" :aria-label="cellTitle(c, data.columns[i], row.person)" :data-tip="cellTip(c, data.columns[i], row.person)" @click="openCell(c, data.columns[i], row.person)"><FbSym :state="c.state" :detail="c.detail" /></button>
               </td>
             </tr>
           </tbody>

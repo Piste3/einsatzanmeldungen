@@ -31,17 +31,17 @@ function reset() { props.answer.yes = false; props.answer.shifts = []; }
     <div v-if="e.help_text" class="ev-help">{{ e.help_text }}</div>
     <template v-if="multi">
       <label v-for="s in e.openShifts" :key="s.id" class="opt">
-        <input v-model="answer.shifts" type="checkbox" :value="s.id" :disabled="disabled">
+        <input v-model="answer.shifts" :name="`shifts_${e.id}`" type="checkbox" :value="s.id" :disabled="disabled">
         <span>{{ s.name }}</span> <span class="time">{{ dates.fmtShiftWhen(s, dates.isMultiDay(e)) }}</span><template v-if="s.rule"> <span class="only">Nur {{ s.rule }}</span></template>
       </label>
     </template>
     <template v-else>
       <div v-if="onlyRule" class="ev-only"><span class="only">Nur {{ onlyRule }}</span></div>
       <div class="yesno">
-        <input :id="`y${e.id}`" v-model="answer.yes" type="checkbox" :disabled="disabled"><label :for="`y${e.id}`">Ja, ich bin dabei</label>
+        <input :id="`y${e.id}`" v-model="answer.yes" :name="`answer_${e.id}`" type="checkbox" :disabled="disabled"><label :for="`y${e.id}`">Ja, ich bin dabei</label>
       </div>
     </template>
-    <input v-model="answer.remark" class="remark" type="text" placeholder="Bemerkung (optional)" maxlength="500" :disabled="disabled">
+    <input v-model="answer.remark" :name="`remark_${e.id}`" class="remark" type="text" placeholder="Bemerkung (optional)" maxlength="500" :disabled="disabled">
     <button v-if="answered" type="button" class="reset" @click="reset">Antwort zurücksetzen</button>
   </fieldset>
 </template>

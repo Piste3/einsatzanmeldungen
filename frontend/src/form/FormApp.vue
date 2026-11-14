@@ -86,13 +86,13 @@ onMounted(() => load().catch(() => { message.value = 'Das Formular konnte nicht 
     <div v-if="errors.length" class="f-error" role="alert"><div v-for="err in errors" :key="err">{{ err }}</div></div>
     <div v-if="!data.form.events.length" class="f-card f-empty">Zurzeit sind keine Einsätze zur Anmeldung offen.</div>
     <form v-else novalidate @submit.prevent="submit">
-      <div class="hp" aria-hidden="true"><label>Website <input v-model="website" type="text" tabindex="-1" autocomplete="off"></label></div>
+      <div class="hp" aria-hidden="true"><label>Website <input v-model="website" name="website" type="text" tabindex="-1" autocomplete="off"></label></div>
       <div v-if="data.intro" class="f-card f-intro">{{ data.intro }}</div>
       <fieldset class="f-card">
         <legend class="f-q">Wer bist du?</legend>
         <div class="two">
-          <label>Vorname<input v-model="first" type="text" required autocomplete="given-name" maxlength="80"></label>
-          <label>Nachname<input v-model="last" type="text" required autocomplete="family-name" maxlength="80"></label>
+          <label>Vorname<input v-model="first" name="first_name" type="text" required autocomplete="given-name" maxlength="80"></label>
+          <label>Nachname<input v-model="last" name="last_name" type="text" required autocomplete="family-name" maxlength="80"></label>
         </div>
       </fieldset>
       <EventBlock v-for="e in data.form.events" :key="e.id" :e="e" :answer="answers[e.id]" :question="data.questions[e.id]" :disabled="preview" />
