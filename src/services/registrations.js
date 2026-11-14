@@ -120,6 +120,9 @@ function participantView(e, query, user) {
   const exts = externals.forEvent(e.id, e.shifts).filter((x) => !shift || externals.coversShift(x, shift.id));
   const extTotal = exts.reduce((a, x) => a + x.person_count, 0);
   const fnSummary = functions.summary(e, { shiftId: shift?.id });
+  // Schicht als Text auch direkt am Datensatz (die Browser-App bekommt keine Funktionen über JSON)
+  for (const r of list) r.shiftText = shiftOf(r);
+  for (const x of exts) x.shiftText = externals.shiftLabel(x, e.shifts);
   return {
     fnSummary, showFunction: fnSummary.usesFunctions, shift, perShift, filters, list, showShift: multi && !shift && !perShift, showStatus: filters.umfang !== 'bestaetigt', shiftOf,
     exts, extTotal, extShift: (x) => externals.shiftLabel(x, e.shifts),

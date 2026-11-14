@@ -14,7 +14,7 @@ import { uiAlert } from '@/lib/dialog.js';
 import { labels, dates, regState } from '@/lib/format.js';
 
 const { data, error, refresh } = usePage((r) => r.fullPath);
-const { f, apply, typed } = useFilters({ status: '', q: '', sort: 'rang' });
+const { f, apply, typed } = useFilters({ status: '', q: '', sort: 'rang' }, () => data.value.filters);
 const ev = computed(() => data.value.event);
 const list = computed(() => data.value.list || []);
 const base = computed(() => `/einsaetze/${ev.value.id}/anmeldungen`);

@@ -3,13 +3,25 @@
 import { reactive, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-export function useFilters(fields) {
+// effective: optional, liefert die Filter, die der Server wirklich angewendet hat (z. B. gespeicherte Filter des Benutzers).
+// Ein Feld, das der Benutzer gerade ändert (noch nicht angewendet), bleibt unberührt.
+export function useFilters(fields, effective = null) {
   const route = useRoute();
   const router = useRouter();
   const f = reactive({});
-  const sync = () => { for (const [k, def] of Object.entries(fields)) f[k] = route.query[k] ?? def; };
+  const fromRoute = (k) => route.query[k] ?? fields[k];
+  const sync = () => { for (const k of Object.keys(fields)) f[k] = fromRoute(k); };
   sync();
   watch(() => route.query, sync);
+  if (effective) {
+    watch(effective, (eff) => {
+      if (!eff) return;
+      for (const k of Object.keys(fields)) {
+        if (eff[k] === undefined || eff[k] === null) continue;
+        if (String(f[k] ?? '') === String(fromRoute(k) ?? '')) f[k] = String(eff[k]);
+      }
+    }, { immediate: true });
+  }
 
   let timer = null;
   function apply(delay = 0) {

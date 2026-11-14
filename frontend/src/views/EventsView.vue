@@ -11,7 +11,7 @@ import { fmtEventDate, labels, eventState } from '@/lib/format.js';
 
 const route = useRoute();
 const { data, loading, error } = usePage((r) => r.fullPath);
-const { f, apply, typed } = useFilters({ status: 'aktiv', from: '', to: '', q: '' });
+const { f, apply, typed } = useFilters({ status: 'aktiv', from: '', to: '', q: '' }, () => data.value.filters);
 const list = computed(() => data.value.list || []);
 const filtered = computed(() => f.from || f.to || f.q || f.status !== 'aktiv');
 const leader = (e) => (e.leader_last ? `${e.leader_rank || ''} ${e.leader_first} ${e.leader_last}`.trim() : '–');

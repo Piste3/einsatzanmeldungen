@@ -15,7 +15,7 @@ import { session } from '@/lib/api.js';
 import { labels, dates } from '@/lib/format.js';
 
 const { data, error, refresh } = usePage((r) => r.fullPath);
-const { f, apply, typed } = useFilters({ status: '', team: '', sort: 'rang', q: '' });
+const { f, apply, typed } = useFilters({ status: '', team: '', sort: 'rang', q: '' }, () => data.value.filters);
 const ev = computed(() => data.value.event);
 const list = computed(() => data.value.list || []);
 const base = computed(() => `/einsaetze/${ev.value.id}/anfragen`);
