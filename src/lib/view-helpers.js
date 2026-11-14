@@ -90,6 +90,8 @@ function flash(res, type, message) {
   const list = res.locals._flashOut || [];
   list.push({ type, message });
   res.locals._flashOut = list;
+  // Über die JSON-Schnittstelle kommen die Meldungen in der Antwort, nicht im Cookie
+  if (res.locals._api) return;
   res.cookie('kkb_flash', Buffer.from(JSON.stringify(list)).toString('base64url'), { httpOnly: true, sameSite: 'lax', path: '/', maxAge: 60000 });
 }
 

@@ -80,6 +80,9 @@ function createApp() {
     next();
   });
 
+  // JSON-Schnittstelle für die Browser-App (Vue)
+  app.use('/api/v1', require('./api').createApi());
+
   app.use(auth.loadSession);
   app.use(helpers.flashMiddleware);
   app.use(helpers.localsMiddleware);
