@@ -106,6 +106,7 @@ Admins können fast alle dieser Werte auch im Browser unter **Einstellungen › 
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | | E-Mail-Versand der Anmeldebestätigungen |
 | `BACKUP_DIR` | `DATA_DIR/backups` | Ziel der täglichen Sicherung |
 | `BACKUP_KEEP_DAYS` | `30` | Wie lange Sicherungen behalten werden |
+| `GITHUB_TOKEN` | | Lesezugang zu GitHub für «Update installieren», wenn das Repository privat ist (Fine-grained Token, nur dieses Repository, «Contents: Read-only») |
 
 Ohne `SMTP_HOST` werden Bestätigungsmails nicht verschickt, sondern bleiben im Postausgang der Datenbank und gehen raus, sobald SMTP eingerichtet ist.
 

@@ -939,6 +939,7 @@ Gut zu wissen: Die hier gespeicherten Passwörter liegen in der Datenbank und da
 ![Einstellungen › System](bilder/27-system.jpg)
 
 - **Nach Updates suchen** zeigt, ob es eine neue Version gibt.
+- **GitHub-Zugang:** Das Repository ist privat. Darum braucht der Server unter **Server › Update** einen GitHub-Zugang (Token). Ohne Token meldet das Update «GitHub verlangt eine Anmeldung». Token erstellen: auf GitHub unter **Settings › Developer settings › Fine-grained tokens**, nur dieses Repository, Berechtigung **Contents: Read-only**. Läuft der Token ab, einen neuen erstellen und eintragen.
 - **Update installieren** sichert zuerst die Datenbank, holt dann die neue Version, installiert nötige Pakete, baut die Browser-App neu und startet den Server neu. Das Protokoll läuft live mit. Schlägt das Bauen fehl, bleibt die bisherige Version in Betrieb.
 - **Server neu starten**, z. B. nach Änderungen an der `.env`. Werte unter **Server** gelten ohne Neustart.
 - Während eines Neustarts bleiben die Seiten offen. Eine Aktion in diesen Sekunden zeigt «Der Server ist kurz nicht erreichbar». Danach lädt jede offene Seite ihre Daten selbst neu.

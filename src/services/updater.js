@@ -30,6 +30,15 @@ function log(line) {
 }
 
 // Befehl ausführen, Ausgabe ins Protokoll; gibt { code, out } zurück
+// Token für GitHub über Umgebungsvariablen an git geben (nie in der Befehlszeile, nie im Protokoll)
+function gitAuthEnv() {
+  if (!config.githubToken) return {};
+  const basic = Buffer.from(`x-access-token:${config.githubToken}`).toString('base64');
+  return { GIT_CONFIG_COUNT: '1', GIT_CONFIG_KEY_0: 'http.https://github.com/.extraheader', GIT_CONFIG_VALUE_0: `AUTHORIZATION: basic ${basic}` };
+}
+const AUTH_HINT = 'GitHub verlangt eine Anmeldung. Bitte unter Einstellungen › Server › Update einen GitHub-Zugang (Token) eintragen.';
+const needsAuth = (out) => /could not read Username|terminal prompts disabled|Authentication failed|403|Repository not found/i.test(out || '');
+
 function run(cmd, args, { quiet = false, cwd = APP_DIR, env = {} } = {}) {
   return new Promise((resolve) => {
     // git darf das Projekt auch unter einem anderen Windows-Konto (z. B. SYSTEM bei Autostart) benutzen
@@ -58,8 +67,8 @@ async function currentVersion() {
 
 // Nachsehen, ob es auf GitHub Neues gibt (ohne etwas zu ändern)
 async function check() {
-  const fetch = await run('git', ['fetch', '--quiet', 'origin', 'main'], { quiet: true });
-  if (fetch.code !== 0) return { error: `Verbindung zu GitHub fehlgeschlagen: ${fetch.out || `Code ${fetch.code}`}` };
+  const fetch = await run('git', ['fetch', '--quiet', 'origin', 'main'], { quiet: true, env: gitAuthEnv() });
+  if (fetch.code !== 0) return { error: needsAuth(fetch.out) ? AUTH_HINT : `Verbindung zu GitHub fehlgeschlagen: ${fetch.out || `Code ${fetch.code}`}` };
   const r = await run('git', ['log', '--format=%h|%cI|%s', 'HEAD..origin/main'], { quiet: true });
   const commits = r.out ? r.out.split('\n').map((l) => { const [hash, date, subject] = l.split('|'); return { hash, date, subject }; }) : [];
   return { commits };
@@ -110,8 +119,8 @@ async function update(user) {
     const before = (await run('git', ['rev-parse', 'HEAD'], { quiet: true })).out;
     const lockBefore = (await run('git', ['rev-parse', 'HEAD:package-lock.json'], { quiet: true })).out;
     const frontLockBefore = (await run('git', ['rev-parse', 'HEAD:frontend/package-lock.json'], { quiet: true })).out;
-    const pull = await run('git', ['pull', '--ff-only', 'origin', 'main']);
-    if (pull.code !== 0) return fail('git pull fehlgeschlagen.');
+    const pull = await run('git', ['pull', '--ff-only', 'origin', 'main'], { env: gitAuthEnv() });
+    if (pull.code !== 0) return fail(needsAuth(pull.out) ? AUTH_HINT : 'git pull fehlgeschlagen.');
     const after = (await run('git', ['rev-parse', 'HEAD'], { quiet: true })).out;
     if (before === after) {
       log('Bereits auf dem neuesten Stand – kein Neustart nötig.');

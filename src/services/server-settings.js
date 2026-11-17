@@ -81,6 +81,10 @@ const FIELDS = [
     help: 'Leer = Ordner «backups» im Datenordner. Der Ordner wird bei Bedarf angelegt.' },
   { group: 'Datensicherung', key: 'BACKUP_KEEP_DAYS', label: 'Sicherungen behalten', type: 'number', unit: 'Tage', min: 1, max: 3650,
     current: () => String(config.backupKeepDays), help: 'Ältere automatische Sicherungen werden gelöscht.' },
+
+  { group: 'Update', key: 'GITHUB_TOKEN', label: 'GitHub-Zugang (Token)', type: 'secret',
+    current: () => config.githubToken,
+    help: 'Für «Update installieren». Auf GitHub unter Settings › Developer settings › Fine-grained tokens erstellen: nur dieses Repository, Berechtigung «Contents: Read-only».' },
 ];
 
 // Nur lesend: ohne diese Werte startet der Server nicht oder findet die Datenbank nicht

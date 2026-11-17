@@ -60,6 +60,8 @@ function adjustableValues(env, port) {
       from: env.SMTP_FROM || '',
     },
     backupDir: env.BACKUP_DIR || null,
+    // Lesezugang zu GitHub für «Update installieren» (privates Repository; der Server läuft im Autostart als SYSTEM ohne eigene Anmeldung)
+    githubToken: env.GITHUB_TOKEN || '',
     backupKeepDays: Number(env.BACKUP_KEEP_DAYS) > 0 ? Number(env.BACKUP_KEEP_DAYS) : 30,
   };
 }
