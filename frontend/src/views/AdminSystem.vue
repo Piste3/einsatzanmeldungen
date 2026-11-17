@@ -94,6 +94,7 @@ async function restart() {
               <div class="row-between"><span class="muted">Stand</span><span><code>{{ data.version.hash }}</code></span></div>
               <div class="row-between"><span class="muted">vom</span><span>{{ dates.fmtDateTime(data.version.date) }}</span></div>
               <p class="mt-s">{{ data.version.subject }}</p>
+              <div v-if="data.version.restartNeeded" class="callout warn mt-s">Im Ordner liegt schon der Stand <code>{{ data.version.diskHash }}</code>. Er gilt erst nach einem Neustart: unten «Server neu starten» oder auf dem Server <code>betrieb\windows\gesamt\neustart.cmd</code>.</div>
             </template>
             <p v-else class="muted">Keine Versionsangabe (kein git-Projekt).</p>
             <div class="row-between mt-s"><span class="muted">Node.js</span><span>{{ data.node }} ({{ data.platform }})</span></div>

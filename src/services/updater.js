@@ -58,11 +58,22 @@ function run(cmd, args, { quiet = false, cwd = APP_DIR, env = {} } = {}) {
   });
 }
 
-async function currentVersion() {
-  const r = await run('git', ['log', '-1', '--format=%h|%cI|%s'], { quiet: true });
+async function versionAt(ref) {
+  const r = await run('git', ['log', '-1', '--format=%h|%cI|%s', ref], { quiet: true });
   if (r.code !== 0) return null;
   const [hash, date, subject] = r.out.split('|');
   return { hash, date, subject };
+}
+// Stand beim Start dieses Prozesses: Nach «git pull» ohne Neustart läuft noch der alte Code
+const startedRef = run('git', ['rev-parse', 'HEAD'], { quiet: true }).then((r) => (r.code === 0 ? r.out : null));
+
+// Laufende Version; restartNeeded, wenn im Ordner schon eine neuere liegt
+async function currentVersion() {
+  const started = await startedRef;
+  const running = await versionAt(started || 'HEAD');
+  if (!running) return null;
+  const disk = await versionAt('HEAD');
+  return { ...running, restartNeeded: Boolean(disk && disk.hash !== running.hash), diskHash: disk?.hash || null };
 }
 
 // Nachsehen, ob es auf GitHub Neues gibt (ohne etwas zu ändern)
