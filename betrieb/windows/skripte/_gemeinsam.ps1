@@ -45,6 +45,18 @@ function Test-Admin {
   return $p.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 }
 
+# Läuft der Server über die Autostart-Aufgabe (Konto SYSTEM), darf nur ein Administrator ihn beenden.
+# Dann startet das Skript sich selbst mit Administratorrechten neu (Windows fragt nach) und dieses Fenster endet.
+function Request-Admin([string]$Script, [object[]]$ScriptArgs = @(), [switch]$Always) {
+  if (Test-Admin) { return }
+  if (-not $Always -and -not (Get-Task)) { return }
+  Write-Host 'Dafür braucht es Administratorrechte. Windows fragt gleich nach; die Ausgabe erscheint in einem neuen Fenster.' -ForegroundColor Yellow
+  $list = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-NoExit', '-File', "`"$Script`"") + ($ScriptArgs | ForEach-Object { "`"$_`"" })
+  try { Start-Process powershell -Verb RunAs -ArgumentList $list | Out-Null }
+  catch { Write-Host 'Abgebrochen: ohne Administratorrechte lässt sich der Server nicht beenden.' -ForegroundColor Red; exit 1 }
+  exit 0
+}
+
 # Beendet den Server der Autostart-Aufgabe (cmd.exe beendet node.exe nicht immer mit)
 function Stop-TaskServer {
   Stop-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue

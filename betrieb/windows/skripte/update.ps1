@@ -1,5 +1,6 @@
 ﻿# Neueste Version von GitHub holen, vorher sichern, danach neu starten
 . "$PSScriptRoot\_gemeinsam.ps1"
+Request-Admin $PSCommandPath $args
 
 # Paketlisten ändert npm selbst (z. B. nach «npm install» von Hand): auf den Stand von GitHub zurücksetzen
 git checkout -- package.json package-lock.json frontend/package.json frontend/package-lock.json 2>$null

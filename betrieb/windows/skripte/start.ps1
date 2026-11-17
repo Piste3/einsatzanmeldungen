@@ -1,5 +1,6 @@
 ﻿# Server starten (im Hintergrund)
 . "$PSScriptRoot\_gemeinsam.ps1"
+Request-Admin $PSCommandPath $args
 
 if (Get-Task) { Start-ScheduledTask -TaskName $TaskName; Write-Host 'Gestartet (Autostart-Aufgabe).'; exit 0 }
 if (Get-ServerProcess) { Write-Host "Der Server läuft bereits (PID $(Get-Content $PidFile))."; exit 0 }
